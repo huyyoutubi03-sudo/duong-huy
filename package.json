@@ -1,0 +1,1 @@
+{"description":"Game Mot Thoi Ky Niem - ban copy nguyen ban, doi thong tin ve cua Huy (Node.js thuan, khong thu vien ngoai)","engines":{"node":">=20"},"main":"chay-game.js","name":"mot-thoi-ky-niem","private":true,"scripts":{"start":"node chay-game.js $PORT --lan --no-open"},"version":"1.0.0"}
