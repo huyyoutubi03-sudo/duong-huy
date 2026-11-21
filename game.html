@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Duong Huy</title>
+<title>Mot Thoi Ky Niem</title>
 <link rel="stylesheet" href="assets/web/ui/style.css">
 </head>
 <body>
 <div id="app">
   <div id="man-hinh-dang-nhap" class="man-hinh">
-    <h1>Duong Huy</h1>
+    <h1>Mot Thoi Ky Niem</h1>
     <p class="phu-de">Bản dựng lại (code gốc) — máy chủ Node.js thuần</p>
     <form id="form-dang-nhap">
       <input id="dn-ten" placeholder="Tên tài khoản" autocomplete="username">
@@ -63,18 +63,3 @@
       .then(function (kq) {
         if (!kq.ok) { hienLoi(kq.d.loi || "dang nhap that bai"); return; }
         if (window.VL && window.VL.dangNhapXong) { window.VL.dangNhapXong().catch(function (err) { hienLoi(err && err.message ? err.message : String(err)); }); }
-        else { location.reload(); }
-      })
-      .catch(function (err) { hienLoi(err && err.message ? err.message : "khong ket noi duoc may chu"); });
-  });
-  // Chan doan: sau 5 giay ma main.js van chua chay (window.VL chua co)
-  // thi bao ro cho nguoi dung thay vi im lang nhu truoc.
-  setTimeout(function () {
-    if (!window.VL) hienLoi("Game chua tai duoc (main.js khong chay). Hay tai lai trang; neu van loi, bao lai de kiem tra mang/may chu.");
-  }, 5000);
-})();
-</script>
-<script type="module" src="src/game/main.js"></script>
-</body>
-</html>
-
