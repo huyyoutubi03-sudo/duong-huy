@@ -50,8 +50,8 @@ export class GameMap {
   vatTheGan(x, y, r) { const ra = []; const x0 = Math.max(0, Math.floor(x - r)); const x1 = Math.min(this.rong - 1, Math.ceil(x + r)); const y0 = Math.max(0, Math.floor(y - r)); const y1 = Math.min(this.cao - 1, Math.ceil(y + r)); for (let yy = y0; yy <= y1; yy++) { for (let xx = x0; xx <= x1; xx++) { const ds = this.hamVatThe.get(xx + "," + yy); if (ds) ra.push(...ds); } } return ra; }
   ve(ctx, camX, camY, rongMan, caoMan) {
     // _chuThich: ban goc ve vat the theo thu tu chan va che khuat sau nhan vat; ban nay ve don gian mot lop.
-    if (this.nen) ctx.drawImage(this.nen, -camX, -camY, this.nen.width * SCALE, this.nen.height * SCALE);
-    else { ctx.fillStyle = "#101018"; ctx.fillRect(0, 0, rongMan, caoMan); }
+    ctx.fillStyle = "#7cb342"; ctx.fillRect(0, 0, rongMan, caoMan); if (this.nen) ctx.drawImage(this.nen, -camX, -camY, this.rong * CELL, this.cao * CELL);
+    
     const vat = this.vatThe.filter((v) => v.x * CELL - camX > -64 && v.x * CELL - camX < rongMan + 64 && v.y * CELL - camY > -64 && v.y * CELL - camY < caoMan + 64);
     vat.sort((a, b) => (a.y + (a.cao || 1)) - (b.y + (b.cao || 1)));
     for (const v of vat) { ctx.fillStyle = v.mau || "#3a3a4a"; ctx.fillRect(v.x * CELL - camX, v.y * CELL - camY, (v.rong || 1) * CELL, (v.cao || 1) * CELL); }
