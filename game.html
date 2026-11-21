@@ -89,11 +89,11 @@ import("./src/game/main.js").catch(function (err) {
   var m1 = err && err.message ? err.message : String(err);
   import("./src/game/main.js?cb=1").then(function () { __baoLoi(""); }).catch(function (err2) {
     var m2 = err2 && err2.message ? err2.message : String(err2);
-    var i = 0;
+    var i = 0; var ketQua = [];
     (function thuTiep() {
-      if (i >= __mods.length) { __baoLoi(m1 + " | thu lai ?cb=1: " + m2 + " | tung module deu tai duoc"); return; }
+      if (i >= __mods.length) { __baoLoi(m1 + " | thu lai ?cb=1: " + m2 + " | " + ketQua.join(" ; ")); return; }
       var u = __mods[i++];
-      import(u).then(thuTiep).catch(function (e3) { __baoLoi(m1 + " | thu lai ?cb=1: " + m2 + " | module loi: " + u + " : " + (e3 && e3.message ? e3.message : String(e3))); });
+      import(u).then(function () { ketQua.push(u + ": OK"); thuTiep(); }).catch(function (e3) { ketQua.push(u + ": LOI " + (e3 && e3.message ? e3.message : String(e3))); thuTiep(); });
     })();
   });
 });
