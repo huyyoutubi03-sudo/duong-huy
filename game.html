@@ -8,64 +8,71 @@
 </head>
 <body>
 <div id="app">
-  <div id="man-hinh-dang-nhap" class="man-hinh">
-    <h1>Mot Thoi Ky Niem</h1>
-    <p class="phu-de">Bản dựng lại (code gốc) — máy chủ Node.js thuần</p>
-    <form id="form-dang-nhap">
-      <input id="dn-ten" placeholder="Tên tài khoản" autocomplete="username">
-      <input id="dn-mk" type="password" placeholder="Mật khẩu" autocomplete="current-password">
-      <button type="submit">Đăng nhập</button>
-    </form>
-    <p id="dn-loi" class="loi"></p>
-    <p class="goi-y">Tài khoản đầu tiên là quản trị. Tạo tài khoản: node quan-tri.js them &lt;ten&gt; &lt;mat-khau&gt;</p>
-  </div>
-  <div id="man-hinh-nhan-vat" class="man-hinh" hidden>
-    <h2>Chọn nhân vật</h2>
-    <div id="danh-sach-nv"></div>
-    <form id="form-tao-nv">
-      <input id="tn-ten" placeholder="Tên nhân vật" maxlength="12">
-      <select id="tn-phai">
-        <option>Thiếu Lâm</option><option>Thiên Vương</option><option>Nga My</option><option>Thủy Yên</option><option>Cái Bang</option><option>Đường Môn</option><option>Ngũ Độc</option><option>Minh Giáo</option><option>Võ Đang</option><option>Côn Lôn</option>
-      </select>
-      <button type="submit">Tạo nhân vật</button>
-    </form>
-  </div>
-  <div id="man-hinh-game" hidden>
-    <canvas id="game" width="960" height="600"></canvas>
-    <div id="hud">
-      <div id="hud-ten"></div>
-      <div class="thanh"><div id="thanh-mau" class="mau"></div></div>
-      <div class="thanh"><div id="thanh-mana" class="mana"></div></div>
-      <div id="hud-thong-tin"></div>
-    </div>
-    <div id="thanh-ky-nang"></div>
-    <div id="chat"><div id="chat-noi-dung"></div><input id="chat-nhap" placeholder="Nhắn..."></div>
-  </div>
+<div id="man-hinh-dang-nhap" class="man-hinh">
+<h1>Mot Thoi Ky Niem</h1>
+<p class="phu-de">Bản dựng lại (code gốc) — máy chủ Node.js thuần</p>
+<form id="form-dang-nhap">
+<input id="dn-ten" placeholder="Tên tài khoản" autocomplete="username">
+<input id="dn-mk" type="password" placeholder="Mật khẩu" autocomplete="current-password">
+<button type="submit">Đăng nhập</button>
+</form>
+<p id="dn-loi" class="loi"></p>
+<p class="goi-y">Tài khoản đầu tiên là quản trị. Tạo tài khoản: node quan-tri.js them &lt;ten&gt; &lt;mat-khau&gt;</p>
+</div>
+<div id="man-hinh-nhan-vat" class="man-hinh" hidden>
+<h2>Chọn nhân vật</h2>
+<div id="danh-sach-nv"></div>
+<form id="form-tao-nv">
+<input id="tn-ten" placeholder="Tên nhân vật" maxlength="12">
+<select id="tn-phai">
+<option>Thiếu Lâm</option><option>Thiên Vương</option><option>Nga My</option><option>Thủy Yên</option><option>Ngũ Độc</option><option>Đường Môn</option><option>Côn Lôn</option><option>Võ Đang</option><option>Cái Bang</option><option>Thiên Nhẫn</option>
+</select>
+<button type="submit">Tạo nhân vật</button>
+</form>
+</div>
+<div id="man-hinh-game" hidden>
+<canvas id="game" width="960" height="600"></canvas>
+<div id="hud">
+<div id="hud-ten"></div>
+<div id="hud-cap"></div>
+<div id="hud-hp"></div>
+<div id="hud-mp"></div>
+<div id="hud-exp"></div>
+<div id="hud-tien"></div>
+</div>
+<div id="chat"></div>
+<form id="form-chat">
+<input id="chat-vao" placeholder="Nhắn...">
+<button type="submit">Gửi</button>
+</form>
+<button id="nut-auto">Tự động: Tắt</button>
+<button id="nut-am-thanh">Âm thanh: Bật</button>
+</div>
 </div>
 <script>
-// Dang nhap du phong (khong phu thuoc module): neu main.js khong chay duoc
-// vi bat ky ly do gi (1 file import loi, mang chan...), form van dang nhap
-// duoc thay vi submit GET ve /? . Main.js se khong gan them handler neu
-// co nay da gan (co window.__dnDaGan).
 (function () {
+  // Du phong: neu main.js chua chay, form van dang nhap duoc va bao loi ro rang.
+  // main.js se gan window.__dnDaGan khi no chay de tranh gan handler 2 lan.
+  function hienLoi(msg) { var loi = document.getElementById("dn-loi"); if (loi) loi.textContent = msg; }
+  function hienManHinh(ten) { ["man-hinh-dang-nhap", "man-hinh-nhan-vat", "man-hinh-game"].forEach(function (id) { var el = document.getElementById(id); if (el) el.hidden = id !== ten; }); }
   var form = document.getElementById("form-dang-nhap");
-  var loi = document.getElementById("dn-loi");
-  function hienLoi(msg) { if (loi) loi.textContent = msg || ""; }
-  if (!form) return;
-  window.__dnDaGan = true;
-  form.addEventListener("submit", function (e) {
+  if (form) form.addEventListener("submit", function (e) {
+    if (window.__dnDaGan) return;
     e.preventDefault();
-    hienLoi("");
     var ten = document.getElementById("dn-ten").value.trim();
     var mk = document.getElementById("dn-mk").value;
-    fetch("/api/dang-nhap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ten: ten, mk: mk }), credentials: "same-origin" })
-      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok && d.ok !== false, d: d }; }); })
-      .then(function (kq) {
-        if (!kq.ok) { hienLoi(kq.d.loi || "dang nhap that bai"); return; }
-        if (window.VL && window.VL.dangNhapXong) { window.VL.dangNhapXong().catch(function (err) { hienLoi(err && err.message ? err.message : String(err)); }); }
-        else { location.reload(); }
+    fetch("/api/dang-nhap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ten: ten, matKhau: mk }) })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (x) {
+        if (!x.ok || !x.d.dangNhap) { hienLoi(x.d.loi || "sai ten hoac mat khau"); return; }
+        return fetch("/api/trang-thai").then(function (r) { return r.json(); }).then(function (tt) {
+          if (tt.dangNhap) {
+            if (window.VL) { window.VL.taiDanhSachNv(); window.VL.hienManHinh("man-hinh-nhan-vat"); }
+            else hienManHinh("man-hinh-nhan-vat");
+          } else hienLoi("sai ten hoac mat khau");
+        });
       })
-      .catch(function (err) { hienLoi(err && err.message ? err.message : "khong ket noi duoc may chu"); });
+      .catch(function (err) { hienLoi(err.message || String(err)); });
   });
   // Chan doan: sau 5 giay ma main.js van chua chay (window.VL chua co)
   // thi bao ro cho nguoi dung thay vi im lang nhu truoc.
@@ -76,7 +83,20 @@
 })();
 </script>
 <script type="module">
-import("./src/game/main.js").catch(function (err) { var m = err && err.message ? err.message : String(err); window.__loiTaiModule = m; var loi = document.getElementById("dn-loi"); if (loi) loi.textContent = m; });
+function __baoLoi(m) { window.__loiTaiModule = m; var loi = document.getElementById("dn-loi"); if (loi) loi.textContent = m; }
+var __mods = ["./src/game/net.js", "./src/game/world.js", "./src/tai-tep.js", "./src/map.js", "./src/game/hud.js", "./src/game/auto.js", "./src/game/audio.js", "./src/game/loading.js", "./src/game/money.js", "./src/game/vocong.js", "./src/game/he-thong.js", "./src/game/xa-hoi.js", "./src/game/rules.js", "./src/char/jx-char.js", "./src/dir.js", "./src/jx/spr.js", "./src/game/itemdb.js", "./src/game/spr.js", "./src/game/map.js", "./src/game/jx-char.js"];
+import("./src/game/main.js").catch(function (err) {
+  var m1 = err && err.message ? err.message : String(err);
+  import("./src/game/main.js?cb=1").then(function () { __baoLoi(""); }).catch(function (err2) {
+    var m2 = err2 && err2.message ? err2.message : String(err2);
+    var i = 0;
+    (function thuTiep() {
+      if (i >= __mods.length) { __baoLoi(m1 + " | thu lai ?cb=1: " + m2 + " | tung module deu tai duoc"); return; }
+      var u = __mods[i++];
+      import(u).then(thuTiep).catch(function (e3) { __baoLoi(m1 + " | thu lai ?cb=1: " + m2 + " | module loi: " + u + " : " + (e3 && e3.message ? e3.message : String(e3))); });
+    })();
+  });
+});
 </script>
 </body>
 </html>
