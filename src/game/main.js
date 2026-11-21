@@ -99,7 +99,7 @@ canvas.addEventListener("click", (e) => {
   phat("click");
 });
 window.addEventListener("resize", () => { if (!$("man-hinh-game").hidden) { canvas.width = canvas.clientWidth || 960; canvas.height = canvas.clientHeight || 600; } });
-$("chat-nhap").addEventListener("keydown", (e) => {
+$("chat-vao").addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
   const v = e.target.value.trim();
   if (!v) return;
