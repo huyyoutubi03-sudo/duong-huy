@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const GOC = path.join(__dirname, "..", "assets");
-let BAN = { ten: "Vo Lam Idle - Ban dung lai", phienBan: 1, taiNguyen: {} };
+let BAN = { ten: "Duong Huy", phienBan: 1, taiNguyen: {} };
 function quet(dir, ra) {
   for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, f.name);
@@ -18,7 +18,7 @@ function batDau() {
       const ra = [];
       if (fs.existsSync(GOC)) quet(GOC, ra);
       const bam = crypto.createHash("sha1").update(ra.join(";")).digest("hex").slice(0, 12);
-      BAN = { ten: "Vo Lam Idle - Ban dung lai", phienBan: 1, taiNguyen: { assets: bam, tep: ra.length } };
+      BAN = { ten: "Duong Huy", phienBan: 1, taiNguyen: { assets: bam, tep: ra.length } };
     } catch {}
   };
   lam();
