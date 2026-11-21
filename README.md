@@ -1,4 +1,4 @@
-# Duong Huy - Vo Lam Idle (ban dung lai)
+# Duong Huy (ban dung lai)
 
 Game Node.js thuan, khong dung thu vien ngoai. File chay: chay-game.js, cong mac dinh 8111, WebSocket /api/ws.
 
