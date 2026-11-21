@@ -1,8 +1,8 @@
 {
-  "name": "duong-huy",
+  "name": "mot-thoi-ky-niem",
   "version": "1.0.0",
   "private": true,
-  "description": "Game Duong Huy - ban dung lai (Node.js thuan, WebSocket)",
+  "description": "Game Mot Thoi Ky Niem - ban dung lai (Node.js thuan, WebSocket)",
   "main": "chay-game.js",
   "scripts": {
     "start": "node chay-game.js $PORT --lan"
@@ -11,3 +11,4 @@
     "node": ">=20"
   }
 }
+
