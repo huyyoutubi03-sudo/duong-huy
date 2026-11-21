@@ -40,7 +40,7 @@ async function taiDanhSachNv() {
 // (co window.__dnDaGan) — tranh goi dang nhap 2 lan cho 1 lan bam.
 if (!window.__dnDaGan) {
   window.__dnDaGan = true;
-$("form-dang-nhap").addEventListener("submit", async (e) => {
+  $("form-dang-nhap").addEventListener("submit", async (e) => {
     e.preventDefault();
     hienLoi("");
     try { await net.dangNhap($("dn-ten").value.trim(), $("dn-mk").value); await taiDanhSachNv(); hienManHinh("man-hinh-nhan-vat"); }
