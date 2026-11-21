@@ -1,8 +1,13 @@
 {
   "name": "duong-huy-volam-idle",
   "version": "1.0.0",
-  "description": "Vo Lam Idle - ban dung lai (Node thuan, chay-game.js)",
+  "private": true,
+  "description": "Game Vo Lam Idle - ban dung lai (Node.js thuan, WebSocket)",
   "main": "chay-game.js",
-  "engines": { "node": ">=18" },
-  "scripts": { "start": "node chay-game.js $PORT --lan" }
+  "scripts": {
+    "start": "node chay-game.js $PORT --lan"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }
