@@ -1,7 +1,8 @@
 @echo off
 chcp 65001 >nul
-title Tao tai khoan - Duong Huy
+title Tao tai khoan - Mot Thoi Ky Niem
 set /p TEN=Ten tai khoan: 
 set /p MK=Mat khau: 
 node quan-tri.js them %TEN% %MK%
 pause
+
