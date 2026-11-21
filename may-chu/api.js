@@ -88,7 +88,7 @@ async function gietQuai(req, res) {
 function trangThai(req, res) {
   // Truoc day khong tra truong dangNhap nen main.js khong bao gio tu
   // chuyen sang man hinh nhan vat sau khi dang nhap + tai lai trang.
-  tra(res, { ok: true, ten: "Duong Huy", phienBan: "S1-dung-lai-1", dangNhap: !!D.docPhien(req), gio: new Date().toISOString(), theGioi: TG.trangThai() });
+  tra(res, { ok: true, ten: "Mot Thoi Ky Niem", phienBan: "S1-dung-lai-1", dangNhap: !!D.docPhien(req), gio: new Date().toISOString(), theGioi: TG.trangThai() });
 }
 async function chonNhanVat(req, res) {
   const s = canPhien(req, res); if (!s) return;
