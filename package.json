@@ -1,8 +1,8 @@
 {
-  "name": "duong-huy-volam-idle",
+  "name": "duong-huy",
   "version": "1.0.0",
   "private": true,
-  "description": "Game Vo Lam Idle - ban dung lai (Node.js thuan, WebSocket)",
+  "description": "Game Duong Huy - ban dung lai (Node.js thuan, WebSocket)",
   "main": "chay-game.js",
   "scripts": {
     "start": "node chay-game.js $PORT --lan"
