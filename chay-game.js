@@ -51,7 +51,7 @@ server.on("error", (e) => {
   throw e;
 });
 server.listen(PORT, HOST, () => {
-  console.log("Vo Lam Idle - Ban dung lai");
+console.log("Duong Huy");
   console.log("Mo trinh duyet: http://" + (LAN ? "IP-may-nay" : "127.0.0.1") + ":" + PORT);
   console.log("Giu cua so nay trong luc choi. Dong cua so = tat may chu.");
 });
