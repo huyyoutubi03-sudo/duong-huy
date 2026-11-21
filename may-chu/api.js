@@ -12,7 +12,7 @@ function tra(res, o, ma) { const s = JSON.stringify(o); res.writeHead(ma || 200,
 function loi(res, msg, ma) { tra(res, { ok: false, loi: msg }, ma || 400); }
 function docJSON(req) { return new Promise((ok, loi2) => { let s = ""; req.on("data", (c) => { s += c; if (s.length > 1048576) { req.destroy(); loi2(new Error("qua lon")); } }); req.on("end", () => { try { ok(s ? JSON.parse(s) : {}); } catch { loi2(new Error("json sai")); } }); req.on("error", loi2); }); }
 function ip(req) { return (req.socket && req.socket.remoteAddress) || "?"; }
-function gioiHan(req, toiDa, giay) { const k = ip(req); const n = Date.now(); const r = DN.get(k) || { dem: 0, luc: n }; if (n - r.luc > giay * 1000) { r.dem = 0; r.luc = n; } r.dem += 1; DN.set(k, r); return r.dem <= toiDa; }
+function gioiHan(req, toiDa, giay) { const k = ip(req); const n = Duong HuyDate.now(); const r = DN.get(k) || { dem: 0, luc: n }; if (n - r.luc > giay * 1000) { r.dem = 0; r.luc = n; } r.dem += 1; DN.set(k, r); return r.dem <= toiDa; }
 function canPhien(req, res) { const s = D.docPhien(req); if (!s) { loi(res, "chua dang nhap", 401); return null; } return s; }
 async function dangNhap(req, res) {
   if (!gioiHan(req, 10, 60)) return loi(res, "thu lai sau 1 phut", 429);
@@ -86,7 +86,7 @@ async function gietQuai(req, res) {
   tra(res, { ok: true, ...kq, nhanVat: nv });
 }
 function trangThai(req, res) {
-  tra(res, { ok: true, ten: "Vo Lam Idle - Ban dung lai", phienBan: "S1-dung-lai-1", gio: new Date().toISOString(), theGioi: TG.trangThai() });
+  tra(res, { ok: true, ten: "Duong Huy", phienBan: "S1-dung-lai-1", gio: new Date().toISOString(), theGioi: TG.trangThai() });
 }
 async function chonNhanVat(req, res) {
   const s = canPhien(req, res); if (!s) return;
