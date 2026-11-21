@@ -5,7 +5,7 @@ export function datTienDo(phanTram, ghiChu) {
     el = document.createElement("div");
     el.id = "loading";
     el.style.cssText = "position:fixed;inset:0;background:#0a0a12;color:#ffd36b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:99;font-family:sans-serif;";
-    el.innerHTML = "<div>DUONG HUY</div><div id=\"loading-ghi-chu\"></div><div id=\"loading-phan-tram\"></div>";
+    el.innerHTML = "<div>MOT THOI KY NIEM</div><div id=\"loading-ghi-chu\"></div><div id=\"loading-phan-tram\"></div>";
     document.body.appendChild(el);
   }
   const gc = document.getElementById("loading-ghi-chu");
@@ -14,3 +14,4 @@ export function datTienDo(phanTram, ghiChu) {
   if (pt) pt.textContent = Math.round(phanTram) + "%";
 }
 export function xongTai() { const el = document.getElementById("loading"); if (el) el.remove(); }
+
