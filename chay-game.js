@@ -1,4 +1,4 @@
-// Vo Lam Idle - BAN DUNG LAI (code goc, viet lai tu kien truc da phan tich).
+// Duong Huy - BAN DUNG LAI (code goc, viet lai tu kien truc da phan tich).
 // May chu Node.js thuan (khong dung thu vien ngoai). Cong mac dinh 8101, --lan de mo LAN.
 "use strict";
 const http = require("http");
