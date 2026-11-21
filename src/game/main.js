@@ -19,7 +19,7 @@ let nv = null;
 let soNv = 0;
 let oSlot = 0;
 let vocong = null;
-window.VL = { net, world, HE_THONG, XA_HOI, dinhDangTien };
+window.VL = { net, world, HE_THONG, XA_HOI, dinhDangTien, dangNhapXong: async () => { await taiDanhSachNv(); hienManHinh("man-hinh-nhan-vat"); } };
 function hienManHinh(ten) { for (const id of ["man-hinh-dang-nhap", "man-hinh-nhan-vat", "man-hinh-game"]) $(id).hidden = id !== ten; }
 function hienLoi(msg) { $("dn-loi").textContent = msg; }
 async function taiDanhSachNv() {
