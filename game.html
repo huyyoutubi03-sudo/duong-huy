@@ -42,6 +42,39 @@
     <div id="chat"><div id="chat-noi-dung"></div><input id="chat-nhap" placeholder="Nhắn..."></div>
   </div>
 </div>
+<script>
+// Dang nhap du phong (khong phu thuoc module): neu main.js khong chay duoc
+// vi bat ky ly do gi (1 file import loi, mang chan...), form van dang nhap
+// duoc thay vi submit GET ve /? . Main.js se khong gan them handler neu
+// co nay da gan (co window.__dnDaGan).
+(function () {
+  var form = document.getElementById("form-dang-nhap");
+  var loi = document.getElementById("dn-loi");
+  function hienLoi(msg) { if (loi) loi.textContent = msg || ""; }
+  if (!form) return;
+  window.__dnDaGan = true;
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    hienLoi("");
+    var ten = document.getElementById("dn-ten").value.trim();
+    var mk = document.getElementById("dn-mk").value;
+    fetch("/api/dang-nhap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ten: ten, mk: mk }), credentials: "same-origin" })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok && d.ok !== false, d: d }; }); })
+      .then(function (kq) {
+        if (!kq.ok) { hienLoi(kq.d.loi || "dang nhap that bai"); return; }
+        if (window.VL && window.VL.dangNhapXong) { window.VL.dangNhapXong().catch(function (err) { hienLoi(err && err.message ? err.message : String(err)); }); }
+        else { location.reload(); }
+      })
+      .catch(function (err) { hienLoi(err && err.message ? err.message : "khong ket noi duoc may chu"); });
+  });
+  // Chan doan: sau 5 giay ma main.js van chua chay (window.VL chua co)
+  // thi bao ro cho nguoi dung thay vi im lang nhu truoc.
+  setTimeout(function () {
+    if (!window.VL) hienLoi("Game chua tai duoc (main.js khong chay). Hay tai lai trang; neu van loi, bao lai de kiem tra mang/may chu.");
+  }, 5000);
+})();
+</script>
 <script type="module" src="src/game/main.js"></script>
 </body>
 </html>
+
