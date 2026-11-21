@@ -1,6 +1,6 @@
 // Ban do: anh nen + luoi di duoc (base64) + vat the (ban dung lai).
-import { taiAnh } from "../tai-tep.js";
-import { DIR } from "../dir.js";
+import { taiAnh } from "./tai-tep.js";
+import { DIR } from "./dir.js";
 export const SCALE = 0.75;
 export const CELL = 32 * SCALE;
 export function ldist(x1, y1, x2, y2) { return Math.hypot(x2 - x1, y2 - y1); }
