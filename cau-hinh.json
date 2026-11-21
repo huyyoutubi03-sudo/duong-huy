@@ -1,0 +1,33 @@
+{
+  "_ghi_chu": "Cau hinh may chu - BAN DUNG LAI. Cac gia tri khong co ghi chu _chuThich la gia tri da doc duoc tu ban goc; cac muc ghi _chuThich la gia tri mau hoac chua doc duoc, team tu bo sung. Sua xong thi tat bat lai Chay_Game.bat.",
+  "kinhNghiem": 3.5,
+  "_kinhNghiem": "he so nhan kinh nghiem quai",
+  "roiDo": { "quaiThuong": 0.01, "trum": 0.2 },
+  "_roiDo": "ti le roi 1 mon moi con (truoc may man)",
+  "noiCong": { "phanTram": 0.2 },
+  "_noiCong": "chieu noi cong (khong IsPhysical) x (1 + Noi cong x phanTram %)",
+  "luyenKyNang": { "moiDon": 4.7, "chuan": 1297106, "dao": 1.25, "donToiDa": 150, "ty120": 1440, "heSoChieu": { "321": 1, "323": 2, "337": 1.2, "339": 1.1, "353": 1.7 } },
+  "quaiVoCong": { "_chuThich": "ban goc co 13 muc, chua doc duoc noi dung - can bo sung" },
+  "daTau": { "_chuThich": "ban goc co 18 muc, chua doc duoc noi dung - can bo sung" },
+  "quaiChung": { "_chuThich": "ban goc co 6 muc, chua doc duoc noi dung - can bo sung" },
+  "tangIchDoi": { "_chuThich": "ban goc co 4 muc, chua doc duoc noi dung - can bo sung" },
+  "phanThan": { "_chuThich": "ban goc co 10 muc, chua doc duoc noi dung - can bo sung" },
+  "thuongCap": { "_chuThich": "ban goc co 2 muc, chua doc duoc noi dung - can bo sung" },
+  "tanThu": { "_chuThich": "ban goc co 5 muc, chua doc duoc noi dung - can bo sung" },
+  "thuongOnline": { "_chuThich": "ban goc co 2 muc, chua doc duoc noi dung - can bo sung" },
+  "phucDuyen": { "_chuThich": "ban goc co 7 muc, chua doc duoc noi dung - can bo sung" },
+  "loaiDo": { "_chuThich": "ban goc co 10 muc loai do, chua doc duoc noi dung - can bo sung" },
+  "banDo": {
+    "_chuThich": "He so theo map (ban goc dat trong cau-hinh.json). Chi liet ke cac muc da doc duoc; ban day du co hang tram map - can bo sung tu assets/data/maplist.json.",
+    "226": { "_ten": "Sa Mac 2 100-110", "mau": 1, "satThuong": 1, "kinhNghiem": 1.77, "tien": 1.63 },
+    "227": { "_ten": "Sa Mac 3 130-140", "mau": 1, "satThuong": 1, "kinhNghiem": 1.48, "tien": 1 },
+    "319": { "_ten": "Lam Du Quan 70-80", "mau": 0.25, "_chuThich": "chi doc duoc _ten va mau" },
+    "320": { "_ten": "Chan nui Truong Bach 80-90", "mau": 0.75, "satThuong": 1, "kinhNghiem": 2.85, "tien": 1.96 },
+    "321": { "_ten": "Truong Bach son Nam 140-150", "mau": 0.75, "satThuong": 1, "kinhNghiem": 2.55, "tien": 1.42 },
+    "322": { "_ten": "Truong Bach son Bac 150-160", "_chuThich": "chi doc duoc _ten" },
+    "336": { "_ten": "Phong Lang do 160-170", "mau": 0.9, "satThuong": 0.5, "kinhNghiem": 6.31, "tien": 1.32 },
+    "340": { "_ten": "Mac Cao Quat 170-180", "_chuThich": "chi doc duoc _ten" },
+    "341": { "_ten": "Mac Bac Thao Nguyen 60-70", "mau": 0.25, "satThuong": 1, "kinhNghiem": 2.3, "tien": 2.36, "chiSo": 24 },
+    "342": { "_ten": "Vi son dao 60-70", "chiSo": 24, "_chuThich": "chi doc duoc _ten va chiSo" }
+  }
+}

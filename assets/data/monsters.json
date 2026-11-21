@@ -1,0 +1,61 @@
+{
+  "_chuThich": "Du lieu mau — chi so quai do team tu dat, can doi chieu voi ban goc (mobstats.json, monsters.json).",
+  "quai": [
+    {
+      "id": "soi-lang",
+      "ten": "Sói Làng",
+      "cap": 1,
+      "mau": 50,
+      "satThuong": 5,
+      "kinhNghiem": 10,
+      "tien": 5,
+      "khangVatLy": 0,
+      "ne": 0
+    },
+    {
+      "id": "gau-rung",
+      "ten": "Gấu Rừng",
+      "cap": 5,
+      "mau": 120,
+      "satThuong": 10,
+      "kinhNghiem": 40,
+      "tien": 15,
+      "khangVatLy": 0,
+      "ne": 2
+    },
+    {
+      "id": "bo-cap",
+      "ten": "Bò Cạp Sa Mạc",
+      "cap": 10,
+      "mau": 300,
+      "satThuong": 20,
+      "kinhNghiem": 120,
+      "tien": 40,
+      "khangVatLy": 5,
+      "ne": 5
+    },
+    {
+      "id": "ho-trang",
+      "ten": "Hổ Trắng",
+      "cap": 20,
+      "mau": 800,
+      "satThuong": 40,
+      "kinhNghiem": 400,
+      "tien": 120,
+      "khangVatLy": 10,
+      "ne": 8
+    },
+    {
+      "id": "boss-hk",
+      "ten": "Boss Hoàng Kim",
+      "cap": 50,
+      "mau": 10000,
+      "satThuong": 150,
+      "kinhNghiem": 5000,
+      "tien": 2000,
+      "khangVatLy": 20,
+      "ne": 10,
+      "trum": true
+    }
+  ]
+}

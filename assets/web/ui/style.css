@@ -1,0 +1,27 @@
+/* Giao dien Vo Lam Idle - ban dung lai. */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; background: #0a0a12; color: #e8dcc0; font-family: "Segoe UI", sans-serif; }
+#app { width: 100%; height: 100%; overflow: hidden; }
+.man-hinh { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; }
+.man-hinh[hidden] { display: none; }
+h1 { color: #ffd36b; letter-spacing: 4px; margin: 0; }
+.phu-de { color: #9a8f78; }
+form { display: flex; flex-direction: column; gap: 8px; }
+input, select, button { padding: 10px 14px; font-size: 15px; border-radius: 6px; border: 1px solid #5a4a2a; background: #1a1626; color: #e8dcc0; }
+button { background: #7a5c1e; color: #fff3cf; cursor: pointer; }
+button:hover { background: #96711f; }
+.loi { color: #ff6b6b; min-height: 1.2em; }
+.goi-y { color: #8a8f9a; font-size: 13px; max-width: 420px; text-align: center; }
+#man-hinh-game { position: relative; width: 100%; height: 100%; }
+#game { display: block; width: 100%; height: 100%; background: #101018; }
+#hud { position: absolute; top: 10px; left: 10px; background: rgba(10, 10, 20, 0.75); padding: 10px 14px; border: 1px solid #5a4a2a; border-radius: 8px; min-width: 260px; }
+#hud-ten { font-weight: bold; color: #ffd36b; margin-bottom: 6px; }
+.thanh { height: 12px; background: #222; border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
+.thanh > div { height: 100%; width: 100%; }
+.mau { background: #c0392b; }
+.mana { background: #2471a3; }
+#thanh-ky-nang { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+#thanh-ky-nang button { width: 48px; height: 48px; padding: 0; font-size: 18px; }
+#chat { position: absolute; bottom: 12px; left: 12px; width: 320px; background: rgba(10, 10, 20, 0.75); border: 1px solid #5a4a2a; border-radius: 8px; padding: 8px; }
+#chat-noi-dung { height: 110px; overflow-y: auto; font-size: 13px; margin-bottom: 6px; }
+#chat-nhap { width: 100%; }

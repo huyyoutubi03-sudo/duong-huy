@@ -1,0 +1,33 @@
+{
+  "_chuThich": "Du lieu mau — thuoc do team tu dat, can doi chieu voi ban goc (thuoc.json).",
+  "thuoc": [
+    {
+      "id": "thuoc-mau-nho",
+      "ten": "Thuốc Hồi Máu Nhỏ",
+      "hoiMau": 100,
+      "hoiMana": 0,
+      "gia": 20
+    },
+    {
+      "id": "thuoc-mau-lon",
+      "ten": "Thuốc Hồi Máu Lớn",
+      "hoiMau": 500,
+      "hoiMana": 0,
+      "gia": 80
+    },
+    {
+      "id": "thuoc-mana-nho",
+      "ten": "Thuốc Hồi Mana Nhỏ",
+      "hoiMau": 0,
+      "hoiMana": 100,
+      "gia": 20
+    },
+    {
+      "id": "thuoc-mana-lon",
+      "ten": "Thuốc Hồi Mana Lớn",
+      "hoiMau": 0,
+      "hoiMana": 500,
+      "gia": 80
+    }
+  ]
+}
