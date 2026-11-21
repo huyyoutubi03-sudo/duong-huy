@@ -69,11 +69,14 @@
   });
   // Chan doan: sau 5 giay ma main.js van chua chay (window.VL chua co)
   // thi bao ro cho nguoi dung thay vi im lang nhu truoc.
+  // Neu import module loi, hien loi that (window.__loiTaiModule) thay vi thong bao chung.
   setTimeout(function () {
-    if (!window.VL) hienLoi("Game chua tai duoc (main.js khong chay). Hay tai lai trang; neu van loi, bao lai de kiem tra mang/may chu.");
+    if (!window.VL) hienLoi(window.__loiTaiModule || "Game chua tai duoc (main.js khong chay). Hay tai lai trang; neu van loi, bao lai de kiem tra mang/may chu.");
   }, 5000);
 })();
 </script>
-<script type="module" src="src/game/main.js"></script>
+<script type="module">
+import("./src/game/main.js").catch(function (err) { var m = err && err.message ? err.message : String(err); window.__loiTaiModule = m; var loi = document.getElementById("dn-loi"); if (loi) loi.textContent = m; });
+</script>
 </body>
 </html>
