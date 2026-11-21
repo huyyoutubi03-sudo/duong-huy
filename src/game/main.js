@@ -36,12 +36,17 @@ async function taiDanhSachNv() {
   });
   if (!list.length) ds.textContent = "Chua co nhan vat — hay tao mot nhan vat.";
 }
+// Chi gan handler o day khi script du phong trong game.html chua gan
+// (co window.__dnDaGan) — tranh goi dang nhap 2 lan cho 1 lan bam.
+if (!window.__dnDaGan) {
+  window.__dnDaGan = true;
 $("form-dang-nhap").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  hienLoi("");
-  try { await net.dangNhap($("dn-ten").value.trim(), $("dn-mk").value); await taiDanhSachNv(); hienManHinh("man-hinh-nhan-vat"); }
-  catch (err) { hienLoi(err.message); }
-});
+    e.preventDefault();
+    hienLoi("");
+    try { await net.dangNhap($("dn-ten").value.trim(), $("dn-mk").value); await taiDanhSachNv(); hienManHinh("man-hinh-nhan-vat"); }
+    catch (err) { hienLoi(err.message); }
+  });
+}
 $("form-tao-nv").addEventListener("submit", async (e) => {
   e.preventDefault();
   try { await net.taoNv($("tn-ten").value.trim(), $("tn-phai").value, soNv); await taiDanhSachNv(); }
