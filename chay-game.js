@@ -20,7 +20,7 @@ function phatTep(req, res, p) {
   const file = path.join(ROOT, p);
   fs.stat(file, (err, st) => {
     if (err || !st.isFile()) { res.writeHead(404); return res.end("404"); }
-    res.writeHead(200, { "Content-Type": MIME[path.extname(file).toLowerCase()] || "application/octet-stream", "Content-Length": st.size, "X-Frame-Options": "SAMEORIGIN", "Cache-Control": "public, max-age=86400" });
+    res.writeHead(200, { "Content-Type": MIME[path.extname(file).toLowerCase()] || "application/octet-stream", "Content-Length": st.size, "X-Frame-Options": "SAMEORIGIN", "Cache-Control": "no-cache" });
     fs.createReadStream(file).on("error", () => tra500(res)).pipe(res);
   });
 }
