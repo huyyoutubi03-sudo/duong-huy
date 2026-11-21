@@ -1,4 +1,4 @@
-// Duong Huy - BAN DUNG LAI (code goc, viet lai tu kien truc da phan tich).
+// Mot Thoi Ky Niem - BAN DUNG LAI (code goc, viet lai tu kien truc da phan tich).
 // May chu Node.js thuan (khong dung thu vien ngoai). Cong mac dinh 8101, --lan de mo LAN.
 "use strict";
 const http = require("http");
@@ -51,7 +51,8 @@ server.on("error", (e) => {
   throw e;
 });
 server.listen(PORT, HOST, () => {
-console.log("Duong Huy");
+console.log("Mot Thoi Ky Niem");
   console.log("Mo trinh duyet: http://" + (LAN ? "IP-may-nay" : "127.0.0.1") + ":" + PORT);
   console.log("Giu cua so nay trong luc choi. Dong cua so = tat may chu.");
 });
+
