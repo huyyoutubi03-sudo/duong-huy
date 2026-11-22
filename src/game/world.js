@@ -73,6 +73,43 @@ const NHIM_GAN = 700;                 // nhím Săn Nhím Béo Phì (sannhim.js)
 const BTG_GAN = 900;                  // boss thế giới cách mình ≤ chừng này = đang đánh boss (Trợ Thủ: nhắm trước, không tự về thành — bossGan)
 const CLICK_FX = 0.45;                // vòng sóng chỗ bấm đất sống 0,45 giây (World.draw)
 const HIDE_ALPHA = 0.4;               // ẩn thân: nhân vật mình vẽ mờ 40 %
+// Hiệu ứng cảnh "đẹp như bản gốc" — thử map 53 Ba Lăng trước (Huy duyệt 22/11/2026: xem bằng mắt rồi mới quyết làm hết).
+// Công tắc: settings.mapDep === false thì tắt hết (mặc định bật; không cần sửa main.js). Chỉ áp cho map có tên trong bảng;
+// sương = độ đậm lớp 1 (lớp 2 mờ hơn, trôi ngược chiều), bong = bóng mềm dưới chân, bui = bụi dưới chân lúc chạy.
+const MAP_DEP = { 53: { suong: 0.09, bong: true, bui: true } };
+const depCua = (w) => (w.P.settings.mapDep !== false ? MAP_DEP[String(w.map.key)] || null : null);
+// 3 tấm vẽ sẵn 1 lần, dùng lại mọi khung (không tạo object mới mỗi khung): sương 512×256, bóng 64×32, bụi 32×32
+let SUONG_C = null, BONG_C = null, BUI_C = null;
+function suongVe() {
+  if (SUONG_C) return SUONG_C;
+  const c = document.createElement("canvas"); c.width = 512; c.height = 256;
+  const g = c.getContext("2d");
+  for (const [x, y, r] of [[90, 150, 130], [260, 90, 150], [420, 170, 120], [180, 210, 100], [360, 60, 90]]) {
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, "rgba(255,255,255,0.55)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+  }
+  SUONG_C = c; return c;
+}
+function bongVe() {
+  if (BONG_C) return BONG_C;
+  const c = document.createElement("canvas"); c.width = 64; c.height = 32;
+  const g = c.getContext("2d");
+  g.translate(32, 16); g.scale(1, 0.5);
+  const gr = g.createRadialGradient(0, 0, 2, 0, 0, 30);
+  gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+  g.fillStyle = gr; g.beginPath(); g.arc(0, 0, 30, 0, Math.PI * 2); g.fill();
+  BONG_C = c; return c;
+}
+function buiVe() {
+  if (BUI_C) return BUI_C;
+  const c = document.createElement("canvas"); c.width = 32; c.height = 32;
+  const g = c.getContext("2d");
+  const gr = g.createRadialGradient(16, 16, 1, 16, 16, 15);
+  gr.addColorStop(0, "rgba(255,255,255,0.8)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = gr; g.beginPath(); g.arc(16, 16, 15, 0, Math.PI * 2); g.fill();
+  BUI_C = c; return c;
+}
 // ẩn thân báo cho người khác (anh 12/11 "tàng hình ng khác vẫn thấy, vào tống kim k có tác dụng"): mã giả trong danh sách bùa lợi gửi kèm nhịp (buaPhat — máy chủ
 // lọc bl 1…99999, không cần sửa máy chủ); máy người khác thấy mã này thì không vẽ / không chọn được người đó (đồng đội thấy mờ), Tống Kim: bản chọn mục tiêu
 // coi như vắng (tongkim.js dongBo)
@@ -324,6 +361,7 @@ export class World {
     const [x, y] = opt.at || map.randomSpot(rand) || [map.w / 2, map.h / 2], k = opt.hp ?? 1;
     this.shots = [];
     this.drops = [];
+    this._bui = []; this._buiD = 0; this._buiX = 0; this._buiY = 0; // bụi dưới chân (MAP_DEP): hạt đang bay + quãng đường đã chạy
     this.player = { kind: "hero", x, y, dir: 0, act: "stand", t: 0, look, ...st, ...this.weaponAtk(), atkDur: atkDurOf(st), hp: Math.max(1, Math.round(st.hpMax * k)), mp: Math.round(st.mpMax * (opt.mp ?? k)), st: st.stMax, target: null, path: null, goal: null, atkT: 0, hitDone: false, deadT: 0,
       cd: {}, buffs: opt.buffs || new Map(), once: null };
     // còn sống như quái (m.alive): đạn bám mục tiêu của quái có võ công nhắm người chơi (vocong.js misStep)
@@ -725,6 +763,18 @@ export class World {
     _nhipGio(this.P, performance.now()); // bẫy bản nhái (đầu file): tên miền nhà -> thôi ngay
     this.time += dt;
     this.updateHero(dt);
+    // bụi dưới chân (MAP_DEP): chạy được 70 px logic thì bốc 1 cụm, tối đa 30 cụm cùng lúc
+    const dep = depCua(this);
+    if (dep && dep.bui) {
+      const p = this.player;
+      if (p.act === "run" && p.hp > 0) {
+        const dx = p.x - this._buiX, dy = (p.y - this._buiY) * 2;
+        this._buiD += Math.hypot(dx, dy); this._buiX = p.x; this._buiY = p.y;
+        if (this._buiD > 70) { this._buiD = 0; if (this._bui.length < 30) this._bui.push({ x: p.x + rnd(-8, 8), y: p.y + rnd(-2, 3), t: 0, r: rnd(6, 9) }); }
+      } else { this._buiX = p.x; this._buiY = p.y; this._buiD = 0; }
+    }
+    for (const b of this._bui) b.t += dt;
+    if (this._bui.length) this._bui = this._bui.filter((b) => b.t < 0.55);
     this.demHao();
     for (const m of this.mobs) this.updateMob(m, dt);
     for (const m of this.dongMinh) this.updateMob(m, dt);
@@ -1676,6 +1726,18 @@ export class World {
     // sau nó (vật che lên họ), còn lại vẽ sau cùng. Tên + thanh máu vẽ sau hết để nhà / cây không che mất (như client).
     // hình trạng thái của võ công (bùa, vòng sáng, bùa hại): dưới chân + khung "sau lưng" của hình trên thân vẽ trước thân, còn lại sau thân
     const vc = !!this.P.vc, body = (e) => {
+      // bóng mềm dưới chân (MAP_DEP): người chơi / người khác luôn vẽ (động tác đứng của sprite không có bóng sẵn);
+      // quái / NPC chỉ vẽ khi cài đặt Bóng quái đang tắt và hình đó không có bóng sẵn — tránh chồng 2 bóng.
+      const depB = depCua(this);
+      if (depB && depB.bong && e.act !== "jump") {
+        const coBongSan = (e.kind === "mob" || (e.kind === "npc" && !e.obj)) && ((this.P.npc.type(e.type) || {}).shadow || this.P.settings.mobShadow);
+        if (!coBongSan) {
+          const r = e.radius || 26, S = bongVe();
+          ctx.globalAlpha = 0.55;
+          ctx.drawImage(S, e.x - r, e.y - r * 0.45, r * 2, r * 0.9);
+          ctx.globalAlpha = 1;
+        }
+      }
       if (vc && (e.kind === "hero" || e.kind === "mob" || e.kind === "other")) this.vcDrawStates(ctx, e, true); // other: vòng sáng người khác đang bật (e.vs)
       if (e.kind === "hero" || e.kind === "other" || (e.tkb && !e.tkq)) this.drawHeroBody(ctx, e); else if (e.kind === "npc") this.drawNpcBody(ctx, e); else this.drawMobBody(ctx, e); // bot Tống Kim: vẽ như người; quân NPC (tkq): như quái
       if (vc && (e.kind === "hero" || e.kind === "mob" || e.kind === "other")) this.vcDrawStates(ctx, e, false);
@@ -1696,6 +1758,16 @@ export class World {
     if (this.veThem) this.veThem(ctx, jxText); // lớp vẽ thêm của hoạt động trên cảnh (đua ngựa — duangua.js veDem: đồng hồ đếm ngược trên 2 cổng Hậu doanh, anh 16/11)
     for (const s of this.shots) this.P.fx.drawFly(ctx, s.id, s.dx, s.dy, s.t, s.x, s.y);
     for (const f of this.fxs) this.P.fx.draw(ctx, f.id, f.t, f.e.x, f.e.y);
+    // bụi dưới chân (MAP_DEP): cụm nở to dần, bay lên nhẹ, mờ dần trong 0,55 giây
+    if (this._bui.length) {
+      const S = buiVe();
+      for (const b of this._bui) {
+        const k = b.t / 0.55, r = b.r * (1 + k * 1.6);
+        ctx.globalAlpha = 0.32 * (1 - k);
+        ctx.drawImage(S, b.x - r, b.y - r * 0.6 - k * 12, r * 2, r * 1.2);
+      }
+      ctx.globalAlpha = 1;
+    }
     // chữ
     ctx.textAlign = "center"; ctx.lineJoin = "round";
     for (const t of this.texts) {
@@ -1704,6 +1776,17 @@ export class World {
     }
     ctx.globalAlpha = 1;
     ctx.restore();
+    // sương mỏng trôi phủ trên cảnh (MAP_DEP, tọa độ màn hình): 2 lớp ngược chiều, rất mờ, tấm vẽ sẵn lát kín khung nhìn
+    const depS = depCua(this);
+    if (depS && depS.suong) {
+      const S = suongVe(), t = this.time, W = 1024, H = 512;
+      for (const [sp, a, oy] of [[14, depS.suong, 0], [-8, depS.suong * 0.6, 256]]) {
+        ctx.globalAlpha = a;
+        const ox = -(((t * sp) % W + W) % W);
+        for (let x = ox; x < vw; x += W) for (let y = oy - H; y < vh; y += H) ctx.drawImage(S, x, y, W, H);
+      }
+      ctx.globalAlpha = 1;
+    }
   }
 
   // công cụ thử: ô bị chặn (đỏ) trong khung nhìn + đường đi của nhân vật (xanh lá) và quái đang đuổi / về chỗ (cam)
