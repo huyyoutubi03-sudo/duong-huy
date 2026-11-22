@@ -11,7 +11,7 @@
 
 /* Nền: giữ ảnh mẫu 2 nhưng dịch khung nhìn để trăng + rồng lộ rõ, không bị
    khung che (ảnh gốc trăng ở khoảng 1/4 trái-trên). */
-#s-login { background-position: 30% 18%; }
+#s-login { background-position: 30% 18%; overflow-x: clip; }
 
 /* Tiêu đề lớn dưới con rồng: góc dưới trái như ảnh phác, chữ lửa to hơn */
 #s-login .vl-tieude { position: relative; z-index: 1; flex: 1 1 auto; min-width: 0;
@@ -38,10 +38,10 @@
 
 /* Tiêu đề khung: đưa lên TRÊN khung như ảnh phác (chữ vàng cọ, 1 dòng) */
 #s-login #lg-form { position: relative; margin-top: 56px; }
-#s-login #lg-form > h1 { display: block; position: absolute; top: -58px; left: -28px; right: -28px;
+#s-login #lg-form > h1 { display: block; position: absolute; top: -58px; left: 0; right: 0;
   margin: 0; text-align: center; white-space: nowrap;
   font-family: "Palatino Linotype", "Book Antiqua", "Noto Serif", "Times New Roman", serif;
-  font-size: clamp(30px, 3.1vw, 44px); font-weight: 900; font-style: italic; letter-spacing: .02em;
+  font-size: clamp(26px, 2.7vw, 38px); font-weight: 900; font-style: italic; letter-spacing: .02em;
   background: linear-gradient(180deg, #fff3c4 0%, #f0c75e 55%, #b8860b 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .8)) drop-shadow(0 0 14px rgba(255, 200, 90, .35)); }
