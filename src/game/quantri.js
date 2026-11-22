@@ -96,7 +96,7 @@ export class QuanTri {
     this.nk = { ngay: "", loai: "", tk: "", q: "", ds: null, ngays: [], tong: 0, tu: 1 }; // tu: tự cập nhật (ngày mới nhất)
     this.tb = null;                       // thông báo đã gửi hôm nay
     this.maDs = null; this.maMo = new Set(); // thẻ Mã quà: danh sách mã (máy chủ) + mã đang mở danh sách người đã dùng
-    this.maForm = { o: -1, mon: [], tien: 0, xu: 0, loi: "", tim: "", kq: [] }; // quà của mã đang tạo (dùng chỗ this.qua khi ở thẻ Mã quà)
+    this.maForm = { o: -1, mon: [], tien: 0, xu: 0, exp: 0, loi: "", tim: "", kq: [] }; // quà của mã đang tạo (dùng chỗ this.qua khi ở thẻ Mã quà)
     this.maSua = null;                    // mã đang sửa { ma, toiDa, daDung, het } — thẻ Mã quà dùng khung tạo mã để sửa | null
     this.taoTk = false;
     this.hen = 0; this.timHen = 0; this.henNk = 0;
@@ -431,6 +431,7 @@ export class QuanTri {
     const q = this.qua;
     return `<div class="r"><span class="k">Ngân lượng</span><input data-in="qTien" type="number" min="0" value="${q.tien || ""}" placeholder="0" style="width:120px"><span class="dv-note qt-qtien">${q.tien ? fmtMoney(q.tien) : ""}</span></div>
       <div class="r"><span class="k">Xu</span><input data-in="qXu" type="number" min="0" value="${q.xu || ""}" placeholder="0" style="width:120px"></div>
+      <div class="r"><span class="k">Kinh nghiệm</span><input data-in="qExp" type="number" min="0" value="${q.exp || ""}" placeholder="0 (chỉ mã kích hoạt)" style="width:120px"></div>
       <div class="r"><span class="k">Vật phẩm</span><input data-in="qTim" placeholder="gõ tên món — không dấu cũng được" value="${esc(q.tim || "")}" style="flex:1" autocomplete="off"></div>
       <div class="dv-list qt-kq">${this.veKq()}</div>
       <div class="qt-chon">${this.veChon()}</div>
@@ -460,7 +461,7 @@ export class QuanTri {
     return [["giu", `Giữ nguyên (${S.het ? `${con ? "đến" : "đã hết"} ${luc(S.het)}` : "không hạn"})`],
       ...MA_HAN.filter(([v]) => v).map(([v]) => [v, `${con ? "Thêm" : "Dùng được"} ${v} ngày, đến ${luc(goc + v * 864e5)}`]), [0, "Không hạn"]];
   }
-  boSua() { this.maSua = null; this.maForm = { o: -1, mon: [], tien: 0, xu: 0, loi: "", tim: "", kq: [] }; this.render(); }
+  boSua() { this.maSua = null; this.maForm = { o: -1, mon: [], tien: 0, xu: 0, exp: 0, loi: "", tim: "", kq: [] }; this.render(); }
   veMa() {
     const box = this.el && this.el.querySelector(".qt-ma-ds"), L = this.maDs;
     if (!box) return;
@@ -637,6 +638,7 @@ export class QuanTri {
     const q = this.qua; if (!q) return;
     if (k === "qTien") { q.tien = Math.max(0, Math.floor(+v || 0)); const n = this.el.querySelector(".qt-qtien"); if (n) n.textContent = q.tien ? fmtMoney(q.tien) : ""; }
     else if (k === "qXu") q.xu = Math.max(0, Math.floor(+v || 0));
+    else if (k === "qExp") q.exp = Math.max(0, Math.floor(+v || 0));
     else if (k === "qLoi") q.loi = v;
     else if (k === "qTim") { q.tim = v.trim(); this.timMon(); }
     else if (k === "qSo" || k === "qDong" || k === "qHe") {
@@ -835,7 +837,7 @@ export class QuanTri {
       case "xemDo": { const o = t.dataset.o | 0; if (this.xemDo.has(o)) this.xemDo.delete(o); else this.xemDo.add(o); return this.veCt(); }
       // nút bỏ chọn (blur): Esc tới game -> đóng khung soi đồ (nằm trên bảng) thay vì đóng bảng (keydown của bảng)
       case "soiDo": { const j = ct && (await this.goi("soi", { ten: ct.ten, o: t.dataset.o | 0 })); if (j) { t.blur(); api.soiDo(j.nv); } return; }
-      case "moQua": { const o = t.dataset.o | 0; this.qua = this.qua && this.qua.o === o ? null : { o, mon: [], tien: 0, xu: 0, loi: "", tim: "", kq: [] }; return this.veCt(); }
+      case "moQua": { const o = t.dataset.o | 0; this.qua = this.qua && this.qua.o === o ? null : { o, mon: [], tien: 0, xu: 0, exp: 0, loi: "", tim: "", kq: [] }; return this.veCt(); }
       case "dongQua": this.qua = null; return this.veCt();
       case "themMon": {
         const q = this.qua, m = q && (q.kq || []).find((x) => x.k === t.dataset.k);
@@ -861,15 +863,15 @@ export class QuanTri {
       case "taoMa": {
         const q = this.maForm, ma = this.val("maTen"), toiDa = Math.max(0, Math.floor(+this.val("maLuot") || 0)), ngay = +this.val("maNgay") || 0;
         const ds = [...q.mon.map((m) => `${m.so} ${m.n}${m.loai === "do" ? ` (${m.dong ? `${m.dong} dòng` : "trắng"}${m.he >= 0 ? `, ${HE[m.he]}` : ""})` : ""}`),
-          ...(q.tien ? [fmtMoney(q.tien)] : []), ...(q.xu ? [`${so(q.xu)} Xu`] : [])];
+          ...(q.tien ? [fmtMoney(q.tien)] : []), ...(q.xu ? [`${so(q.xu)} Xu`] : []), ...(q.exp ? [`${so(q.exp)} kinh nghiệm`] : [])];
         if (!ds.length) return this.bao("Chưa chọn quà cho mã", true);
         const han = (MA_HAN.find(([v]) => v === ngay) || [0, "không hạn"])[1].toLowerCase();
         // luôn ghi trạng thái khóa (soát 11/11: bảng có 2 ô "Khóa vĩnh viễn" — tích nhầm ô của Gửi thẳng thì khung xác nhận cho thấy ngay)
         if (!(await api.hoi(`Tạo mã kích hoạt <color=yellow>${ma ? rt(ma.toUpperCase()) : "(tự sinh)"}<color>${q.maKhoa ? " — <color=yellow>món khóa vĩnh viễn<color>" : " — món không khóa"}:<enter>${ds.map(rt).join(", ")}<enter>${toiDa ? `${toiDa} lượt` : "Không giới hạn lượt"} · ${rt(han)}`, "Tạo mã", "Hủy bỏ"))) return;
-        const j = await this.goi("ma-qua", { viec: "tao", ma, toiDa, ngay, tien: q.tien, xu: q.xu, loi: q.loi, ...(q.maKhoa ? { khoa: 1 } : {}), mon: q.mon.map((m) => ({ k: m.k, n: m.so, ...(m.loai === "do" ? { dong: m.dong, he: m.he } : {}) })) });
+        const j = await this.goi("ma-qua", { viec: "tao", ma, toiDa, ngay, tien: q.tien, xu: q.xu, exp: q.exp, loi: q.loi, ...(q.maKhoa ? { khoa: 1 } : {}), mon: q.mon.map((m) => ({ k: m.k, n: m.so, ...(m.loai === "do" ? { dong: m.dong, he: m.he } : {}) })) });
         if (!j) return;
         this.bao(`${j.msg} — đưa mã này cho người chơi nhập ở Lễ quan`); api.msg(`Quản trị: ${j.msg}`);
-        this.maForm = { o: -1, mon: [], tien: 0, xu: 0, loi: "", tim: "", kq: [] };
+        this.maForm = { o: -1, mon: [], tien: 0, xu: 0, exp: 0, loi: "", tim: "", kq: [] };
         return this.render();
       }
       // quà toàn máy chủ (anh 04/11): dùng các dòng chọn quà của thẻ (this.maForm) — vào thẳng nhân vật (may-chu/quan-tri.js quaTat)
@@ -882,7 +884,7 @@ export class QuanTri {
         const j = await this.goi("qua-tat", { ai, tien: q.tien, xu: q.xu, loi: q.loi, ...(cao ? { cao: 1 } : {}), ...(khoa ? { khoa: 1 } : {}), mon: q.mon.map((m) => ({ k: m.k, n: m.so, ...(m.loai === "do" ? { dong: m.dong, he: m.he } : {}) })) });
         if (!j) return;
         this.bao(`${j.msg}: ${j.ds.join(", ")}`); api.msg(`Quản trị: ${j.msg}`);
-        this.maForm = { o: -1, mon: [], tien: 0, xu: 0, loi: "", tim: "", kq: [] };
+        this.maForm = { o: -1, mon: [], tien: 0, xu: 0, exp: 0, loi: "", tim: "", kq: [] };
         return this.render();
       }
       // đổi giới tính (anh 14/11 — may-chu/quan-tri.js doiGioi): máy chủ kiểm trước (xem: phái chỉ nhận 1 giới, hệ không phái nào nhận, hành trang thiếu chỗ cất đồ chỉ
@@ -928,7 +930,7 @@ export class QuanTri {
         const j = await this.goi("ma-qua", { viec: "lay", ma: t.dataset.ma });
         if (!j) return;
         this.maSua = { ma: j.ma, toiDa: j.toiDa, daDung: j.daDung, het: j.het };
-        this.maForm = { o: -1, mon: j.mon, tien: j.tien, xu: j.xu, loi: j.loi, tim: "", kq: [], maKhoa: !!j.khoa };
+        this.maForm = { o: -1, mon: j.mon, tien: j.tien, xu: j.xu, exp: j.exp || 0, loi: j.loi, tim: "", kq: [], maKhoa: !!j.khoa };
         this.render();
         const b = this.el.querySelector(".dv-body"); if (b) b.scrollTop = 0;
         return this.bao(`Đang sửa mã ${j.ma} ở đầu thẻ`);
@@ -938,11 +940,11 @@ export class QuanTri {
         const S = this.maSua, q = this.maForm; if (!S) return;
         const toiDa = Math.max(0, Math.floor(+this.val("maLuot") || 0)), v = this.val("maNgay"), ngay = v === "giu" ? "giu" : +v || 0;
         const ds = [...q.mon.map((m) => `${m.so} ${m.n}${m.loai === "do" ? ` (${m.dong ? `${m.dong} dòng` : "trắng"}${m.he >= 0 ? `, ${HE[m.he]}` : ""})` : ""}`),
-          ...(q.tien ? [fmtMoney(q.tien)] : []), ...(q.xu ? [`${so(q.xu)} Xu`] : [])];
+          ...(q.tien ? [fmtMoney(q.tien)] : []), ...(q.xu ? [`${so(q.xu)} Xu`] : []), ...(q.exp ? [`${so(q.exp)} kinh nghiệm`] : [])];
         if (!ds.length) return this.bao("Chưa chọn quà cho mã", true);
         const han = (this.hanSua(S).find(([x]) => String(x) === v) || [0, ""])[1];
         if (!(await api.hoi(`Lưu thay đổi mã <color=yellow>${rt(S.ma)}<color>${q.maKhoa ? " — <color=yellow>món khóa vĩnh viễn<color>" : " — món không khóa"}:<enter>${ds.map(rt).join(", ")}<enter>${toiDa ? `${toiDa} lượt` : "Không giới hạn lượt"} · ${rt(han)}`, "Lưu", "Hủy bỏ"))) return;
-        const j = await this.goi("ma-qua", { viec: "sua", ma: S.ma, toiDa, ngay, tien: q.tien, xu: q.xu, loi: q.loi, khoa: q.maKhoa ? 1 : 0, mon: q.mon.map((m) => ({ k: m.k, n: m.so, ...(m.loai === "do" ? { dong: m.dong, he: m.he } : {}) })) });
+        const j = await this.goi("ma-qua", { viec: "sua", ma: S.ma, toiDa, ngay, tien: q.tien, xu: q.xu, exp: q.exp, loi: q.loi, khoa: q.maKhoa ? 1 : 0, mon: q.mon.map((m) => ({ k: m.k, n: m.so, ...(m.loai === "do" ? { dong: m.dong, he: m.he } : {}) })) });
         if (!j) return;
         this.bao(j.msg); api.msg(`Quản trị: ${j.msg}`);
         return this.boSua();

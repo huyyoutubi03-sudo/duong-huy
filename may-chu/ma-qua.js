@@ -1,8 +1,9 @@
 // Mã kích hoạt (anh 29/10: "thêm vào Lễ Quan chức năng đổi mã kích hoạt, dùng để kích hoạt các mã code mà game cho, nhận quà tương ứng").
-// Quản trị tạo mã ở bảng quản trị (F10 — thẻ Mã quà, src/game/quantri.js): quà như Gửi quà (ngân lượng, Xu, vật phẩm — do.js taoQua), số lần
+// Quản trị tạo mã ở bảng quản trị (F10 — thẻ Mã quà, src/game/quantri.js): quà như Gửi quà (ngân lượng, Xu, vật phẩm — do.js taoQua) + kinh nghiệm
+// (Huy 22/11/2026: nhập mã nhận exp, lên cấp theo đúng luật chung lenCap, trần 200), số lần
 // dùng tối đa của cả máy chủ (0 = không giới hạn), hạn dùng, lời nhắn. Mỗi tài khoản dùng 1 mã 1 lần (nhân vật nào nhận cũng được). Người chơi
 // nhập ở Lễ quan Ba Lăng (main.js — khung nhập chữ của client 输入字串界面2.ini) -> POST /api/ma-qua { o, ma } (api.js).
-// du-lieu/ma-qua.json = { ma: { MÃ: { qua: { tien, xu, mon: [{ k, n, dong?, he? }] }, loi, toiDa, het (ms, 0 = không hạn), tat, tao: { boi, luc },
+// du-lieu/ma-qua.json = { ma: { MÃ: { qua: { tien, xu, exp, mon: [{ k, n, dong?, he? }] }, loi, toiDa, het (ms, 0 = không hạn), tat, tao: { boi, luc },
 //   dung: [{ tk, nv, luc }] } } } — sao lưu hằng ngày cùng tài khoản (du-lieu.js saoLuu).
 //   nhap(tk, h, ma)  -> { ds: [quà đã nhận], loi }   ghi vào nhân vật h (nơi gọi lưu tài khoản); mã không có / tắt / hết hạn / hết lượt /
 //                       tài khoản đã dùng -> lỗi. Sai SAI_MAX lần trong SAI_MS thì chờ (chống dò mã)
@@ -52,6 +53,14 @@ function nhap(tk, h, ma0) {
   if (tt === "day") loi("Mã kích hoạt này đã hết lượt sử dụng");
   if (m.dung.some((d) => d.tk === tk.ten)) loi("Tài khoản của bạn đã dùng mã kích hoạt này rồi");
   const ds = DO.taoQua(h, m.qua); // túi không đủ chỗ -> lỗi, túi giữ nguyên
+  const e = Math.max(0, Math.floor(m.qua.exp || 0));
+  let len = 0;
+  if (e > 0) { // kinh nghiệm (Huy 22/11/2026): cộng sau khi quà vào túi xong — túi đầy thì không nhận gì, kể cả exp
+    h.exp = (h.exp || 0) + e;
+    len = DO.NOI.lenCap(h); // lên cấp theo đúng luật chung (trần 200)
+    ds.push(`${nhom(e)} điểm kinh nghiệm`);
+    if (len > 0) ds.push(`Lên ${len} cấp (cấp ${h.lvl})`);
+  }
   m.dung.push({ tk: tk.ten, nv: h.name, luc: t });
   ghi(all);
   sai.delete(tk.ten);
@@ -68,14 +77,16 @@ const truKhoa = (q) => (q.mon || []).filter(khongKhoa).map((x) => DO.tenMon({ k:
 // quà của mã: thử trên 1 nhân vật trống (món có thật, vừa 1 hành trang) -> { qua đã lọc, ds: chữ quà }
 function kiemQua(b) {
   const qua = { tien: Math.max(0, Math.floor(+b.tien || 0)), xu: Math.max(0, Math.floor(+b.xu || 0)),
+    exp: Math.min(999999999999, Math.max(0, Math.floor(+b.exp || 0))),
     mon: (Array.isArray(b.mon) ? b.mon : []).slice(0, 20).map((m) => ({ k: String(m && m.k), n: Math.max(1, m.n | 0), ...(m.dong != null ? { dong: m.dong | 0, he: m.he == null ? -1 : m.he | 0 } : {}) })),
     ...(b.khoa ? { kbh: DO.NOI.KBH_VV } : {}) };
   const ds = DO.taoQua({ bag: [], uN: 0, gold: 0, xu: 0 }, qua);
   return { qua, ds };
 }
+const nhom = (n) => String(Math.floor(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "."); // 1234567 -> 1.234.567
 function tomTat(m) {
   const q = m.qua || {}, ds = (q.mon || []).map((x) => `${x.n} ${DO.tenMon({ k: x.k }).trim()}${x.dong != null ? ` (${x.dong ? x.dong + " dòng" : "trắng"})` : ""}`);
-  if (q.tien) ds.push(DO.NOI.tien(q.tien)); if (q.xu) ds.push(`${q.xu} Xu`);
+  if (q.tien) ds.push(DO.NOI.tien(q.tien)); if (q.xu) ds.push(`${q.xu} Xu`); if (q.exp) ds.push(`${nhom(q.exp)} kinh nghiệm`);
   return ds.join(", ");
 }
 const chuKhoa = (m) => (laKhoa(m) ? " · món khóa vĩnh viễn" : ""); // nhật ký quản trị
@@ -109,7 +120,7 @@ function quanTri(qt, b) {
       const r = DO.timMon(x.k, 1e9).find((y) => y.k === x.k) || { k: x.k, n: x.k, loai: x.dong != null ? "do" : "chong" }; // món không còn trong game: vẫn hiện để bỏ đi
       return { ...r, so: x.n, ...(r.loai === "do" ? { dong: x.dong == null ? 3 : x.dong, he: x.he == null ? -1 : x.he } : {}) };
     });
-    return { ma: k, tien: q.tien || 0, xu: q.xu || 0, mon, khoa: laKhoa(m) ? 1 : 0, loi: m.loi || "", toiDa: m.toiDa | 0, daDung: m.dung.length, het: m.het || 0 };
+    return { ma: k, tien: q.tien || 0, xu: q.xu || 0, exp: q.exp || 0, mon, khoa: laKhoa(m) ? 1 : 0, loi: m.loi || "", toiDa: m.toiDa | 0, daDung: m.dung.length, het: m.het || 0 };
   }
   if (b.viec === "sua") {
     // trang quản trị cũ (chưa tải lại — không gửi khoa) bấm Lưu: giữ khóa đang có, không lặng lẽ bỏ khóa
