@@ -1606,6 +1606,19 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
       h.gold -= gia; h.xu = (h.xu | 0) + n;
       return { msg: `Đổi ${tien(gia)} lấy ${n} Xu` };
     }
+    case "banXu": { // Tiền trang thu lại Xu (cấu hình tienTrang luongBanXu / banXuNgay — anh 14/11; đếm theo tài khoản, ngày giờ Việt Nam)
+      const toiDa = Math.max(0, TT.banXuNgay | 0), gia = TT.luongBanXu | 0;
+      if (!(gia > 0)) loi("Tiền trang hiện không thu lại Xu");
+      const d = ngayVN(Date.now()), dem = tk && tk.banXu && tk.banXu.d === d ? tk.banXu.n | 0 : 0, con = Math.max(0, toiDa - dem);
+      if (b.hoi) return { banXu: con }; // chỉ hỏi còn bán được bao nhiêu hôm nay (api.js trả banXu)
+      const n = Math.floor(+b.n || 0);
+      if (n < 1) loi("Số Xu không hợp lệ");
+      if (n > con) loi(`Hôm nay chỉ còn bán được ${con} Xu — mỗi tài khoản tối đa ${toiDa} Xu mỗi ngày`);
+      if ((h.xu | 0) < n) loi("Xu không đủ");
+      h.xu = (h.xu | 0) - n; h.gold = (h.gold || 0) + n * gia;
+      if (tk) tk.banXu = { d, n: dem + n }; // ghiTk ở api.js /api/do lưu theo tài khoản
+      return { msg: `Bán ${n} Xu: +${tien(n * gia)}`, banXu: con - n };
+    }
     // ---- sửa đồ ở cửa hàng NPC (nút Sửa): b.slot = ô đang mặc, hoặc b.u = món trong túi. Câu báo theo engine (CoreShell GOI_TRADE_NPC_REPAIR)
     case "sua": {
       const o = b.slot ? (h.equip || {})[String(b.slot)] : it;

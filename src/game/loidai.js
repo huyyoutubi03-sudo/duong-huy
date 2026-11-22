@@ -1,4 +1,4 @@
-// Lôi Đài Công Bình Tử — không có trong bản chia sẻ Mot Thoi Ky Niem (chức năng làm sau Tống Kim, đã gỡ). Tệp chỉ còn vỏ để các tệp khác gọi không lỗi.
+// Lôi Đài Công Bình Tử — không có trong bản chia sẻ Chien - Vo Lam Xua (chức năng làm sau Tống Kim, đã gỡ). Tệp chỉ còn vỏ để các tệp khác gọi không lỗi.
 export const laLd = () => false;
 export const LoiDai = { api: null, autoTruoc: null, veCho: null, tuZ: null, capNhat() {}, trung() {}, thoat() {}, laTo() { return false; }, chet() {}, ganWorld() {}, thanhNguoiXem() {},
   roiNgay() {}, laTuyenThu() { return false; }, mm() { return null; }, tick() {} };

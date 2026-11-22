@@ -96,7 +96,7 @@ const bam32 = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { 
 const mienDung = () => true;
 async function boot() {
   loiChao(); // Huy: da go kiem tra an ky / ten mien ban goc
-  P.dx = "Mot Thoi Ky Niem"; // dấu riêng của bản gốc (README lượt 60): bản chép nào có chuỗi này là chép từ máy chủ của anh
+  P.dx = "Chien - Vo Lam Xua"; // dấu riêng của bản Chiến - Võ Lâm Xưa: bản chép nào có chuỗi này là chép từ máy chủ của Huy
   dangKySW(); // service worker: giữ file assets/ đã tải trong trình duyệt (src/sw.js — anh 28/10)
   // chống sao chép (anh 10/11 lượt 61 — "nchung em làm sao ngta k còn copy của anh là dc"): ĐĂNG NHẬP TRƯỚC, TẢI KHO SAU — máy chủ chỉ phát assets/
   // (hình, tiếng, bảng dữ liệu) cho người đã đăng nhập (may-chu/khoa-tai-nguyen.js); màn đăng nhập chỉ cần assets/server.json (tên máy chủ),
@@ -466,7 +466,7 @@ const SERIES_FLAVOR = [
   "Kiếm khí lôi đình, nội lực hộ thể huyền diệu, quyền pháp vô song.",
 ];
 const facAllowed = (f, sex) => !SEX_ONLY[f.key] || SEX_ONLY[f.key] === sex;
-const GAME_VER = "0.1.0";
+const GAME_VER = "2.0.0";
 
 function createScreen(server, slot) {
   const st = { sex: "m", s: 0 };
@@ -3598,9 +3598,17 @@ function chucNangFn(id, npc) {
   }
   if (id === "tienTrang") {
     const gia = (L.tienTrang || {}).luongMotXu || 5000000, max = Math.floor((hero.gold || 0) / gia), doi = (n) => () => doItem({ act: "doiXu", n });
+    const banGia = (L.tienTrang || {}).luongBanXu || 0, banNgay = (L.tienTrang || {}).banXuNgay ?? 10;
+    const ban = () => Net.doItem(hero.slot | 0, { act: "banXu", hoi: 1 }).then((j) => {
+      applyServer(j);
+      const con = Math.min(hero.xu | 0, j.banXu ?? 0);
+      if (con <= 0) { P.hud.msg(`Hôm nay ngươi đã bán hết ${banNgay} Xu rồi — mai hãy quay lại.`); return; }
+      GW.chonSo({ tieuDe: "Bán Xu", ten: `Có thể bán tối đa ${con} Xu`, toiDa: con, san: 1, thongTin: (n) => `Nhận ${fmtMoney(n * banGia)}` }).then((n) => n && doItem({ act: "banXu", n }));
+    }).catch((e) => { if (e.ma !== "het-phien" && !e.boQua) P.hud.msg(e.message); });
     const opts = [...[1, 10, 100].filter((n) => n < max).map((n) => [`Đổi ${n} Xu (${fmtMoney(n * gia)})`, doi(n)]), ...(max > 0 ? [[`Đổi hết: ${max} Xu (${fmtMoney(max * gia)})`, doi(max)],
-      ["Chọn số Xu muốn đổi", () => GW.chonSo({ tieuDe: "Đổi Xu", ten: `Có thể đổi tối đa ${max} Xu`, toiDa: max, san: 1, thongTin: (n) => `Cần ${fmtMoney(n * gia)}` }).then((n) => n && doItem({ act: "doiXu", n }))]] : []), ["Nhân tiện ghé qua thôi", null]];
-    return { text: `Bổn trang đổi <color=yellow>${fmtMoney(gia)}<color> lấy 1 Xu (tiền của Kỳ Trân Các).<enter>Trên người ngươi có ${fmtMoney(hero.gold || 0)}, ${hero.xu | 0} Xu.${max > 0 ? "" : "<enter>Ngân lượng mang theo chưa đủ đổi 1 Xu."}`, opts };
+      ["Chọn số Xu muốn đổi", () => GW.chonSo({ tieuDe: "Đổi Xu", ten: `Có thể đổi tối đa ${max} Xu`, toiDa: max, san: 1, thongTin: (n) => `Cần ${fmtMoney(n * gia)}` }).then((n) => n && doItem({ act: "doiXu", n }))]] : []),
+      ...((hero.xu | 0) > 0 && banGia > 0 ? [[`Bán Xu lấy ngân lượng (1 Xu = ${fmtMoney(banGia)})`, ban]] : []), ["Nhân tiện ghé qua thôi", null]];
+    return { text: `Bổn trang đổi <color=yellow>${fmtMoney(gia)}<color> lấy 1 Xu (tiền của Kỳ Trân Các).${banGia > 0 ? ` Thu lại Xu: 1 Xu = <color=yellow>${fmtMoney(banGia)}<color>, mỗi tài khoản tối đa ${banNgay} Xu mỗi ngày.` : ""}<enter>Trên người ngươi có ${fmtMoney(hero.gold || 0)}, ${hero.xu | 0} Xu.${max > 0 ? "" : "<enter>Ngân lượng mang theo chưa đủ đổi 1 Xu."}`, opts };
   }
   return null;
 }

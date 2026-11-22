@@ -129,7 +129,7 @@ export class GameWindows {
   // nút thanh dưới -> cửa sổ (nút Tùy chỉnh = 系统按钮 của client mở bảng hệ thống như phím Esc)
   toggle(btn) {
     if (btn === "ItemEx") { this.toggleTuMau(); return true; }
-    if (btn === "Faction") { this.api.msg("Bang hội: không có trong bản Mot Thoi Ky Niem"); return true; } // bản chia sẻ: bang hội (làm sau Tống Kim) đã gỡ // túi tử mẫu (khung "Mở rộng rương" giờ mở từ nút Mở rộng của rương)
+    if (btn === "Faction") { this.api.msg("Bang hội: không có trong bản Chien - Vo Lam Xua"); return true; } // bản chia sẻ: bang hội (làm sau Tống Kim) đã gỡ // túi tử mẫu (khung "Mở rộng rương" giờ mở từ nút Mở rộng của rương)
     const key = { Status: "status", Items: "items", Skills: "skills", Task: "task", Options: "system", Market: "market", Team: "team", Faction: "faction", ChatRoom: "chatroom", Friend: "friend" }[btn];
     if (!key) return false;
     this.W.get(key).toggle();
@@ -2805,7 +2805,7 @@ export class GameWindows {
   // nội dung bên phải MessageList — cong-cu/dung-khung-cua-hang.mjs ghép, xóa chữ vẽ sẵn của nền). Tin: assets/data/tin-cap-nhat.json (api.tin()),
   // mới nhất trên cùng; tin chưa xem (id > api.tinXem()) có chữ "Mới" đỏ; mở khung = đã xem hết (api.daXemTin() — chữ Mới còn tới lần mở sau)
   _tin() {
-    if (kyChuan() >>> 16 !== 0xdb5) voKy("cửa sổ"); // ấn ký bản gốc (an-ky.js)
+    if (kyChuan() >>> 16 !== 0x842a) voKy("cửa sổ"); // ấn ký mới "Chiến - Võ Lâm Xưa" (an-ky.js, 22/11/2026)
     const w = this.W.get("tin"); if (!w) return;
     const api = this.api, { idx, msg } = this._dsMuc(w, "TitleList", "MessageList");
     const cuon = [ganCuon(this.W, w, "TitleList", "Title_Scroll"), ganCuon(this.W, w, "MessageList", "Content_Scroll")].filter(Boolean);

@@ -1,6 +1,6 @@
-// Sự kiện Báo Đáp Ân Sư — không có trong bản chia sẻ Mot Thoi Ky Niem (chức năng làm sau Tống Kim, đã gỡ). Tệp này chỉ còn vỏ để các tệp khác gọi không lỗi.
+// Sự kiện Báo Đáp Ân Sư — không có trong bản chia sẻ Chien - Vo Lam Xua (chức năng làm sau Tống Kim, đã gỡ). Tệp này chỉ còn vỏ để các tệp khác gọi không lỗi.
 "use strict";
-const khong = () => { const e = new Error("Chức năng này không có trong bản Mot Thoi Ky Niem"); e.code = 400; throw e; };
+const khong = () => { const e = new Error("Chức năng này không có trong bản Chien - Vo Lam Xua"); e.code = 400; throw e; };
 const rong = () => null, sai = () => false, mang = () => [];
 const LUAT = { dang: false };
 module.exports = { khoa72: rong, k72Bao: rong, cf: () => ({ kyNang: { toiDa: 0 } }), dang: sai, moHb: khong, luat: () => LUAT, thuongNguon: mang, ruouDauLinh: rong,

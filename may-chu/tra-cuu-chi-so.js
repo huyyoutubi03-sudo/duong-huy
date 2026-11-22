@@ -408,7 +408,7 @@ function mucCham(C) {
       { ds: [
         "Đồ: dòng hậu tố “Thời gian làm chậm” 20 / 30 / 40% — chỉ ra ở món hệ Hỏa (mọi ô trừ ngựa).",
         "Võ công: Thanh Âm Phạn Xướng (Nga My, vòng sáng) 1/14/30% ở cấp 1 / 10 / 20.",
-        "Xuất ứ Bất Nhiễm (Võ Đang 120) xóa và miễn làm chậm trong thời gian bùa.",
+        "Xuất Trần Bất Nhiễm (Võ Đang 120) xóa và miễn làm chậm trong thời gian bùa.",
       ] },
       { p: `Ví dụ: 2 món hệ Hỏa “Thời gian làm chậm 40%” = ${vdT}%${vdR < vdT ? `, chỉ tính ${sx(Q.tglc)}%` : ""}: mỗi lần chậm còn ${sx(vdF, 1)} khung ≈ ${fx(vdF / KHUNG, 2)} giây thay vì ${fx(f0 / KHUNG, 2)} giây.` },
     ] };
@@ -428,7 +428,7 @@ function mucPhucHoi(C) {
       { ds: [
         "Y phục dòng tiền tố: “Ngày bình thường” 20, “Ổn định” 30, “Cân đối” 40.",
         "Võ công, cấp 1 / 10 / 20: Thanh Âm Phạn Xướng (Nga My) 1/10/20; Phổ Độ Chúng Sinh (Nga My) 1/5/10; Băng Cốt Tuyết Tâm (Thúy Yên) 1/7/15; Thiên Ma Giải Thể (Thiên Nhẫn) 5/25/49.",
-        "Đang bị làm chậm thì thời gian giật cũng dài gấp đôi. Đang Khinh công / lướt, hoặc có Xuất ứ Bất Nhiễm, thì không bị giật.",
+        "Đang bị làm chậm thì thời gian giật cũng dài gấp đôi. Đang Khinh công / lướt, hoặc có Xuất Trần Bất Nhiễm, thì không bị giật.",
       ] },
       { p: "Ví dụ: Y phục “Cân đối” 40 + Thanh Âm Phạn Xướng cấp 20 (+20) = 60 → mỗi lần giật chỉ đứng 0,27 giây thay vì 0,67 giây; tỉ lệ bị giật vẫn như cũ." },
     ] };
@@ -516,8 +516,8 @@ function mucChoang(C) {
       { p: `Chiêu có dòng “Làm choáng: X%” (ô xem chiêu chỉ ghi %, không ghi thời gian): mỗi đòn trúng có X% làm quái đứng im số khung ở bảng dưới (dòng không có khung thì 9 khung). Không có mốc. Quái không có giảm thời gian choáng; đang choáng mà trúng thêm thì chỉ kéo dài nếu lần mới dài hơn phần còn lại. Boss thế giới miễn choáng.${lam.length > 1 ? ` Cấp 1 / 10 / 20 (${KHUNG} khung = 1 giây):` : ""}` },
       ...(lam.length > 1 ? [{ bang: lam }] : []),
       { h: "Hoảng loạn" },
-      { p: "Ma Âm Phệ Phách (Thiên Nhẫn 120): mục tiêu đứng im, không đánh / ra chiêu trong 1 giây (cấp 1) đến 4 giây (cấp 20). <c>Không</c> giảm theo Thời gian choáng hay chỉ số nào, không bị giới hạn khống chế. Chỉ Xuất ứ Bất Nhiễm miễn." },
-      { h: "Xuất ứ Bất Nhiễm (Võ Đang 120)" },
+      { p: "Ma Âm Phệ Phách (Thiên Nhẫn 120): mục tiêu đứng im, không đánh / ra chiêu trong 1 giây (cấp 1) đến 4 giây (cấp 20). <c>Không</c> giảm theo Thời gian choáng hay chỉ số nào, không bị giới hạn khống chế. Chỉ Xuất Trần Bất Nhiễm miễn." },
+      { h: "Xuất Trần Bất Nhiễm (Võ Đang 120)" },
       { p: "Trong thời gian bùa: xóa độc, chậm, choáng, hoảng loạn, mất nội lực và không bị giật; phần bản thân còn miễn trạng thái mới, kéo dài 1 / 1,9 / 3 giây ở cấp 1 / 10 / 20 (tỉ lệ thất bại 85% / 43% / 0%)." },
     ] };
 }
