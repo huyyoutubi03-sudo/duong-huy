@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="src/game/game.css">
 <link rel="stylesheet" href="src/game/login-vo-lam.css"><!-- kiểu màn đăng nhập mới (Huy duyệt 22/11/2026) -->
 <link rel="preload" as="image" href="assets/ui/dang-nhap/login.webp"><!-- ảnh nền màn đăng nhập: tải ngay lúc mở trang, khỏi hiện trễ -->
+<link rel="preload" as="image" media="(min-width: 761px) and (min-height: 521px)" href="assets/ui/dang-nhap/man-hinh-dang-nhap.webp"><!-- ảnh phác màn đăng nhập (màn rộng): chỉ tải khi dùng kiểu nền tranh -->
 </head>
 <body>
 <canvas id="cv"></canvas>
@@ -21,8 +22,8 @@
   <form class="box login" id="lg-form">
     <h1>Võ Lâm Truyền Kỳ I</h1>
     <div class="lg-sv" id="lg-sv"></div>
-    <label>Tài khoản<input id="lg-name" name="username" autocomplete="username" maxlength="20" autocapitalize="off" spellcheck="false"></label>
-    <label>Mật khẩu<span class="lg-passwrap"><input id="lg-pass" name="password" type="password" autocomplete="current-password" maxlength="64"><button type="button" class="lg-eye" id="lg-eye" aria-label="Hiện mật khẩu" title="Hiện mật khẩu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line class="lg-slash" x1="3" y1="21" x2="21" y2="3"/></svg></button></span></label>
+    <label class="lg-tk">Tài khoản<input id="lg-name" name="username" autocomplete="username" maxlength="20" autocapitalize="off" spellcheck="false"></label>
+    <label class="lg-mk">Mật khẩu<span class="lg-passwrap"><input id="lg-pass" name="password" type="password" autocomplete="current-password" maxlength="64"><button type="button" class="lg-eye" id="lg-eye" aria-label="Hiện mật khẩu" title="Hiện mật khẩu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line class="lg-slash" x1="3" y1="21" x2="21" y2="3"/></svg></button></span></label>
     <div class="lg-err" id="lg-err"></div>
     <div class="row end"><button class="main" type="submit" id="lg-ok">Đăng nhập</button></div>
     <p class="lg-note">Chưa có tài khoản? Bấm <b>Tao_Tai_Khoan.bat</b> trong thư mục game để tạo (tài khoản đầu tiên là quản trị).</p>

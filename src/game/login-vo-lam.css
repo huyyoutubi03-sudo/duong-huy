@@ -119,3 +119,44 @@
 @media (max-width: 500px) {
   #s-login .vl-tieude { padding: 6px 8px 0; }
 }
+
+/* Màn rộng: dùng ĐÚNG ảnh phác làm nền — form trong suốt đè lên khung vẽ sẵn.
+   Ảnh 2448×1024 (tỉ lệ 2.3906); form là khung hình giữ đúng tỉ lệ ảnh, ô nhập
+   và nút đặt theo % đo từ ảnh phác. Màn hẹp/thấp vẫn dùng kiểu khung code bên trên. */
+@media (min-width: 761px) and (min-height: 521px) {
+  #s-login { background: #05070c; }
+  #s-login::before { display: none; }
+  #s-login .vl-tieude, #s-login #lg-form > h1, #s-login #lg-form .lg-sv,
+  #s-login #lg-form .lg-note, #s-login #lg-form .lg-lienhe,
+  #s-login #lg-form .lg-chiase, #s-login #lg-form::before { display: none; }
+  #s-login #lg-form { position: relative; width: min(100vw, calc(100vh * 2.390625));
+    aspect-ratio: 2448 / 1024; min-width: 0; margin: 0; padding: 0;
+    border: 0; border-radius: 0; box-shadow: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    background: url("../../assets/ui/dang-nhap/man-hinh-dang-nhap.webp") 0 0 / 100% 100% no-repeat; }
+  /* Ô nhập đè đúng hộp vẽ sẵn (tọa độ % đo từ ảnh phác 2448×1024) */
+  #s-login #lg-form > label { position: absolute; margin: 0; font-size: 0; }
+  #s-login #lg-form > label.lg-tk { left: 68.2%; top: 42.2%; width: 19%; height: 7.2%; }
+  #s-login #lg-form > label.lg-mk { left: 68.2%; top: 55.7%; width: 19%; height: 7%; }
+  #s-login #lg-form input { width: 100%; height: 100%; margin: 0; padding: 0 4%;
+    background: transparent; border: 0; border-radius: 0; box-shadow: none;
+    color: #ffeec2; font-size: clamp(13px, 1.05vw, 19px); text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
+  #s-login #lg-form .lg-passwrap { position: absolute; inset: 0; margin: 0; }
+  #s-login #lg-form .lg-passwrap input { padding: 0 13% 0 4%; }
+  #s-login #lg-form input:focus { outline: none; border-radius: 6px;
+    box-shadow: inset 0 0 0 2px rgba(255, 215, 106, .6), inset 0 0 20px rgba(255, 190, 60, .22); }
+  #s-login #lg-form input:-webkit-autofill { -webkit-box-shadow: inset 0 0 0 100px rgba(20, 14, 6, .85);
+    -webkit-text-fill-color: #ffeec2; caret-color: #ffeec2; transition: background-color 9999s ease-in-out 0s; }
+  #s-login #lg-form .lg-eye { right: 2%; padding: 6px; color: #e8c268; }
+  #s-login #lg-form .lg-eye svg { width: 22px; height: 22px; }
+  /* Nút trong suốt đè đúng nút vàng vẽ sẵn */
+  #s-login #lg-form .row.end { position: absolute; left: 67.5%; top: 65.8%; width: 20.8%; height: 7.7%;
+    display: block; margin: 0; padding: 0; }
+  #s-login #lg-form button.main { width: 100%; height: 100%; margin: 0; padding: 0;
+    background: transparent; border: 0; border-radius: 0; box-shadow: none;
+    color: transparent; text-shadow: none; cursor: pointer; }
+  #s-login #lg-form button.main:focus-visible { outline: 2px solid rgba(255, 215, 106, .85); outline-offset: 2px; border-radius: 6px; }
+  /* Báo lỗi đặt trong khoảng trống giữa nút và hàng liên hệ vẽ sẵn */
+  #s-login #lg-form .lg-err { position: absolute; left: 64%; top: 74.6%; width: 28.4%; margin: 0;
+    text-align: center; color: #ff9b86; font-size: clamp(11px, .85vw, 14px); text-shadow: 0 1px 3px #000; }
+}
