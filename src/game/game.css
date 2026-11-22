@@ -189,9 +189,10 @@ html, body, button, input, select { font-family: var(--font); }
 #jxhud .jx-slot:hover { box-shadow: inset 0 0 0 1px rgba(255,230,120,.55); }
 /* 9 ô phím tắt 1–9 (thuốc — src/game/main.js quick*): icon giữa ô, số bình góc dưới phải, ngưỡng tự uống góc trên trái; hết bình: tối */
 #jxhud .jx-slot .jx-qi { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
-#jxhud .jx-slot .jx-qn, #jxhud .jx-slot .jx-qa { position: absolute; font: 13px/13px var(--jx); font-style: normal; font-weight: normal; pointer-events: none; text-shadow: 1px 0 #000, -1px 0 #000, 0 1px #000, 0 -1px #000, 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000; }
+#jxhud .jx-slot .jx-qn, #jxhud .jx-slot .jx-qa, #jxhud .jx-slot .jx-qk { position: absolute; font: 13px/13px var(--jx); font-style: normal; font-weight: normal; pointer-events: none; text-shadow: 1px 0 #000, -1px 0 #000, 0 1px #000, 0 -1px #000, 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000; }
 #jxhud .jx-slot .jx-qn { right: 2px; bottom: 1px; color: #fff; }
 #jxhud .jx-slot .jx-qa { left: 1px; top: 1px; color: rgb(255,217,78); }
+#jxhud .jx-slot .jx-qk { right: 2px; top: 1px; color: #9fd8ff; }
 #jxhud .jx-slot.empty .jx-qi { filter: grayscale(1) brightness(.55); }
 /* hồi chiêu (hud.setCooldowns): quạt tối quét theo chiều kim đồng hồ + số giây còn ở giữa */
 #jxhud .jx-slot .jx-cd { position: absolute; inset: 1px; pointer-events: none; display: flex; align-items: center; justify-content: center;

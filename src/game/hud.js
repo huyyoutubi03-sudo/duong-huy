@@ -132,7 +132,7 @@ export class Hud {
       at(XM(MM.pos), "jx-mm-pos", "", { color: rgb(MM.pos.color) }) +
       `<input class="jx-mm-input" maxlength="16" spellcheck="false" style="${css({ left: MM.pos.x - X0, top: MM.pos.y, width: MM.pos.w, height: MM.pos.h })}">` +
       Object.entries(MM.buttons).map(([k, b]) => `<div class="jx-btn jx-mmbtn" data-k="${k}" title="${esc(b.tip)}" style="${css({ left: b.x - X0, top: b.y, width: b.w, height: b.h, ...img(b, b.up) })}"></div>`).join("") +
-      `<div class="jx-auto" style="${css({ left: MM.x - X0, top: MM.y + MM.h + 1, width: MM.w })}" title="Tự đánh (phím Z)"></div>`;
+      `<div class="jx-auto" style="${css({ left: MM.x - X0, top: MM.y + MM.h + 1, width: MM.w })}" title="Tự đánh (phím Space)"></div>`;
     mm.insertAdjacentHTML("beforeend", `<div class="jx-btn jx-lpbtn" title="Đăng nhập nhận thưởng" style="${css({ left: LP.x - X0, top: LP.y, width: LP.w, height: LP.h, "background-image": `url(${BASE}btn/nhanthuong.png)`, "background-position": "0 0" })}"></div>`);
     // nút Trợ Thủ (game thêm): icon "Chủ động công kích" của thanh đồng hành client trong ô cột icon
     mm.insertAdjacentHTML("beforeend", `<div class="jx-btn jx-ttbtn" title="Trợ Thủ — bấm: mở / đóng (phím K) · chuột phải: bật / tắt tự đánh" style="${css({ left: TT.x - X0, top: TT.y, width: TT.w, height: TT.h, "background-image": `url(${BASE}btn/trothu_cot.png)`, "background-position": "0 0" })}"></div>`);
@@ -350,7 +350,8 @@ export class Hud {
     this._qSig = sig;
     this.bot.querySelectorAll(".jx-slot[data-slot]").forEach((el) => {
       const q = list[+el.dataset.slot];
-      el.innerHTML = q ? `<img class="jx-qi" src="assets/web/icon/${esc(q.ic)}" alt="" draggable="false">${q.skill ? "" : `<b class="jx-qn">${q.n}</b>`}${q.tu ? `<i class="jx-qa">${q.tu}%</i>` : ""}` : "";
+      const K = "QWEASDZXC"[+el.dataset.slot] || "";
+      el.innerHTML = (q ? `<img class="jx-qi" src="assets/web/icon/${esc(q.ic)}" alt="" draggable="false">${q.skill ? "" : `<b class="jx-qn">${q.n}</b>`}${q.tu ? `<i class="jx-qa">${q.tu}%</i>` : ""}` : "") + `<i class="jx-qk">${K}</i>`;
       el.classList.toggle("empty", !!q && !q.skill && !q.n);
       el.classList.toggle("ky", !!(q && q.skill)); // ô đang là võ công (điện thoại ngang: hình cắt tròn — game.css)
     });

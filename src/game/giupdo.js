@@ -90,7 +90,7 @@ export const MUC_GIUP = [
     "• Điện thoại: chạm bản đồ nhỏ góc phải = bản đồ lớn (bản đồ đầy đủ như Ba Lăng: kéo để xem chỗ khác); chạm chỗ nào nhân vật chạy tới đó, *✕* để đóng.",
     "• Phím số bên phải (*Num*) đi theo hướng · *M* lên / xuống ngựa · *V* ngồi thiền.",
     "## Đánh, dùng đồ",
-    "• *Space* tự đánh · *1–9* thanh dùng nhanh (thuốc, chiêu, Thổ Địa Phù) · chuột phải thuốc trong túi = uống.",
+    "• *Space* tự đánh · *1–9* thanh dùng nhanh (thuốc, chiêu, Thổ Địa Phù) · *Q W E A S D Z X C* dùng chiêu trong 9 ô đó · chuột phải thuốc trong túi = uống.",
     "• *T* (hoặc *O*) mở / đóng giao dịch · *Ctrl + chuột phải* vào người chơi: menu (Giao dịch, Tổ đội) · *F9* PK.",
     "## Hiển thị, chat",
     "• *F7* hiện tên · *F8* thanh máu · *Del* xóa chat · *Alt+0..9* nói nhanh · *Ctrl+M* tắt tiếng · *Alt+X* thoát game.",

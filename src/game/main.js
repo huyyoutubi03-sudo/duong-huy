@@ -4779,7 +4779,7 @@ const keyAct = {
   },
   focusChat: () => $("#jxhud .jx-input").focus(),
   clearChat: () => P.hud.clearChat(),
-  skill() {}, // ShortcutSkill (Q W E…): anh bỏ 25/10 — chiêu đặt vào thanh dùng nhanh 1–9
+  skill: (i) => quickUse(i, false, true), // ShortcutSkill (Q W E A S D Z X C): Huy lệnh 22/11 khôi phục như bản gốc — cùng 9 ô dùng nhanh với phím 1–9
   useItem: (i) => quickUse(i, false, true),
   phrase(i) { const t = (P.hud.M.phrases || [])[i]; if (t) P.hud.chat(P.hud.channel, hero.name, t, true); },
   // số khóa: đi 1 đoạn theo hướng (client MoveTo: 8 hướng, 0 = xuống, theo chiều kim đồng hồ như src/dir.js)
