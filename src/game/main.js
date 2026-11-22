@@ -4779,7 +4779,7 @@ const keyAct = {
   },
   focusChat: () => $("#jxhud .jx-input").focus(),
   clearChat: () => P.hud.clearChat(),
-  skill: (i) => quickUse(i, false, true), // ShortcutSkill (Q W E A S D Z X C): Huy lệnh 22/11 khôi phục như bản gốc — cùng 9 ô dùng nhanh với phím 1–9
+  skill(i) { const q = quick()[i]; if (q && q.s) return quickSkill(q.s, true); if (!q) P.hud.msg(`Ô ${i + 1} trống — kéo chiêu từ bảng Võ công (F5) vào`); return false; }, // ShortcutSkill (Q W E A S D Z X C): đúng bản gốc — phím chữ chỉ dùng chiêu, không đụng thuốc/vật phẩm (phím 1–9 giữ nguyên như cũ)
   useItem: (i) => quickUse(i, false, true),
   phrase(i) { const t = (P.hud.M.phrases || [])[i]; if (t) P.hud.chat(P.hud.channel, hero.name, t, true); },
   // số khóa: đi 1 đoạn theo hướng (client MoveTo: 8 hướng, 0 = xuống, theo chiều kim đồng hồ như src/dir.js)
