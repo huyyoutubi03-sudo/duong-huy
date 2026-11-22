@@ -76,7 +76,7 @@ const HIDE_ALPHA = 0.4;               // ẩn thân: nhân vật mình vẽ mờ
 // Hiệu ứng cảnh "đẹp như bản gốc" — thử map 53 Ba Lăng trước (Huy duyệt 22/11/2026: xem bằng mắt rồi mới quyết làm hết).
 // Công tắc: settings.mapDep === false thì tắt hết (mặc định bật; không cần sửa main.js). Chỉ áp cho map có tên trong bảng;
 // sương = độ đậm lớp 1 (lớp 2 mờ hơn, trôi ngược chiều), bong = bóng mềm dưới chân, bui = bụi dưới chân lúc chạy.
-const MAP_DEP = { c53: { suong: 0.5, bong: true, bui: true } }; // khóa = map.key (zone.map), Ba Lăng huyện zone 53 dùng bản đồ c53 — khóa 53 cũ không bao giờ khớp nên hiệu ứng không hiện
+const MAP_DEP = { c53: { bong: true, bui: true } }; // Huy 23/11: bỏ màng sương (suong) — chỉ giữ bóng + bụi; khóa = map.key (zone.map), Ba Lăng huyện zone 53 dùng bản đồ c53
 const depCua = (w) => (w.P.settings.mapDep !== false ? MAP_DEP[String(w.map.key)] || null : null);
 // 3 tấm vẽ sẵn 1 lần, dùng lại mọi khung (không tạo object mới mỗi khung): sương 512×256, bóng 64×32, bụi 32×32
 let SUONG_C = null, BONG_C = null, BUI_C = null;
