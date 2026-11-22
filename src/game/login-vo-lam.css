@@ -1,43 +1,87 @@
-/* Màn đăng nhập kiểu mới (Huy duyệt 22/11/2026 — bản phác "Bản 1 sửa 5"):
-   nền mẫu 2 (rồng + trăng), tiêu đề "Chiến - Võ Lâm Xưa" chữ lửa dưới rồng,
-   khung vàng hoa văn, tiêu đề khung "Võ Lâm Truyền Kỳ I", nút mắt ở ô mật khẩu,
-   chỗ chờ link Fanpage + QR Telegram. File riêng để không đụng game.css
-   (gói logo trong suốt đang chờ Huy quyết giữ nguyên, không động vào). */
+/* Màn đăng nhập kiểu mới (Huy duyệt 22/11/2026 — bản phác "Bản 1 sửa 5";
+   cân chỉnh lần 2 cùng ngày cho hài hòa với ảnh phác: tiêu đề khung lên trên
+   khung, khung vàng có góc trang trí + viền kép, chữ "Chiến" lửa to hơn ở
+   góc dưới trái, ô nhập + nút vàng kiểu cổ, nền giữ trăng/rồng lộ rõ.
+   File riêng để không đụng game.css (gói logo trong suốt đang chờ Huy quyết
+   giữ nguyên, không động vào). */
 
 /* Logo ảnh cũ (an-ky.js gắn .ak-logo vào màn đăng nhập): bản mới dùng chữ
    nên ẩn khỏi màn hình, nhưng giữ thẻ trong DOM cho kiểm tra chữ ký. */
 #s-login .ak-logo { display: none; }
 
-/* Tiêu đề lớn dưới con rồng (cột trái) */
+/* Nền: giữ ảnh mẫu 2 nhưng dịch khung nhìn để trăng + rồng lộ rõ, không bị
+   khung che (ảnh gốc trăng ở khoảng 1/4 trái-trên). */
+#s-login { background-position: 30% 18%; }
+
+/* Tiêu đề lớn dưới con rồng: góc dưới trái như ảnh phác, chữ lửa to hơn */
 #s-login .vl-tieude { position: relative; z-index: 1; flex: 1 1 auto; min-width: 0;
-  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center;
-  gap: 0 .18em; margin: auto 0; padding: 0 8px; text-align: center;
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-start;
+  gap: 0 .18em; margin: 0; align-self: flex-end; text-align: left;
+  padding: 0 8px 7vh 1.5vw;
   pointer-events: none; user-select: none; }
 #s-login .vl-chien { font-family: "Palatino Linotype", "Book Antiqua", "Noto Serif", "Times New Roman", serif;
-  font-size: clamp(72px, 9.5vw, 148px); font-weight: 900; font-style: italic; line-height: 1;
+  font-size: clamp(84px, 11vw, 168px); font-weight: 900; font-style: italic; line-height: .95;
   letter-spacing: -0.01em;
   background: linear-gradient(180deg, #fff7ae 0%, #ffd23e 22%, #fb8500 55%, #dc2f02 82%, #9d0208 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 0 16px rgba(255, 96, 0, .55)) drop-shadow(0 5px 12px rgba(0, 0, 0, .65));
+  filter: drop-shadow(0 0 22px rgba(255, 96, 0, .6)) drop-shadow(0 0 34px rgba(255, 110, 0, .4)) drop-shadow(0 6px 14px rgba(0, 0, 0, .7));
   animation: vl-lua 2.6s ease-in-out infinite; }
 #s-login .vl-rest { font-family: "Palatino Linotype", "Book Antiqua", "Noto Serif", "Times New Roman", serif;
-  font-size: clamp(26px, 3.4vw, 50px); font-weight: 900; font-style: italic; line-height: 1.2;
+  font-size: clamp(30px, 3.6vw, 54px); font-weight: 900; font-style: italic; line-height: 1.2;
   background: linear-gradient(180deg, #fbe9b0, #d9a441 60%, #9a6c1e);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   filter: drop-shadow(0 3px 8px rgba(0, 0, 0, .65)); }
 @keyframes vl-lua {
-  0%, 100% { filter: drop-shadow(0 0 14px rgba(255, 96, 0, .5)) drop-shadow(0 5px 12px rgba(0, 0, 0, .65)); }
-  50% { filter: drop-shadow(0 0 26px rgba(255, 120, 0, .85)) drop-shadow(0 5px 12px rgba(0, 0, 0, .65)); } }
+  0%, 100% { filter: drop-shadow(0 0 20px rgba(255, 96, 0, .55)) drop-shadow(0 0 30px rgba(255, 110, 0, .35)) drop-shadow(0 6px 14px rgba(0, 0, 0, .7)); }
+  50% { filter: drop-shadow(0 0 32px rgba(255, 120, 0, .9)) drop-shadow(0 0 44px rgba(255, 110, 0, .5)) drop-shadow(0 6px 14px rgba(0, 0, 0, .7)); } }
 @media (prefers-reduced-motion: reduce) { #s-login .vl-chien { animation: none; } }
 
-/* Tiêu đề khung: hiện h1 vốn bị ẩn, chữ vàng, căn giữa */
-#s-login #lg-form > h1 { display: block; text-align: center; font-size: 26px; letter-spacing: .04em;
-  color: var(--gold2); text-shadow: 0 2px 6px rgba(0, 0, 0, .7); margin-bottom: 16px; }
+/* Tiêu đề khung: đưa lên TRÊN khung như ảnh phác (chữ vàng cọ, 1 dòng) */
+#s-login #lg-form { position: relative; margin-top: 56px; }
+#s-login #lg-form > h1 { display: block; position: absolute; top: -58px; left: -28px; right: -28px;
+  margin: 0; text-align: center; white-space: nowrap;
+  font-family: "Palatino Linotype", "Book Antiqua", "Noto Serif", "Times New Roman", serif;
+  font-size: clamp(30px, 3.1vw, 44px); font-weight: 900; font-style: italic; letter-spacing: .02em;
+  background: linear-gradient(180deg, #fff3c4 0%, #f0c75e 55%, #b8860b 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .8)) drop-shadow(0 0 14px rgba(255, 200, 90, .35)); }
+/* Viên ngọc giữa mép trên khung */
+#s-login #lg-form::before { content: ""; position: absolute; top: -8px; left: 50%; z-index: 2;
+  width: 14px; height: 14px; transform: translateX(-50%) rotate(45deg);
+  background: linear-gradient(135deg, #f7dc8f, #c9992f);
+  box-shadow: 0 0 10px rgba(255, 200, 90, .8), 0 0 0 3px rgba(20, 14, 6, .85); }
 
-/* Khung vàng hoa văn: viền kép vàng + bóng sâu, nền tối cho chữ đọc rõ */
-#s-login .box { border: 1px solid rgba(224, 179, 90, .95); border-radius: 8px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .55), 0 0 0 3px rgba(74, 56, 24, .6), 0 18px 50px rgba(0, 0, 0, .65);
-  background: linear-gradient(180deg, rgba(26, 21, 13, .84), rgba(12, 10, 8, .9)); }
+/* Khung vàng hoa văn: viền kép + 4 góc trang trí + bóng sâu, nền tối cho chữ đọc rõ */
+#s-login .box { border: 2px solid #c9992f; border-radius: 10px;
+  background:
+    linear-gradient(#e8c268, #e8c268) left 12px top 12px / 36px 3px no-repeat,
+    linear-gradient(#e8c268, #e8c268) left 12px top 12px / 3px 36px no-repeat,
+    linear-gradient(#e8c268, #e8c268) right 12px top 12px / 36px 3px no-repeat,
+    linear-gradient(#e8c268, #e8c268) right 12px top 12px / 3px 36px no-repeat,
+    linear-gradient(#e8c268, #e8c268) left 12px bottom 12px / 36px 3px no-repeat,
+    linear-gradient(#e8c268, #e8c268) left 12px bottom 12px / 3px 36px no-repeat,
+    linear-gradient(#e8c268, #e8c268) right 12px bottom 12px / 36px 3px no-repeat,
+    linear-gradient(#e8c268, #e8c268) right 12px bottom 12px / 3px 36px no-repeat,
+    linear-gradient(180deg, rgba(28, 22, 13, .88), rgba(12, 10, 8, .92));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .55), inset 0 0 30px rgba(0, 0, 0, .45),
+    0 0 0 3px rgba(56, 42, 16, .75), 0 0 0 4px rgba(224, 179, 90, .55), 0 20px 55px rgba(0, 0, 0, .7); }
+
+/* Ô nhập kiểu cổ: viền vàng, nền tối, chữ sáng; lúc focus sáng lên */
+#s-login #lg-form label { color: #e8cf96; font-weight: 600; }
+#s-login #lg-form input { background: rgba(0, 0, 0, .5); border: 1px solid rgba(224, 179, 90, .75);
+  border-radius: 6px; color: #ffeec2; box-shadow: inset 0 2px 8px rgba(0, 0, 0, .55); }
+#s-login #lg-form input:focus { border-color: #ffd76a; outline: none; background: rgba(0, 0, 0, .42);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, .55), 0 0 0 2px rgba(255, 200, 90, .25), 0 0 14px rgba(255, 190, 60, .35); }
+
+/* Nút Đăng nhập vàng kiểu cổ */
+#s-login #lg-form button.main { background: linear-gradient(180deg, #f9e29a 0%, #e3b959 45%, #c1912f 100%);
+  color: #2a1c05; border: 1px solid #8a6420; border-radius: 6px; font-weight: 800;
+  letter-spacing: .08em; padding: 10px 26px; text-shadow: 0 1px 0 rgba(255, 255, 255, .35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .55), 0 0 18px rgba(255, 190, 60, .25); }
+#s-login #lg-form button.main:hover { filter: brightness(1.07); }
+
+/* Dòng chia sẻ dưới khung: nhỏ lại cho hài hòa */
+#s-login #lg-form .lg-chiase { text-align: center; font-size: 12px; color: var(--muted); margin-top: 10px; }
 
 /* Ô mật khẩu + nút mắt (chỉ ô mật khẩu có mắt; ô tài khoản luôn hiện, không mắt) */
 #s-login .lg-passwrap { position: relative; display: block; margin-top: 4px; }
@@ -61,6 +105,12 @@
 #s-login .lg-qr svg { width: 64px; height: 64px; border-radius: 4px; background: #fff; padding: 3px; }
 #s-login .lg-qr em { font-style: normal; }
 
+/* Màn hẹp / màn thấp: tiêu đề khung trở lại trong khung, không đội lên trên */
+@media (max-width: 760px), (max-height: 520px) {
+  #s-login #lg-form { margin-top: 0; }
+  #s-login #lg-form > h1 { position: static; white-space: normal; margin-bottom: 14px; font-size: 26px; }
+  #s-login .vl-tieude { justify-content: center; text-align: center; padding: 4px 8px 0; }
+}
 /* Lưới màn ngang thấp: tiêu đề vào cột trái thay chỗ logo ảnh */
 @media (max-height: 520px) and (min-width: 501px) {
   #s-login > .vl-tieude { grid-area: 1 / 1; align-self: center; }
