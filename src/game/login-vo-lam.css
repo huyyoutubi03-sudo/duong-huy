@@ -136,11 +136,12 @@
     border: 0; border-radius: 0; box-shadow: none;
     -webkit-backdrop-filter: none; backdrop-filter: none;
     background: url("../../assets/ui/dang-nhap/thuy-mac.webp") 0 0 / 100% 100% no-repeat; }
-  /* Ô nhập đè lên dải lụa trắng vẽ sẵn (dải TK khoảng y 60–65%, dải MK
-     khoảng y 69.5–74.5% — dải lụa mềm, lấy khoảng giữa an toàn) */
+  /* Ô nhập nằm gọn trong dải lụa trắng vẽ sẵn, không đè lên chữ nhãn vẽ sẵn
+     (đo bằng điểm ảnh tối trên tranh 2448×1024: nhãn TK ~57.5–60%, dải TK
+     ~62–67.5%, nhãn MK ~67.8–69.8%, dải MK ~70–74.5%) */
   #s-login #lg-form > label { position: absolute; margin: 0; font-size: 0; }
-  #s-login #lg-form > label.lg-tk { left: 33.0%; top: 60.0%; width: 34.0%; height: 5.2%; }
-  #s-login #lg-form > label.lg-mk { left: 33.0%; top: 69.5%; width: 34.0%; height: 5.2%; }
+  #s-login #lg-form > label.lg-tk { left: 33.0%; top: 62.0%; width: 34.0%; height: 4.8%; }
+  #s-login #lg-form > label.lg-mk { left: 33.0%; top: 70.4%; width: 34.0%; height: 3.8%; }
   #s-login #lg-form input { width: 100%; height: 100%; margin: 0; padding: 0 4%;
     background: transparent; border: 0; border-radius: 0; box-shadow: none;
     color: #26221c; font-size: clamp(14px, 1.15vw, 21px); }
@@ -148,7 +149,7 @@
   #s-login #lg-form .lg-passwrap input { padding: 0 13% 0 4%; }
   #s-login #lg-form input:focus { outline: none; border-radius: 6px;
     box-shadow: inset 0 0 0 2px rgba(160, 30, 20, .55), inset 0 0 18px rgba(160, 30, 20, .12); }
-  #s-login #lg-form input:-webkit-autofill { -webkit-box-shadow: inset 0 0 0 100px #fdfcf8;
+  #s-login #lg-form input:-webkit-autofill { -webkit-box-shadow: inset 0 0 0 100px #f2efe9;
     -webkit-text-fill-color: #26221c; caret-color: #26221c; transition: background-color 9999s ease-in-out 0s; }
   #s-login #lg-form .lg-eye { right: 2%; padding: 6px; color: #4a4238; }
   #s-login #lg-form .lg-eye svg { width: 22px; height: 22px; }
