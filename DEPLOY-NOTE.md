@@ -1,4 +1,4 @@
-# Ghi chú deploy — Mot Thoi Ky Niem (bản copy nguyên bản, đã đổi thông tin)
+# Ghi chú deploy — Chien - Vo Lam Xua (bản copy nguyên bản, đã đổi thông tin)
 
 Nguồn: bản copy nguyên bản tại ~/workspace/vl1-nguyen-ban/"Mot Thoi Ky Niem/", đã loại bỏ node/ (node.exe) và không mang theo du-lieu/.
 Thêm mới trong thư mục này: package.json (start script), .gitignore (du-lieu/, node_modules/).

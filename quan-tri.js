@@ -1,4 +1,4 @@
-// Quản trị tài khoản máy chủ Mot Thoi Ky Niem (sửa du-lieu/tai-khoan/ — chạy được cả lúc máy chủ đang bật):
+// Quản trị tài khoản máy chủ Chien - Vo Lam Xua (sửa du-lieu/tai-khoan/ — chạy được cả lúc máy chủ đang bật):
 //   node quan-tri.js them <tên> <mật khẩu> [--admin]   tạo tài khoản (tài khoản đầu tiên tự là quản trị). Tài khoản thường: lần đăng nhập đầu phải tự
 //                                                       đổi mật khẩu (khóa an toàn — như F10 Tạo tài khoản)
 //   node quan-tri.js mat-khau <tên> <mật khẩu mới>     đặt lại mật khẩu: người đang chơi bị đưa ra (có lý do); tài khoản thường phải tự đổi ở lần đăng

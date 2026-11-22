@@ -1,7 +1,7 @@
-MOT THOI KY NIEM — HƯỚNG DẪN CHƠI
+CHIEN - VO LAM XUA — HƯỚNG DẪN CHƠI
 =======================================
 
-Bản Mot Thoi Ky Niem (Một Thời Kỷ Niệm, dùng cá nhân), có đủ các chức năng tới Tống Kim:
+Bản Chien - Vo Lam Xua (Chiến - Võ Lâm Xưa, dùng cá nhân), có đủ các chức năng tới Tống Kim:
 luyện công, Dã Tẩu, Sát thủ, Vượt Ải, Phong Lăng Độ, Phong Hỏa Liên Thành, Boss Hoàng Kim, Săn Nhím,
 Võ Lâm Minh Chủ, Rương Thần Bí, Phú Quý Cẩm Hạp, chợ trời, giao dịch, tổ đội, Phân thân, Tống Kim (bot như người chơi)…
 

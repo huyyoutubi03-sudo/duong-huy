@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title Vo Lam Idle - Mot Thoi Ky Niem - tao tai khoan
+title Chien - Vo Lam Xua - tao tai khoan
 cd /d "%~dp0"
 set "NODE=node"
 if exist "%~dp0node\node.exe" set "NODE=%~dp0node\node.exe"
