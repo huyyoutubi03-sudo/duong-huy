@@ -343,14 +343,14 @@ export class Hud {
     return this;
   }
 
-  // 9 ô đồ của dải dưới (phím 1–9, client ShortcutUseItem): q = { ic, n, tu } | null
+  // 9 ô của dải dưới: ô chiêu dùng phím chữ Q W E A S D Z X C (client ShortcutSkill), ô món dùng phím số 1–9 (client ShortcutUseItem), ô trống hiện chữ cái
   setQuick(list) {
     const sig = JSON.stringify(list);
     if (!this.bot || sig === this._qSig) return;
     this._qSig = sig;
     this.bot.querySelectorAll(".jx-slot[data-slot]").forEach((el) => {
       const q = list[+el.dataset.slot];
-      const K = "QWEASDZXC"[+el.dataset.slot] || "";
+      const K = q && !q.skill ? String(+el.dataset.slot + 1) : "QWEASDZXC"[+el.dataset.slot] || "";
       el.innerHTML = (q ? `<img class="jx-qi" src="assets/web/icon/${esc(q.ic)}" alt="" draggable="false">${q.skill ? "" : `<b class="jx-qn">${q.n}</b>`}${q.tu ? `<i class="jx-qa">${q.tu}%</i>` : ""}` : "") + `<i class="jx-qk">${K}</i>`;
       el.classList.toggle("empty", !!q && !q.skill && !q.n);
       el.classList.toggle("ky", !!(q && q.skill)); // ô đang là võ công (điện thoại ngang: hình cắt tròn — game.css)

@@ -3343,7 +3343,7 @@ addEventListener("pointerup", (e) => {
       if (d.s && kindOf(P.skillDb[d.s], P.skillDb) === "passive") return P.hud.msg(`${what}: chiêu bị động — tự có tác dụng, không cần đặt vào ô`);
       const was = L.findIndex((q) => q && (d.s ? q.s === d.s : q.k === d.k)); if (was >= 0) L[was] = null;
       L[i] = d.s ? { s: d.s } : { k: d.k };
-      P.hud.msg(`Đặt ${what} vào ô ${i + 1} (phím ${i + 1})`);
+      P.hud.msg(`Đặt ${what} vào ô ${i + 1} (phím ${d.s ? "QWEASDZXC"[i] : i + 1})`);
       if (d.s && P.vc) P.vc.warm(d.s);
     }
     P.audio.ui("click"); save(); quickHud(); return;
