@@ -338,6 +338,12 @@ function loginScreen(err = "") {
     catch (er) { $("#lg-err").textContent = er.message; }
     finally { $("#lg-ok").disabled = false; }
   };
+  // nút mắt hiện/ẩn mật khẩu (Huy duyệt 22/11/2026 — chỉ ô mật khẩu có mắt)
+  const _mk = $("#lg-pass"), _eye = $("#lg-eye");
+  if (_mk && _eye && !_eye.dataset.gan) { _eye.dataset.gan = "1"; _eye.onclick = () => { const hien = _mk.type === "password"; _mk.type = hien ? "text" : "password"; _eye.classList.toggle("on", hien); _eye.setAttribute("aria-label", hien ? "Ẩn mật khẩu" : "Hiện mật khẩu"); _mk.focus(); }; }
+  // link Fanpage đang là chỗ chờ (#): bấm chưa làm gì, tới khi Huy thêm link thật
+  const _fp = document.querySelector("#lg-form .lg-fanpage");
+  if (_fp && !_fp.dataset.gan) { _fp.dataset.gan = "1"; _fp.onclick = (e) => { if (_fp.getAttribute("href") === "#") e.preventDefault(); }; }
   ($("#lg-name").value ? $("#lg-pass") : $("#lg-name")).focus();
 }
 // mất phiên (tài khoản vừa đăng nhập ở nơi khác): dừng game, không lưu nữa, về màn đăng nhập
@@ -357,7 +363,8 @@ const facOf = (h) => (h.fac == null ? { n: "Vô Môn Phái", series: h.series } 
 function selectScreen() {
   // ô mật khẩu đăng nhập (trình duyệt có thể tự điền sẵn khi vào thẳng bằng phiên cũ): xóa khi rời màn đăng nhập — khỏi bị Chrome gắn với ô
   // nhập số trong game rồi hỏi "Cập nhật mật khẩu?" (anh 27/10)
-  $("#lg-pass").value = "";
+  $("#lg-pass").value = ""; $("#lg-pass").type = "password";
+  const _eye2 = $("#lg-eye"); if (_eye2) { _eye2.classList.remove("on"); _eye2.setAttribute("aria-label", "Hiện mật khẩu"); }
   CS.slots = [...Array(SLOT_N).keys()].map(loadSlot);
   CS.del = -1;
   let ptr = -1; try { ptr = +localStorage.getItem(SLOT_PTR); } catch {}

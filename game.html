@@ -6,6 +6,7 @@
 <title>Chiến - Võ Lâm Xưa</title>
 <meta name="author" content="Huy"><meta name="copyright" content="© 2026 Huy — Chien - Vo Lam Xua"><!-- chữ ký (src/game/an-ky.js) -->
 <link rel="stylesheet" href="src/game/game.css">
+<link rel="stylesheet" href="src/game/login-vo-lam.css"><!-- kiểu màn đăng nhập mới (Huy duyệt 22/11/2026) -->
 <link rel="preload" as="image" href="assets/ui/dang-nhap/login.webp"><!-- ảnh nền màn đăng nhập: tải ngay lúc mở trang, khỏi hiện trễ -->
 </head>
 <body>
@@ -16,14 +17,20 @@
 
 <!-- đăng nhập máy chủ chung (chay-game.js + may-chu/; tài khoản do quản trị tạo: Tao_Tai_Khoan.bat) -->
 <section id="s-login" class="screen">
+  <div class="vl-tieude" translate="no"><span class="vl-chien">Chiến</span><span class="vl-rest">- Võ Lâm Xưa</span></div>
   <form class="box login" id="lg-form">
-    <h1>Chiến - Võ Lâm Xưa</h1>
+    <h1>Võ Lâm Truyền Kỳ I</h1>
     <div class="lg-sv" id="lg-sv"></div>
     <label>Tài khoản<input id="lg-name" name="username" autocomplete="username" maxlength="20" autocapitalize="off" spellcheck="false"></label>
-    <label>Mật khẩu<input id="lg-pass" name="password" type="password" autocomplete="current-password" maxlength="64"></label>
+    <label>Mật khẩu<span class="lg-passwrap"><input id="lg-pass" name="password" type="password" autocomplete="current-password" maxlength="64"><button type="button" class="lg-eye" id="lg-eye" aria-label="Hiện mật khẩu" title="Hiện mật khẩu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line class="lg-slash" x1="3" y1="21" x2="21" y2="3"/></svg></button></span></label>
     <div class="lg-err" id="lg-err"></div>
     <div class="row end"><button class="main" type="submit" id="lg-ok">Đăng nhập</button></div>
     <p class="lg-note">Chưa có tài khoản? Bấm <b>Tao_Tai_Khoan.bat</b> trong thư mục game để tạo (tài khoản đầu tiên là quản trị).</p>
+    <div class="lg-lienhe">
+      <!-- Huy thêm link Fanpage vào href khi muốn dùng; mã QR Telegram thay bằng ảnh QR thật khi có link -->
+      <a class="lg-fanpage" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#1877f2"/><text x="12" y="17.5" text-anchor="middle" font-size="15" font-weight="700" fill="#fff" font-family="Arial, sans-serif">f</text></svg>Fanpage</a>
+      <span class="lg-qr" title="Mã QR Telegram — thêm link sau"><svg viewBox="0 0 29 29" aria-hidden="true"><rect width="29" height="29" fill="#fff"/><g fill="#000"><rect x="1" y="1" width="7" height="7" fill="none" stroke="#000"/><rect x="3" y="3" width="3" height="3"/><rect x="21" y="1" width="7" height="7" fill="none" stroke="#000"/><rect x="23" y="3" width="3" height="3"/><rect x="1" y="21" width="7" height="7" fill="none" stroke="#000"/><rect x="3" y="23" width="3" height="3"/><rect x="11" y="2" width="2" height="2"/><rect x="16" y="3" width="3" height="2"/><rect x="10" y="7" width="2" height="2"/><rect x="18" y="8" width="3" height="3"/><rect x="9" y="12" width="2" height="3"/><rect x="20" y="12" width="2" height="2"/><rect x="11" y="17" width="3" height="2"/><rect x="18" y="18" width="2" height="3"/><rect x="23" y="14" width="3" height="2"/><rect x="9" y="24" width="2" height="2"/><rect x="14" y="25" width="3" height="2"/><rect x="20" y="24" width="2" height="2"/><rect x="25" y="9" width="2" height="2"/><rect x="12" y="10" width="2" height="2"/></g><circle cx="14.5" cy="14.5" r="6" fill="#fff" stroke="#229ED9"/><polygon points="11.5,15.5 18.5,11.5 15.5,17.5 14.3,15 12.5,16.3" fill="#229ED9"/></svg><em>Telegram</em></span>
+    </div>
     <div class="lg-chiase">Nếu bạn yêu thích bản game của mình thì hãy chung tay chia sẻ cho anh em khác trong group để ai cũng có thể trải nghiệm. Cảm ơn anh chị em group Hội Quán rất nhiều!</div>
   </form>
 </section>
