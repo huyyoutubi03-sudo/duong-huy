@@ -1164,6 +1164,7 @@ function npcApi() {
       const f = P.factions.find((x) => x.key === key); if (!f || hero.fac != null) return;
       hero.fac = f.id; hero.facKey = f.key; hero.skills = hero.skills || {};
       fixPoints(hero); save();
+      if (world) world.vcOpen = vcOpen(); // vừa bái nhập trong cùng bãi: World cũ giữ cờ vcOpen lúc chưa có phái -> chiêu bị báo "đang soát" dù phái đã mở (moPhai ["*"])
       if (GW) GW.refresh(true);
     },
     setCamp: (n) => { hero.camp = n; save(); },
