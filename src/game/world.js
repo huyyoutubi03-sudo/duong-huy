@@ -76,7 +76,7 @@ const HIDE_ALPHA = 0.4;               // ẩn thân: nhân vật mình vẽ mờ
 // Hiệu ứng cảnh "đẹp như bản gốc" — thử map 53 Ba Lăng trước (Huy duyệt 22/11/2026: xem bằng mắt rồi mới quyết làm hết).
 // Công tắc: settings.mapDep === false thì tắt hết (mặc định bật; không cần sửa main.js). Chỉ áp cho map có tên trong bảng;
 // sương = độ đậm lớp 1 (lớp 2 mờ hơn, trôi ngược chiều), bong = bóng mềm dưới chân, bui = bụi dưới chân lúc chạy.
-const MAP_DEP = { c53: { suong: 0.09, bong: true, bui: true } }; // khóa = map.key (zone.map), Ba Lăng huyện zone 53 dùng bản đồ c53 — khóa 53 cũ không bao giờ khớp nên hiệu ứng không hiện
+const MAP_DEP = { c53: { suong: 0.25, bong: true, bui: true } }; // khóa = map.key (zone.map), Ba Lăng huyện zone 53 dùng bản đồ c53 — khóa 53 cũ không bao giờ khớp nên hiệu ứng không hiện
 const depCua = (w) => (w.P.settings.mapDep !== false ? MAP_DEP[String(w.map.key)] || null : null);
 // 3 tấm vẽ sẵn 1 lần, dùng lại mọi khung (không tạo object mới mỗi khung): sương 512×256, bóng 64×32, bụi 32×32
 let SUONG_C = null, BONG_C = null, BUI_C = null;
@@ -84,7 +84,7 @@ function suongVe() {
   if (SUONG_C) return SUONG_C;
   const c = document.createElement("canvas"); c.width = 512; c.height = 256;
   const g = c.getContext("2d");
-  for (const [x, y, r] of [[90, 150, 130], [260, 90, 150], [420, 170, 120], [180, 210, 100], [360, 60, 90]]) {
+  for (const [x, y, r] of [[80, 140, 150], [240, 80, 170], [400, 160, 150], [160, 220, 130], [340, 60, 120], [480, 220, 130], [40, 60, 100], [300, 200, 140]]) {
     const gr = g.createRadialGradient(x, y, 0, x, y, r);
     gr.addColorStop(0, "rgba(255,255,255,0.55)"); gr.addColorStop(1, "rgba(255,255,255,0)");
     g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
@@ -106,7 +106,7 @@ function buiVe() {
   const c = document.createElement("canvas"); c.width = 32; c.height = 32;
   const g = c.getContext("2d");
   const gr = g.createRadialGradient(16, 16, 1, 16, 16, 15);
-  gr.addColorStop(0, "rgba(255,255,255,0.8)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+  gr.addColorStop(0, "rgba(216,196,168,0.85)"); gr.addColorStop(1, "rgba(216,196,168,0)");
   g.fillStyle = gr; g.beginPath(); g.arc(16, 16, 15, 0, Math.PI * 2); g.fill();
   BUI_C = c; return c;
 }
@@ -763,18 +763,18 @@ export class World {
     _nhipGio(this.P, performance.now()); // bẫy bản nhái (đầu file): tên miền nhà -> thôi ngay
     this.time += dt;
     this.updateHero(dt);
-    // bụi dưới chân (MAP_DEP): chạy được 70 px logic thì bốc 1 cụm, tối đa 30 cụm cùng lúc
+    // bụi dưới chân (MAP_DEP): chạy được 50 px logic thì bốc 1 cụm, tối đa 30 cụm cùng lúc
     const dep = depCua(this);
     if (dep && dep.bui) {
       const p = this.player;
       if (p.act === "run" && p.hp > 0) {
         const dx = p.x - this._buiX, dy = (p.y - this._buiY) * 2;
         this._buiD += Math.hypot(dx, dy); this._buiX = p.x; this._buiY = p.y;
-        if (this._buiD > 70) { this._buiD = 0; if (this._bui.length < 30) this._bui.push({ x: p.x + rnd(-8, 8), y: p.y + rnd(-2, 3), t: 0, r: rnd(6, 9) }); }
+        if (this._buiD > 50) { this._buiD = 0; if (this._bui.length < 30) this._bui.push({ x: p.x + rnd(-8, 8), y: p.y + rnd(-2, 3), t: 0, r: rnd(8, 12) }); }
       } else { this._buiX = p.x; this._buiY = p.y; this._buiD = 0; }
     }
     for (const b of this._bui) b.t += dt;
-    if (this._bui.length) this._bui = this._bui.filter((b) => b.t < 0.55);
+    if (this._bui.length) this._bui = this._bui.filter((b) => b.t < 0.8);
     this.demHao();
     for (const m of this.mobs) this.updateMob(m, dt);
     for (const m of this.dongMinh) this.updateMob(m, dt);
@@ -1758,12 +1758,12 @@ export class World {
     if (this.veThem) this.veThem(ctx, jxText); // lớp vẽ thêm của hoạt động trên cảnh (đua ngựa — duangua.js veDem: đồng hồ đếm ngược trên 2 cổng Hậu doanh, anh 16/11)
     for (const s of this.shots) this.P.fx.drawFly(ctx, s.id, s.dx, s.dy, s.t, s.x, s.y);
     for (const f of this.fxs) this.P.fx.draw(ctx, f.id, f.t, f.e.x, f.e.y);
-    // bụi dưới chân (MAP_DEP): cụm nở to dần, bay lên nhẹ, mờ dần trong 0,55 giây
+    // bụi dưới chân (MAP_DEP): cụm nở to dần, bay lên nhẹ, mờ dần trong 0,8 giây
     if (this._bui.length) {
       const S = buiVe();
       for (const b of this._bui) {
-        const k = b.t / 0.55, r = b.r * (1 + k * 1.6);
-        ctx.globalAlpha = 0.32 * (1 - k);
+        const k = b.t / 0.8, r = b.r * (1 + k * 1.6);
+        ctx.globalAlpha = 0.45 * (1 - k);
         ctx.drawImage(S, b.x - r, b.y - r * 0.6 - k * 12, r * 2, r * 1.2);
       }
       ctx.globalAlpha = 1;
