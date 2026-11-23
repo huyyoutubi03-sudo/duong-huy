@@ -130,7 +130,8 @@
   #s-login::before { display: none; }
   #s-login .vl-tieude, #s-login #lg-form > h1, #s-login #lg-form .lg-sv,
   #s-login #lg-form .lg-note, #s-login #lg-form .lg-lienhe,
-  #s-login #lg-form .lg-chiase, #s-login #lg-form::before { display: none; }
+  #s-login #lg-form .lg-chiase, #s-login #lg-form .lg-gioithieu,
+  #s-login #lg-form::before { display: none; }
   #s-login #lg-form { position: relative; width: min(100vw, calc(100vh * 2.390625));
     aspect-ratio: 2448 / 1024; min-width: 0; margin: 0; padding: 0;
     border: 0; border-radius: 0; box-shadow: none;
@@ -163,4 +164,37 @@
   /* Báo lỗi đặt dưới ấn, trên hàng Fanpage/QR vẽ sẵn */
   #s-login #lg-form .lg-err { position: absolute; left: 33%; top: 88.6%; width: 34%; margin: 0;
     text-align: center; color: #b3261e; font-size: clamp(11px, .85vw, 14px); text-shadow: 0 1px 2px rgba(255, 255, 255, .8); }
+  /* Nút đăng ký: dòng chữ nhỏ dưới báo lỗi, cùng mực đỏ với ấn vẽ sẵn */
+  #s-login #lg-form .lg-dk { position: absolute; left: 33%; top: 91.5%; width: 34%; margin: 0; padding: 0;
+    background: none; border: 0; color: #8a2a1a; cursor: pointer;
+    font-size: clamp(11px, .85vw, 14px); font-weight: 700; text-align: center; text-decoration: underline; }
 }
+
+/* Nút đăng ký: chữ gạch chân; màn hẹp / khung code thì vàng, màn rộng (tranh thủy mặc) thì mực đỏ theo ấn */
+#s-login #lg-form .lg-dk { background: none; border: 0; cursor: pointer; font-weight: 700; text-decoration: underline; }
+@media (max-width: 760px), (max-height: 520px) {
+  #s-login #lg-form .lg-dk { color: #ffd76a; margin-top: 10px; padding: 4px 8px; }
+}
+#s-login #lg-form .lg-gioithieu { text-align: center; color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+
+/* Khung đăng ký bằng Gmail: nổi trên màn đăng nhập, khung vàng như khung đăng nhập */
+.dk-modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(10, 8, 5, .65); }
+.dk-modal[hidden] { display: none; }
+.dk-box { width: min(460px, 100%); max-height: calc(100vh - 32px); overflow-y: auto;
+  border: 2px solid #c9992f; border-radius: 10px; padding: 22px 24px;
+  background: linear-gradient(180deg, rgba(28, 22, 13, .97), rgba(12, 10, 8, .98));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .55), 0 20px 55px rgba(0, 0, 0, .7); color: #e8cf96; }
+.dk-box h2 { margin: 0 0 8px; text-align: center; font-family: "Palatino Linotype", "Book Antiqua", "Noto Serif", serif;
+  font-size: 26px; font-weight: 900; font-style: italic;
+  background: linear-gradient(180deg, #fff3c4 0%, #f0c75e 55%, #b8860b 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+.dk-box .dk-note { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+.dk-box label { display: block; font-weight: 600; margin-bottom: 10px; }
+.dk-box input { display: block; width: 100%; margin-top: 4px; box-sizing: border-box;
+  background: rgba(0, 0, 0, .5); border: 1px solid rgba(224, 179, 90, .75); border-radius: 6px;
+  color: #ffeec2; padding: 9px 10px; box-shadow: inset 0 2px 8px rgba(0, 0, 0, .55); }
+.dk-box input:focus { border-color: #ffd76a; outline: none; box-shadow: inset 0 2px 8px rgba(0, 0, 0, .55), 0 0 0 2px rgba(255, 200, 90, .25); }
+.dk-box .dk-nut { margin-top: 14px; }
+.dk-box .dk-xong { text-align: center; margin: 12px 0 0; }
+.dk-box .dk-link { background: none; border: 0; color: #ffd76a; cursor: pointer; font-weight: 700; text-decoration: underline; padding: 0; }

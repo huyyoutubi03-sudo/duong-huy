@@ -10,6 +10,7 @@ const path = require("path");
 const { execFile } = require("child_process");
 const { phatTep } = require("./may-chu/tep");
 const { xuLyApi, tkWs } = require("./may-chu/api"); // tkWs: phiên như API, đang bảo trì thì chỉ tài khoản quản trị (may-chu/bao-tri.js)
+const DK = require("./may-chu/dang-ky"); // đăng ký tài khoản bằng Gmail (Huy 23/11/2026): đường riêng, không qua xuLyApi (giữ api.js nguyên)
 const WS = require("./may-chu/ws"); // kênh tức thời GET /api/ws (anh 31/10 — boss thế giới máu chung)
 const TN = require("./may-chu/tai-nguyen"); // phiên bản tài nguyên + gói tải trước lần đầu (service worker src/sw.js)
 const D = require("./may-chu/du-lieu");
@@ -39,6 +40,7 @@ function xuLy(req, res) {
     }
   } catch (e) { console.error(e); return tra500(res); } // lỗi bất ngờ ở lớp chặn: không làm sập máy chủ
   if (p === "/api/tai-nguyen" || p === "/api/tai-truoc") return TN.xuLy(req, res, p).catch(() => tra500(res));
+  if (p === "/api/dang-ky" || p === "/api/dang-ky/xac-minh") return DK.xuLy(req, res, p).catch((e) => { console.error(e); tra500(res); });
   if (p.startsWith("/api/")) return xuLyApi(req, res, p).catch((e) => { console.error(e); tra500(res); });
   if (req.method !== "GET" && req.method !== "HEAD") { res.writeHead(405); return res.end(); }
   // khóa tài nguyên sau đăng nhập (lượt 61 — may-chu/khoa-tai-nguyen.js): assets/ cần phiếu đăng nhập, trừ thứ màn đăng nhập cần; đếm theo tài khoản
