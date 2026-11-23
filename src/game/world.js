@@ -2351,7 +2351,7 @@ export class World {
     if (this.camVc) { this.skMsg(this.camVc); return true; } // đường đua (duangua.js): cấm mọi võ công — cả Khinh công, di hình, bùa
     const kind = kindOf(s, this.P.skillDb);
     if (kind === "jump") return this.khinhCong(x, y);
-    if (kind === "buff") return this.castSelf(id);
+    if (kind === "buff") { const ok = this.castSelf(id); if (ok) { p.target = null; p.path = null; p.goal = null; p.loot = null; p.talkTo = null; } return ok; } // bùa tay phải: ra bùa xong thì đứng yên — hủy lệnh đi/đánh cũ (Huy 23/11/2026)
     const c = this.skCan(id); if (!c.ok) { this.skMsg(c.why); return true; }
     if (p.sit) this.sit(false);
     // di hình (Mê Ảnh Tung): tới ngay chỗ trỏ / con quái dưới chuột
@@ -2362,6 +2362,8 @@ export class World {
     if (p.act === "attack" || (p.act === "hurt" && p.t < (p.hurtDur ?? DUR.hurt))) { p.queueAt = { id, pt: [x, y] }; return true; }
     const lv = this.skLv(id), R = this.skRange(id, lv), d = ldist(p.x, p.y, x, y);
     if (d > R) { x = p.x + ((x - p.x) * R) / d; y = p.y + ((y - p.y) * R) / d; }
+    // ra chiêu vào khoảng không: hủy lệnh đi/đánh/nhặt/nói chuyện cũ — khỏi tự chạy tiếp sau khi ra chiêu (Huy 23/11/2026)
+    p.target = null; p.path = null; p.goal = null; p.loot = null; p.talkTo = null;
     this.castStart(id, lv, null, [x, y]);
     return true;
   }
