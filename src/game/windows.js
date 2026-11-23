@@ -170,6 +170,7 @@ export class GameWindows {
     const tab = (p) => { w.page(p); for (const [b, pp] of Object.entries(STATUS_TABS)) w.check(b, pp === p); this.refresh(true); };
     for (const [b, p] of Object.entries(STATUS_TABS)) w.on(b, () => { api.P.audio.ui("click"); tab(p); });
     tab(["attr", "equip", "judge"][w.def.sec.Init?.initPage ?? 0] || "attr");
+    w.cb.show = () => tab("equip"); // Huy 23/11: bấm F3 mở khung Nhân vật thì ở sẵn trang Trang bị
     w.on("Item", () => this.W.get("items").toggle());
     // thuộc tính
     const A = "attr";

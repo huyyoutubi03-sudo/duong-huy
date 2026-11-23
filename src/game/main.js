@@ -61,7 +61,7 @@ const SLOT_N = 3, SLOT_PTR = "vlidle.slot"; // ô đang chọn: nhớ theo máy
 // cài đặt của máy (không theo nhân vật)
 // bright / music / sound: thanh trượt 0..100 của cửa sổ Tùy chọn (50 = độ sáng gốc; nhạc 45, tiếng 70 = mặc định của audio.js)
 // showName / showLife: phím F7 / F8 của client (hiện tên / thanh máu trên đầu nhân vật)
-const SETTINGS_KEY = "vlidle.settings", SETTINGS_DEF = { mobShadow: true, bright: 50, music: 45, sound: 70, showName: true, showLife: false, muted: false, hieuUngNguoi: true, nguoiHien: -1, anSap: false }; // nguoiHien / anSap: ẩn bớt người chơi khác / sạp hàng (Trợ Thủ → Khác — anh 11/11, world.js nguoiHien)
+const SETTINGS_KEY = "vlidle.settings", SETTINGS_DEF = { mobShadow: true, bright: 50, music: 45, sound: 70, showName: true, showLife: true, muted: false, hieuUngNguoi: true, nguoiHien: -1, anSap: false }; // nguoiHien / anSap: ẩn bớt người chơi khác / sạp hàng (Trợ Thủ → Khác — anh 11/11, world.js nguoiHien)
 // gói 1 server (assets/server.json — tools/build-server-packs.mjs) chỉ hiện đúng server đó (P.only)
 // id 1 = gói luật Đồ xanh; khai mở lại thành S2 (anh 10/11: "giờ anh mở S2, S1 không cần nữa … người chơi sẽ cày lại từ đầu" — giữ luật S1,
 // giữ tài khoản, nhân vật mới) -> chỉ đổi tên hiện ra, không đổi id (id 2 là gói Hoàng Kim môn phái chưa dựng)
