@@ -334,9 +334,10 @@ function luuNv(res, tk, o, b) {
   // điểm kỹ năng (29/10): được (cấp − 1) + Võ Lâm Mật Tịch, đã dùng = phần trên cấp cho không (skMin) của chiêu không luyện; quá thì trả lại hết
   if (DO.diemDaDung(hero) > (hero.lvl || 1) - 1 + (hero.mt | 0)) for (const id of Object.keys(hero.skills)) if (!DO.laLuyen(id)) delete hero.skills[id];
   for (const [id, m] of Object.entries(hero.skMin || {})) if ((hero.skills[id] | 0) < m) hero.skills[id] = m;
-  // chiêu sách không thuộc phái đang ở: bỏ (anh 10/11 "đường môn đánh mà có hiệu ứng chiêu 12x của ngũ độc" — đổi phái bằng công cụ thử F10 chỉ xóa ở trình duyệt, cấp chiêu luyện /
-  // skMin của phái cũ do máy chủ giữ nên 2 dòng trên trả lại, chiêu tự phát Hấp Tinh Yểm vẫn chạy trên tài khoản đã sang Đường Môn)
-  for (const id of Object.keys(hero.skills)) if (DO.CHIEU_SACH.has(+id) && !DO.sachPhai(hero.fac, id)) delete hero.skills[id];
+  // chiêu sách / chiêu tier không thuộc phái đang ở: bỏ (anh 10/11 "đường môn đánh mà có hiệu ứng chiêu 12x của ngũ độc" — đổi phái bằng công cụ thử F10 chỉ xóa ở trình duyệt, cấp chiêu luyện /
+  // skMin của phái cũ do máy chủ giữ nên 2 dòng trên trả lại, chiêu tự phát Hấp Tinh Yểm vẫn chạy trên tài khoản đã sang Đường Môn; anh 22/11: chiêu tier
+  // sai phái cũng phải bỏ — PUT gán chiêu tier của phái khác vẫn qua, chỉ trình duyệt chặn. Chiêu trung lập (không thuộc phái nào) giữ nguyên)
+  for (const id of Object.keys(hero.skills)) if ((DO.CHIEU_SACH.has(+id) && !DO.sachPhai(hero.fac, id)) || (!DO.CHIEU_SACH.has(+id) && !DO.thuocPhai(hero.fac, id))) delete hero.skills[id];
   DO.hamChieu(hero); // từng chiêu ≤ cấp nhân vật − cấp yêu cầu + 1 (anh 29/10 — như engine)
   if (JSON.stringify(hero).length > NV_MAX) return loi(res, 413, "Nhân vật quá lớn");
   tk.nv[o] = hero; D.ghiTk(tk);

@@ -226,10 +226,10 @@ export function suaVoCong(db) {
     const s = db && db[id]; if (!s || !s.lv) continue;
     for (const [k, f] of Object.entries(r.doi || {})) if (s.lv[k]) s.lv[k] = s.lv[k].map(f);
     // dòng mới thêm cuối (moi: { tên: (cấp) => [p1, p2, p3] }) — chiêu client không có dòng đó (375 thêm choáng)
-    if (r.moi) { const n = Math.max(...Object.values(s.lv).map((a) => a.length)); for (const [t, f] of Object.entries(r.moi)) { s.lv[t] = Array.from({ length: n }, (_, i) => f(i + 1)); if (Array.isArray(s.lvKeys) && !s.lvKeys.includes(t)) s.lvKeys.push(t); } }
+    if (r.moi) { const n = Math.max(...Object.values(s.lv).map((a) => (a || []).length)); for (const [t, f] of Object.entries(r.moi)) { s.lv[t] = Array.from({ length: n }, (_, i) => f(i + 1)); if (Array.isArray(s.lvKeys) && !s.lvKeys.includes(t)) s.lvKeys.push(t); } }
     if (!r.bo) continue;
     // dòng mới đặt vào chỗ dòng bỏ đầu tiên (giữ thứ tự dòng trong ô xem chiêu)
-    const n = Math.max(...Object.values(s.lv).map((a) => a.length)), lv = {};
+    const n = Math.max(...Object.values(s.lv).map((a) => (a || []).length)), lv = {};
     let them = false;
     for (const [k, a] of Object.entries(s.lv)) {
       if (!r.bo.includes(k)) { lv[k] = a; continue; }
