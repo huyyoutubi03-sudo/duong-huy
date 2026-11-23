@@ -1,4 +1,4 @@
-// Đăng ký tài khoản bằng Gmail — khung nổi trên màn đăng nhập (Huy 23/11/2026, cho bạn bè cùng test).
+// Đăng ký tài khoản bằng Gmail — khung nổi trên màn đăng nhập (chủ server 23/11/2026, cho bạn bè cùng test).
 // 2 bước: gửi mã xác minh về Gmail -> nhập mã -> tạo tài khoản. Máy chủ: may-chu/dang-ky.js.
 
 import { Net } from "./net.js";

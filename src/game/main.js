@@ -34,7 +34,7 @@ import { KhoaAnToan, gioNgay } from "./khoaantoan.js";
 import { datXemNguon } from "./itemtip.js"; // nguồn gốc món: chỉ quản trị thấy trong ô xem món (anh 18/11 tối) // Khóa an toàn: mật khẩu cấp 2 + tự đổi mật khẩu đăng nhập (anh 10/11 "Duyệt hết a")
 import { VoCongPack, kindOf, isHeal, suaVoCong, auraGhep, KC_ID } from "./vocong.js";
 import { ZoneLoading } from "./loading.js";
-import { dungDangNhap, dungManCho, dungTrongGame, TIN_VAO, KY_NGAN, kyChuan, voKy, loiChao } from "./an-ky.js"; // ấn ký bản gốc: logo + chữ ký Huy + cảnh báo bản nhái (anh 11/11)
+import { dungDangNhap, dungManCho, dungTrongGame, TIN_VAO, KY_NGAN, kyChuan, voKy, loiChao } from "./an-ky.js"; // ấn ký bản gốc: logo + chữ ký + cảnh báo bản nhái (anh 11/11)
 import { datMocNhan, datCocDao, MocNhanPanel } from "./mocnhan.js";
 import { dangKy as dangKySW, taiTruoc } from "./tai-truoc.js";
 import { DienThoai } from "./dienthoai.js";
@@ -95,8 +95,8 @@ const bam32 = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { 
 // world.js NHA_GIO)
 const mienDung = () => true;
 async function boot() {
-  loiChao(); // Huy: da go kiem tra an ky / ten mien ban goc
-  P.dx = "Chien - Vo Lam Xua"; // dấu riêng của bản Chiến - Võ Lâm Xưa: bản chép nào có chuỗi này là chép từ máy chủ của Huy
+  loiChao(); // chủ server: da go kiem tra an ky / ten mien ban goc
+  P.dx = "Chien - Vo Lam Xua"; // dấu riêng của bản Chiến - Võ Lâm Xưa: bản chép nào có chuỗi này là chép từ máy chủ của chủ server
   dangKySW(); // service worker: giữ file assets/ đã tải trong trình duyệt (src/sw.js — anh 28/10)
   // chống sao chép (anh 10/11 lượt 61 — "nchung em làm sao ngta k còn copy của anh là dc"): ĐĂNG NHẬP TRƯỚC, TẢI KHO SAU — máy chủ chỉ phát assets/
   // (hình, tiếng, bảng dữ liệu) cho người đã đăng nhập (may-chu/khoa-tai-nguyen.js); màn đăng nhập chỉ cần assets/server.json (tên máy chủ),
@@ -338,10 +338,10 @@ function loginScreen(err = "") {
     catch (er) { $("#lg-err").textContent = er.message; }
     finally { $("#lg-ok").disabled = false; }
   };
-  // nút mắt hiện/ẩn mật khẩu (Huy duyệt 22/11/2026 — chỉ ô mật khẩu có mắt)
+  // nút mắt hiện/ẩn mật khẩu (chủ server duyệt 22/11/2026 — chỉ ô mật khẩu có mắt)
   const _mk = $("#lg-pass"), _eye = $("#lg-eye");
   if (_mk && _eye && !_eye.dataset.gan) { _eye.dataset.gan = "1"; _eye.onclick = () => { const hien = _mk.type === "password"; _mk.type = hien ? "text" : "password"; _eye.classList.toggle("on", hien); _eye.setAttribute("aria-label", hien ? "Ẩn mật khẩu" : "Hiện mật khẩu"); _mk.focus(); }; }
-  // link Fanpage đang là chỗ chờ (#): bấm chưa làm gì, tới khi Huy thêm link thật
+  // link Fanpage đang là chỗ chờ (#): bấm chưa làm gì, tới khi chủ server thêm link thật
   const _fp = document.querySelector("#lg-form .lg-fanpage");
   if (_fp && !_fp.dataset.gan) { _fp.dataset.gan = "1"; _fp.onclick = (e) => { if (_fp.getAttribute("href") === "#") e.preventDefault(); }; }
   ($("#lg-name").value ? $("#lg-pass") : $("#lg-name")).focus();
@@ -2519,17 +2519,21 @@ function themXaPhuTayTuy(D) {
     if (!/驿站车夫对话\.lua$/.test(k)) continue;
     const o = s.nodes && s.nodes.main && s.nodes.main.opts;
     if (o && !o.some((x) => x[1] === "GotoClearSkillMap")) o.splice(Math.max(0, o.length - 1), 0, ["Đi đảo Tẩy Tủy", "GotoClearSkillMap"]);
-    if (o && !o.some((x) => x[1] === "KhuLuyenCong")) o.unshift(["Khu vực luyện công", "KhuLuyenCong"]);
-    if (o && !o.some((x) => x[1] === "TkBaoDanh")) o.unshift(["Điểm báo danh Tống Kim", "TkBaoDanh"]); // anh 09/11 — xaPhuFn
-    if (o && !o.some((x) => x[1] === "KhuBangHoi")) o.unshift(["Khu vực bang hội", "KhuBangHoi"]); // đợt 4 — chỉ hiện với thành viên (anOpt); máy chủ xét (xaPhuFn KhuBangHoi)
-    if (o && !o.some((x) => x[1] === "BanDoSatThu")) o.unshift(["Đưa ta đến bản đồ nhiệm vụ sát thủ", "BanDoSatThu"]); // anh 03/11 — chỉ hiện khi đang nhận (NPCD anOpt)
+    // 23/11 — lỗi Xa phu: ô lựa chọn chỉ hiện 6 dòng (92 điểm / 15 điểm), các lựa chọn thêm chèn ĐẦU (unshift) đẩy "Những thành thị đã đi
+    // qua" (gốc) xuống dòng 7+ → phải cuộn mới thấy, Huy báo "không thấy chỗ chuyển các thành". Đưa 4 lựa chọn thêm xuống SAU các lựa
+    // chọn gốc (ngay trước "Đi đảo Tẩy Tủy") để lựa chọn gốc luôn hiện; không bớt lựa chọn nào. Riêng NoiDaTau giữ đầu danh sách (anh 11/11).
+    const chenSauGoc = (label, id) => { if (o && !o.some((x) => x[1] === id)) { const at = o.findIndex((x) => x[1] === "GotoClearSkillMap"); o.splice(at >= 0 ? at : Math.max(0, o.length - 1), 0, [label, id]); } };
+    chenSauGoc("Đưa ta đến bản đồ nhiệm vụ sát thủ", "BanDoSatThu"); // anh 03/11 — chỉ hiện khi đang nhận (NPCD anOpt)
+    chenSauGoc("Khu vực bang hội", "KhuBangHoi"); // đợt 4 — chỉ hiện với thành viên (anOpt); máy chủ xét (xaPhuFn KhuBangHoi)
+    chenSauGoc("Điểm báo danh Tống Kim", "TkBaoDanh"); // anh 09/11 — xaPhuFn
+    chenSauGoc("Khu vực luyện công", "KhuLuyenCong");
     if (o && !o.some((x) => x[1] === "NoiDaTau")) o.unshift(["Đưa ta đến nơi làm nhiệm vụ Dã Tẩu", "NoiDaTau"]); // anh 11/11 (kiểu A) — đầu danh sách, chỉ hiện khi có nơi làm (anOpt)
   }
 }
 // Lễ quan (script client 路人_礼官.lua — Ba Lăng): thêm "Nhập mã kích hoạt" đầu danh sách (anh 29/10 — chucNangFn NhapMaKichHoat).
-// Anh 29/10 lần 3 ("giao diện Lễ quan hơi trống, bấm Đêm Huy Hoàng nhảy ra khung khác không đồng nhất"): script mở menu bằng DailogClass:Show
+// Anh 29/10 lần 3 ("giao diện Lễ quan hơi trống, bấm Đêm Rực Rỡ nhảy ra khung khác không đồng nhất"): script mở menu bằng DailogClass:Show
 // (CreateNewSayEx — lời mặc định "<npc>Chào mừng bạn đến với Võ Lâm Truyền Kỳ…", công cụ dựng dữ liệu không lấy được lời nên khung Say trống)
-// -> menu chính cũng là khung Describe có chân dung + tên như các trang Đêm Huy Hoàng; thêm "Kết thúc đối thoại" cuối như DailogClass;
+// -> menu chính cũng là khung Describe có chân dung + tên như các trang Đêm Rực Rỡ; thêm "Kết thúc đối thoại" cuối như DailogClass;
 // "Mở Pass Rương" (ResetBox) chạy thật — moPassRuong
 const LE_QUAN = "<link=image[0,13]:\\spr\\npcres\\passerby\\passerby181\\passerby181_pst.spr>Lễ quan:<link> ";
 function themLeQuan(D) {
@@ -2646,7 +2650,7 @@ function moPassRuong(id) {
   }, (e) => (e.ma === "het-phien" ? { close: true } : { desc: 1, text: LE_QUAN + e.message, opts: lai }));
 }
 // khung nhập chữ của client -> máy chủ kiểm mã (may-chu/ma-qua.js) -> túi mới + khung báo quà như quà của quản trị
-// mã chung theo phái (Huy 23/11/2026): máy chủ trả chonHe -> hiện lựa chọn hệ rồi gửi lại kèm hệ đã chọn
+// mã chung theo phái (chủ server 23/11/2026): máy chủ trả chonHe -> hiện lựa chọn hệ rồi gửi lại kèm hệ đã chọn
 function baoMaKichHoat(j) {
   applyServer(j);
   P.audio.ui("levelup");

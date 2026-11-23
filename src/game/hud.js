@@ -418,7 +418,7 @@ export class Hud {
       ...(s.ky ? [[s.ky, L.color]] : []), // chữ ký bản gốc (anh 11/11 — an-ky.js KY_NGAN)
     ];
     const [t, c] = items[this.infoI % items.length], el = this.top.querySelector(".jx-logo");
-    if (force && (!s.ky || ((kyChuan() ^ 0x5a5a1234) >>> 0) !== 3731916016)) voKy("dải trên"); // số theo chữ ký mới "Chiến - Võ Lâm Xưa" (22/11/2026)
+    if (force && (!s.ky || ((kyChuan() ^ 0x5a5a1234) >>> 0) !== 1073365139)) voKy("dải trên"); // số theo chữ ký mới (câu cảnh báo đổi 23/11/2026)
     if (el.textContent !== t) el.textContent = t;
     el.style.color = rgb(this.infoOver ? L.over : c);
   }

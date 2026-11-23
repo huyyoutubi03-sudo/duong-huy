@@ -480,7 +480,7 @@ export function installVoCong(World) {
       if (!c.ok && c.horse === 1 && this.auto && !p.manual && p.target && ldist(p.x, p.y, p.target.x, p.target.y) > range + (p.target.radius || 0) + 60) return { id: want, lv, range };
       if (!c.ok && c.horse === 1 && this.auto && !p.manual) { if (this.doiNgua(false)) return this.atkPlan(); return { id: want, lv, range, block: true }; } // chưa đủ 3 giây từ lần lên ngựa: đứng chờ
       if (!c.ok && c.horse && p.once !== want) { this.skMsg(c.why); return { id: want, lv, range, block: true }; }
-      if (!c.ok) { if (p.once === want && !c.cd) { p.once = null; this.skMsg(c.why); p.target = null; p.path = null; p.goal = null; } else if (c.mp) this.skMsg(c.why); return null; } // chiêu 1 lần không ra được thì ngưng luôn, không đánh thường (Huy 22/11/2026)
+      if (!c.ok) { if (p.once === want && !c.cd) { p.once = null; this.skMsg(c.why); p.target = null; p.path = null; p.goal = null; } else if (c.mp) this.skMsg(c.why); return null; } // chiêu 1 lần không ra được thì ngưng luôn, không đánh thường (chủ server 22/11/2026)
       return { id: want, lv, range };
     },
     skMsg(t) { if (this.onSkMsg && (this.time - (this._skMsgT || -9) > 3 || t !== this._skMsgL)) { this._skMsgT = this.time; this._skMsgL = t; this.onSkMsg(t); } },
@@ -549,7 +549,7 @@ export function installVoCong(World) {
       if (t === 1) p.st = Math.max(0, p.st - cost); else if (t === 2) p.hp = Math.max(1, p.hp - cost); else p.mp = Math.max(0, p.mp - cost);
       const cdT = (A.skill_mintimepercast_v && A.skill_mintimepercast_v[0]) || k.tpc || 0;
       if (cdT && !(this.dev && this.dev.noCd)) { p.cd[id] = this.time + cdT * TICK; (p.cdLen = p.cdLen || {})[id] = cdT * TICK; } // cdLen: độ dài hồi chiêu (lớp hồi chiêu trên ô); công cụ thử: không hồi chiêu
-      if (p.once === id) { p.once = null; p.target = null; p.path = null; p.goal = null; } // chiêu 1 lần xong thì ngưng — không đánh thường tiếp (Huy 22/11/2026)
+      if (p.once === id) { p.once = null; p.target = null; p.path = null; p.goal = null; } // chiêu 1 lần xong thì ngưng — không đánh thường tiếp (chủ server 22/11/2026)
     },
     // tới nhịp ra đòn: trừ nội lực, ra chiêu (xong động tác là ra chiêu kế ngay — không đứng chờ)
     castFire() {

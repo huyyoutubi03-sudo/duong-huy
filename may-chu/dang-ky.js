@@ -1,4 +1,4 @@
-// Đăng ký tài khoản bằng Gmail (Huy 23/11/2026 — cho bạn bè cùng test): 2 bước, không cần quản trị tạo tay.
+// Đăng ký tài khoản bằng Gmail (chủ server 23/11/2026 — cho bạn bè cùng test): 2 bước, không cần quản trị tạo tay.
 //   POST /api/dang-ky          { ten, gmail, mk } -> { ok: 1, cho: 600 } (mã 6 số gửi về Gmail, hiệu lực 10 phút)
 //   POST /api/dang-ky/xac-minh { ten, ma }         -> { ok: 1, ten } (tài khoản tạo xong, đăng nhập như thường)
 // Quy tắc (giữ đúng hệ tài khoản sẵn có — may-chu/du-lieu.js):
@@ -81,7 +81,7 @@ async function guiMa(req, res) {
   if (!GMAIL_RE.test(gmail) || gmail.length > 254) return loi(res, 400, "Gmail chưa đúng — dùng địa chỉ @gmail.com");
   if (mk.length < 6 || mk.length > 64) return loi(res, 400, "Mật khẩu 6–64 ký tự");
   if (mk === ten) return loi(res, 400, "Mật khẩu phải khác tên tài khoản");
-  if (D.dsTk().length === 0) return loi(res, 503, "Máy chủ chưa có tài khoản quản trị — liên hệ Huy tạo tài khoản đầu tiên, rồi mới đăng ký được");
+  if (D.dsTk().length === 0) return loi(res, 503, "Máy chủ chưa có tài khoản quản trị — đăng ký tạm thời chưa mở, xin quay lại sau");
   if (D.docTk(ten)) return loi(res, 409, "Tên tài khoản này đã có người dùng");
   if (gmailDaDung(gmail)) return loi(res, 409, "Gmail này đã đăng ký tài khoản khác");
   const dangCho = cho.get(ten);

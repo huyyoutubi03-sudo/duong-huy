@@ -1701,7 +1701,7 @@ body.dt.dt-ngang:not(.dt-gon) #dt .dt-kat { display: none; }
 #jxwin .bcua-khung .bcua-luat p::before { content: "• "; color: #ffd84e; }
 #jxwin .bcua-khung .bcua-luat .bcua-day { margin-top: 8px; }
 
-/* ấn ký bản gốc (src/game/an-ky.js — anh 11/11: logo Đồ Xanh + chữ ký Huy + cảnh báo bản nhái). Anh chọn kiểu 2: màn đăng nhập logo trái,
+/* ấn ký bản gốc (src/game/an-ky.js — anh 11/11: logo Đồ Xanh + chữ ký chủ server + cảnh báo bản nhái). Anh chọn kiểu 2: màn đăng nhập logo trái,
    khung phải (màn hẹp / điện thoại dọc: logo trên, khung dưới; điện thoại ngang: chữ ký dưới logo) + trong game B: logo mờ góc phải (máy tính) */
 .ak-logo { position: relative; z-index: 1; display: block; width: min(46vw, 620px); max-width: 92vw; object-fit: contain; pointer-events: none; user-select: none;
   -webkit-user-drag: none; filter: drop-shadow(0 6px 18px rgba(0,0,0,.55)); }

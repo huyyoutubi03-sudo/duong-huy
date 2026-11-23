@@ -21,7 +21,7 @@ const MAT_PHIEN = new Set(["het-phien", "bi-da", "bi-khoa", "bao-tri", "chua-duy
 // có hiệu lực cho đúng trang này (tải lại / đóng trang là khóa lại). Máy chủ trả 403 ma "can-mk2" (cần mở khóa) / "can-dat-mk2" (chưa có mật khẩu
 // cấp 2): Net.onBaoMat(ma, câu) hỏi người chơi (src/game/baomat.js) -> true thì gửi lại đúng yêu cầu đó 1 lần
 // chống sao chép (anh 10/11): chỉ gọi máy chủ khi trang đang ở tên miền của máy chủ (so mã băm FNV — như main.js mienDung) / máy thử / mạng LAN
-const mienMay = () => true; // Huy: go khoa ten mien ban goc
+const mienMay = () => true; // chủ server: go khoa ten mien ban goc
 const TRANG = (() => {
   const a = new Uint8Array(18); crypto.getRandomValues(a);
   return btoa(String.fromCharCode(...a)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -89,7 +89,7 @@ export const Net = {
   quanTri(viec, b = {}, opt) { return this.call("POST", "quan-tri/" + viec, b, opt); },
   // khóa an toàn (may-chu/bao-mat.js): { viec: "xem" | "dat" (mk1, moi) | "mo" (mk) | "khoa" | "doi" (cu, moi) | "doiMk1" (cu?, moi) } -> { co, mo, batDoiMk, msg? }
   baoMat(b) { return this.call("POST", "bao-mat", b, { daHoi: true, timeout: 15000 }); },
-  async login(ten, mk) { this.me = await this.call("POST", "dang-nhap", { ten, mk }); return this.me; }, // Huy: go cua an ky o dang nhap (kyChuan doi theo ten moi nen luon sai)
+  async login(ten, mk) { this.me = await this.call("POST", "dang-nhap", { ten, mk }); return this.me; }, // đã gỡ cửa ấn ký ở đăng nhập (kyChuan đổi theo tên mới nên luôn sai)
   async logout() { await this.flush(); try { await this.call("POST", "dang-xuat"); } catch {} this.me = null; },
   async create(o, hero) { const j = await this.call("POST", "nv/" + o, { hero }); this.me.nv[o] = j.hero; return j.hero; },
   async remove(o) { await this.call("DELETE", "nv/" + o); this.me.nv[o] = null; this._dirty.delete(o); },

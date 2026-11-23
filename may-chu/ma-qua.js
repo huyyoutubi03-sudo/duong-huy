@@ -1,12 +1,13 @@
 // Mã kích hoạt (anh 29/10: "thêm vào Lễ Quan chức năng đổi mã kích hoạt, dùng để kích hoạt các mã code mà game cho, nhận quà tương ứng").
 // Quản trị tạo mã ở bảng quản trị (F10 — thẻ Mã quà, src/game/quantri.js): quà như Gửi quà (ngân lượng, Xu, vật phẩm — do.js taoQua) + kinh nghiệm
-// (Huy 22/11/2026: nhập mã nhận exp, lên cấp theo đúng luật chung lenCap, trần 200), số lần
-// dùng tối đa của cả máy chủ (0 = không giới hạn), hạn dùng, lời nhắn. Mỗi tài khoản dùng 1 mã 1 lần (nhân vật nào nhận cũng được). Người chơi
+// (chủ server 22/11/2026: nhập mã nhận exp, lên cấp theo đúng luật chung lenCap, trần 200), số lần
+// dùng tối đa của cả máy chủ (0 = không giới hạn), hạn dùng, lời nhắn. Mỗi nhân vật dùng 1 mã 1 lần (chủ server 23/11/2026: đổi từ mỗi tài khoản —
+// nhân vật khác cùng tài khoản vẫn dùng được; lượt đã dùng ghi cả tài khoản lẫn tên nhân vật nên nhân vật đã dùng vẫn bị chặn như cũ). Người chơi
 // nhập ở Lễ quan Ba Lăng (main.js — khung nhập chữ của client 输入字串界面2.ini) -> POST /api/ma-qua { o, ma } (api.js).
 // du-lieu/ma-qua.json = { ma: { MÃ: { qua: { tien, xu, exp, mon: [{ k, n, dong?, he? }] }, loi, toiDa, het (ms, 0 = không hạn), tat, tao: { boi, luc },
 //   dung: [{ tk, nv, luc }] } } } — sao lưu hằng ngày cùng tài khoản (du-lieu.js saoLuu).
 //   nhap(tk, h, ma)  -> { ds: [quà đã nhận], loi }   ghi vào nhân vật h (nơi gọi lưu tài khoản); mã không có / tắt / hết hạn / hết lượt /
-//                       tài khoản đã dùng -> lỗi. Sai SAI_MAX lần trong SAI_MS thì chờ (chống dò mã)
+//                       nhân vật đã dùng -> lỗi. Sai SAI_MAX lần trong SAI_MS thì chờ (chống dò mã)
 //   quanTri(qt, b)   b.viec: "ds" -> { ds } | "tao" { ma?, tien?, xu?, mon?, loi?, toiDa?, ngay? } -> { msg, ma } | "tat" / "mo" / "xoa" { ma } -> { msg }
 //                    | "lay" { ma } -> dữ liệu đưa vào khung sửa | "sua" { ma, tien?, xu?, mon?, loi?, toiDa?, ngay: "giu" | 0 bỏ hạn | n ngày } -> { msg } (anh 09/11: gia hạn, sửa mã đã tạo —
 //                      còn hạn thì n ngày cộng vào hạn đang có, hết hạn thì tính từ bây giờ; người đã dùng mã giữ nguyên, vẫn không dùng lại được)
@@ -25,7 +26,7 @@ const FILE = path.join(D.ROOT, "ma-qua.json");
 const SAI_MAX = 10, SAI_MS = 10 * 60e3, LOI_MAX = 100, DUNG_GUI = 50;
 const CHU = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // mã tự sinh: bỏ chữ dễ nhầm (O 0, I 1)
 const loi = (msg, code = 400) => { throw Object.assign(new Error(msg), { code }); };
-// ---------- Mã chung theo phái (Huy 23/11/2026): 1 mã duy nhất, quà tính theo phái + giới tính của nhân vật nhập mã; phái có nhiều hệ vũ khí thì cho chọn hệ ----------
+// ---------- Mã chung theo phái (chủ server 23/11/2026): 1 mã duy nhất, quà tính theo phái + giới tính của nhân vật nhập mã; phái có nhiều hệ vũ khí thì cho chọn hệ ----------
 // Hệ = loại vũ khí của hướng chiêu (eqt trong skills.json): -1 tay không, 0 kiếm, 1 đao, 2 côn, 3 thương, 4 chùy, 5 song đao, 100 phi tiêu, 101 phi đao, 102 tụ tiễn.
 const SKILL = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets", "web", "skill", "skills.json"), "utf8"));
 const VU_KHI = { 0: "meleeweapon:10", 1: "meleeweapon:20", 2: "meleeweapon:30", 3: "meleeweapon:40", 4: "meleeweapon:50", 5: "meleeweapon:60", 100: "rangeweapon:10", 101: "rangeweapon:20", 102: "rangeweapon:30" };
@@ -75,7 +76,7 @@ function nhap(tk, h, ma0, he0) {
   if (tt === "tat") loi("Mã kích hoạt này đã ngừng sử dụng");
   if (tt === "het") loi("Mã kích hoạt này đã hết hạn");
   if (tt === "day") loi("Mã kích hoạt này đã hết lượt sử dụng");
-  if (m.dung.some((d) => d.tk === tk.ten)) loi("Tài khoản của bạn đã dùng mã kích hoạt này rồi");
+  if (m.dung.some((d) => d.tk === tk.ten && d.nv === h.name)) loi("Nhân vật này đã dùng mã kích hoạt này rồi");
   let qua = m.qua;
   if (qua && qua.tuDong) { // mã chung: quà theo phái + giới tính; chưa chọn hệ thì chỉ trả lựa chọn, chưa tính là đã dùng
     if (h.fac == null) loi("Hãy bái nhập môn phái trước rồi mới nhập mã này");
@@ -90,7 +91,7 @@ function nhap(tk, h, ma0, he0) {
   const ds = DO.taoQua(h, qua); // túi không đủ chỗ -> lỗi, túi giữ nguyên
   const e = Math.max(0, Math.floor(qua.exp || 0));
   let len = 0;
-  if (e > 0) { // kinh nghiệm (Huy 22/11/2026): cộng sau khi quà vào túi xong — túi đầy thì không nhận gì, kể cả exp
+  if (e > 0) { // kinh nghiệm (chủ server 22/11/2026): cộng sau khi quà vào túi xong — túi đầy thì không nhận gì, kể cả exp
     h.exp = (h.exp || 0) + e;
     len = DO.NOI.lenCap(h); // lên cấp theo đúng luật chung (trần 200)
     ds.push(`${nhom(e)} điểm kinh nghiệm`);

@@ -85,7 +85,7 @@ const tieuDeB64 = (s) => `=?UTF-8?B?${Buffer.from(String(s), "utf8").toString("b
 async function guiMail(to, tieuDe, noiDung) {
   if (BREVO_KEY) return guiBrevo(to, tieuDe, noiDung);
   if (!SAN_SANG()) {
-    if (PROD) throw new Error("Máy chủ chưa cấu hình gửi mail — Huy cần đặt VL_MAIL_USER và VL_MAIL_PASS trên Railway rồi mới đăng ký được");
+    if (PROD) throw new Error("Máy chủ chưa cấu hình gửi mail — đăng ký tạm thời chưa mở, xin quay lại sau");
     console.log(`[mail-thu] To: ${to} | ${tieuDe} | ${noiDung}`);
     return { thu: true };
   }

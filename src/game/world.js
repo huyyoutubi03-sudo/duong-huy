@@ -73,10 +73,10 @@ const NHIM_GAN = 700;                 // nhím Săn Nhím Béo Phì (sannhim.js)
 const BTG_GAN = 900;                  // boss thế giới cách mình ≤ chừng này = đang đánh boss (Trợ Thủ: nhắm trước, không tự về thành — bossGan)
 const CLICK_FX = 0.45;                // vòng sóng chỗ bấm đất sống 0,45 giây (World.draw)
 const HIDE_ALPHA = 0.4;               // ẩn thân: nhân vật mình vẽ mờ 40 %
-// Hiệu ứng cảnh "đẹp như bản gốc" — thử map 53 Ba Lăng trước (Huy duyệt 22/11/2026: xem bằng mắt rồi mới quyết làm hết).
+// Hiệu ứng cảnh "đẹp như bản gốc" — thử map 53 Ba Lăng trước (chủ server duyệt 22/11/2026: xem bằng mắt rồi mới quyết làm hết).
 // Công tắc: settings.mapDep === false thì tắt hết (mặc định bật; không cần sửa main.js). Chỉ áp cho map có tên trong bảng;
 // sương = độ đậm lớp 1 (lớp 2 mờ hơn, trôi ngược chiều), bong = bóng mềm dưới chân, bui = bụi dưới chân lúc chạy.
-const MAP_DEP = { c53: { bong: true, bui: true } }; // Huy 23/11: bỏ màng sương (suong) — chỉ giữ bóng + bụi; khóa = map.key (zone.map), Ba Lăng huyện zone 53 dùng bản đồ c53
+const MAP_DEP = { c53: { bong: true, bui: true } }; // chủ server 23/11: bỏ màng sương (suong) — chỉ giữ bóng + bụi; khóa = map.key (zone.map), Ba Lăng huyện zone 53 dùng bản đồ c53
 const depCua = (w) => (w.P.settings.mapDep !== false ? MAP_DEP[String(w.map.key)] || null : null);
 // 3 tấm vẽ sẵn 1 lần, dùng lại mọi khung (không tạo object mới mỗi khung): sương 512×256, bóng 64×32, bụi 32×32
 let SUONG_C = null, BONG_C = null, BUI_C = null;
@@ -318,16 +318,16 @@ const _d2 = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = (Math.
 const NHA_GIO = [1080360492, 3152482207, 906931598, 244220258, 193442122]; // Mot Thoi Ky Niem (S2), Mot Thoi Ky Niem (S1 — anh 12/11), localhost (cả *.localhost), [::1], ::1
 const _mc = (a, k) => String.fromCharCode(...a.map((c, i) => c ^ ((k + i * 13) & 0xff)));
 const CAU_GIO = [
-  [0x2d, [126,95,53,34,4,28,91,230,117,219,143,223,161,7799,154,208,159,7849,121,4,82,86,162,40,69,17,7832,237,185,240,70,224,129,56,138,212,72,106,119,77,21,245,111,15,91,86,403,7747,189,242,214,170,185,254,143,151,37,90,122,67,25,4,169,25,77,22,103,249,143,142,249,7787,187,194,136,7725,106,44,3,67,14,126,100,7,29,25,255,182,193,199,220,167,189,136,128,46,98,104,64]], // Server này chạy bản chép của Mot Thoi Ky Niem do Huy làm. Bản gốc: Mot Thoi Ky Niem
+  [0x2d, [126,95,53,34,4,28,91,230,117,219,143,223,161,7799,154,208,159,7849,121,4,82,86,162,40,69,17,7832,237,185,240,70,224,129,56,138,212,72,106,119,77,21,245,111,15,91,86,403,7747,189,242,214,170,185,254,143,151,37,90,122,67,25,4,169,25,77,22,103,249,143,142,249,7787,187,194,136,7725,106,44,3,67,14,126,100,7,29,25,255,182,193,199,220,167,189,136,128,46,98,104,64]], // Server này chạy bản chép của Mot Thoi Ky Niem do chủ server làm. Bản gốc: Mot Thoi Ky Niem
   [0x71, [50,22,98,232,133,213,222,161,188,198,135,104,225,58,73,92,32,32,51,68,85,225,231,117,217,150,466,352,7742,137,215,103,240,119,11,76,167,63,127,1,7842,239,179,203,197,73,233]], // Chép game thì nhanh, chép được cái tâm mới khó.
   [0x13, [81,7811,67,26,32,7813,2,78,13,7779,244,130,204,7697,185,246,141,152,7760,126,55,72,209,30,7828,120,372,144,6,172,250,85,147,174,170,187,158,212,8213,46,122,76,88,43,33,124,10,30,384,253,189,233,195,182,189,245,168,212,37,81,107,94,85,109,5,64,1,7893,234,186]], // Bản gốc vừa cập nhật là ở đây có ngay — admin chăm Ctrl+C, Ctrl+V lắm.
-  [0x5b, [22,7871,28,162,227,7739,199,150,139,181,178,202,181,254,104,62,89,89,101,48,7932,2,89,235,7752,201,129,154,180,177,147,152,158,122,53,76,207,69,105,58,7874,25,93,173,228,69,223,217,235,172,7748,157,216,44,109,78,86,47,109,46,21,27,239,233,187,222,71,172,168,252,216,214,119,121,7842,68,80,106]], // Mỗi lần Huy ra bản mới, server này lại 'sáng tạo' theo trong vòng 1 tiếng.
+  [0x5b, [22,7871,28,162,227,7739,199,150,139,181,178,202,181,254,104,62,89,89,101,48,7932,2,89,235,7752,201,129,154,180,177,147,152,158,122,53,76,207,69,105,58,7874,25,93,173,228,69,223,217,235,172,7748,157,216,44,109,78,86,47,109,46,21,27,239,233,187,222,71,172,168,252,216,214,119,121,7842,68,80,106]], // Mỗi lần chủ server ra bản mới, server này lại 'sáng tạo' theo trong vòng 1 tiếng.
   [0x66, [43,6,7761,227,186,196,220,352,167,251,138,7766,108,47,123,7928,85,111,112,54,2,7864,237,177,253,195,7781,229,188,184,348,7716,111,51,84,76,26,36,60,136,30,65,168,230,145,155,143,170,186,132,132,211,110,98,71,90,90,37,43,75,29,13,235]], // Muốn chơi bản gốc, khỏi chờ người ta chép: Mot Thoi Ky Niem
   [0x39, [116,7935,60,90,77,29,230,249,196,142,7780,232,452,0,150,220,101,99,215,94,29,41,63,7881,28,94,227,313,203,146,221,7791,183,198,148,7889,110,58,76,92,46,7917,53,15,85,179,175,232,192,7689,173,183,243]], // Mẹo: game ở đây luôn chậm hơn bản gốc khoảng 1 tiếng.
 ];
 let _gio = null; // null: chưa kiểm · false: tên miền nhà — thôi · { t, i }: lúc câu kế, câu kế
 function _nhipGio(P, t) {
-  return; // Huy: go bay ban nhai (cau troll khi chay tren ten mien khac)
+  return; // chủ server: go bay ban nhai (cau troll khi chay tren ten mien khac)
   if (!_gio) {
     const h = String(location.hostname || "").toLowerCase(), p = h.split(".");
     const lan = p.length === 4 && p.every((x) => /^\d{1,3}$/.test(x)) && (p[0] === "127" || p[0] === "10" || (p[0] === "192" && p[1] === "168") || (p[0] === "172" && +p[1] >= 16 && +p[1] <= 31));
@@ -2351,7 +2351,7 @@ export class World {
     if (this.camVc) { this.skMsg(this.camVc); return true; } // đường đua (duangua.js): cấm mọi võ công — cả Khinh công, di hình, bùa
     const kind = kindOf(s, this.P.skillDb);
     if (kind === "jump") return this.khinhCong(x, y);
-    if (kind === "buff") { const ok = this.castSelf(id); if (ok) { p.target = null; p.path = null; p.goal = null; p.loot = null; p.talkTo = null; } return ok; } // bùa tay phải: ra bùa xong thì đứng yên — hủy lệnh đi/đánh cũ (Huy 23/11/2026)
+    if (kind === "buff") { const ok = this.castSelf(id); if (ok) { p.target = null; p.path = null; p.goal = null; p.loot = null; p.talkTo = null; } return ok; } // bùa tay phải: ra bùa xong thì đứng yên — hủy lệnh đi/đánh cũ (chủ server 23/11/2026)
     const c = this.skCan(id); if (!c.ok) { this.skMsg(c.why); return true; }
     if (p.sit) this.sit(false);
     // di hình (Mê Ảnh Tung): tới ngay chỗ trỏ / con quái dưới chuột
@@ -2362,7 +2362,7 @@ export class World {
     if (p.act === "attack" || (p.act === "hurt" && p.t < (p.hurtDur ?? DUR.hurt))) { p.queueAt = { id, pt: [x, y] }; return true; }
     const lv = this.skLv(id), R = this.skRange(id, lv), d = ldist(p.x, p.y, x, y);
     if (d > R) { x = p.x + ((x - p.x) * R) / d; y = p.y + ((y - p.y) * R) / d; }
-    // ra chiêu vào khoảng không: hủy lệnh đi/đánh/nhặt/nói chuyện cũ — khỏi tự chạy tiếp sau khi ra chiêu (Huy 23/11/2026)
+    // ra chiêu vào khoảng không: hủy lệnh đi/đánh/nhặt/nói chuyện cũ — khỏi tự chạy tiếp sau khi ra chiêu (chủ server 23/11/2026)
     p.target = null; p.path = null; p.goal = null; p.loot = null; p.talkTo = null;
     this.castStart(id, lv, null, [x, y]);
     return true;

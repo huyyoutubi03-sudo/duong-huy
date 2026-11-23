@@ -1,1 +1,1 @@
-{"description":"Game Chien - Vo Lam Xua - ban cua Huy (Node.js thuan, khong thu vien ngoai)","engines":{"node":">=20"},"main":"chay-game.js","name":"chien-vo-lam-xua","private":true,"scripts":{"start":"node chay-game.js $PORT --lan --no-open"},"version":"2.0.0"}
+{"description":"Game Chien - Vo Lam Xua - ban rieng (Node.js thuan, khong thu vien ngoai)","engines":{"node":">=20"},"main":"chay-game.js","name":"chien-vo-lam-xua","private":true,"scripts":{"start":"node chay-game.js $PORT --lan --no-open"},"version":"2.0.0"}

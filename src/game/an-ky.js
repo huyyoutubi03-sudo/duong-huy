@@ -1,18 +1,17 @@
-// Ấn ký bản mới (từ 22/11/2026: thương hiệu "Chiến - Võ Lâm Xưa" của Huy; trước đó "Một Thời Kỷ Niệm" / "Đồ Xanh").
+// Ấn ký bản mới (từ 22/11/2026: thương hiệu "Chiến - Võ Lâm Xưa"; trước đó "Một Thời Kỷ Niệm" / "Đồ Xanh").
 //   Hiện: logo + chữ ký + câu cảnh báo bản nhái ở màn đăng nhập, màn chờ, trong game (ô chữ góc trái dải trên — hud.js tickInfo — + dòng tin
 //   lúc vào game) + lời chào trong bảng điều khiển của trình duyệt (F12 — người mở mã ra xem).
 //   Khóa: chữ ký là "chìa" — kyChuan() = mã băm FNV-1a của chữ ký + cảnh báo + tên miền; hud.js / windows.js mỗi nơi tự so với
 //   số riêng (viết mỗi nơi một kiểu); sai (bị sửa / gỡ chữ) hoặc màn đăng nhập / trong game mất chữ ký -> voKy(): màn chặn phủ kín, game dừng.
 //   Đổi chữ ký / cảnh báo thì phải tính lại số ở cả 2 nơi (node: bam32(KY + "|" + CANH + "|" + MIEN)). voKy() hiện đã gỡ (return sớm) nên các
-//   phép so chỉ còn để đối chiếu, không chặn game. Tên + tên miền viết dạng mã số (_g) — bản nén không có chữ "Huy" để tìm-thay một lượt.
+//   phép so chỉ còn để đối chiếu, không chặn game. Tên + tên miền viết dạng mã số (_g) để bản nén không lộ chữ ký khi tìm-thay một lượt.
 // Màn đăng nhập: logo trái, khung đăng nhập phải (màn hẹp / điện thoại dọc: logo trên, khung dưới) — + trong game B: thêm logo mờ góc phải
 // trên thanh kỹ năng (máy tính; điện thoại có ô chữ ký cạnh FPS). game.css khối "ấn ký".
 const _g = (a, k) => String.fromCharCode(...a.map((c, i) => c ^ ((k + i * 7) & 0xff)));
 export const MIEN = "Chien - Vo Lam Xua";
-export const TAC_GIA = "Huy";
 export const KY = `© 2026 Chien - Vo Lam Xua — Chiến - Võ Lâm Xưa`;
-export const KY_NGAN = `© ${TAC_GIA} · Chien - Vo Lam Xua`;
-export const CANH = "Bản dùng cá nhân của Huy — Chien - Vo Lam Xua.";
+export const KY_NGAN = `© Chien - Vo Lam Xua`;
+export const CANH = "Máy chủ miễn phí — do AI quản lý.";
 export const TIN_VAO = `${KY}. ${CANH}`;
 const LOGO = "assets/ui/dang-nhap/logo.webp", LOGO_NHO = "assets/ui/dang-nhap/logo-nho.webp";
 export const bam32 = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h; };
@@ -23,7 +22,7 @@ const chanHtml = () => `<div class="ak-ky">${KY}</div><div class="ak-canh">${CAN
 
 // màn chặn: chữ riêng (mã số khác _g ở trên — sửa tên / tên miền phía trên không đổi được dòng này)
 let daVo = false;
-export function voKy(noi) { return; // Huy: go man chan an ky ban goc
+export function voKy(noi) { return; // đã gỡ màn chặn ấn ký bản gốc
 }
 // lời chào trong bảng điều khiển (F12)
 export function loiChao() {

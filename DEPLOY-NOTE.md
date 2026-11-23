@@ -15,7 +15,7 @@ Thêm mới trong thư mục này: package.json (start script), .gitignore (du-l
 - Render Free: không có volume bền (ngủ 15 phút, mất dữ liệu) — chỉ demo.
 
 ## Tài khoản
-- Chưa có tài khoản nào trong bản này. Sau khi deploy, tạo tài khoản quản trị cho Huy bằng Railway Console:
+- Chưa có tài khoản nào trong bản này. Sau khi deploy, tạo tài khoản quản trị cho chủ server bằng Railway Console:
   `node quan-tri.js them <ten> <mat-khau> --admin`
   (chạy trong thư mục app trên Railway; dữ liệu ghi vào volume).
 - Xóa tài khoản test1/test1234 của bản clean-room cũ khỏi volume Railway nếu còn, sau khi bản mới chạy ổn.

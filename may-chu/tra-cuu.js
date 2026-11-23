@@ -349,7 +349,7 @@ function hdTongKim() {
       { ds: [
         tat ? "<c>Đang tạm dừng.</c>" : `<y>${lich}</y>: báo danh ${phut(F.baoDanh)}${F.baoTruoc > 0 ? ` (báo trước ${phut(F.baoTruoc)})` : ""}, đánh ${phut(F.danh)}.`,
         F.vaoTuDo !== false ? "Trận đã khai chiến vẫn báo danh / vào được bất cứ lúc nào, tới khi trận kết thúc." : `Vào muộn được tới phút ${so(F.vaoMuon)} của trận.`,
-        ttNgay ? `Trận Thiên Tử (Đêm Huy Hoàng): trận cuối ngày ${ttNgay} — điểm Tống Kim và kinh nghiệm thưởng ×${so(TT.heSo)}.` : "",
+        ttNgay ? `Trận Thiên Tử (Đêm Rực Rỡ): trận cuối ngày ${ttNgay} — điểm Tống Kim và kinh nghiệm thưởng ×${so(TT.heSo)}.` : "",
       ].filter(Boolean) },
       { h: "Thắng / thua" },
       { ds: [`Phút ${so(F.soai1)}: Nguyên Soái phe ít điểm xuất hiện ở đại doanh (bằng điểm: cả 2); phút ${so(F.soai2)}: phe kia.`,

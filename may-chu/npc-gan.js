@@ -10,7 +10,8 @@
 //   vai trò (vai): daTau (script seasonnpc.lua — Ba Lăng 53, Biện Kinh 37), satThu (Nhiếp Thí Trần — npc-them s1:sat-thu, 53), suGia (Hắc Bạch Sứ Giả — npc-them
 //   mc "su", 37 / 53; KHÔNG dùng minh-chu.json suGia — chỗ cũ, chỉ để hiện chữ), ruong (Rương chứa đồ, Thủ khố đảo), shop (NPC có Sale trong npcdialog.json,
 //   Dược phiến đảo, Quân Nhu quan Phong Hỏa, Quân y Tống Kim); thêm leQuan, xaPhu, tienTrang, thanTai, viemDe, bauCua, tayTuy, choTroi (chưa chặn — để anh quyết); voSu (Võ sư Ba
-//   Lăng) + cungNu (Chưởng Đăng Cung Nữ) — Báo Đáp Ân Sư (anh 16/11)
+//   Lăng) + cungNu (Chưởng Đăng Cung Nữ) — Báo Đáp Ân Sư (anh 16/11); moBinh (Mộ binh quan — Tống Kim, 325), quanNhu (Quân Nhu quan — Tống Kim, 325),
+//   thuyenPhu (Thuyền phu Phong Lăng Độ — bắc / nam, 336), veBinh (Vệ binh Thành môn — 37), thu (Người nhận thư — Võ Lâm Minh Chủ, 337 / 464) — anh 23/11
 //   npcCua(bãi, vai?) -> [{ x, y, ten, vai: [..] }]
 //   kiemGan(tài khoản, h, vai, R = 500) -> { ok, ly: null | "chua-vi-tri" | "sai-ban-do" | "xa", kc, zone, x?, y?, nv? }
 //   chan(tk, p, m, b) — api.js gọi trước khi làm việc của API (sau khóa an toàn). Sai: ghi cờ rồi ném lỗi 400 ma "xa-npc" (trình duyệt hiện câu báo). Cờ ĐỎ
@@ -19,7 +20,14 @@
 //     /api/da-tau   mọi việc TRỪ den / hoanPhu / xongLenh (gọi từ xa hợp lệ: bảng nhiệm vụ "Đưa ta đến", hoàn phù, Lệnh bài trong túi) và chon ngay sau Lệnh bài
 //                   (h.daTau.lenhChon — da-tau.js xongNhanh "lenh"; khung chọn thưởng hiện tại chỗ)
 //     /api/sat-thu  mọi việc (Nhiếp Thí Trần)
-//     /api/minh-chu việc của Hắc Bạch Sứ Giả (mo nhan thuong nhanGiet nhanThu nhanHai matThu xongGiet xongThu xongHai); nguoi / traoThu / haiBat / hai giữ kiểm cũ
+//     /api/minh-chu việc của Hắc Bạch Sứ Giả (mo nhan thuong nhanGiet nhanThu nhanHai matThu xongGiet xongThu xongHai); nguoi / traoThu: Người nhận thư (thu); haiBat / hai giữ kiểm cũ
+//     /api/phu-quy  mọi việc (Thần Tài — thanTai, Biện Kinh 37)
+//     /api/tay-tuy  mo kyNang kyNangOk tiemNang tiemNangOk huongDan roi roi2 roiOk (Thích Minh — tayTuy, đảo Tẩy Tủy 242); xaPhu vaoMienPhi vaoKyNang vaoTiemNang vaoCaHai (Xa phu mọi thành — xaPhu); việc khác (boDao / mienPhi…) miễn
+//     /api/tong-kim mo luat (Mộ binh quan — moBinh) / qn shop duc ducOk (Quân Nhu quan — quanNhu), điểm báo danh 325; phe / vao miễn (đăng nhập lại từ chiến trường + kiểm vùng xa đã có trong lam)
+//     /api/pld      mo len lenhBai matDo veNam (Thuyền phu Phong Lăng Độ — thuyenPhu, 336); cap chet lich miễn (trên thuyền / xem lịch); bac nam tua ve xem miễn
+//     /api/phong-hoa mo vao (Vệ binh Thành môn — veBinh, 37); huy / ket miễn (quản trị / kết thúc)
+//     /api/phuc-duyen KHÔNG chặn — menu Nhận thưởng (cột icon phải / bảng Giang hồ) mở được từ mọi nơi, gọi cùng endpoint; chặn sẽ phá luồng hợp lệ (anh 23/11)
+//     /api/do      mua / sua / muaLai CHẶN khi xa cửa hàng (phaiGan, R_SHOP 400) — trước chỉ ghi "xa-npc-log"; rương / Trợ Thủ giữ chỉ ghi
 //     /api/vuot-ai  chỉ nhận ra | chet | xem (việc trong ải); mo | vao | veAi chỉ đi qua Nhiếp Thí Trần (/api/sat-thu) -> chặn
 //     /api/tu-lam   dt | st phải ở bãi có NPC đó (dt: Dã Tẩu 53 / 37, st: Nhiếp Thí Trần 53; sai bãi / chưa rõ chỗ: chặn, cờ VÀNG tu-lam-xa / npc-vi-tri —
 //                   tính năng trả Xu, không phải đường lách) — đúng bãi mà xa thì CHO QUA + ghi "xa-npc-log" (tính năng trả Xu,
@@ -29,7 +37,7 @@
 //                   đồ trong khu có vai ruong (viec "ruong"); câu "hãy tới … gặp …" (noiCo) không chỉ tới khu vực bang (mỗi bang một bản)
 //     /api/bao-dap-an-su (Báo Đáp Ân Sư — anh 16/11) moiRuou / dang: Võ sư (voSu); doi / muaTo: Chưởng Đăng Cung Nữ (cungNu); tt miễn. NPC mới thêm vào npc-them.json
 //                   -> khởi động lại máy chủ (bảng chỗ đứng đệm lúc dùng đầu — CACHE)
-//   Chỉ GHI ("xa-npc-log", chưa chặn — số liệu để anh quyết): /api/do mua / sua / muaLai xa cửa hàng (> R_SHOP), rương chứa đồ kho 0–3 (cat lay datR chuyenR xep
+//   Chỉ GHI ("xa-npc-log", chưa chặn — số liệu để anh quyết): rương chứa đồ kho 0–3 (cat lay datR chuyenR xep
 //   gui rut datMk doiMk — không xét túi tử mẫu "tm" / hành trang) xa rương (> R_RUONG), Trợ Thủ việc ở thành (thanh / catDo) khi không ở thành / thôn
 "use strict";
 const fs = require("fs");
@@ -57,7 +65,8 @@ function coSale(script) {
 }
 const TEN_VAI = { daTau: "Dã Tẩu", satThu: "Nhiếp Thí Trần", suGia: "Hắc Bạch Sứ Giả", ruong: "Rương chứa đồ", shop: "NPC cửa hàng", leQuan: "Lễ quan", xaPhu: "Xa phu",
   tienTrang: "Chủ tiền trang", thanTai: "Thần Tài", viemDe: "Bình Bình cô nương", bauCua: "Chủ sòng bạc", tayTuy: "Thích Minh", choTroi: "Chủ Chợ Trời", bangHoi: "Người hướng dẫn bang hội", xaPhuBang: "Xa phu khu vực bang hội",
-  loiDai: "Công Bình Tử", duaNgua: "Truy Phong Sứ Giả", voSu: "Võ sư", cungNu: "Chưởng Đăng Cung Nữ", thoRen: "Thợ rèn", thuongNhan: "Thương nhân thần bí" }; // loiDai: Lôi Đài (anh 15/11 — npc-them.json s1:loi-dai, Ba Lăng 53 / Biện Kinh 37); duaNgua: đua ngựa (anh 16/11 — s1:dua-ngua, Ba Lăng 53)
+  loiDai: "Công Bình Tử", duaNgua: "Truy Phong Sứ Giả", voSu: "Võ sư", cungNu: "Chưởng Đăng Cung Nữ", thoRen: "Thợ rèn", thuongNhan: "Thương nhân thần bí",
+  moBinh: "Mộ binh quan", quanNhu: "Quân Nhu quan", thuyenPhu: "Thuyền phu Phong Lăng Độ", veBinh: "Vệ binh Thành môn", thu: "Người nhận thư" }; // loiDai: Lôi Đài (anh 15/11 — npc-them.json s1:loi-dai, Ba Lăng 53 / Biện Kinh 37); duaNgua: đua ngựa (anh 16/11 — s1:dua-ngua, Ba Lăng 53)
 // voSu / cungNu: Báo Đáp Ân Sư (anh 16/11) — Võ sư Ba Lăng (NPC client mapnpcs.json, script 巴陵县武师.lua) / Chưởng Đăng Cung Nữ (npc-them.json s1:chuong-dang, Ba Lăng 53)
 // NPC bản đồ client (mapnpcs.json talk) theo script
 function vaiTalk(n) {
@@ -68,13 +77,17 @@ function vaiTalk(n) {
   if (/(巴陵县_铁匠对话|汴京_铁匠[12]对话)\.lua$/.test(s)) L.push("thoRen"); // Thợ rèn Ba Lăng / Biện Kinh — khảm nạm Thủy tinh (anh 17/11)
   if (/驿站车夫对话\.lua$/.test(s)) L.push("xaPhu");
   if (/赌场老板对话\.lua$/.test(s)) L.push("bauCua");
+  if (/城门卫兵[1-4]对话\.lua$/.test(s)) L.push("veBinh"); // Vệ binh Thành môn Biện Kinh (PH_THANH 37) — Phong Hỏa Liên Thành (anh 23/11)
+  if (/(north|south)_boatman\d\.lua$/i.test(s)) L.push("thuyenPhu"); // Thuyền phu Phong Lăng Độ bắc / nam (336) — /api/pld (anh 23/11)
+  if (/(song|jin)_(signup|shop)\.lua$/i.test(s)) L.push(/_signup\.lua$/i.test(s) ? "moBinh" : "quanNhu"); // Mộ binh quan / Quân Nhu quan — điểm báo danh Tống Kim (325) — /api/tong-kim (anh 23/11)
   if (s && coSale(s)) L.push("shop");
   return L;
 }
 // NPC game thêm (npc-them.json) theo cờ / script
 const vaiThem = (n) => [n.sat && "satThu", n.mc === "su" && "suGia", n.pq && "thanTai", n.vd && "viemDe", n.bc && "bauCua", n.tay && "tayTuy", n.viec === "ruong" && "ruong",
   n.script === "s1:tien-trang" && "tienTrang", n.script === "s1:cho-troi" && "choTroi", n.script === "s1:duoc-dao" && "shop", n.bh && "bangHoi", n.bhVai === "xaPhu" && "xaPhuBang",
-  n.script === "s1:loi-dai" && "loiDai", n.script === "s1:dua-ngua" && "duaNgua", n.script === "s1:chuong-dang" && "cungNu", n.script === "s1:thuong-nhan" && "thuongNhan"].filter(Boolean); // s1:thuong-nhan: Thương nhân thần bí (khảm nạm — anh 17/11) // s1:chuong-dang: Chưởng Đăng Cung Nữ (Báo Đáp Ân Sư — anh 16/11) // bh: Người hướng dẫn bang hội (anh 14/11); bhVai xaPhu: Xa phu khu vực bang (đợt 4); s1:loi-dai: Công Bình Tử (Lôi Đài — anh 15/11)
+  n.script === "s1:loi-dai" && "loiDai", n.script === "s1:dua-ngua" && "duaNgua", n.script === "s1:chuong-dang" && "cungNu", n.script === "s1:thuong-nhan" && "thuongNhan",
+  n.mc === "thu" && "thu"].filter(Boolean); // s1:thuong-nhan: Thương nhân thần bí (khảm nạm — anh 17/11) // s1:chuong-dang: Chưởng Đăng Cung Nữ (Báo Đáp Ân Sư — anh 16/11) // bh: Người hướng dẫn bang hội (anh 14/11); bhVai xaPhu: Xa phu khu vực bang (đợt 4); s1:loi-dai: Công Bình Tử (Lôi Đài — anh 15/11); mc "thu": Người nhận thư (Võ Lâm Minh Chủ — anh 23/11)
 
 const CACHE = new Map(); // mã bãi -> [{ x, y, ten, vai }]
 function dung(z) {
@@ -180,7 +193,7 @@ function ghiThanh(tk, h, act, b) {
   NT.ghi(tk, h, "xa-npc-log", `do ${act}: Trợ Thủ việc ở thành mà đang ở ${tenBai(d.zone)} (không phải thành / thôn) — chỉ ghi, chưa chặn`);
 }
 
-const CHAN_P = new Set(["/api/da-tau", "/api/sat-thu", "/api/minh-chu", "/api/vuot-ai", "/api/tu-lam", "/api/do", "/api/bang-hoi", "/api/khu-bang", "/api/loi-dai", "/api/dua-ngua", "/api/bao-dap-an-su", "/api/kham-nam"]); // chan chạy mỗi yêu cầu: đường khác thoát ngay
+const CHAN_P = new Set(["/api/da-tau", "/api/sat-thu", "/api/minh-chu", "/api/vuot-ai", "/api/tu-lam", "/api/do", "/api/bang-hoi", "/api/khu-bang", "/api/loi-dai", "/api/dua-ngua", "/api/bao-dap-an-su", "/api/kham-nam", "/api/phu-quy", "/api/tay-tuy", "/api/tong-kim", "/api/pld", "/api/phong-hoa"]); // chan chạy mỗi yêu cầu: đường khác thoát ngay — /api/phuc-duyen KHÔNG chặn (menu Nhận thưởng mở từ mọi nơi — xem ghi chú đầu file)
 // /api/bao-dap-an-su (Báo Đáp Ân Sư — anh 16/11): việc -> vai NPC phải đứng gần — mời rượu / dâng hương bao ở Võ sư, đổi hương bao / mua Tơ Tằm ở Chưởng Đăng Cung
 // Nữ; "tt" (xem trạng thái) và việc khác (bao-dap-an-su.js tự báo lỗi) miễn
 const BDAS_NPC = { moiRuou: "voSu", dang: "voSu", doi: "cungNu", muaTo: "cungNu", nvLe: "voSu", nvNhan: "voSu", nvTra: "voSu" }; // nvLe / nvNhan / nvTra: nhiệm vụ ngày lễ (anh 18/11)
@@ -189,6 +202,15 @@ const BDAS_NPC = { moiRuou: "voSu", dang: "voSu", doi: "cungNu", muaTo: "cungNu"
 const DN_NPC = new Set(["mo", "gioiThieu", "baoDanh", "nhan"]);
 // /api/loi-dai (Lôi Đài — anh 15/11): chỉ việc hội thoại Công Bình Tử phải đứng gần (viec có thể kèm ":đối số" — bd:4, xem:2); roi / dangNhap / trangThai (trong sân, lúc vào game) miễn
 const LD_NPC = new Set(["mo", "luat", "bd", "so", "vao", "xem"]);
+// /api/tay-tuy (anh 23/11): việc ở đảo Tẩy Tủy -> Thích Minh (tayTuy, 242); việc đi đảo -> Xa phu mọi thành (xaPhu); việc khác miễn
+const TT_NPC = new Set(["mo", "kyNang", "kyNangOk", "tiemNang", "tiemNangOk", "huongDan", "roi", "roi2", "roiOk"]);
+const TT_XA = new Set(["xaPhu", "vaoMienPhi", "vaoKyNang", "vaoTiemNang", "vaoCaHai"]);
+// /api/tong-kim (anh 23/11): mo / luat -> Mộ binh quan (moBinh); qn / shop / duc / ducOk -> Quân Nhu quan (quanNhu); phe / vao và việc trong trận miễn
+const TK_NPC = { mo: "moBinh", luat: "moBinh", qn: "quanNhu", shop: "quanNhu", duc: "quanNhu", ducOk: "quanNhu" };
+// /api/pld (anh 23/11): mo / len / lenhBai / matDo / veNam -> Thuyền phu Phong Lăng Độ (thuyenPhu, 336); cap / chet / lich và việc trên thuyền miễn
+const PLD_NPC = new Set(["mo", "len", "lenhBai", "matDo", "veNam"]);
+// /api/phong-hoa (anh 23/11): mo / vao -> Vệ binh Thành môn (veBinh, 37); huy / ket miễn
+const PH_NPC = new Set(["mo", "vao"]);
 function chan(tk, p, m, b) {
   if (m !== "POST" || !CHAN_P.has(p) || !tk || !Array.isArray(tk.nv) || !b || typeof b !== "object") return;
   const o = b.o | 0, h = o >= 0 && o < tk.nv.length ? tk.nv[o] : null;
@@ -202,7 +224,12 @@ function chan(tk, p, m, b) {
       return void phaiGan(tk, h, "daTau", ten);
     }
     case "/api/sat-thu": return void phaiGan(tk, h, "satThu", ten);
-    case "/api/minh-chu": if (SU_GIA.has(viec)) phaiGan(tk, h, "suGia", ten); return;
+    case "/api/minh-chu": if (SU_GIA.has(viec)) phaiGan(tk, h, "suGia", ten); else if (viec === "nguoi" || viec === "traoThu") phaiGan(tk, h, "thu", ten); return; // nguoi / traoThu: Người nhận thư (Tiểu Chiêu 337 / Phụng Phụng 464); hai / haiBat giữ kiểm cũ trong lam
+    case "/api/phu-quy": return void phaiGan(tk, h, "thanTai", ten); // Phú Quý Cẩm Hạp: mọi việc ở Thần Tài Biện Kinh
+    case "/api/tay-tuy": if (TT_NPC.has(viec)) phaiGan(tk, h, "tayTuy", ten); else if (TT_XA.has(viec)) phaiGan(tk, h, "xaPhu", ten); return; // đảo Tẩy Tủy: Thích Minh / Xa phu
+    case "/api/tong-kim": if (Object.prototype.hasOwnProperty.call(TK_NPC, viec)) phaiGan(tk, h, TK_NPC[viec], ten); return; // điểm báo danh Tống Kim 325: Mộ binh quan / Quân Nhu quan
+    case "/api/pld": if (PLD_NPC.has(viec)) phaiGan(tk, h, "thuyenPhu", ten); return; // Phong Lăng Độ: Thuyền phu bắc / nam
+    case "/api/phong-hoa": if (PH_NPC.has(viec)) phaiGan(tk, h, "veBinh", ten); return; // Phong Hỏa Liên Thành: Vệ binh Thành môn Biện Kinh
     // bang hội (anh 14/11 — THIET-KE-BANG-HOI.md 1.1): chỉ lập bang phải đứng gần Người hướng dẫn bang hội (Ba Lăng / Biện Kinh); việc khác làm ở khung Bang phái, không chặn
     case "/api/bang-hoi": if (viec === "lap") phaiGan(tk, h, "bangHoi", ten); return;
     case "/api/khu-bang": if (viec === "xaPhu") phaiGan(tk, h, "xaPhuBang", ten); return; // khu vực bang (đợt 4): Xa phu khu (lộ phí về thành) phải đứng gần
@@ -227,7 +254,7 @@ function chan(tk, p, m, b) {
     }
     case "/api/do": {
       const act = String(b.act || ""), t2 = `do ${act}`;
-      if (ACT_SHOP.has(act)) return void ghiXa(tk, h, "shop", t2, R_SHOP);
+      if (ACT_SHOP.has(act)) return void phaiGan(tk, h, "shop", t2, R_SHOP); // mua / sửa / mua lại: chặn khi xa cửa hàng (> R_SHOP 400) — trước chỉ ghi "xa-npc-log" (anh 23/11)
       if (ACT_RUONG.has(act) && dungRuong(b)) return void ghiXa(tk, h, "ruong", t2, R_RUONG);
       if (act === "thanh" || act === "catDo") return void ghiThanh(tk, h, act, b);
       return;

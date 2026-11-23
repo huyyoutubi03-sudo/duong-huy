@@ -1,8 +1,8 @@
-/* Màn đăng nhập kiểu mới (Huy duyệt 22/11/2026 — bản phác "Bản 1 sửa 5";
+/* Màn đăng nhập kiểu mới (chủ server duyệt 22/11/2026 — bản phác "Bản 1 sửa 5";
    cân chỉnh lần 2 cùng ngày cho hài hòa với ảnh phác: tiêu đề khung lên trên
    khung, khung vàng có góc trang trí + viền kép, chữ "Chiến" lửa to hơn ở
    góc dưới trái, ô nhập + nút vàng kiểu cổ, nền giữ trăng/rồng lộ rõ.
-   File riêng để không đụng game.css (gói logo trong suốt đang chờ Huy quyết
+   File riêng để không đụng game.css (gói logo trong suốt đang chờ chủ server quyết
    giữ nguyên, không động vào). */
 
 /* Logo ảnh cũ (an-ky.js gắn .ak-logo vào màn đăng nhập): bản mới dùng chữ
@@ -120,7 +120,7 @@
   #s-login .vl-tieude { padding: 6px 8px 0; }
 }
 
-/* Màn rộng: dùng ĐÚNG ảnh mẫu 7 (thủy mặc, Huy chốt 22/11/2026 — tiêu đề
+/* Màn rộng: dùng ĐÚNG ảnh mẫu 7 (thủy mặc, chủ server chốt 22/11/2026 — tiêu đề
    "Võ Lâm Truyền Kỳ I" liền nhau, không dấu gạch ngang) làm nền — form trong
    suốt đè lên dải lụa vẽ sẵn. Ảnh 2448×1024 (tỉ lệ 2.3906); form là khung
    hình giữ đúng tỉ lệ ảnh, ô nhập và nút đặt theo % đo từ ảnh. Màn hẹp/thấp
@@ -164,7 +164,7 @@
   /* Báo lỗi đặt dưới ấn, trên hàng Fanpage/QR vẽ sẵn */
   #s-login #lg-form .lg-err { position: absolute; left: 33%; top: 88.6%; width: 34%; margin: 0;
     text-align: center; color: #b3261e; font-size: clamp(11px, .85vw, 14px); text-shadow: 0 1px 2px rgba(255, 255, 255, .8); }
-  /* Nút đăng ký: ngay dưới ấn ĐĂNG NHẬP vẽ sẵn (Huy dặn 12:44 ngày 23/11/2026), cùng tâm với ấn, khỏi đè mã QR vẽ sẵn ở dưới */
+  /* Nút đăng ký: ngay dưới ấn ĐĂNG NHẬP vẽ sẵn (chủ server dặn 12:44 ngày 23/11/2026), cùng tâm với ấn, khỏi đè mã QR vẽ sẵn ở dưới */
   #s-login #lg-form .lg-dk { position: absolute; left: 44.0%; top: 87.9%; width: 12.0%; box-sizing: border-box; margin: 0; padding: 2px 10px;
     background: rgba(242, 239, 233, .94); border: 1px solid rgba(138, 42, 26, .45); border-radius: 20px; color: #8a2a1a; cursor: pointer;
     font-size: clamp(11px, .85vw, 14px); font-weight: 700; text-align: center; text-decoration: underline; white-space: nowrap; }

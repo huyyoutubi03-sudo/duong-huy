@@ -702,7 +702,7 @@ function lich(now = Date.now()) {
 const dangTran = () => !!(D && D.loai === "tran" && !D.ket);
 // đang đánh (Quân Nhu quan không bán / không đúc — client song_shop.lua)
 const dangDanh = (t = Date.now()) => !!(D && D.loai === "tran" && !D.ket && t >= D.kc);
-// trận Thiên Tử (client "Đêm Huy Hoàng" — anh chốt: trận tối thứ 3, 5, 7 nhân đôi điểm thưởng + kinh nghiệm): trận giờ muộn nhất trong ngày của lịch (GM
+// trận Thiên Tử (client "Đêm Rực Rỡ" — anh chốt: trận tối thứ 3, 5, 7 nhân đôi điểm thưởng + kinh nghiệm): trận giờ muộn nhất trong ngày của lịch (GM
 // dời giờ vẫn đúng), ngày trong tuần theo lúc mở báo danh (trận qua nửa đêm vẫn tính ngày bắt đầu)
 function laThienTu(gio, u) {
   const L = (Array.isArray(CF.gio) ? CF.gio : []).filter(GV.hopLe).sort(), thu = Array.isArray(CF.thienTu.thu) ? CF.thienTu.thu.map(Number) : [];
@@ -736,7 +736,7 @@ function moTran(opt = {}) {
     soaiSt: [new Map(), new Map()], dot: [], tin: [], tinId: 0, baoLuc: t, bao3: false, bao1: false, doiCho: new Map() };
   WS.guiHet(moTin());
   const con = Math.max(0, Math.round((kc - t) / 60000));
-  TG().thongBao(`Tống Kim đại chiến đã bắt đầu báo danh! Đẳng cấp từ ${CF.cap} trở lên hãy nhờ Xa phu đưa đến Điểm báo danh Tống Kim (ủng hộ ${N.tien(CF.phi)}). ${con > 0 ? `Còn ${con} phút nữa khai chiến.` : "Sắp khai chiến."}${x2 ? ` Chiến dịch lần này là Đêm Huy Hoàng — ${MT.thuong("phần thưởng gấp đôi")}!` : ""}`, true);
+  TG().thongBao(`Tống Kim đại chiến đã bắt đầu báo danh! Đẳng cấp từ ${CF.cap} trở lên hãy nhờ Xa phu đưa đến Điểm báo danh Tống Kim (ủng hộ ${N.tien(CF.phi)}). ${con > 0 ? `Còn ${con} phút nữa khai chiến.` : "Sắp khai chiến."}${x2 ? ` Chiến dịch lần này là Đêm Rực Rỡ — ${MT.thuong("phần thưởng gấp đôi")}!` : ""}`, true);
   return lich();
 }
 // khai chiến: không ai báo danh thì thôi trận; bot (cấp theo cấp cao nhất máy chủ lúc này) + Tống binh / Kim binh ra trận, lịch đợt quân bậc cao
@@ -1085,10 +1085,10 @@ function luatChu() {
   const T = CF.thuong, B = CF.diemBinh || [];
   return `Phương thức bảo vệ Nguyên Soái: khai chiến ${CF.soai1} phút, tại Doanh trại phe ít điểm tích lũy nhất sẽ xuất hiện Nguyên Soái, phút ${CF.soai2} Nguyên Soái phe kia cũng sẽ xuất hiện. Nếu điểm tích lũy bằng nhau thì 2 Nguyên Soái sẽ cùng xuất hiện. Phe hạ Nguyên Soái địch trước giành thắng lợi, trận kết thúc ngay; không ai hạ được thì căn cứ điểm tích lũy của 2 bên phân thắng bại, bằng điểm thì phe Tống thắng.`
     + `<enter>Điểm tích lũy: hạ người chơi / tướng sĩ phe địch ${CF.pk} điểm × hệ số chức, liên trảm 3 mạng thêm ${(CF.lienTram || [])[1] || 0}; hạ Tống binh / Kim binh ${B[0]}, Hiệu úy ${B[1]}, Thống lĩnh ${B[2]}, Phó tướng ${B[3]}, Đại tướng ${B[4]}, Nguyên Soái ${B[5]}. 1000 điểm = Hiệu úy; 3000 điểm = Thống Lĩnh; 6000 điểm = Phó tướng; 10 000 điểm = Đại Tướng.`
-    + `<enter>Thưởng cuối trận (từ ${T.diemMin} điểm, còn trong chiến trường): điểm Tống Kim = điểm trận + ${T.thang} (thắng) / ${T.thua} (thua), Nhạc Vương Hồn Thạch, kinh nghiệm theo điểm và đẳng cấp, Huân công bài (thắng, từ ${T.hcDiem} điểm, tối đa ${T.hcNgay} mỗi ngày). Trận cuối ngày thứ ba, năm, bảy là Đêm Huy Hoàng — điểm và kinh nghiệm gấp đôi.`
+    + `<enter>Thưởng cuối trận (từ ${T.diemMin} điểm, còn trong chiến trường): điểm Tống Kim = điểm trận + ${T.thang} (thắng) / ${T.thua} (thua), Nhạc Vương Hồn Thạch, kinh nghiệm theo điểm và đẳng cấp, Huân công bài (thắng, từ ${T.hcDiem} điểm, tối đa ${T.hcNgay} mỗi ngày). Trận cuối ngày thứ ba, năm, bảy là Đêm Rực Rỡ — điểm và kinh nghiệm gấp đôi.`
     + `<enter>Chú ý: sau khi báo danh sẽ được đưa vào hậu doanh; trước khi khai chiến không được rời khỏi đại doanh. Bị trọng thương không mất gì, ${CF.hoiSinh} giây sau trở lại hậu doanh.`;
 }
-const xemThienTu = (R) => (R && R.x2 ? "<enter>Chiến dịch lần này là <color=yellow>Đêm Huy Hoàng<color>, phần thưởng gấp đôi so với bình thường! Cơ hội không nên bỏ qua!" : "");
+const xemThienTu = (R) => (R && R.x2 ? "<enter>Chiến dịch lần này là <color=yellow>Đêm Rực Rỡ<color>, phần thưởng gấp đôi so với bình thường! Cơ hội không nên bỏ qua!" : "");
 // khung đầu Mộ binh quan
 // chiPhe: Mộ binh quan của 1 phe ở Điểm báo danh (song_signup / jin_signup — anh 09/11 "có tống và kim như client"): chỉ nhận phe đó
 function moBinh(h, R, pha, dk, t, chiPhe) {

@@ -1069,6 +1069,15 @@ export class GameWindows {
     this.refresh(true);
     return true;
   }
+  // mở khung Khảm nạm của Thợ rèn (main.js khamNamFn "KhamNam"): khung khảm + cửa sổ Đồ dùng để kéo món vào (như openStore, giữ vị trí ini của khung)
+  moKham() {
+    const w = this.W.get("kham"); if (!w) return false;
+    w.show();
+    this.W.get("items").show();
+    this.refresh(true);
+    this.api.P.audio.ui("click");
+    return true;
+  }
   // đổi Lễ phẩm (cửa hàng "bh"): việc bang hội lePham (máy chủ trừ cống hiến, giao món — phiếu); -> true nếu đổi được
   _bhMua(k, n) { return this.api.bh({ viec: "lePham", k, n }).then((j) => !!(j && !j.loi)); }
   // mua ở Shop đặc biệt (TIEN_DIEM.db): main.js khamGoi áp túi / Xu + câu báo; lỗi (thiếu Xu, đứng xa…) báo ô tin -> true nếu mua được
@@ -2805,7 +2814,7 @@ export class GameWindows {
   // nội dung bên phải MessageList — cong-cu/dung-khung-cua-hang.mjs ghép, xóa chữ vẽ sẵn của nền). Tin: assets/data/tin-cap-nhat.json (api.tin()),
   // mới nhất trên cùng; tin chưa xem (id > api.tinXem()) có chữ "Mới" đỏ; mở khung = đã xem hết (api.daXemTin() — chữ Mới còn tới lần mở sau)
   _tin() {
-    if (kyChuan() >>> 16 !== 0x842a) voKy("cửa sổ"); // ấn ký mới "Chiến - Võ Lâm Xưa" (an-ky.js, 22/11/2026)
+    if (kyChuan() >>> 16 !== 0x65a0) voKy("cửa sổ"); // ấn ký mới (câu cảnh báo đổi 23/11/2026)
     const w = this.W.get("tin"); if (!w) return;
     const api = this.api, { idx, msg } = this._dsMuc(w, "TitleList", "MessageList");
     const cuon = [ganCuon(this.W, w, "TitleList", "Title_Scroll"), ganCuon(this.W, w, "MessageList", "Content_Scroll")].filter(Boolean);
