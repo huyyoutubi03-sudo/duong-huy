@@ -106,7 +106,7 @@ export const Net = {
   doItem(o, b) { return this.call("POST", "do", { o, ...b }); },
   devSync(o, hero) { return this.call("POST", "quan-tri/nv", { o, hero }); },
   thuongDN(o, b) { return this.call("POST", "thuong-dn", { o, ...b }); }, // đăng nhập nhận thưởng: {} xem | { nhan, chon? } nhận
-  maQua(o, ma) { return this.call("POST", "ma-qua", { o, ma }); },
+  maQua(o, ma, he) { return this.call("POST", "ma-qua", he == null ? { o, ma } : { o, ma, he }); },
   doiPhai(o, b) { return this.call("POST", "doi-phai", { o, ...b }); }, // đổi môn phái — NPC môn phái Ba Lăng (may-chu/doi-phai.js): b = { viec: roi | nhap, phai?, chon? } // mã kích hoạt — Lễ quan (may-chu/ma-qua.js): -> { ds, loi, nv, tui }
   xepHang() { return this.call("GET", "xep-hang"); },
   ungHo() { return this.call("GET", "ung-ho"); }, // danh sách ủng hộ tác giả (may-chu/ung-ho.js — anh 12/11) // bảng xếp hạng (may-chu/xep-hang.js)

@@ -140,6 +140,8 @@ const BD = require("./bao-dap-an-su"); // anh 16/11 — Báo Đáp Ân Sư: /api
 const KN = require("./kham-nam"); // anh 17/11 — khảm nạm Thủy tinh: /api/kham-nam (Thợ rèn Ba Lăng / Biện Kinh, Thương nhân thần bí), LUAT.khamNam (phí, tỉ lệ Tử, mã đá)
 const TT = require("./ti-thi"); // anh 17/11 — tỉ thí: /api/ti-thi (chiến thư, nhận lời -> sân lôi đài 1 vs 1 miễn phí), nhịp ttMoi / ttVao, LUAT.tiThi (câu khịa, giờ)
 Object.defineProperty(DO.LUAT, "tkHoan", { enumerable: true, configurable: true, get: () => TKM.hoanGiay() }); // anh 17/11: giây tối đa của hoàn trong trận Tống Kim — trình duyệt ghi ở ô xem món
+Object.defineProperty(DO.LUAT, "baoDapAnSu", { enumerable: true, configurable: true, get: () => BD.luat() }); // anh 23/11: luật Báo Đáp Ân Sư gửi lúc vào game — client anOpt hiện lựa chọn ở Võ sư / Cung Nữ khi có key này (bản này vỏ rỗng: {dang:false} — lựa chọn hiện, bấm vào hiện câu trung thực)
+Object.defineProperty(DO.LUAT, "khamNam", { enumerable: true, configurable: true, get: () => KN.luat() }); // anh 23/11: luật khảm nạm — client anOpt hiện lựa chọn ở Thợ rèn khi có key này (bản này vỏ rỗng: {bat:false} — lựa chọn hiện, mở khung được, máy chủ báo chưa có khi Khảm)
 const PACK = require("../assets/server.json");
 
 // name: tên máy chủ hiện ra — VL_TEN_MAY của từng máy (anh 12/11: 2 máy chung mã — S1 Mot Thoi Ky Niem đặt "S1 · Đồ xanh" trong s1.service, S2 Mot Thoi Ky Niem không
@@ -880,7 +882,7 @@ async function xuLyApi(req, res, p) {
       return guiJson(res, 200, { ...r, kn: knCua(h), luyen: DO.luyenCua(h), tui: tuiCua(h), nv: nvCua(h) });
     }
     if (p === "/api/ma-qua" && m === "POST") {
-      const h = oCua(tk, body), r = MQ.nhap(tk, h, body.ma); D.ghiTk(tk);
+      const h = oCua(tk, body), r = MQ.nhap(tk, h, body.ma, body.he); D.ghiTk(tk);
       return guiJson(res, 200, { ...r, nv: nvCua(h), tui: tuiCua(h) });
     }
     if (p === "/api/quan-tri/uy-thac" && m === "POST") {

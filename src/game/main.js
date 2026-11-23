@@ -152,7 +152,7 @@ async function taiKhoThat() {
       j("assets/data/phong-hoa.json").catch(() => null), // Phong Hỏa Liên Thành: 3 đường, chỗ sinh quân, đại doanh (cong-cu/dung-phong-hoa.mjs — anh 04/11)
     ].map((p) => L.track(p, 1)));
     if (npcThem && npcDlg) Object.assign(npcDlg.scripts, npcThem.scripts || {});
-    themXaPhuTayTuy(npcDlg); themLeQuan(npcDlg);
+    themXaPhuTayTuy(npcDlg); themLeQuan(npcDlg); themBaoDapAnSu(npcDlg); themKhamNam(npcDlg); themBauCua(npcDlg); themThuyenPhu(npcDlg);
     BieuCam.nap(bcData);
     P.bossTg = btgData;
     P.phongHoa = phData; PhongHoa.D = phData;
@@ -801,7 +801,6 @@ async function loadZone(zone, opt, L) {
     if (n.pld) return pld({ viec: "mo", bo: n.pld.bo, ben: n.pld.ben }); // Thuyền phu Phong Lăng Độ (anh 27/10 — may-chu/phong-lang-do.js)
     if (n.sat) return satThu({ viec: "mo" }); // Nhiếp Thí Trần — Boss Sát thủ (anh 27/10 — may-chu/sat-thu.js)
     if (n.pq) return phuQuy({ viec: "mo" }); // Thần Tài Biện Kinh — Phú Quý Cẩm Hạp (anh 03/11 — may-chu/phu-quy.js)
-    if (n.bc || /赌场老板对话\.lua$/.test(n.script || "")) return null; // Chủ sòng bạc (Ba Lăng huyện, thành lớn của client) — Bầu Cua (anh 10/11)
     if (n.vd) return null; // Bình Bình cô nương — Viêm Đế Bảo Tàng (anh 04/11 — may-chu/viem-de.js)
     if (n.rtb) return moRuongTb(n.rtb); // Rương Thần Bí (anh 03/11 — may-chu/ruong-tb.js)
     if (n.mc) return n.mc === "su" ? minhChu({ viec: "mo" }) : n.mc === "thu" ? minhChu({ viec: "nguoi", ai: n.name }, n.name) : haiCay(n); // nhiệm vụ Võ Lâm Minh Chủ (anh 03/11)
@@ -2161,6 +2160,39 @@ async function dnDangNhap(v) {
   DuaNgua.capNhat(s);
   return { zone: z, at: Number.isFinite(v.x) && Number.isFinite(v.y) ? [v.x, v.y] : Array.isArray(me.xp) ? me.xp : null };
 }
+// ---------- Lôi Đài / Đua Ngựa: hàm hội thoại cho entry "LoiDai" / "DuaNgua" (npc-them.json scripts) ----------
+// Thiết kế ở comment trên (khung Describe, mỗi lựa chọn là 1 việc máy chủ "LoiDai:<viec>" / "DuaNgua:<viec>") — trước đây
+// chỉ có trong comment, script không có entry nên bấm vào chỉ thấy "hội thoại chưa làm". Máy chủ hiện là vỏ rỗng (may-chu/loi-dai.js,
+// dua-ngua.js chỉ ném 400) nên mọi việc đều rơi vào câu trung thực của máy chủ; khi nào máy chủ có hệ thống thật thì khung say/talk/
+// vào sân/về của nó chạy qua đây, không phải sửa thêm ở client.
+function loiDaiFn(id) {
+  if (!hero || !GW) return { close: true };
+  const [, viec = "mo"] = id.split(":");
+  const lai = [["Rời khỏi", null]];
+  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : { desc: 1, text: CBT + String((e && e.message) || "Lát nữa hãy quay lại."), opts: lai });
+  return Net.loiDai(hero.slot | 0, { viec }).then((j) => {
+    if (!j) return { close: true };
+    if (j.say) return { desc: 1, text: CBT + String(j.say.text || ""), opts: (j.say.opts || []).map(([nhan, v]) => [nhan, v ? `LoiDai:${v}` : null]) };
+    if (j.talk) return { desc: 1, text: CBT + (Array.isArray(j.talk.text) ? j.talk.text : [j.talk.text]).join("<enter>"), opts: lai };
+    if (j.vao) { ldVaoTran(j.vao); return { close: true }; }
+    if (j.ve) { ldVe(j.ve); return { close: true }; }
+    if (j.msg) P.hud.msg(phanMauDn(j.msg));
+    return { close: true };
+  }, loi);
+}
+function duaNguaFn(id) {
+  if (!hero || !GW) return { close: true };
+  const [, viec = "mo"] = id.split(":");
+  const lai = [["Rời khỏi", null]];
+  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : { desc: 1, text: TPS + String((e && e.message) || "Lát nữa hãy quay lại."), opts: lai });
+  return Net.duaNgua(hero.slot | 0, { viec }).then((j) => {
+    if (!j) return { close: true };
+    if (j.say) return { desc: 1, text: TPS + String(j.say.text || ""), opts: (j.say.opts || []).map(([nhan, v]) => [nhan, v ? `DuaNgua:${v}` : null]) };
+    if (j.talk) return { desc: 1, text: TPS + (Array.isArray(j.talk.text) ? j.talk.text : [j.talk.text]).join("<enter>"), opts: lai };
+    dnApply(j); // tin / trạng thái / vào / về — đã đi bản đồ khác thì đóng khung
+    return { close: true };
+  }, loi);
+}
 // ---------- Báo Đáp Ân Sư (anh 16/11 — may-chu/bao-dap-an-su.js; sự kiện tháng 11 của client activitysys\config\22 "Đỗ Khang Tửu") ----------
 // Võ Sư Ba Lăng (script client 巴陵县武师.lua): thêm "Hoạt động báo đáp ân sư" trước "Không có gì!…" (themBaoDapAnSu) -> khung Describe có chân dung (passerby097 — hình của
 // chính Võ sư): lời client "Lại một năm sương phong mưa tuyết…" + Giới thiệu hoạt động / Mời võ sư dùng Đỗ Khang Tửu / Dâng tặng Ngũ Sắc Hương Bao / Rời khỏi.
@@ -2212,8 +2244,9 @@ function bdApply(j) {
   return j;
 }
 const bdGoi = (b) => Net.baoDapAnSu(hero.slot | 0, b).then(bdApply);
-// trạng thái mới (viec "tt" — không cần đứng gần NPC); máy chủ chưa có / mất mạng: theo LUAT lúc vào game
-const bdTt = () => bdGoi({ viec: "tt" }).then((j) => (j && j.bdas ? bdTtCu : bdChuan(null)), () => bdChuan(null));
+// trạng thái mới (viec "tt" — không cần đứng gần NPC); máy chủ không trả lời: theo LUAT lúc vào game NẾU có lịch sự kiện;
+// không có lịch mà máy chủ cũng không trả lời (tính năng chưa có trong bản này) thì để lỗi hiện ra — tránh câu "đã kết thúc" sai sự thật
+const bdTt = () => bdGoi({ viec: "tt" }).then((j) => (j && j.bdas ? bdTtCu : bdChuan(null)), (e) => { const L = luat().baoDapAnSu || {}; return (L.tu || L.den) ? bdChuan(null) : Promise.reject(e); });
 // câu kết quả trong khung NPC: câu máy chủ (thẻ <color> khung NPC hiểu — richText) hoặc dựng từ kn / tra; không có gì thì câu mặc định mac
 const bdKetQua = (j, mac = "") => {
   const L = []; j = j || {};
@@ -2252,7 +2285,7 @@ function bdasFn(id, npc) {
   const lai = [["Trở lại", "BaoDapAnSu"], ["Rời khỏi", null]];
   const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : vs(String((e && e.message) || "Lát nữa hãy quay lại."), lai));
   const ve = () => bdasFn("BaoDapAnSu", npc); // Hủy ở khung số -> trang chính
-  if (viec === "gioiThieu") return bdTt().then((S) => vs(bdGioiThieu(S), lai));
+  if (viec === "gioiThieu") return bdTt().then((S) => vs(bdGioiThieu(S), lai), loi);
   // anh 18/11 — Nhiệm vụ ngày lễ (máy chủ may-chu/nguon-su-kien.js nvLam — sườn dùng lại): xem / nhận / trả, mỗi ngày làm lại
   if (viec === "nvLe" || viec === "nvNhan" || viec === "nvTra") return bdGoi({ viec }).then((j) => {
     const V = (j && j.nvLe) || {}, nut = V.nut === "nhan" ? [["Nhận nhiệm vụ", "BaoDapAnSu:nvNhan"]] : V.nut === "tra" ? [["Trả nhiệm vụ", "BaoDapAnSu:nvTra"]] : [];
@@ -2274,7 +2307,7 @@ function bdasFn(id, npc) {
     const max = Math.min(co, con);
     return GW.chonSo({ tieuDe: "Dâng tặng Ngũ Sắc Hương Bao", ten: `${bdTen(BD_MON.hbNs)} (có ${co})`, toiDa: max, toiThieu: 1, san: max, thongTin: (n) => (D && D.toiDa ? `Dâng ${n} — hôm nay còn ${con} lần` : `Dâng ${n}`) })
       .then((n) => (n ? bdGoi({ viec: "dang", n }).then((j) => vs(bdKetQua(j, `Đã dâng tặng ${n} ${bdTen(BD_MON.hbNs)}.`), [...(bdDem(BD_MON.hbNs) > 0 ? [["Dâng tặng thêm", "BaoDapAnSu:dang"]] : []), ...lai]), loi) : ve()));
-  });
+  }, loi);
   // trang chính (lựa chọn "Hoạt động báo đáp ân sư" ở khung Say của Võ sư)
   return bdTt().then((S) => {
     if (!S.mo) return vs(bdHet(S), [["Giới thiệu hoạt động báo đáp ân sư", "BaoDapAnSu:gioiThieu"], ["Rời khỏi", null]]);
@@ -2282,7 +2315,7 @@ function bdasFn(id, npc) {
     const hom = [R && R.tran ? `kinh nghiệm từ rượu <color=yellow>${fmtSo(+R.kn || 0)} / ${fmtSo(R.tran)}<color>` : "", D && D.toiDa ? `đã dâng <color=yellow>${D.da | 0} / ${D.toiDa}<color> hương bao` : ""].filter(Boolean).join(", ");
     return vs(`Lại một năm sương phong mưa tuyết, lại một năm đào lê tỏa hương,  Không biết đệ tử của ta hành tẩu giang hồ ra sao rồi?<enter>Trong hành trang: ${bdDem(BD_MON.ruou)} ${bdTen(BD_MON.ruou)} · ${bdDem(BD_MON.hbNs)} ${bdTen(BD_MON.hbNs)}${hom ? `<enter>Hôm nay: ${hom}.` : ""}`,
       [["Giới thiệu hoạt động báo đáp ân sư", "BaoDapAnSu:gioiThieu"], ...(hero.nsk ? [["Nhiệm vụ ngày lễ", "BaoDapAnSu:nvLe"]] : []), ["Mời võ sư dùng Đỗ Khang Tửu", "BaoDapAnSu:ruou"], ["Dâng tặng Ngũ Sắc Hương Bao", "BaoDapAnSu:dang"], ["Rời khỏi", null]]);
-  });
+  }, loi);
 }
 // Chưởng Đăng Cung Nữ: viec "" (trang chính) | "doi" (loai tt / ns / td) | "muaTo" | "gioiThieu"
 function cungNuFn(viec, loai, id, npc) {
@@ -2290,7 +2323,7 @@ function cungNuFn(viec, loai, id, npc) {
   const lai = [["Trở lại", "ChuongDang"], ["Rời khỏi", null]];
   const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : cn(String((e && e.message) || "Lát nữa hãy quay lại."), lai));
   const ve = () => cungNuFn("", "", "ChuongDang", npc);
-  if (viec === "gioiThieu") return bdTt().then((S) => cn(bdGioiThieu(S), lai));
+  if (viec === "gioiThieu") return bdTt().then((S) => cn(bdGioiThieu(S), lai), loi);
   if (viec === "doi") {
     const [hb, nl] = BD_HB[loai] || []; if (!hb) return cn("Việc không rõ.", lai);
     const tra = bdDem(BD_MON.tra), co = bdDem(nl), max = Math.min(tra, co);
@@ -2313,11 +2346,29 @@ function cungNuFn(viec, loai, id, npc) {
     return cn(`Gần đây ta cần 1 ít Tây Hồ long tĩnh trà, tơ lụa, sợi chỉ màu, trung dược , ta rất cần gấp những thứ này, nếu như ngươi tặng ta những thứ trên, ta sẽ tặng cho ngươi phần thưởng<enter>Trong hành trang: ${co}`,
       [["Giới thiệu hoạt động báo đáp ân sư", "ChuongDang:gioiThieu"], ["Đổi tơ tằm hương bao (1 trà + 1 Tơ Tằm)", "ChuongDang:doi:tt"], ["Đổi ngũ sắc hương bao (1 trà + 1 Sợi chỉ màu)", "ChuongDang:doi:ns"], ["Đổi trung dược hương bao (1 trà + 1 Trung Dược)", "ChuongDang:doi:td"], // anh 17/11 "chỗ đổi quà chưa rõ ràng, k biết cần gì và gì": nhãn ghi nguyên liệu
         [`Mua Tơ Tằm (${fmtMoney(S.giaTo)})`, "ChuongDang:muaTo"], ["Rời khỏi", null]]);
-  });
+  }, loi);
+}
+// ---------- Bầu Cua: hàm hội thoại cho Chủ sòng bạc (themBauCua nối opts tới "BauCua*") ----------
+// Máy chủ may-chu/bau-cua.js là vỏ rỗng (ném 400) nên Bầu Cua chỉ hiện câu trung thực của máy chủ; 5 trò còn lại
+// (Tài Xỉu / Chẵn Lẻ / Oẳn Tù Tì / Đánh Xèng) chưa có trong bản này — không bịa luật chơi, chỉ báo chưa có.
+function bauCuaFn(id) {
+  if (!hero || !GW) return { close: true };
+  const TRO = { TaiXiu: "Tài Xỉu", ChanLe: "Chẵn Lẻ", OanTuTi: "Oẳn Tù Tì", DanhXeng: "Đánh Xèng" };
+  const [, tro = ""] = id.split(":");
+  const lai = [["Rời khỏi", null]];
+  if (tro && TRO[tro]) return { desc: 1, text: `${TRO[tro]} chưa có trong bản Chien - Vo Lam Xua.`, opts: lai };
+  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : { desc: 1, text: String((e && e.message) || "Lát nữa hãy quay lại."), opts: lai });
+  return Net.bauCua(hero.slot | 0, { viec: "mo" }).then((j) => {
+    if (!j) return { close: true };
+    if (j.say) return { desc: 1, text: String(j.say.text || ""), opts: (j.say.opts || []).map(([nhan, v]) => [nhan, v ? `BauCua:${v}` : null]) };
+    if (j.talk) return { desc: 1, text: (Array.isArray(j.talk.text) ? j.talk.text : [j.talk.text]).join("<enter>"), opts: lai };
+    return { close: true };
+  }, loi);
 }
 // ---------- Khảm nạm Thủy tinh (anh 16/11 tối, chốt 17/11 — may-chu/kham-nam.js; khung khảm client ui3 打造物品.ini — windows.js _kham) ----------
 // Thợ rèn Ba Lăng / Biện Kinh (script client 巴陵县_铁匠对话.lua, 汴京_铁匠1对话.lua, 汴京_铁匠2对话.lua): thêm "Khảm nạm" / "Liên quan khảm nạm" sau "Giao dịch"
-// (như client: Giao dịch · Khảm nạm · Liên quan khảm nạm · Không giao dịch — themKhamNam); máy chủ chưa có khảm (LUAT không có khamNam) thì ẩn (npcApi anOpt).
+// (như client: Giao dịch · Khảm nạm · Liên quan khảm nạm · Không giao dịch — themKhamNam); luật khảm do máy chủ gửi lúc vào game
+// (LUAT.khamNam — bản này {bat:false}: tính năng chưa có, lựa chọn vẫn hiện để mở khung/khung giúp đỡ, máy chủ báo chưa có khi Khảm).
 // Thương nhân thần bí (NPC thêm — npc-them.json script "s1:thuong-nhan", hình Thần Bí Thương Nhân Liễu Ất của client, có chân dung): bán Hoán Linh Thạch bằng Xu
 const THO_REN = /(巴陵县_铁匠对话|汴京_铁匠[12]对话)\.lua$/;
 const THUONG_NHAN = "<link=image[0,14]:\\spr\\npcres\\passerby\\passerby184\\passerby184_pst.spr>Thương nhân thần bí:<link> "; // chân dung: cong-cu/dung-chan-dung-npc.mjs THEM
@@ -2377,6 +2428,23 @@ function hoanMo(loai) {
     if (!k2) return P.hud.canh(`${tenM(it.k)} không có bản ${x.x === 1 ? "nam" : x.x === 0 ? "nữ" : "khác giới"} cùng đẳng cấp (đai, nhẫn dùng chung nam nữ)`);
     lam({ viec: "hoanTinh", u: it.u, da: da.u }, `Hoán tính <color=yellow>${tenM(it.k)}<color> (${x.x === 0 ? "nam" : "nữ"}) thành <color=yellow>${tenM(k2)}<color> (${x.x === 0 ? "nữ" : "nam"}), giữ ngũ hành và các dòng?<enter>Thành công ${tl}%, phí ${phi}. Trượt mất 1 ${tenDa} và phí, trang bị giữ nguyên.`);
   });
+}
+// ---------- Khảm nạm: hàm hội thoại cho lựa chọn "KhamNam*" ở Thợ rèn (themKhamNam nối opts) ----------
+// "KhamNam": mở khung khảm của game (windows.js _kham — đặt đồ + đá rồi bấm Khảm; máy chủ vỏ rỗng nên bấm Khảm sẽ báo
+// chưa có, như _dbMua). "KhamNamHelp": khung giúp đỡ bằng đúng lời gợi ý ô của khung khảm. "KhamNam:hoan*": Hoán hình / Hoán tính
+// qua hoanMo (khung Giao vật phẩm; máy chủ vỏ rỗng nên báo chưa có).
+function khamNamFn(id) {
+  if (!hero || !GW) return { close: true };
+  if (id === "KhamNam") { GW.moKham(); return { close: true }; }
+  if (id === "KhamNam:hoanHh") { hoanMo("hh"); return { close: true }; }
+  if (id === "KhamNam:hoanHt") { hoanMo("ht"); return { close: true }; }
+  if (id === "KhamNam:hoan") {
+    return { desc: 1, text: "Thợ rèn: Hoán hình đổi dáng vũ khí, Hoán tính đổi bản nam / nữ của trang bị — cần 1 phù / lệnh tương ứng, giữ ngũ hành và các dòng.",
+      opts: [["Hoán hình vũ khí", "KhamNam:hoanHh"], ["Hoán tính trang bị", "KhamNam:hoanHt"], ["Rời khỏi", null]] };
+  }
+  // KhamNamHelp
+  return { desc: 1, text: "Thợ rèn: đặt trang bị vào ô giữa, đặt thủy tinh vào các ô xung quanh rồi bấm Khảm.<enter>Ô Đẳng cấp: Tử Thủy Tinh — nâng cấp đồ. Ô Linh lực: Lục Thủy Tinh — quay lại các dòng. Ô ngũ hành: Lam Thủy Tinh (đổi hệ ngẫu nhiên) hoặc Hoán Linh Thạch (đổi sang hệ đã chọn).<enter>Bấm Khảm sẽ hỏi lại phí và tỉ lệ trước khi làm.",
+    opts: [["Hoán hình · Hoán tính", "KhamNam:hoan"], ["Rời khỏi", null]] };
 }
 // Trợ Thủ "ở lại trận": sắp hết thuốc (mức Treo máy) -> chạy về Quân Nhu quan gần nhất mua theo danh sách mua của Treo máy (không bán / cất); 60 giây
 // mới thử lại 1 lần
@@ -2475,6 +2543,60 @@ function themLeQuan(D) {
       ["Hủy vật phẩm", "HuyVatPham"], ["Kết thúc đối thoại", null]]; // anh 12/11: tâm thư (Esc → Ủng hộ tác giả)
   }
 }
+// ---------- Báo Đáp Ân Sư: chèn lựa chọn vào khung Say của Võ sư (themBaoDapAnSu — như themLeQuan, chạy lúc dựng dữ liệu) ----------
+// Trước đây chỉ có trong comment: lựa chọn không bao giờ xuất hiện. Chèn trước lựa chọn cuối ("Không có gì!…").
+// Chưởng Đăng Cung Nữ chưa đặt NPC (npc-them.json chỉ có ghi chú) — entry s1:chuong-dang ở npc-them.json scripts để sẵn,
+// có NPC thì khung ChuongDang mở qua bdasFn/cungNuFn. Lựa chọn chỉ hiện khi luat().baoDapAnSu có (anOpt) — luật do máy chủ gửi (do.js LUAT).
+function themBaoDapAnSu(D) {
+  for (const [k, s] of Object.entries((D && D.scripts) || {})) {
+    if (!/巴陵县武师\.lua$/.test(k)) continue;
+    const o = s.nodes && s.nodes.main && s.nodes.main.opts;
+    if (!o || o.some((x) => x[1] === "BaoDapAnSu")) continue;
+    o.splice(Math.max(0, o.length - 1), 0, ["Hoạt động báo đáp ân sư", "BaoDapAnSu"]);
+  }
+}
+// ---------- Khảm nạm: chèn lựa chọn vào khung Describe của 3 Thợ rèn (themKhamNam — như themLeQuan) ----------
+// Trước đây chỉ có trong comment + cổng anOpt: lựa chọn không bao giờ xuất hiện. Chèn ngay sau "Giao dịch".
+// Lựa chọn chỉ hiện khi luat().khamNam có (anOpt) — luật do máy chủ gửi (do.js LUAT).
+function themKhamNam(D) {
+  for (const [k, s] of Object.entries((D && D.scripts) || {})) {
+    if (!THO_REN.test(k)) continue;
+    const o = s.nodes && s.nodes.main && s.nodes.main.opts;
+    if (!o || o.some((x) => x[1] === "KhamNam")) continue;
+    const i = o.findIndex((x) => x[1] === "yes");
+    o.splice(i >= 0 ? i + 1 : 1, 0, ["Khảm nạm", "KhamNam"], ["Liên quan khảm nạm", "KhamNamHelp"]);
+  }
+}
+// ---------- Chủ sòng bạc Biện Kinh: nối 6 lựa chọn của script gốc vào hàm Bầu Cua (themBauCua — như themLeQuan) ----------
+// Script gốc có đủ 6 lựa chọn nhưng trỏ tới 6 node act chết (#g_DailogBack — callback DailogClass mà công cụ dựng không chuyển được),
+// lại thêm onTalk return null nên bấm vào không có gì. Giữ nguyên nhãn gốc, chỉ đổi đích sang id hàm: Bầu Cua gọi máy chủ
+// (vỏ rỗng -> câu trung thực), 5 trò còn lại chưa có trong bản này -> câu trung thực, "Thôi không chơi" đóng khung.
+function themBauCua(D) {
+  for (const [k, s] of Object.entries((D && D.scripts) || {})) {
+    if (!/赌场老板对话\.lua$/.test(k)) continue;
+    const m = s.nodes && s.nodes.main; if (!m || !Array.isArray(m.opts) || m.opts.length !== 6) continue;
+    if (m.opts[0][1] === "BauCua") continue;
+    const dich = ["BauCua", "BauCua:TaiXiu", "BauCua:ChanLe", "BauCua:OanTuTi", "BauCua:DanhXeng", null];
+    m.opts = m.opts.map(([nhan], i) => [nhan, dich[i]]);
+  }
+}
+// ---------- Thuyền phu: dựng lại entry cho 4 script chỉ còn node act chết (themThuyenPhu — như themLeQuan) ----------
+// Entry {"t":"act"} không acts/không next -> mở ra đóng ngay. Lời gốc không còn (không có file .lua nào trong bản gốc / repo);
+// dựng theo đúng mẫu 2 script Động Đình còn sống (Say chào + chọn đi thuyền + câu đùa tiền đò, không vận chuyển thật):
+// lựa chọn "Đi thuyền" chỉ tới câu đùa rồi đóng, như anh em Động Đình. Không bịa đích, không thêm vận chuyển.
+function themThuyenPhu(D) {
+  const CHET = /长江码头船夫对话\.lua$|码头船夫[123]对话\.lua$/;
+  for (const [k, s] of Object.entries((D && D.scripts) || {})) {
+    if (!CHET.test(k)) continue;
+    const nodes = s.nodes || {};
+    if (nodes.main && nodes.main.t !== "act") continue;
+    s.nodes = {
+      main: { t: "say", text: ["Cả đời ta đều sống với sông nước! Khách quan muốn đi đâu?"], opts: [["Đi thuyền", "yes"], ["Không ngồi", "no"]] },
+      yes: { t: "say", text: ["Nếu khách quan muốn đi xin cho thêm ít tiền!"], opts: [["Được.", "ok2"]] },
+      ok2: { t: "say", text: ["Đưa ngươi đi công không vậy gia đình ta chết đói à?"], opts: [] },
+    };
+  }
+}
 // Lễ quan → Hủy vật phẩm (anh 05/11: "thêm vào lễ quan 1 chức năng đó là hủy vật phẩm, có thể hủy tất cả các loại vật phẩm bao gồm khóa bảo
 // hiểm") — như script client gm_tool\dispose_item.lua DisposeItem: khung Giao vật phẩm (GiveItemUI "Hủy vật phẩm" + câu dặn của script) -> đặt
 // món của hành trang (mọi loại, cả món khóa bảo hiểm) -> Xác nhận. S1 hỏi lại 1 lần ở khung hỏi của game (kể tên món sẽ hủy) vì hủy rồi không
@@ -2524,16 +2646,26 @@ function moPassRuong(id) {
   }, (e) => (e.ma === "het-phien" ? { close: true } : { desc: 1, text: LE_QUAN + e.message, opts: lai }));
 }
 // khung nhập chữ của client -> máy chủ kiểm mã (may-chu/ma-qua.js) -> túi mới + khung báo quà như quà của quản trị
+// mã chung theo phái (Huy 23/11/2026): máy chủ trả chonHe -> hiện lựa chọn hệ rồi gửi lại kèm hệ đã chọn
+function baoMaKichHoat(j) {
+  applyServer(j);
+  P.audio.ui("levelup");
+  P.hud.msg(`Kích hoạt mã thành công — nhận được: ${j.ds.join(", ")}`, MAU_TIN.kn);
+  // mã khóa (anh 11/11 — may-chu/ma-qua.js j.khoa: có món thật sự khóa; j.khoaTru: món luôn không khóa có trong quà — Mật đồ thần bí)
+  GW.bao(`Lễ quan: Kích hoạt mã thành công!<enter>Bạn nhận được: <color=yellow>${j.ds.join(", ")}<color>${j.khoa ? `<enter>Vật phẩm nhận được đã khóa bảo hiểm vĩnh viễn${j.khoaTru ? ` (trừ ${j.khoaTru})` : ""} — không giao dịch, bày bán được` : ""}${j.loi ? `<enter>${j.loi}` : ""}`);
+}
 function nhapMaKichHoat() {
   if (!hero || !GW) return;
   GW.nhapChu({ tieuDe: "Nhập mã kích hoạt", toiDa: 32 }).then((ma) => {
     if (!ma || !hero) return;
     return Net.maQua(hero.slot | 0, ma).then((j) => {
-      applyServer(j);
-      P.audio.ui("levelup");
-      P.hud.msg(`Kích hoạt mã thành công — nhận được: ${j.ds.join(", ")}`, MAU_TIN.kn);
-      // mã khóa (anh 11/11 — may-chu/ma-qua.js j.khoa: có món thật sự khóa; j.khoaTru: món luôn không khóa có trong quà — Mật đồ thần bí)
-      GW.bao(`Lễ quan: Kích hoạt mã thành công!<enter>Bạn nhận được: <color=yellow>${j.ds.join(", ")}<color>${j.khoa ? `<enter>Vật phẩm nhận được đã khóa bảo hiểm vĩnh viễn${j.khoaTru ? ` (trừ ${j.khoaTru})` : ""} — không giao dịch, bày bán được` : ""}${j.loi ? `<enter>${j.loi}` : ""}`);
+      if (j.chonHe && j.chonHe.length) {
+        if (!NPCD) { GW.bao("Lễ quan: mã này cần chọn hệ — hãy nói chuyện lại với ta rồi nhập mã."); return; }
+        const opts = j.chonHe.map((c) => [c.ten, () => Net.maQua(hero.slot | 0, ma, c.eqt).then(baoMaKichHoat).catch((e) => { if (e.ma !== "het-phien" && !e.boQua) GW.bao(`Lễ quan: ${e.message}`); })]);
+        NPCD.choose("msgsel", "InfoText", "Mã chung nhận đồ theo môn phái. Đại hiệp theo hệ nào?", [...opts, ["Để sau", null]]);
+        return;
+      }
+      baoMaKichHoat(j);
     });
   }).catch((e) => { if (e.ma !== "het-phien" && !e.boQua) GW.bao(`Lễ quan: ${e.message}`); });
 }
@@ -3577,6 +3709,10 @@ function chucNangFn(id, npc) {
   const L = luat();
   if (id === "NhapMaKichHoat") { nhapMaKichHoat(); return { close: true }; } // Lễ quan Ba Lăng (anh 29/10)
   if (id === "HuyVatPham") { huyVatPham(); return { close: true }; } // Lễ quan: hủy vật phẩm (anh 05/11)
+  if (/^LoiDai(:|$)/.test(id)) return loiDaiFn(id); // Công Bình Tử (npc-them.json s1:loi-dai)
+  if (/^DuaNgua(:|$)/.test(id)) return duaNguaFn(id); // Truy Phong Sứ Giả (npc-them.json s1:dua-ngua)
+  if (/^BauCua(:|$)/.test(id)) return bauCuaFn(id); // Chủ sòng bạc Biện Kinh
+  if (id === "KhamNam" || id === "KhamNamHelp" || /^KhamNam:hoan/.test(id)) return khamNamFn(id); // Thợ rèn: khảm nạm / giúp đỡ / hoán hình-tính
   if (/^MoPassRuong(:|$)/.test(id)) return moPassRuong(id); // Lễ quan: xóa mật mã rương (anh 29/10 lần 3)
   if (id === "buy_addibox") {
     const gia = (L.ruong || {}).moRong || [], n = hero.ruongMo | 0;

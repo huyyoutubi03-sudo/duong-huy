@@ -25,6 +25,30 @@ const FILE = path.join(D.ROOT, "ma-qua.json");
 const SAI_MAX = 10, SAI_MS = 10 * 60e3, LOI_MAX = 100, DUNG_GUI = 50;
 const CHU = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // mã tự sinh: bỏ chữ dễ nhầm (O 0, I 1)
 const loi = (msg, code = 400) => { throw Object.assign(new Error(msg), { code }); };
+// ---------- Mã chung theo phái (Huy 23/11/2026): 1 mã duy nhất, quà tính theo phái + giới tính của nhân vật nhập mã; phái có nhiều hệ vũ khí thì cho chọn hệ ----------
+// Hệ = loại vũ khí của hướng chiêu (eqt trong skills.json): -1 tay không, 0 kiếm, 1 đao, 2 côn, 3 thương, 4 chùy, 5 song đao, 100 phi tiêu, 101 phi đao, 102 tụ tiễn.
+const SKILL = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets", "web", "skill", "skills.json"), "utf8"));
+const VU_KHI = { 0: "meleeweapon:10", 1: "meleeweapon:20", 2: "meleeweapon:30", 3: "meleeweapon:40", 4: "meleeweapon:50", 5: "meleeweapon:60", 100: "rangeweapon:10", 101: "rangeweapon:20", 102: "rangeweapon:30" };
+const TEN_HE = { "-1": "Tay không", 0: "Kiếm", 1: "Đao", 2: "Côn", 3: "Thương", 4: "Chùy", 5: "Song đao", 100: "Phi tiêu", 101: "Phi đao", 102: "Tụ tiễn" };
+const nhanhPhai = (fac) => { // các hệ vũ khí của phái: eqt khác -2 trong mọi chiêu của phái (phái 1 hệ -> 1 mục, không cần chọn)
+  const f = (SKILL.factions || []).find((x) => x.id === +fac);
+  if (!f) return [];
+  const s = new Set();
+  for (const id of (f.skills || [])) { const k = SKILL.skills[String(id)]; if (k && k.eqt !== -2 && k.eqt != null) s.add(k.eqt | 0); }
+  return [...s].sort((a, b) => a - b);
+};
+const doTheoPhai = (h, eqt) => { // bộ đồ cấp 10 như mã MAXPING từng phái (tao-ma-maxping.py): vũ khí theo hệ đã chọn, còn lại theo giới + hệ ngũ hành
+  const series = h.series | 0, nu = h.sex === "f", fac = +h.fac, mon = [], wk = VU_KHI[eqt];
+  if (wk) mon.push({ k: wk, n: 1, dong: 6, he: series });
+  const ao = nu ? (series === 4 ? "armor:90" : fac === 6 ? "armor:130" : "armor:120") : (series === 4 ? "armor:20" : fac === 6 ? "armor:60" : "armor:50");
+  const mu = nu ? (series === 4 ? "helm:90" : "helm:130") : (series === 4 ? "helm:20" : "helm:50");
+  mon.push({ k: ao, n: 1, dong: 6, he: series }, { k: "ring:10", n: 2, dong: 6, he: series },
+    { k: nu ? "amulet:10" : "amulet:20", n: 1, dong: 6, he: series }, { k: nu ? "boot:40" : "boot:20", n: 1, dong: 6, he: series },
+    { k: "belt:20", n: 1, dong: 6, he: series }, { k: mu, n: 1, dong: 6, he: series },
+    { k: nu ? "cuff:10" : "cuff:20", n: 1, dong: 6, he: series }, { k: nu ? "pendant:10" : "pendant:20", n: 1, dong: 6, he: series },
+    { k: "horse:10", n: 1, dong: 6, he: series }, { k: "ms:26", n: 15 }, { k: "ms:22", n: 15 });
+  return mon;
+};
 const sach = (s, n) => String(s || "").replace(/[\u0000-\u001f\u007f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
 // mã không phân biệt hoa / thường, bỏ khoảng trắng; chữ không dấu, số, - _ (4–32 ký tự)
 const chuanMa = (s) => { const k = String(s || "").replace(/\s+/g, "").toUpperCase(); return /^[A-Z0-9_-]{4,32}$/.test(k) ? k : null; };
@@ -42,7 +66,7 @@ function ghi(all) {
 }
 const tinhTrang = (m, t = Date.now()) => (m.tat ? "tat" : m.het && t > m.het ? "het" : m.toiDa && m.dung.length >= m.toiDa ? "day" : "mo");
 
-function nhap(tk, h, ma0) {
+function nhap(tk, h, ma0, he0) {
   const t = Date.now(), s = sai.get(tk.ten);
   if (s && s.n >= SAI_MAX && t < s.den) loi(`Nhập sai quá nhiều lần — thử lại sau ${Math.ceil((s.den - t) / 60000)} phút`, 429);
   const k = chuanMa(ma0), all = doc(), m = k && all.ma[k];
@@ -52,8 +76,19 @@ function nhap(tk, h, ma0) {
   if (tt === "het") loi("Mã kích hoạt này đã hết hạn");
   if (tt === "day") loi("Mã kích hoạt này đã hết lượt sử dụng");
   if (m.dung.some((d) => d.tk === tk.ten)) loi("Tài khoản của bạn đã dùng mã kích hoạt này rồi");
-  const ds = DO.taoQua(h, m.qua); // túi không đủ chỗ -> lỗi, túi giữ nguyên
-  const e = Math.max(0, Math.floor(m.qua.exp || 0));
+  let qua = m.qua;
+  if (qua && qua.tuDong) { // mã chung: quà theo phái + giới tính; chưa chọn hệ thì chỉ trả lựa chọn, chưa tính là đã dùng
+    if (h.fac == null) loi("Hãy bái nhập môn phái trước rồi mới nhập mã này");
+    const nhanh = nhanhPhai(h.fac);
+    if (!nhanh.length) loi("Môn phái này chưa có quà mã chung");
+    const he = he0 == null || he0 === "" ? null : +he0;
+    if (nhanh.length > 1 && he == null) return { chonHe: nhanh.map((e) => ({ eqt: e, ten: TEN_HE[e] || `Hệ ${e}` })), ma: k };
+    const chon = he == null ? nhanh[0] : he;
+    if (!nhanh.includes(chon)) loi("Lựa chọn không đúng với môn phái của bạn");
+    qua = { tien: qua.tien || 0, xu: qua.xu || 0, exp: qua.exp || 0, mon: doTheoPhai(h, chon) };
+  }
+  const ds = DO.taoQua(h, qua); // túi không đủ chỗ -> lỗi, túi giữ nguyên
+  const e = Math.max(0, Math.floor(qua.exp || 0));
   let len = 0;
   if (e > 0) { // kinh nghiệm (Huy 22/11/2026): cộng sau khi quà vào túi xong — túi đầy thì không nhận gì, kể cả exp
     h.exp = (h.exp || 0) + e;
@@ -65,7 +100,7 @@ function nhap(tk, h, ma0) {
   ghi(all);
   sai.delete(tk.ten);
   // báo / ghi khóa chỉ khi có món thật sự khóa (soát 11/11: quà chỉ có Mật đồ thần bí + tiền mà tích khóa thì không món nào khóa); có Mật đồ thì ghi "trừ …"
-  const kh = monKhoa(m.qua), tru = kh ? truKhoa(m.qua) : "";
+  const kh = monKhoa(qua), tru = kh ? truKhoa(qua) : "";
   NK.ghi("ma", tk.ten, h.name, `Nhập mã kích hoạt ${k}: ${ds.join(", ")}${kh ? ` (món khóa vĩnh viễn${tru ? `, trừ ${tru}` : ""})` : ""}`);
   return { ds, loi: m.loi || "", ...(kh ? { khoa: 1, ...(tru ? { khoaTru: tru } : {}) } : {}) };
 }
@@ -86,6 +121,7 @@ function kiemQua(b) {
 const nhom = (n) => String(Math.floor(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "."); // 1234567 -> 1.234.567
 function tomTat(m) {
   const q = m.qua || {}, ds = (q.mon || []).map((x) => `${x.n} ${DO.tenMon({ k: x.k }).trim()}${x.dong != null ? ` (${x.dong ? x.dong + " dòng" : "trắng"})` : ""}`);
+  if (q.tuDong) ds.unshift("Quà theo phái + giới tính (mã chung)");
   if (q.tien) ds.push(DO.NOI.tien(q.tien)); if (q.xu) ds.push(`${q.xu} Xu`); if (q.exp) ds.push(`${nhom(q.exp)} kinh nghiệm`);
   return ds.join(", ");
 }
@@ -102,6 +138,7 @@ function quanTri(qt, b) {
     if (!k) do k = sinhMa(); while (all.ma[k]);
     if (all.ma[k]) loi(`Mã ${k} đã có`);
     const { qua } = kiemQua(b), ngay = Math.max(0, Math.min(3650, +b.ngay || 0));
+    if (b.tuDong) qua.tuDong = 1; // mã chung theo phái: quà tính lúc nhập, không ghi sẵn danh sách món
     all.ma[k] = { qua, loi: sach(b.loi, LOI_MAX), toiDa: Math.max(0, Math.min(1e6, b.toiDa | 0)), het: ngay ? t + ngay * 86400e3 : 0, tao: { boi: qt.ten, luc: t }, dung: [] };
     ghi(all);
     NK.ghi("qt", qt.ten, null, `Tạo mã kích hoạt ${k}: ${tomTat(all.ma[k])}${chuKhoa(all.ma[k])}${all.ma[k].toiDa ? ` · ${all.ma[k].toiDa} lượt` : ""}${ngay ? ` · hạn ${ngay} ngày` : ""}`);
@@ -125,6 +162,7 @@ function quanTri(qt, b) {
   if (b.viec === "sua") {
     // trang quản trị cũ (chưa tải lại — không gửi khoa) bấm Lưu: giữ khóa đang có, không lặng lẽ bỏ khóa
     const { qua } = kiemQua({ ...b, khoa: b.khoa == null ? laKhoa(m) : b.khoa });
+    if (m.qua && m.qua.tuDong) qua.tuDong = 1; // mã chung: sửa chỉ đổi tiền/Xu/exp/hạn/lượt, quà theo phái giữ nguyên
     let han = "giữ hạn";
     if (b.ngay !== "giu") {
       const ngay = Math.max(0, Math.min(3650, +b.ngay || 0));
