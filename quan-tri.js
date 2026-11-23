@@ -8,6 +8,7 @@
 //                                                       thì quản trị xóa ở F10 (Xóa mk cấp 2). Vừa nhập sai 5 lần: chờ hết 15 phút khóa nhập (hoặc
 //                                                       khởi động lại s1) rồi mới đặt mật khẩu cấp 2 mới được
 //   node quan-tri.js bat-doi-mk <tên>                   bắt đổi mật khẩu đăng nhập: người đang chơi bị đưa ra ngay, đăng nhập lại phải đổi mật khẩu
+//   node quan-tri.js cap-phu <tên-tk> <tên-nv> [số]     cấp Thổ địa phù cho nhân vật (đúng đường quà quản trị: taoQua + quaTin — túi đầy thì báo lỗi, không nhận gì)
 //   node quan-tri.js ds                                 danh sách tài khoản + nhân vật
 "use strict";
 const D = require("./may-chu/du-lieu");
@@ -50,6 +51,23 @@ try {
     tk.batDoiMk = 1; D.ghiTk(tk);
     NK.ghi("mk", tk.ten, null, "Quản trị bắt đổi mật khẩu đăng nhập (dòng lệnh)");
     console.log(`${tk.ten}: đã đưa ra khỏi game (nếu đang chơi) — đăng nhập lại phải đổi mật khẩu`);
+  } else if (cmd === "cap-phu" && args.length >= 2) {
+    // Cấp Thổ địa phù cho nhân vật (chủ server 23/11/2026 — cứu nhân vật kẹt bãi không lối ra):
+    // đúng đường quà quản trị (may-chu/do.js taoQua + quaTin như F10 Gửi quà): đặt đúng lưới túi,
+    // gộp chồng có sẵn; túi đầy thì taoQua hoàn tác và báo lỗi, không nhận gì. Không đá người chơi ra.
+    const tk = tkCua(args[0]);
+    const tenNv = args[1], n = Math.max(1, Math.floor(+args[2] || 1));
+    const h = (tk.nv || []).find((x) => x && x.name === tenNv);
+    if (!h) throw new Error(`Tài khoản ${tk.ten} không có nhân vật ${tenNv}`);
+    const dem = () => (h.bag || []).filter((o) => o.k === "townportal:1").reduce((a, o) => a + (o.n || 1), 0);
+    const truoc = dem();
+    const DO = require("./may-chu/do");
+    const ds = DO.taoQua(h, { mon: [{ k: "townportal:1", n }] });
+    h.quaTin = [...(h.quaTin || []), { luc: Date.now(), ds, loi: "Quản trị gửi Thổ địa phù — dùng để về thành" }].slice(-20);
+    D.ghiTk(tk);
+    const sau = dem();
+    NK.ghi("qt", "(dòng lệnh)", null, `Cấp ${n} Thổ địa phù cho ${h.name} (${tk.ten}) — trong túi: ${truoc} -> ${sau}`);
+    console.log(`Đã cấp ${n} Thổ địa phù cho ${h.name} (${tk.ten}) — trong túi: ${truoc} -> ${sau}: ${ds.join(", ")}`);
   } else if (cmd === "ds") {
     const l = D.dsTk();
     if (!l.length) console.log("Chưa có tài khoản nào");
@@ -58,7 +76,7 @@ try {
       console.log(`${tk.ten}${tk.admin ? " [quản trị]" : ""}${tk.mk2 ? " [mk cấp 2]" : ""}${tk.batDoiMk ? " [chờ đổi mk]" : ""} · vào lần cuối ${ngay(tk.vao)} · ${nv}`);
     }
   } else {
-    console.log("Cách dùng:\n  node quan-tri.js them <tên> <mật khẩu> [--admin]\n  node quan-tri.js mat-khau <tên> <mật khẩu mới>\n  node quan-tri.js xoa-mk2 <tên>\n  node quan-tri.js bat-doi-mk <tên>\n  node quan-tri.js ds");
+    console.log("Cách dùng:\n  node quan-tri.js them <tên> <mật khẩu> [--admin]\n  node quan-tri.js mat-khau <tên> <mật khẩu mới>\n  node quan-tri.js xoa-mk2 <tên>\n  node quan-tri.js bat-doi-mk <tên>\n  node quan-tri.js cap-phu <tên-tk> <tên-nv> [số]\n  node quan-tri.js ds");
     process.exitCode = 1;
   }
 } catch (e) { console.error("Lỗi: " + e.message); process.exitCode = 1; }
