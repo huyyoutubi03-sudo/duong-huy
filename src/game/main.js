@@ -937,8 +937,8 @@ function skillHud() {
 function skillsUsable() {
   if (!GW || !hero || !P.vc) return [];
   const cc = ccCong(hero), lvCo = (id) => capCong(P.skillDb[id], id, hero.skills[id] | 0, cc); // + cấp Báo Đáp Ân Sư (anh 16/11 — rules.js ccCong)
-  return GW._skillList(hero).filter((id) => ((hero.skills || {})[id] | 0) > 0 && P.vc.sk(id)).map((id) => ({ id, n: P.skillDb[id].n, lv: lvCo(id), kind: kindOf(P.skillDb[id], P.skillDb), heal: isHeal(P.skillDb[id], lvCo(id)) }))
-    .filter((x) => x.kind !== "passive" && x.kind !== "other");
+  return GW._skillList(hero).filter((id) => ((hero.skills || {})[id] | 0) > 0).map((id) => ({ id, n: P.skillDb[id].n, lv: lvCo(id), kind: kindOf(P.skillDb[id], P.skillDb), heal: isHeal(P.skillDb[id], lvCo(id)) }))
+    .filter((x) => x.kind !== "passive" && x.kind !== "other"); // chiêu 150 chưa có gói võ công vẫn gán được ô (lúc ra chiêu skCan chặn: "chưa dùng được")
 }
 // Khinh công (anh 10/11): ai đã vào phái đều có, không nằm trong hero.skills — chỉ thêm vào bảng chọn ô P và ô dùng nhanh (Trợ Thủ không dùng)
 const kcChon = () => (hero && hero.fac != null && P.skillDb[KC_ID] ? [{ id: KC_ID, n: P.skillDb[KC_ID].n, lv: 1, kind: "jump", heal: false }] : []);
@@ -1175,7 +1175,7 @@ function npcApi() {
     anOpt: (id) => (id === "BanDoSatThu" && !satNv()) || (id === "NoiDaTau" && !coNoiDt()) || (id === "KhuBangHoi" && (!bhMinhCur || (luat().khuBang || {}).bat === 0)) || (id === "BaoDapAnSu" && !luat().baoDapAnSu) || ((id === "KhamNam" || id === "KhamNamHelp" || id === "KhamNam:hoan") && !luat().khamNam),
     setRank: (n) => { hero.rank = n; save(); },
     // lựa chọn đi bản đồ khác của script (NewWorld): game chưa có bản đồ đó -> báo (TẠM câu báo)
-    travel: (id) => { const m = P.maplist.maps[id]; P.hud.msg(`${m ? m.name : "Bản đồ " + id}: chưa có trong game`); },
+    travel: (id, at) => { const z = P.maps.zones.find((x) => String(x.map) === String(id)); if (z) { gotoZone(z, at ? { at } : {}); return; } const m = P.maplist.maps[id]; P.hud.msg(`${m ? m.name : "Bản đồ " + id}: chưa mở`); },
   };
 }
 
@@ -5227,12 +5227,13 @@ function loop(now) {
   snapCam();
   if (rsCho != null) { rs = rsCho; rsCho = null; resize(); } // tỉ lệ vẽ mới (rsTick): đổi cỡ canvas rồi vẽ ngay trong cùng khung
   ctx.setTransform(dpr * rs * zoom, 0, 0, dpr * rs * zoom, 0, 0);
+  ctx.imageSmoothingEnabled = zoom <= 1; // phóng cảnh (+): vẽ điểm ảnh gần nhất cho nhân vật/ô không bị mờ; zoom 1 giữ nguyên như cũ
   const t0 = performance.now();
   world.draw(ctx, cam, vw / zoom, vh / zoom);
   fpsTick(now, performance.now() - t0);
   hud();
   const p = world.player;
-  P.hud.drawMinimap({ player: p, mobs: world.mobs, others: [...world.others.values()].filter((e) => !e.an || world.thayAn(e)), /* ẩn thân: không hiện chấm (anh 12/11) */ path: p.path, dong: world.dongMinh, tk: TongKim.laTo() && TongKim.st ? { phe: TongKim.st.phe, pheNguoi: TongKim.pheNguoi } : LoiDai.mm(), diem: DuaNgua.mm() }); // Tống Kim: màu chấm theo phe (hud.js); lôi đài: tuyển thủ còn sống — bên kia đỏ, bên mình xanh lá (loidai.js mm); đường đua: hộp vàng, đích xanh lá (duangua.js mm)
+  P.hud.drawMinimap({ player: p, mobs: world.mobs, npcs: world.npcs.filter((n) => n.name && n.role !== "dummy" && !(P.settings.anSap && n.sap)), others: [...world.others.values()].filter((e) => !e.an || world.thayAn(e)), /* ẩn thân: không hiện chấm (anh 12/11) */ path: p.path, dong: world.dongMinh, tk: TongKim.laTo() && TongKim.st ? { phe: TongKim.st.phe, pheNguoi: TongKim.pheNguoi } : LoiDai.mm(), diem: DuaNgua.mm() }); // Tống Kim: màu chấm theo phe (hud.js); lôi đài: tuyển thủ còn sống — bên kia đỏ, bên mình xanh lá (loidai.js mm); đường đua: hộp vàng, đích xanh lá (duangua.js mm)
   if (DT) DT.tick();
   requestAnimationFrame(loop);
 }

@@ -1407,7 +1407,7 @@ export class World {
     // KNpc::ReceiveDamage: m_CurrentMana += m_CurrentDamage2Mana * nDamage / 100 (nDamage ≤ sinh lực còn)
     if (dst.kind === "hero" && dst.dmg2mana > 0 && dmg.v > 0 && dst.hp > 0) dst.mp = Math.min(dst.mpMax, dst.mp + Math.floor((Math.min(dmg.v, dst.hp) * dst.dmg2mana) / 100));
     dst.hp -= dmg.v;
-    this.text(dst, String(dmg.v), dst.kind === "hero" ? "#ff6b5b" : dmg.reflect ? "#ffa94d" : dmg.poison ? "#8bff6a" : dmg.crit ? "#ffd54a" : "#ffffff", dmg.crit);
+    this.text(dst, String(dmg.v), dst.kind === "hero" ? "#df6b58" : dmg.reflect ? "#d99a5e" : dmg.poison ? "#84d389" : dmg.crit ? "#ffd54a" : "#ffffff", dmg.crit); // v3: số dame trầm hơn, hợp tông mực + vàng
     if (dst.kind === "mob") {
       // Vượt Ải tổ đội: máy chủ bãi quyết con nào đuổi ai (vadoi.js chonMuc) — đánh trúng không tự lao vào / kéo nhóm ở máy mình
       if (!dst.vaDoi) { const moi = !dst.aggro; dst.aggro = true; dst.leash = false; if (moi) this.keoNhom(dst); }
@@ -1525,7 +1525,7 @@ export class World {
   // hồi ngay sinh lực / nội lực (bùa Phong Hỏa Hành quân đơn / Tiểu hoàn đơn / Ngũ Hoa Lộ — may-chu/do.js nhatBua: { hp?, mp? })
   hoiNgay(o) {
     const p = this.player; if (!p || p.hp <= 0 || !o) return;
-    if (o.hp > 0) { const v = Math.round(o.hp * this.hoiK()); p.hp = Math.min(p.hpMax, p.hp + v); this.text(p, `+${v}`, "#7cff7c"); }
+    if (o.hp > 0) { const v = Math.round(o.hp * this.hoiK()); p.hp = Math.min(p.hpMax, p.hp + v); this.text(p, `+${v}`, "#8fd694"); }
     if (o.mp > 0) p.mp = Math.min(p.mpMax, p.mp + o.mp);
   }
 
@@ -1661,7 +1661,7 @@ export class World {
     let row = last.findIndex((a) => a > 0.2);
     if (row < 0) row = last.indexOf(Math.max(...last));
     if (mine.length >= TEXT_MAX) this.texts.splice(this.texts.indexOf(mine.reduce((a, b) => (a.t > b.t ? a : b))), 1);
-    this.texts.push({ e, x: e.x + rnd(-10, 10), y: y0 - row * 15, row, s, color, big, t: 0 });
+    this.texts.push({ e, x: e.x + rnd(-10, 10), y: y0 - row * 16, row, s, color, big, t: 0 }); // DEMO-HUD v2: hàng số cách 16
   }
 
   // ngắm chiêu trên điện thoại (dienthoai.js _ngam — this.ngam = { R tầm chiêu, x, y chỗ ngắm, huy }). Anh 31/10 lần 3: bản trước (vòng nét đứt +
@@ -1774,7 +1774,7 @@ export class World {
     ctx.textAlign = "center"; ctx.lineJoin = "round";
     for (const t of this.texts) {
       ctx.globalAlpha = Math.min(1, 1.6 - t.t * 1.4);
-      jxText(ctx, t.s, t.x, t.y, t.color, t.big ? 16 : 13);
+      jxText(ctx, t.s, t.x, t.y, t.color, t.big ? 18 : 13); // DEMO-HUD v2: số dame gần cỡ gốc (thường 13, bạo kích 18)
     }
     ctx.globalAlpha = 1;
     ctx.restore();

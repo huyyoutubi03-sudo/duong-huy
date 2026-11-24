@@ -4,7 +4,7 @@
 //   Describe -> describe (npc描述界面.ini).
 // Lời giữ thẻ màu client <color=…>…<color>, <enter> = xuống dòng; {TEN} / %s = tên nhân vật.
 //   const D = new NpcDialog(W, dialogs, api); D.open(npc)   // npc = { key (khóa phái), name }
-//   api = { hero(), factions(), msg(t), chat(kênh, tên, lời), join(khóa phái), setCamp(phe), setRank(bậc), travel(mã bản đồ), click(),
+//   api = { hero(), factions(), msg(t), chat(kênh, tên, lời), join(khóa phái), setCamp(phe), setRank(bậc), travel(mã bản đồ, [x, y]), click(),
 //           sale(mã cửa hàng) -> false nếu game chưa có hàng của cửa hàng đó, fn(tên hàm, npc) -> hàm script game tự làm | null }
 
 import { asfPx, shadow } from "./uiwin.js";
@@ -187,7 +187,7 @@ export class NpcDialog {
     // lựa chọn chỉ để đi bản đồ khác (vd "Nhờ sư huynh đưa ta về núi!"): game chưa có bản đồ đó -> báo, nhân vật ở lại. Nhập phái cũng
     // có NewWorld (về phái) — bỏ qua như anh chốt (nhân vật vẫn ở bản đồ đó).
     const go = (node.acts || []).find((a) => a[0] === "NewWorld");
-    if (go && !node.acts.some((a) => a[0] === "SetFaction")) this.api.travel(+go[1]);
+    if (go && !node.acts.some((a) => a[0] === "SetFaction")) this.api.travel(+go[1], [go[2], go[3]]);
     const name = this.api.hero().name, txt = (node.text || []).map((t) => richText(t, name, c.npc.name));
     if (node.t === "act") return node.next ? this.show(node.next) : this.close();
     if (node.t === "talk") return this.talk(txt, 0, node.next);

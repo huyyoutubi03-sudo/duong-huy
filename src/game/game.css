@@ -2142,3 +2142,69 @@ body.dt .poster .pt-goi { font-size: 11px; }
 #jxwin .soi-bang .vang { color: rgb(255,217,78); } #jxwin .soi-bang .lam { color: #9fd8ff; }
 #jxwin .soi-chu { margin-top: 14px; text-align: center; font-size: 12px; color: #8f8a78; }
 #jxwin .soi-chua { display: flex; align-items: center; justify-content: center; height: 100%; padding: 4px; box-sizing: border-box; text-align: center; font: 12px/14px var(--jx); color: #8f8a78; }
+
+/* ============ GIAO DIỆN MỚI — BẢN DEMO (thủy mặc + vàng gold, thống nhất cả màn hình) ============ */
+/* Dải trên: nền mực tàu + viền vàng, không dùng ảnh dải gốc — v2: mảnh lại như bản gốc VNG */
+#jxhud .jx-top { background: linear-gradient(180deg, rgba(24,30,25,.96), rgba(10,14,11,.92)); border-bottom: 1px solid rgba(255,217,78,.65); box-shadow: 0 1px 0 rgba(0,0,0,.6), 0 4px 14px rgba(0,0,0,.45); border-radius: 0 0 8px 8px; }
+#jxhud .jx-logo { letter-spacing: 1px; text-shadow: 0 1px 3px #000, 0 0 10px rgba(255,217,78,.25); }
+/* Huy hiệu cấp / hạng: chữ thường như bản gốc VNG (bỏ viên thuốc) — v2 */
+#jxhud .jx-lv, #jxhud .jx-rank { line-height: 15px; background: none; border: none; box-shadow: none; text-shadow: 0 1px 2px #000; }
+#jxhud .jx-lv::before { content: "Cấp "; color: rgb(255,217,78); }
+#jxhud .jx-rank::before { content: "Hạng "; color: rgb(255,217,78); }
+/* Thanh trạng thái: rãnh tối viền vàng, đầu bo tròn, chữ số + % — v2: mảnh như bản gốc */
+#jxhud .jx-bar { border: 1px solid rgba(255,217,78,.5); border-radius: 7px; background: rgba(0,0,0,.68); box-shadow: inset 0 2px 4px rgba(0,0,0,.7); }
+#jxhud .jx-bar i { border-radius: 6px; box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -2px 3px rgba(0,0,0,.3); }
+#jxhud .jx-bar span { line-height: 14px; font-size: 11px; font-variant-numeric: tabular-nums; }
+/* Dải dưới: thoáng hơn như bản gốc (chỉ viền vàng trên + nền mờ) — v2 */
+#jxhud .jx-bot { background: linear-gradient(180deg, rgba(18,24,19,.72), rgba(8,12,10,.84)); border-top: 1px solid rgba(255,217,78,.65); box-shadow: 0 -4px 16px rgba(0,0,0,.5); border-radius: 8px 8px 0 0; }
+/* Ô đồ / ô chiêu: hốc tối viền vàng mờ */
+#jxhud .jx-slot { background: rgba(0,0,0,.55); border: 1px solid rgba(214,172,84,.45); border-radius: 5px; box-shadow: inset 0 2px 4px rgba(0,0,0,.6); }
+#jxhud .jx-slot.jx-skill { border-color: rgba(255,217,78,.75); background: rgba(255,217,78,.07); }
+#jxhud .jx-inback { background: rgba(0,0,0,.6); border: 1px solid rgba(214,172,84,.5); border-radius: 4px; }
+/* Khung chat: gần như trong suốt như bản gốc, chỉ phớt nền để đọc được chữ — v2 */
+#jxhud .jx-chat, #jxhud .jx-sys { background: linear-gradient(90deg, rgba(8,12,10,.42), rgba(8,12,10,.12) 75%, rgba(8,12,10,0)); border-left: none; }
+#jxhud .jx-tab { background: none; border-radius: 0; margin-right: 2px; }
+/* Bản đồ nhỏ: khung vàng mảnh; chữ tên/vị trí dễ đọc */
+#jxhud .jx-mm { border: 1px solid rgba(255,217,78,.55); border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,.55); overflow: hidden; }
+#jxhud .jx-mm-name { color: #ffe9a8 !important; }
+#jxhud .jx-mm-pos { color: #d3dfb4 !important; }
+#jxhud .jx-auto { background: rgba(0,0,0,.6); border: 1px solid rgba(214,172,84,.4); border-radius: 8px; padding-right: 6px; box-sizing: border-box; }
+/* Hàng biểu tượng trạng thái: lùi xuống dưới dải trên mảnh hơn (v2: 30), ô có nền mờ */
+#jxhud .jx-stbar { top: 30px; }
+#jxhud .jx-st { background: rgba(8,12,10,.5); border-radius: 4px; }
+/* Bảng nhiệm vụ: khung mực viền vàng, đầu bảng có gạch vàng dưới — v2: hẹp + thấp hơn */
+#jxhud .jx-nvbang { width: 220px; border: 1px solid rgba(214,172,84,.45); border-radius: 6px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,.5); }
+#jxhud .jx-nv-dau { height: 18px; background: linear-gradient(180deg, rgba(255,217,78,.14), rgba(0,0,0,.55)); border-bottom: 1px solid rgba(255,217,78,.4); }
+#jxhud .jx-nv-than { background: rgba(8,12,10,.84); padding: 3px 8px 5px; line-height: 16px; }
+/* Bảng đội ngũ: cùng tông */
+#jxhud .jx-doi-ten { border-radius: 3px; }
+#jxhud .jx-doi-hp, #jxhud .jx-doi-mp { border-radius: 2px; overflow: hidden; }
+/* Bảng mộc nhân luyện công: khung mực viền vàng, bảng thoáng, số tabular — v2: hẹp hơn */
+.mn { width: 288px; background: linear-gradient(180deg, rgba(14,20,16,.95), rgba(8,12,10,.95)); border: 1px solid rgba(214,172,84,.55); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.55); overflow: hidden; }
+.mn-head { padding: 6px 8px; background: rgba(255,217,78,.08); border-bottom: 1px solid rgba(255,217,78,.35); }
+.mn-head b { letter-spacing: 1px; }
+.mn button { border-radius: 10px; border-color: rgba(214,172,84,.6); background: rgba(0,0,0,.5); }
+.mn th { color: rgb(255,217,78); font-size: 11px; letter-spacing: 1px; padding: 3px 6px; border-bottom: 1px solid rgba(255,217,78,.25); }
+.mn td { padding: 2px 6px; }
+.mn-dps tbody tr + tr td { border-top: 1px solid rgba(255,255,255,.05); }
+.mn-dps tr.mn-sum td { border-top: 1px solid rgba(255,217,78,.5); }
+.mn-khang input, .mn-r input { border-color: rgba(214,172,84,.55); border-radius: 3px; }
+.mn-note { color: #c2b28c; }
+/* Menu chuột phải: cùng tông */
+.jx-menu { border-color: rgba(214,172,84,.55); border-radius: 6px; background: rgba(10,15,12,.95); }
+/* Dòng tin chạy (thuyền): xuống dưới dải trên mới — v2: 30 */
+#jxhud .jx-thuyen { top: 30px; }
+/* v3 (phối màu hài hòa): chữ hàng hệ bảng DPS/Kháng giữ đúng màu hệ nhưng hạ bão hòa cho êm, khỏi chói trên nền mực */
+.mn-dps tbody td:first-child, .mn-khang th { filter: saturate(.72) brightness(.96); }
+/* v4 (phối màu các ô): mọi ô cùng họ mực + vàng 214,172,84; chữ phím trên ô nhanh vàng nhạt ấm thay cho xanh lam lạnh; ô có đồ/chiêu nền ấm hơn ô trống một chút để phân biệt; nút sprite phủ ấm nhẹ cho khung trắng/xanh lam khỏi lạc tông; chữ Tự đánh xanh non dịu */
+#jxhud .jx-slot .jx-qk { color: #ffe9a8; }
+#jxhud .jx-slot.jx-skill { border-color: rgba(214,172,84,.8); background: rgba(214,172,84,.08); }
+#jxhud .jx-slot:has(.jx-qi) { background: rgba(28,24,12,.62); }
+#jxhud .jx-bot .jx-btn, #jxhud .jx-mmbtn { filter: sepia(.25) saturate(.9) brightness(.97); }
+#jxhud .jx-auto { color: #d3dfb4; }
+/* v5 (khung chiêu gốc VNG, Huy lệnh 01:12 ngày 24/11 "lấy của gốc vinagame xem thử"): trả dải dưới về ảnh khung gốc bot.png — khung ô vẽ sẵn trong ảnh, ô DOM trong suốt đè đúng ô vẽ; gỡ lớp CSS vòng 1–4 đè lên ô chiêu/ô nhanh. Các phần khác (dải trên, bảng, chat) giữ nguyên vòng 2–4. Chữ phím về màu gốc #9fd8ff */
+#jxhud .jx-bot { border-top: 0; border-radius: 0; box-shadow: none; }
+#jxhud .jx-slot { background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+#jxhud .jx-slot.jx-skill { border: 0; background: transparent; box-shadow: none; }
+#jxhud .jx-slot:has(.jx-qi) { background: transparent; }
+#jxhud .jx-slot .jx-qk { color: #9fd8ff; }

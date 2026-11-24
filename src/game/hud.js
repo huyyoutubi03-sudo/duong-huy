@@ -98,7 +98,7 @@ export class Hud {
     // ---- dải trên + bản đồ nhỏ ----
     const top = document.createElement("div");
     top.className = "jx-top";
-    top.style.cssText = css({ width: F.w, height: M.top.h, "background-image": `url(${BASE}${M.top.file})` });
+    top.style.cssText = css({ width: F.w, height: M.top.h }); // DEMO-HUD: nền dải trên vẽ bằng CSS (thủy mặc + vàng gold), không dùng ảnh dải gốc
     top.innerHTML =
       at({ x: M.logo.x, y: M.logo.y, w: M.level.x - M.logo.x - 50, h: 13 }, "jx-logo", M.logo.text) +
       at(M.level, "jx-lv") +
@@ -168,11 +168,11 @@ export class Hud {
     const y0 = Math.min(M.bot.y, ...btns.map(([, b]) => b.y));
     const bot = document.createElement("div");
     bot.className = "jx-bot";
-    bot.style.cssText = css({ width: F.w, height: F.h - y0, "background-image": `url(${BASE}${M.bot.file})`, "background-position": `0 ${M.bot.y - y0}px` });
+    bot.style.cssText = css({ width: F.w, height: F.h - y0, "background-image": `url(${BASE}${M.bot.file})`, "background-position": `0 ${M.bot.y - y0}px` }); // DEMO-HUD v5: TRẢ LẠI ảnh khung gốc bot.png (khung chiêu gốc VNG) — vòng 1–4 vẽ nền dải dưới bằng CSS đã gỡ
     const Y = (r) => ({ ...r, y: r.y - y0 });
     const ib = B.InputBack, inp = M.input;
     let html = "";
-    html += `<div class="jx-inback" style="${css({ left: ib.x, top: ib.y - y0, width: ib.w, height: ib.h, "background-image": `url(${BASE}${ib.file})` })}"></div>` +
+    html += `<div class="jx-inback" style="${css({ left: ib.x, top: ib.y - y0, width: ib.w, height: ib.h })}"></div>` +
       `<input class="jx-input" maxlength="${inp.max || 80}" spellcheck="false" style="${css({ left: inp.x, top: inp.y - y0, width: inp.w, height: inp.h, color: `rgb(${inp.color})` })}">` +
       at(Y({ ...M.channel, w: 20, h: 20 }), "jx-chbtn", "");
     M.items.forEach((r, i) => (html += at(Y(r), "jx-slot", "", {}, ` data-slot="${i}"`)));
@@ -463,9 +463,9 @@ export class Hud {
     const nv = this.nvBang; if (!nv || !this.chatBox) return;
     const s = this._tiLe(), bc = this.bc || {}, mn = document.querySelector(".mn"), d = this.doiBang;
     const dat = (el, c, top) => { if (c) return this._dat(el, c, s); el.style.left = ""; el.style.top = top; };
-    dat(this.stBar, bc.st, 28 + (this.lech || 0) + "px");
+    dat(this.stBar, bc.st, 30 + (this.lech || 0) + "px"); // DEMO-HUD v2: dải trên cao 24 -> hàng trạng thái lùi xuống 30
     if (mn) dat(mn, bc.mn, "");
-    let y = 28 + (this.lech || 0) + (bc.st ? 4 : 76 * s);
+    let y = 30 + (this.lech || 0) + (bc.st ? 4 : 76 * s);
     if (mn && !bc.mn && (mn.classList.contains("on") || mn.classList.contains("bc-keo"))) y = Math.max(y, mn.getBoundingClientRect().bottom + 6);
     // bảng đội ngũ (có đội) nằm ngay dưới, bảng nhiệm vụ xuống dưới nó
     if (d) { dat(d, bc.doi, Math.round(y) + "px"); if (!bc.doi && (d.classList.contains("on") || d.classList.contains("bc-keo"))) y += d.offsetHeight * s + 4; }
@@ -647,7 +647,7 @@ export class Hud {
     this.top.querySelectorAll(".jx-bar").forEach((el, i) => {
       const k = M.bars[i].key, [v, mx] = vals[k], r = mx > 0 ? Math.max(0, Math.min(1, v / mx)) : 0;
       el.firstChild.style.width = Math.round(r * M.bars[i].w) + "px";
-      el.lastChild.textContent = k === "exp" ? (r * 100).toFixed(2) + "%" : `${Math.ceil(v)}/${mx}`;
+      el.lastChild.textContent = k === "exp" ? (r * 100).toFixed(2) + "%" : `${Math.ceil(v)}/${mx} · ${Math.round(r * 100)}%`; // DEMO-HUD: thanh máu/mana/thể lực hiện thêm %
     });
   }
 
@@ -973,6 +973,17 @@ export class Hud {
         g.fillStyle = "#fff"; g.fillText(d.ten, x, ty);
       }
     }
+    // tên tất cả NPC trên bản đồ nhỏ (Huy 24/11): chấm + tên vàng nhạt như tên NPC trên cảnh, dưới chấm
+    for (const n of s.npcs || []) {
+      const x = Math.round(ox + n.x * k), y = Math.round(oy + n.y * k);
+      if (x < -50 || x > W + 50 || y < -4 || y > H + 18) continue; // ngoài khung xem: khỏi vẽ
+      g.fillStyle = "#000"; g.fillRect(x - 2, y - 2, 5, 5);
+      g.fillStyle = "#ffe680"; g.fillRect(x - 1, y - 1, 3, 3);
+      g.font = `11px "VK Sans Serif 12", "IBM Plex Mono", monospace`; g.textAlign = "center"; g.textBaseline = "top";
+      const ty = y + 3;
+      g.fillStyle = "#000"; for (const [a, b] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) g.fillText(n.name, x + a, ty + b);
+      g.fillStyle = "#ffe680"; g.fillText(n.name, x, ty);
+    }
     const hx = Math.round(ox + p.x * k), hy = Math.round(oy + p.y * k);
     g.fillStyle = "#000"; g.fillRect(hx - 2, hy - 2, 5, 5);
     g.fillStyle = "#ffffff"; g.fillRect(hx - 1, hy - 1, 3, 3);
@@ -982,10 +993,10 @@ export class Hud {
   }
 }
 
-// ruột thanh: sáng ở trên, tối dần xuống dưới (giống thanh client)
+// ruột thanh: sáng ở trên, tối dần xuống dưới (giống thanh client) — v3: hạ chói, khỏi neon
 function grad([r, g, b]) {
   const k = (f) => `rgb(${Math.min(255, Math.round(r * f))},${Math.min(255, Math.round(g * f))},${Math.min(255, Math.round(b * f))})`;
-  return `linear-gradient(${k(1.35)} 0%, ${k(1)} 45%, ${k(0.62)} 100%)`;
+  return `linear-gradient(${k(1.18)} 0%, ${k(1)} 45%, ${k(0.72)} 100%)`;
 }
 
 // Đặt menu bật lên cạnh 1 phần tử ("up": bên trên, "down": bên dưới); bấm ra ngoài thì đóng
