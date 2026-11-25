@@ -973,13 +973,15 @@ export class Hud {
         g.fillStyle = "#fff"; g.fillText(d.ten, x, ty);
       }
     }
-    // tên tất cả NPC trên bản đồ nhỏ (Huy 24/11): chấm + tên vàng nhạt như tên NPC trên cảnh, dưới chấm
+    // tên NPC trên bản đồ nhỏ (Huy 24/11; gọn lại 25/11 cả 3: chỉ khi phóng to + gần người chơi, chữ 9px; chấm vẫn vẽ luôn)
     for (const n of s.npcs || []) {
       const x = Math.round(ox + n.x * k), y = Math.round(oy + n.y * k);
       if (x < -50 || x > W + 50 || y < -4 || y > H + 18) continue; // ngoài khung xem: khỏi vẽ
       g.fillStyle = "#000"; g.fillRect(x - 2, y - 2, 5, 5);
       g.fillStyle = "#ffe680"; g.fillRect(x - 1, y - 1, 3, 3);
-      g.font = `11px "VK Sans Serif 12", "IBM Plex Mono", monospace`; g.textAlign = "center"; g.textBaseline = "top";
+      if (!this.mmBig) continue; // khung nhỏ: chỉ chấm, khỏi tên
+      if (Math.hypot(n.x - p.x, (n.y - p.y) * 2) >= 500) continue; // xa người chơi: khỏi tên
+      g.font = `9px "VK Sans Serif 12", "IBM Plex Mono", monospace`; g.textAlign = "center"; g.textBaseline = "top";
       const ty = y + 3;
       g.fillStyle = "#000"; for (const [a, b] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) g.fillText(n.name, x + a, ty + b);
       g.fillStyle = "#ffe680"; g.fillText(n.name, x, ty);

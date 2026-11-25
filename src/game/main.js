@@ -3405,11 +3405,11 @@ function quickSkill(id, byKey) {
     if (k === "curse") { P.hud.msg("Không có mục tiêu gần"); return false; }
     const [x, y] = truocMat(R); return world.castAt(id, null, x, y);
   }
-  const m = p.target && p.target.alive ? p.target : world.nearestMob();
-  if (!m) { P.hud.msg("Không có mục tiêu gần"); return false; }
-  if (k === "move") return world.castAt(id, m, m.x, m.y); // di hình: tới con đang nhắm / gần nhất
-  world.clickMob(m); p.once = id;
-  return true;
+  // PC bấm ô bằng chuột: chỉ nhắm con gần trong tầm chiêu + MUC_GAN như điện thoại (mucGan) — không chạy đi tìm con ở xa (nearestMob không giới hạn tầm)
+  const R = world.skRange(id, world.skLv(id)), m = mucGan(R);
+  if (m) return world.castAt(id, m, m.x, m.y);
+  if (k === "curse") { P.hud.msg("Không có mục tiêu gần"); return false; }
+  const [x, y] = truocMat(R); return world.castAt(id, null, x, y);
 }
 // điện thoại, ô kỹ năng đang khóa (dienthoai.js datOKhoa — anh 31/10 lần 2): chạm ô T / P = ra chiêu tay đó vào con đang nhắm / gần nhất như chạm
 // ô dùng nhanh có chiêu (tay trái trống: đánh thường; tay phải bùa lợi: lên mình, vòng sáng: báo đang bật — World.useLeft / useRight)
@@ -5233,7 +5233,7 @@ function loop(now) {
   fpsTick(now, performance.now() - t0);
   hud();
   const p = world.player;
-  P.hud.drawMinimap({ player: p, mobs: world.mobs, npcs: world.npcs.filter((n) => n.name && n.role !== "dummy" && !(P.settings.anSap && n.sap)), others: [...world.others.values()].filter((e) => !e.an || world.thayAn(e)), /* ẩn thân: không hiện chấm (anh 12/11) */ path: p.path, dong: world.dongMinh, tk: TongKim.laTo() && TongKim.st ? { phe: TongKim.st.phe, pheNguoi: TongKim.pheNguoi } : LoiDai.mm(), diem: DuaNgua.mm() }); // Tống Kim: màu chấm theo phe (hud.js); lôi đài: tuyển thủ còn sống — bên kia đỏ, bên mình xanh lá (loidai.js mm); đường đua: hộp vàng, đích xanh lá (duangua.js mm)
+  P.hud.drawMinimap({ player: p, mobs: world.mobs, npcs: world.npcs.filter((n) => n.name && n.role !== "dummy" && !(P.settings.anSap && n.sap) && (n.key || n.ld || n.tk || n.bh || n.viec || n.sat || n.pq || n.bc || n.vd || n.mc || n.dn || n.pld || n.tay || n.ldRa || (typeof n.script === "string" && /(路人_礼官|驿站车夫对话)\.lua$/.test(n.script)))), others: [...world.others.values()].filter((e) => !e.an || world.thayAn(e)), /* ẩn thân: không hiện chấm (anh 12/11) */ path: p.path, dong: world.dongMinh, tk: TongKim.laTo() && TongKim.st ? { phe: TongKim.st.phe, pheNguoi: TongKim.pheNguoi } : LoiDai.mm(), diem: DuaNgua.mm() }); // Tống Kim: màu chấm theo phe (hud.js); lôi đài: tuyển thủ còn sống — bên kia đỏ, bên mình xanh lá (loidai.js mm); đường đua: hộp vàng, đích xanh lá (duangua.js mm)
   if (DT) DT.tick();
   requestAnimationFrame(loop);
 }

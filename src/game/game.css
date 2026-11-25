@@ -2203,7 +2203,7 @@ body.dt .poster .pt-goi { font-size: 11px; }
 #jxhud .jx-bot .jx-btn, #jxhud .jx-mmbtn { filter: sepia(.25) saturate(.9) brightness(.97); }
 #jxhud .jx-auto { color: #d3dfb4; }
 /* v5 (khung chiêu gốc VNG, Huy lệnh 01:12 ngày 24/11 "lấy của gốc vinagame xem thử"): trả dải dưới về ảnh khung gốc bot.png — khung ô vẽ sẵn trong ảnh, ô DOM trong suốt đè đúng ô vẽ; gỡ lớp CSS vòng 1–4 đè lên ô chiêu/ô nhanh. Các phần khác (dải trên, bảng, chat) giữ nguyên vòng 2–4. Chữ phím về màu gốc #9fd8ff */
-#jxhud .jx-bot { border-top: 0; border-radius: 0; box-shadow: none; }
+#jxhud .jx-bot { border-top: 0; border-radius: 0; box-shadow: none; background-repeat: no-repeat; }
 #jxhud .jx-slot { background: transparent; border: 0; border-radius: 0; box-shadow: none; }
 #jxhud .jx-slot.jx-skill { border: 0; background: transparent; box-shadow: none; }
 #jxhud .jx-slot:has(.jx-qi) { background: transparent; }
