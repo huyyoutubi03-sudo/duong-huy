@@ -120,7 +120,7 @@ let ZONE_TRAIN = null;
 try {
   const zf = JSON.parse(fs.readFileSync(path.join(__dirname, "npc-choi-zones.json"), "utf8"));
   ZONE_TRAIN = zf.zones || null;
-} catch (e) { log("không đọc được npc-choi-zones.json — dùng bãi cố định trong config:", e.message); }
+} catch (e) { console.log("[npc-choi] không đọc được npc-choi-zones.json — dùng bãi cố định trong config:", e.message); }
 const GIET_TRIP = +process.env.VL_NPC_CHOI_GIET || 40;   // giết chừng này con thì về thành 1 chuyến
 const STALL_MS = (+process.env.VL_NPC_CHOI_SAP || 120) * 1000; // sạp mở chừng này rồi đóng, đi train tiếp
 const ACCT0 = "npcmau1"; // tài khoản bot mẫu đầu tiên (Pháp Không) — giữ để tương thích harness cũ
