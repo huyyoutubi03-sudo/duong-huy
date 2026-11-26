@@ -242,7 +242,7 @@ export class DienThoai {
   <div class="dt-viec"></div>
 </div>
 <div class="dt-chatp">
-  <div class="dt-ctab">${C.tabs.list.map((t, i) => `<span data-a="kt${i}">${esc(t.label)}</span>`).join("")}</div>
+  <div class="dt-ctab">${C.tabs.list.map((t, i) => `<span data-a="kt${i}">${esc(t.label)}</span>`).join("")}<span class="dt-cdong" data-a="gon" title="Đóng">✕</span></div>
   <div class="dt-ghim" style="display:none"></div>
   <div class="dt-clist"></div>
   <div class="dt-cin"><span class="dt-ckenh" data-a="kenh"></span><input class="dt-cgo" maxlength="${H.M.input.max || 80}" spellcheck="false" autocomplete="off" enterkeyhint="send" placeholder="Nói gì thì nói đi…"><span class="dt-cbtn bieucam" data-a="bieucam"></span><span class="dt-cbtn gui" data-a="gui"></span></div>
@@ -606,7 +606,8 @@ export class DienThoai {
     if (this.sig.nhat === d && this.sig.nhatN === n) return;
     this.sig.nhat = this.vatNhat = d; this.sig.nhatN = n;
     const b = this.el.querySelector(".dt-nhat");
-    b.style.display = d ? "flex" : "none"; if (!d) return;
+    b.style.display = d ? "flex" : "none"; document.body.classList.toggle("dt-nhat-co", !!d); // nut Chat/tin doi len tren nut nay (nhu dt-noi-co/dt-sap-co)
+    if (!d) return;
     b.querySelector("b").textContent = n > 1 ? `Nhặt (${n})` : "Nhặt";
     const em = b.querySelector("em");
     em.textContent = d.name + (d.dong ? ` (${d.dong} dòng)` : ""); em.style.color = d.color || "";
@@ -686,6 +687,7 @@ export class DienThoai {
       o.style.setProperty("--dt-y", (hang ? DAY + I + HO + S : DAY + I) + "px");
     }
     const vat = 4 * I + 3 * GI, B = document.body.style;
+    B.setProperty("--dt-vat", vat + "px"); // be rong hang vat pham/buff (nut khoa dat sat phai hang nay khi len tren — anh 26/11)
     B.setProperty("--dt-okr", LE + vat + GI + "px"); B.setProperty("--dt-okt", DAY + (I + K) / 2 + "px");
     B.setProperty("--dt-cum", LE + Math.max(4 * S + 3 * GS, vat + GI + K) + "px");
     B.setProperty("--dt-ngr", LE + vat + GI + K + 6 + "px"); B.setProperty("--dt-ngt", DAY + (I + 36) / 2 + "px"); // nút ngựa: trái nút khóa, giữa hàng vật phẩm
@@ -723,7 +725,7 @@ export class DienThoai {
     document.body.classList.toggle("dt-ngang", this.ngang);
     this._datCo(on && !this.mt ? this.co : 1);
     if (!on || doi) {
-      document.body.classList.remove("dt-" + this.mode, "dt-thap", "dt-cando", "dt-hang", "dt-noi-co", "dt-sap-co"); this.mode = ""; this.sig = {}; this._thaCan(); this._thoiKeo(true);
+      document.body.classList.remove("dt-" + this.mode, "dt-thap", "dt-cando", "dt-hang", "dt-noi-co", "dt-sap-co", "dt-nhat-co"); this.mode = ""; this.sig = {}; this._thaCan(); this._thoiKeo(true);
       for (const w of Object.values(this.api.P.win.wins)) { w.el.style.transform = ""; w.el._dtTf = ""; w.el._dtAn = false; w.el.classList.remove("dt-an"); }
       this.hanhEl.style.display = "none"; this.thuTu.clear();
       if (!on) this._moBdl(false); // về giao diện máy tính: đóng bản đồ lớn (dọc <-> ngang: giữ, tự vẽ lại theo khung mới)
@@ -880,7 +882,7 @@ export class DienThoai {
     // anh 31/10: "text thông báo kia nên hiển thị vài giây rồi mất" — 2 dòng tin cuối hiện TIN_HIEN ms kể từ tin mới nhất rồi mờ dần (vẫn đủ ở
     // khung chat — nút Chat)
     const tinEl = this.el.querySelector(".dt-tin");
-    const nTin = this.ngang ? 2 : 3; // doc: 3 tin gan nhat cho khung tin cao hon (Huy 26/11/2026); ngang giu 2
+    const nTin = 2; // Huy 19:31 26/11/2026: chua bam Chat thi chi hien 2 dong noi, khong khung (ca doc lan ngang)
     if (this.sig.tin !== last || this.sig.canh !== canh || this.sig.tinNg !== this.ngang) {
       this.sig.tin = last; this.sig.canh = canh; this.sig.tinNg = this.ngang; this.tinLuc = performance.now(); tinEl.classList.remove("an");
       tinEl.innerHTML = M.slice(canh ? 1 - nTin : -nTin).map((m) => m.ch === "TIN" ? `<div class="tin">${esc(m.text)}</div>` : `<div${m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? ' class="ht"' : ""}><b>${esc(m.name || "")}</b>${m.name ? ": " : ""}${m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? chuMau(m.text) : BieuCam.html(m.text)}</div>`).join("")

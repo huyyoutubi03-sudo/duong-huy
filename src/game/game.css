@@ -2360,3 +2360,52 @@ body.dt:not(.dt-ngang) .mn-head b { overflow: hidden; text-overflow: ellipsis; w
 body.dt:not(.dt-ngang) .mn th, body.dt:not(.dt-ngang) .mn td { padding: 1px 3px; }
 /* 4. Khung tin dọc cao lên: hiện 3 tin gần nhất (dienthoai.js theo chế độ), giới hạn 34vh để khỏi che cảnh */
 body.dt:not(.dt-ngang) #dt .dt-tin { max-height: 34vh; overflow: hidden; }
+
+/* ===== Bố cục điện thoại 26/11/2026 — lệnh 19:05 (dọc: khóa mk2, chat, buff, khung dame) + 19:12 (joystick ngang ra khung đỏ) + 19:30/19:31/19:32 (khung chat nhỏ, bỏ khung bự, 2 dòng nổi — cả dọc lẫn ngang) =====
+   Chỉ điện thoại (body.dt); bản web không đổi. Đặt cuối file để thắng các luật ở trên. */
+
+/* 1. Hình khóa mật khẩu cấp 2 hiện TRỌN (ảnh gốc 38×23; trước đây vẽ 50×30 trong ô 25–40px nên bị cắt) */
+#dt .dt-kat { background-size: contain; background-position: center; background-repeat: no-repeat; }
+body.dt:not(.dt-ngang) #dt .dt-kat { background-size: contain, auto; }
+
+/* 2. Màn DỌC: hàng chiêu buff (4 ô vật phẩm, data-slot 0–3) lên cao, ngay dưới thanh tọa độ (top 106px), neo trái, giữ thứ tự 1-2-3-4 */
+body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="0"], body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="1"],
+body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="2"], body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="3"] { top: 106px !important; right: auto !important; }
+body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="0"] { left: 8px !important; }
+body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="1"] { left: calc(16px + var(--dt-s, 44px)) !important; }
+body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="2"] { left: calc(24px + 2 * var(--dt-s, 44px)) !important; }
+body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="3"] { left: calc(32px + 3 * var(--dt-s, 44px)) !important; }
+/* Nút khóa ô lên sát phải hàng buff (giữa hàng); màn hẹp ≤360px thì về chỗ cũ dưới cụm chiêu cho khỏi đè bản đồ nhỏ */
+body.dt:not(.dt-ngang) #dt .dt-okhoa { right: auto; left: calc(16px + var(--dt-vat, 208px)); top: 111px; }
+@media (max-width: 360px) { body.dt:not(.dt-ngang) #dt .dt-okhoa { left: auto; right: var(--dt-okr, 224px); top: calc(var(--dt-day) - var(--dt-okt, 54px)); } }
+/* 3. Khung tính dame (Mộc nhân) lên sát dưới hàng buff */
+body.dt:not(.dt-ngang) .mn { top: 154px; }
+/* 4. Màn DỌC: nút Chat + dòng tin lên trên cụm chiêu góc phải-dưới (neo phải, không đè vòng chiêu/joystick) */
+body.dt:not(.dt-ngang) #dt .dt-nutt { left: auto; right: 6px; top: calc(var(--dt-day) - 162px); }
+body.dt:not(.dt-ngang) #dt .dt-tin { left: auto; right: 6px; bottom: calc(100% - var(--dt-day) + 166px); width: min(340px, calc(100vw - 12px)); text-align: right; }
+/* Có nút Nói chuyện / Xem sạp / Nhặt: chat dời lên trên nút cao nhất (mỗi nút +52, nút đầu +68 so với gốc) */
+body.dt:not(.dt-ngang).dt-noi-co #dt .dt-nutt { top: calc(var(--dt-day) - 230px); }
+body.dt:not(.dt-ngang).dt-noi-co #dt .dt-tin { bottom: calc(100% - var(--dt-day) + 234px); }
+body.dt:not(.dt-ngang).dt-sap-co #dt .dt-nutt { top: calc(var(--dt-day) - 282px); }
+body.dt:not(.dt-ngang).dt-sap-co #dt .dt-tin { bottom: calc(100% - var(--dt-day) + 286px); }
+body.dt:not(.dt-ngang).dt-nhat-co #dt .dt-nutt { top: calc(var(--dt-day) - 334px); }
+body.dt:not(.dt-ngang).dt-nhat-co #dt .dt-tin { bottom: calc(100% - var(--dt-day) + 338px); }
+/* Bảng Giang hồ mở (luoi) / thu gọn (thap): nút xếp chồng cao hơn 84px nên chat chỉ cần dời ít hơn */
+body.dt:not(.dt-ngang).dt-noi-co.dt-luoi #dt .dt-nutt, body.dt:not(.dt-ngang).dt-noi-co.dt-thap #dt .dt-nutt { top: calc(var(--dt-day) - 146px); }
+body.dt:not(.dt-ngang).dt-noi-co.dt-luoi #dt .dt-tin, body.dt:not(.dt-ngang).dt-noi-co.dt-thap #dt .dt-tin { bottom: calc(100% - var(--dt-day) + 150px); }
+body.dt:not(.dt-ngang).dt-sap-co.dt-luoi #dt .dt-nutt, body.dt:not(.dt-ngang).dt-sap-co.dt-thap #dt .dt-nutt { top: calc(var(--dt-day) - 198px); }
+body.dt:not(.dt-ngang).dt-sap-co.dt-luoi #dt .dt-tin, body.dt:not(.dt-ngang).dt-sap-co.dt-thap #dt .dt-tin { bottom: calc(100% - var(--dt-day) + 202px); }
+body.dt:not(.dt-ngang).dt-nhat-co.dt-luoi #dt .dt-nutt, body.dt:not(.dt-ngang).dt-nhat-co.dt-thap #dt .dt-nutt { top: calc(var(--dt-day) - 250px); }
+body.dt:not(.dt-ngang).dt-nhat-co.dt-luoi #dt .dt-tin, body.dt:not(.dt-ngang).dt-nhat-co.dt-thap #dt .dt-tin { bottom: calc(100% - var(--dt-day) + 254px); }
+
+/* 5. Dòng tin nổi mặc định: KHÔNG nền khung, chỉ chữ nổi viền đen cho đọc được trên nền game (cả dọc lẫn ngang) */
+#dt .dt-tin > div { background: none; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 5px #000; }
+
+/* 6. Khung chat khi mở: BỎ khung bảng bự ngoài (.dt-bang), chỉ giữ khung chat NHỎ (tab + tin + ô nhập), nút đóng gắn trên khung nhỏ */
+body.dt-chat #dt .dt-bang { display: none; }
+body.dt:not(.dt-ngang).dt-chat #dt .dt-chatp { left: 6px; right: 6px; top: auto; bottom: 58px; height: min(260px, 38vh); }
+body.dt.dt-ngang.dt-chat #dt .dt-chatp { left: 50%; right: auto; top: auto; bottom: 0; width: min(320px, 38vw); height: min(230px, 64vh); transform: translateX(-50%); }
+#dt .dt-ctab > span.dt-cdong { flex: none; width: 30px; color: #ffd9a0; }
+
+/* 7. Màn NGANG: joystick (nút di chuyển) ra vị trí khung đỏ Huy đánh dấu — tâm ở 13,0% bề ngang, 75,6% bề cao */
+body.dt.dt-ngang #dt .dt-can > b { left: calc(var(--vw100, 100vw) * 0.13 - 53px * var(--dt-cc, 1)); bottom: calc(var(--vh100, 100vh) * 0.244 - 53px * var(--dt-cc, 1)); }

@@ -662,7 +662,7 @@ export class World {
       if (s.pt) { e.chu = s.chu; e.so = s.so | 0; } // người thuê + thứ tự phân thân (chiêu của phân thân — main.js "chieu")
       const key = s.sex + JSON.stringify(s.look);
       if (e.lookKey !== key) { e.lookKey = key; e.sex = s.sex; e.look = this.P.jx.look({ sex: s.sex, ...s.look }); }
-      e.lvl = s.lvl; e.co = !!s.co; e.gd = s.gd | 0; e.cp = s.cp ?? this.campPhai(s.fac); // cp: phe đang theo (máy chủ — màu tên, vòng sáng) // co: đội trưởng của đội đang mở, gd: 1 mở giao dịch / 2 đang giao dịch -> cờ trên đầu
+      e.lvl = s.lvl; e.fac = s.fac ?? null; e.co = !!s.co; e.gd = s.gd | 0; e.cp = s.cp ?? this.campPhai(s.fac); // cp: phe đang theo (máy chủ — màu tên, vòng sáng) // co: đội trưởng của đội đang mở, gd: 1 mở giao dịch / 2 đang giao dịch -> cờ trên đầu
       e.cc = s.cc | 0; // vầng trăng Nhất Kỷ / Càn khôn đang có (anh 16/11 — bit 1 Hồng Nguyệt, 2 Lam Nguyệt: vocong.js TRANG_CC; máy chủ the-gioi.js ccDau)
       e.hp = s.hp ?? 100; e.mp = s.mp ?? 100; e.vs = s.vs || null; e.qt = !!s.qt; // % sinh lực / nội lực (bảng đội ngũ), vòng sáng hỗ trợ đang bật (vongDoi)
       // NPC nhân vật mẫu (may-chu/npc-choi.js, cờ npc trong snapshot): đánh được như 1 người chơi — các trường
@@ -1900,23 +1900,29 @@ export class World {
     // ẩn thân: tên ghi "(Ẩn thân)" như client (KNpc::PaintInfo nối "(隐)" sau tên)
     // màu tên theo phe đang theo (PHE_MAU — người khác: cp máy chủ gửi; mình: pheMinh)
     const mauTen = (other ? p.qt : this.laQt) ? QT_MAU : PHE_MAU[other ? p.cp | 0 : this.pheMinh()] || "#ffffff";
-    if (S.showName !== false) this.label(ctx, p.x, ny, other ? p.name + ((this.nguoiTT(p) || {}).chu || "") : this.hero.name + (this.tk && this.tk.xem ? " (Người xem)" : p.hideUntil > this.time ? " (Ẩn thân)" : ""), mauTen); // lôi đài: "(Người xem)" (loidai.js st.xem)
+    // Huy 26/11 (chốt 20:09, thay kiểu A 1 dòng): nhãn 2 dòng — trên "Cấp X · Môn phái", dưới TÊN, cùng chuỗi tên nên F7 tắt thì tắt cả. Kiểu chữ: kiểu CŨ (Huy 20:37) — mọi dòng 13px như bản gốc 882a71a9 (label mặc định px=13). Hậu tố (Ẩn thân/Người xem/chức) theo dòng trên; thiếu cấp thì chỉ tên, không bịa cấp
+    const lv = other ? p.lvl : this.hero.lvl, coCap = Number.isFinite(+lv) && +lv > 0;
+    const hau = other ? ((this.nguoiTT(p) || {}).chu || "") : (this.tk && this.tk.xem ? " (Người xem)" : p.hideUntil > this.time ? " (Ẩn thân)" : "");
+    const ten = other ? p.name : this.hero.name;
+    const tren = coCap ? `Cấp ${+lv | 0} · ${this.tenPhai(other ? p.fac : this.hero.fac)}${hau}` : null;
+    const themDong = S.showName !== false && tren ? 13 : 0; // có dòng trên thì các dòng phía trên dời lên thêm 1 dòng
+    if (S.showName !== false) { if (tren) this.label(ctx, p.x, ny - 13, tren, mauTen); this.label(ctx, p.x, ny, ten + (tren ? "" : hau), mauTen); } // lôi đài: "(Người xem)" (loidai.js st.xem)
     // dòng bang (anh 14/11 — Bang hội đợt 1; vị trí như engine KNpc::PaintInfo :8897): ngay trên tên một dòng, viền đen. Kiểu chữ: mẫu 4 anh chọn 14/11 "Chức · Tên bang"
     // (veDongBang). Người khác: chuỗi máy chủ dựng "Tên bang(Chức)" + mã chức (setOthers e.bh / e.bhc); mình: main.js bhVeLai (World.bhMinh { nhan, cv }). Trong Tống
     // Kim không vẽ (bot không có bang — không để lộ ai là bot). Có dòng bang thì danh hiệu Tống Kim / bảng hiệu sạp / cờ đội dời lên 1 dòng (dB)
     const bh = this.tk || S.showName === false ? null : other ? (p.kind === "other" ? p.bh : null) : this.bhMinh && this.bhMinh.nhan;
-    if (bh) this.veDongBang(ctx, p.x, ny - 14, bh, mauTen, other ? p.bhc : this.bhMinh && this.bhMinh.cv);
+    if (bh) this.veDongBang(ctx, p.x, ny - 14 - themDong, bh, mauTen, other ? p.bhc : this.bhMinh && this.bhMinh.cv); // dòng bang trên cùng, kiểu chữ cũ 13px như bản gốc (Huy 26/11 20:16 + 20:37)
     const dB = bh ? 14 : 0;
-    if (this.tk && S.showName !== false) { const dh = this.tkDanhHieu(p, other); if (dh) this.label(ctx, p.x, ny - 14 - dB, dh, "rgb(236,73,242)"); } // danh hiệu Tống Kim (màu client playertitle.txt — anh 09/11)
+    if (this.tk && S.showName !== false) { const dh = this.tkDanhHieu(p, other); if (dh) this.label(ctx, p.x, ny - 14 - dB - themDong, dh, "rgb(236,73,242)"); } // danh hiệu Tống Kim (màu client playertitle.txt — anh 09/11)
     // chợ trời: đang ngồi đúng chỗ sạp của mình -> bảng hiệu lời rao trên tên (main.js sapTick — World.bangHieu: tên -> lời rao)
     const qc = this.bangHieu && !(other && S.anSap) && this.bangHieu.get(other ? p.name : this.hero.name); // anSap: ẩn bảng hiệu người khác (Trợ Thủ → Khác — anh 11/11)
-    if (qc) this.veBangHieu(ctx, p.x, ny - 14 - dB, qc);
+    if (qc) this.veBangHieu(ctx, p.x, ny - 14 - dB - themDong, qc);
     if (life) this.lifeBar(ctx, p.x, ny, !other ? p.hp / p.hpMax : p.tkb ? p.hp / Math.max(1, p.hpMax) : (p.hp ?? 100) / 100, other && this.tkDichVe(p));
     // cờ đội trưởng: mình — main.js doiApply đặt coDoi; người khác — máy chủ gửi co (setOthers). Cờ giao dịch: mình — main.js gdApply đặt gdCo,
     // người khác — gd (1 mở giao dịch / 2 đang giao dịch). Đỉnh khối tên ≈ chân chữ − 12
     const gd = other ? p.gd : this.gdCo, C = gd === 2 ? coAnh("menustate03") : gd === 1 ? coAnh("menustate02") : (other ? p.co : this.coDoi) && coAnh("menustate01");
     if (C) {
-      const M = C.m, k = SCALE, f = Math.floor((this.time * 1000) / M.ms) % M.n, ay = ny - 12 - dB - 40 * k;
+      const M = C.m, k = SCALE, f = Math.floor((this.time * 1000) / M.ms) % M.n, ay = ny - 12 - dB - themDong - 40 * k;
       ctx.drawImage(C.img, f * M.w, 0, M.w, M.h, Math.round(p.x - M.cx * k), Math.round(ay - M.cy * k), M.w * k, M.h * k);
     }
   }
@@ -2008,13 +2014,19 @@ export class World {
     // cam, tinh anh tên xanh dương (anh 27/10).
     // boss thế giới (Boss Hoàng Kim — bosstg.js; anh 31/10 "tên boss xấu quá … đổi màu chữ đẹp hơn để phân biệt với boss sát thủ, thêm tiền tố
     // Boss Hoàng Kim -"): tiền tố vàng + tên đỏ (boss Sát thủ / thủ lĩnh: cam)
-    const ly = top - NAME_UP, w = m.btg || m.tenBtg ? this.label2(ctx, m.x, ly, [m.sk ? "Siêu boss sự kiện - " : "Boss Hoàng Kim - ", BTG_TIEN], [m.name + this.mobStatus(m), BTG_MAU])
-      : this.label(ctx, m.x, ly, m.name + this.mobStatus(m), m.mauTen || (m.nhim ? NHIM_MAU : m.boss || m.sat || m.vaBoss || m.mcv ? "#ffb74d" : m.ta ? TA_MAU : "#ffffff")); // nhím Săn Nhím: vàng; Phong Hỏa: m.mauTen (phonghoa.js)
+    // Huy 26/11 (chốt 20:09, thay kiểu A 1 dòng): nhãn quái 2 dòng — trên "Cấp X", dưới TÊN; chân chữ tên + thanh máu giữ nguyên như cũ. Kiểu chữ: kiểu CŨ (Huy 20:37) — mọi dòng 13px như bản gốc 882a71a9. Quái không có lvl thì chỉ tên, không bịa cấp
+    const ly = top - NAME_UP;
+    const coCapQ = Number.isFinite(m.lvl);
+    const ten = m.name + this.mobStatus(m);
+    const mauQ = m.mauTen || (m.nhim ? NHIM_MAU : m.boss || m.sat || m.vaBoss || m.mcv ? "#ffb74d" : m.ta ? TA_MAU : "#ffffff");
+    if (coCapQ) this.label(ctx, m.x, ly - 13, `Cấp ${m.lvl | 0}`, mauQ);
+    const w = m.btg || m.tenBtg ? this.label2(ctx, m.x, ly, [m.sk ? "Siêu boss sự kiện - " : "Boss Hoàng Kim - ", BTG_TIEN], [ten, BTG_MAU])
+      : this.label(ctx, m.x, ly, ten, mauQ); // nhím Săn Nhím: vàng; Phong Hỏa: m.mauTen (phonghoa.js)
     this.lifeBar(ctx, m.x, ly, m.hp / m.hpMax, !!m.tkq && this.tkDichVe(m)); // quân NPC Tống Kim phe kia: thanh đỏ
     // số máu "còn/tối đa" một dòng trên tên, màu thanh máu (anh 28/10: cọc đảo Tẩy Tủy "500000/500000" — mocnhan.js datCocDao soMau; rồi
     // "thêm vào cho tinh anh, thủ lĩnh, boss, tiểu boss, sát thủ, vv": trùm bãi / Thủy tặc đầu lĩnh m.boss, tinh anh / Boss Sát thủ / boss,
     // tiểu boss, sát thủ Vượt Ải m.dacBiet). Quái thường không có
-    if (m.soMau || m.boss || m.dacBiet) this.label(ctx, m.x, ly - 15, `${Math.ceil(m.hp)}/${m.hpMax}`, "#00ff00");
+    if (m.soMau || m.boss || m.dacBiet) this.label(ctx, m.x, ly - 15 - (coCapQ ? 13 : 0), `${Math.ceil(m.hp)}/${m.hpMax}`, "#00ff00");
     // ngũ hành (ui\npcbobo.ini [Series]) ngay sau tên như client: cách chữ 2 điểm, hình 18×18 đặt từ đường chân chữ − 13 (đo trên
     // ảnh client anh gửi: giữa hình ngang giữa chữ hoa); không thu nhỏ — chữ tên cũng vẽ cỡ thật
     const im = this.P.hud && this.P.hud.seriesImg(m.series);
@@ -2044,37 +2056,37 @@ export class World {
   }
 
   // chữ giữa tại (x, y = đường chân chữ); trả về bề ngang chữ
-  label(ctx, x, y, s, color) {
+  label(ctx, x, y, s, color, px = 13) {
     ctx.textAlign = "center";
-    return jxText(ctx, s, x, y, color, 13); // bề ngang chữ (jxText giữ sẵn — không đo lại mỗi khung)
+    return jxText(ctx, s, x, y, color, px); // bề ngang chữ (jxText giữ sẵn — không đo lại mỗi khung)
   }
   // dòng bang mẫu 4 (anh 14/11 chọn — "Chức · Tên bang"): chức vụ màu theo bậc (BH_CV_MAU theo mã chức máy chủ gửi — danh hiệu tự đặt / Hộ Bang vẫn đúng màu bậc;
   // thiếu mã thì đoán theo chữ mặc định), dấu · xám nhạt, tên bang màu tên nhân vật. Chuỗi máy chủ vẫn "Tên bang(Chức)" như engine (tên bang không có "(") — tách ở đây.
   // Ẩn sỹ (không chức): chỉ tên bang, chữ trắng (engine :8890). Bề ngang từng phần giữ sẵn (BH_RONG) khi phông đã nạp — không đo lại mỗi khung
-  veDongBang(ctx, x, y, bh, mauTen, cv) {
+  veDongBang(ctx, x, y, bh, mauTen, cv, px = 13) {
     const m = /^([^(]*)\((.+)\)$/.exec(bh);
-    if (!m) return this.label(ctx, x, y, bh, "#ffffff");
+    if (!m) return this.label(ctx, x, y, bh, "#ffffff", px);
     // có mã chức thì chỉ theo mã (đệ tử được đặt danh hiệu chung "Bang chủ" vẫn chữ trắng); chữ đoán chỉ khi thiếu mã
-    const P = [[m[2], (cv ? BH_CV_MAU[cv] : BH_CV_MAU[BH_CV_CHU[m[2]]]) || "#ffffff"], [" · ", "#c8c8c8"], [m[1], mauTen]], font = chuFont(13);
+    const P = [[m[2], (cv ? BH_CV_MAU[cv] : BH_CV_MAU[BH_CV_CHU[m[2]]]) || "#ffffff"], [" · ", "#c8c8c8"], [m[1], mauTen]], font = chuFont(px);
     let w = 0;
     const ws = P.map(([s]) => {
-      let v = BH_RONG.get(s);
-      if (v == null) { ctx.font = font; v = ctx.measureText(s).width; if (typeof document === "undefined" || !document.fonts || document.fonts.check(font, s)) { if (BH_RONG.size > 3000) BH_RONG.clear(); BH_RONG.set(s, v); } }
+      let v = BH_RONG.get(px + "|" + s);
+      if (v == null) { ctx.font = font; v = ctx.measureText(s).width; if (typeof document === "undefined" || !document.fonts || document.fonts.check(font, s)) { if (BH_RONG.size > 3000) BH_RONG.clear(); BH_RONG.set(px + "|" + s, v); } }
       w += v; return v;
     });
     ctx.textAlign = "left";
     let x0 = x - w / 2;
-    P.forEach(([s, c], i) => { jxText(ctx, s, x0, y, c, 13); x0 += ws[i]; });
+    P.forEach(([s, c], i) => { jxText(ctx, s, x0, y, c, px); x0 += ws[i]; });
     ctx.textAlign = "center";
     return w;
   }
   // tên 2 màu (boss thế giới: tiền tố + tên), giữa theo x — [[chữ, màu], …] -> tổng bề rộng
-  label2(ctx, x, y, ...phan) {
-    ctx.font = `13px "VK Sans Serif 13", "IBM Plex Mono", monospace`;
+  label2(ctx, x, y, px = 13, ...phan) {
+    ctx.font = `${px}px "VK Sans Serif ${px}", "IBM Plex Mono", monospace`;
     const ws = phan.map(([s]) => ctx.measureText(s).width), w = ws.reduce((a, b) => a + b, 0);
     ctx.textAlign = "left";
     let x0 = x - w / 2;
-    phan.forEach(([s, c], i) => { jxText(ctx, s, x0, y, c, 13); x0 += ws[i]; });
+    phan.forEach(([s, c], i) => { jxText(ctx, s, x0, y, c, px); x0 += ws[i]; });
     ctx.textAlign = "center";
     return w;
   }
@@ -2142,6 +2154,8 @@ export class World {
   }
   // phe theo phái (factions[].camp: 1 chính, 2 tà, 3 trung lập; chưa vào phái 0)
   campPhai(fac) { return fac == null ? 0 : ((this.P.factions || []).find((f) => f.id === +fac) || {}).camp | 0; }
+  // tên môn phái cho nhãn trên đầu (Huy 26/11: tên + cấp + môn phái) — chưa nhập môn: "Vô Môn Phái" như main.js facOf
+  tenPhai(fac) { if (fac == null) return "Vô Môn Phái"; const f = (this.P.factions || []).find((x) => x.id === +fac); return (f && f.n) || "Vô Môn Phái"; }
   // phe đang theo của mình: máy chủ báo qua nhịp (this.phe — trong đội: phe đội trưởng); chưa có thì theo phái mình
   pheMinh() { return this.phe ?? this.campPhai(this.hero.fac); }
   // vòng sáng hỗ trợ của mình còn tác dụng (đang bật ở ô tay phải + vòng ghép — auraGhep, + vòng vừa đổi chưa hết hạn — vongCapNhat) gửi qua
