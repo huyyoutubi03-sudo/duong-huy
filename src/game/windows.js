@@ -1152,8 +1152,8 @@ export class GameWindows {
   }
 
   // ---------- Khung mua bán (买卖确认.ini) ----------
-  // Mua: tên · số lượng (ô BuyNumber: gõ số, nút + / − bấm giữ để chạy, phím lên / xuống; 1 – luat().mua — anh chốt 25/10: tối đa 60
-  // bình mỗi lần, mọi loại) · tổng tiền (không đủ tiền: màu CantBuyColor) · Xác nhận / Hủy bỏ. Bán: tên · số lượng (thuốc: cả chồng,
+  // Mua: tên · số lượng (ô BuyNumber: gõ số, nút + / − bấm giữ để chạy, phím lên / xuống; thuốc: 1 – chỗ còn trống tới chongMax của loại
+  // đó (bình máu / mana 999); Thổ Địa Phù / Kỳ Trân Các / mua bằng điểm: ≤ luat().mua (60) mỗi lần) · tổng tiền (không đủ tiền: màu CantBuyColor) · Xác nhận / Hủy bỏ. Bán: tên · số lượng (thuốc: cả chồng,
   // chỉ xem) · số tiền nhận. Hình tiêu đề của client: BuyImg / SaleImg (RepairImg chưa dùng). Đặt giữa màn hình như hộp thoại client.
   _trade() {
     const w = this.W.get("trade"), api = this.api, sec = w.def.sec;
@@ -1162,8 +1162,8 @@ export class GameWindows {
     inp.className = "jw-num"; inp.maxLength = sec.BuyNumber.maxLen || 2; inp.inputMode = "numeric"; inp.spellcheck = false; inp.autocomplete = "off"; inp.name = "sl-mua";
     inp.style.color = `rgb(${sec.BuyNumber.color})`;
     w.node("BuyNumber").appendChild(inp);
-    // mỗi lần mua ≤ luat().mua, và loại thuốc này mang ≤ chongMax của nó (chongRieng — bình máu / mana 999, 25/11/2026) — máy chủ cũng chặn
-    // Thổ Địa Phù: ≤ luat().mua mỗi lần (không tính giới hạn thuốc); đồ trắng: 1 món mỗi lần
+    // thuốc: mỗi lần mua tới chỗ còn trống tới chongMax của loại đó (chongRieng — bình máu / mana 999, 25/11/2026; chặn 60 cũ gỡ 26/11/2026) — máy chủ cũng chặn
+    // Thổ Địa Phù / Kỳ Trân Các / mua bằng điểm: ≤ luat().mua mỗi lần (không tính giới hạn thuốc); đồ trắng: 1 món mỗi lần
     // Kỳ Trân Các (mode ktc — anh 27/10 "sao lại tận 2 bước xác nhận"): cùng khung này, giá bằng Xu, mỗi lần ≤ luat().mua món
     // chợ trời (mode sap — src/game/chotroi.js): mua cả món / cả chồng trên sạp, giá gồm thuế (it.mua), ô số lượng chỉ để xem
     const con = () => {
@@ -1175,7 +1175,7 @@ export class GameWindows {
       if (x && !x.thuoc) return 1;
       const co = (api.hero().bag || []).reduce((t, b) => t + (b.k === this.trade.it.k && (ItemDB.item(b.k) || {}).thuoc ? b.n || 0 : 0), 0);
       const mx = (L.chongRieng && +L.chongRieng[this.trade.it.k]) || L.chong || 60;
-      return Math.min(L.mua, mx - co);
+      return mx - co; // thuốc: mỗi lần mua tới chỗ còn trống tới chongMax của loại đó (bình máu/mana 999 — sửa 26/11/2026, trước chặn ở luat().mua = 60)
     };
     const max = () => Math.max(1, con());
     // "Mua tối đa" (anh 26/10): đủ tới giới hạn mang của loại thuốc này (≤ luat().mua mỗi lần), không quá số tiền đang có (Xu / điểm phúc duyên / điểm Tống Kim)

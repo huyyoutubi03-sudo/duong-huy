@@ -31,7 +31,7 @@
 //   - dòng 2, 4, 6 là DÒNG ẨN ("thuộc tính âm" — client G_ITEM_21 "Cần %s của %s và %s để kích thuộc tính âm"): chỉ có tác dụng khi được
 //     kích (soKich: ngũ hành nhân vật + 2 ô trang bị liên kết sinh ra hệ của món). Yêu cầu mặc = yêu cầu của món nền.
 // Thuốc (anh muốn 25/10): món { u, k: "potion:<dòng potion.txt>", n: số bình } — bảng assets/data/thuoc.json (cong-cu/dung-thuoc.js),
-// mua ở Dược điếm (shops[39]); 1 ô xếp chồng tối đa thuoc.chongToiDa bình, mỗi lần mua tối đa thuoc.muaToiDa bình (cau-hinh.json).
+// mua ở Dược điếm (shops[39]); 1 ô xếp chồng tối đa thuoc.chongToiDa bình, mỗi lần mua thuốc tối đa chongMax của loại đó (bình máu/mana 999 — sửa 26/11/2026, trước chặn ở thuoc.muaToiDa = 60).
 // Uống: trình duyệt hồi sinh lực / nội lực (src/game/world.js) rồi báo kèm nhịp, máy chủ trừ bình.
 // Độ bền (anh 26/10 "sửa đồ"): món có độ bền tối đa (thuộc tính cơ bản durability_v của bảng đồ client — áo, mũ, đai, bao tay, giày; vũ khí
 // client 8.1 không có -> bảng doBen.vuKhi của cau-hinh.json; nhẫn, dây chuyền, ngọc bội, ngựa không có -> không bao giờ hao) giữ it.ben =
@@ -1847,7 +1847,7 @@ function hao(h, ds) {
   return kq;
 }
 
-// mua n bình thuốc x (1 – muaToiDa): dồn vào chồng cùng loại chưa đầy trước, rồi ô trống; thiếu tiền / chỗ thì báo lỗi, không mua gì
+// mua n bình thuốc x (1 – chongMax của loại đó): dồn vào chồng cùng loại chưa đầy trước, rồi ô trống; thiếu tiền / chỗ thì báo lỗi, không mua gì
 // tổng số bình thuốc trong túi (mọi loại) — giới hạn tổng cũ (anh 25/10: 60 bình bất kể loại, vd 30 máu + 30 nội lực); từ 25/11/2026: mỗi
 // loại mang tới chongMax của loại đó (bình máu / mana 999 — xem soThuocK), soThuoc chỉ còn để tham khảo / báo cáo
 const soThuoc = (h) => (h.bag || []).reduce((t, o) => t + (laThuoc(o) ? o.n || 0 : 0), 0);
@@ -1858,14 +1858,15 @@ const MANG = () => TC.mangToiDa || 60; // giới hạn tổng cũ — còn dùng
 const TM_THUOC = `Túi tử mẫu không cất được thuốc — thuốc chỉ mang theo trong hành trang (mỗi loại tối đa ${chongMax("potion:1")} bình)`;
 function muaThuoc(h, x, n, giaTk = 0) { // giaTk > 0: thuốc Tống Kim giá này (chồng riêng it.tk)
   if (!x || !x.thuoc || !HANG.has(x.k)) loi("Cửa hàng không bán món này. Đừng hỏi nữa.");
-  if (n < 1 || n > TC.muaToiDa) loi(`Mỗi lần chỉ mua 1 – ${TC.muaToiDa} bình thôi.`);
   const mx = chongMax(x.k), co = soThuocK(h, x.k, giaTk > 0);
+  if (n < 1 || n > mx) loi(`Mỗi lần chỉ mua 1 – ${mx} bình thôi.`); // 26/11/2026: tới chongMax của loại đó (bình máu/mana 999), trước chặn ở muaToiDa = 60
   if (co + n > mx) loi(co >= mx ? `Mỗi loại mang tối đa ${mx} bình thôi. ${x.n.trim()} ngươi đang có ${co}.` : `Mỗi loại mang tối đa ${mx} bình thôi. ${x.n.trim()} ngươi đang có ${co}, mua thêm được ${mx - co}.`);
   muaChong(h, x, giaTk > 0 ? giaTk : x.gia, n, giaTk > 0);
 }
 // mua n món xếp chồng x giá gia mỗi món: dồn vào chồng cùng loại chưa đầy trước, rồi ô trống; thiếu tiền / chỗ thì lỗi, không mua gì
 function muaChong(h, x, gia1, n, tk = false) {
-  if (n < 1 || n > TC.muaToiDa) loi(`Mỗi lần chỉ mua 1 – ${TC.muaToiDa} thôi.`);
+  const mx = chongMax(x.k); // Thổ Địa Phù: chongToiDa (60); thuốc: chongRieng của loại đó (bình máu/mana 999) — sửa 26/11/2026, trước chặn ở muaToiDa = 60
+  if (n < 1 || n > mx) loi(`Mỗi lần chỉ mua 1 – ${mx} thôi.`);
   const gia = gia1 * n;
   if ((h.gold || 0) < gia) loi("Ngân lượng không đủ. Kiếm thêm đi.");
   themChong(h, x, n, 0, tk);
