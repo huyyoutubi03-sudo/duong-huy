@@ -53,6 +53,29 @@ const doTheoPhai = (h, eqt) => { // bộ đồ cấp 10 như mã MAXPING từng 
   return mon;
 };
 const sach = (s, n) => String(s || "").replace(/[\u0000-\u001f\u007f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
+// MAXPING (chủ server 26/11/2026): nhập mã chung -> max hết chiêu của phái (chiêu tier + sách 90/120/150), đúng trần từng chiêu
+// (trường max trong skills.json), theo đúng mẫu học sách của do.js (case "sach"/"daiThanh"): ghi h.books như đã học, skMin = trần để
+// điểm đã cộng không tính phần cho không, chiêu luyện (exp=1) độ luyện về 0. Chỉ nâng, không hạ (nhập lại an toàn); chiêu phái khác không đụng.
+const maxKyNangPhai = (h) => {
+  const f = (SKILL.factions || []).find((x) => x.id === +h.fac);
+  if (!f) return { tong: 0, moi: 0 };
+  const sachPhai = new Set(Object.values(f.books || {}).flat().map(Number));
+  const ids = new Set([...(f.skills || []).map(Number), ...sachPhai]);
+  h.skills = h.skills || {}; h.skMin = h.skMin || {};
+  const B = new Set(h.books || []);
+  let moi = 0;
+  for (const id of ids) {
+    const s = SKILL.skills[String(id)];
+    if (!s) continue;
+    const cap = Math.max(1, s.max | 0 || 20), cu = h.skills[id] | 0;
+    if (cu < cap) { h.skills[id] = cap; h.kyNangThem = (h.kyNangThem | 0) + cap - cu; moi++; }
+    if ((h.skMin[id] | 0) < cap) h.skMin[id] = cap;
+    if (sachPhai.has(id)) B.add(id);
+    if (DO.laLuyen(id)) { h.luyen = h.luyen || {}; h.luyen[id] = 0; }
+  }
+  h.books = [...B];
+  return { tong: ids.size, moi };
+};
 // mã không phân biệt hoa / thường, bỏ khoảng trắng; chữ không dấu, số, - _ (4–32 ký tự)
 const chuanMa = (s) => { const k = String(s || "").replace(/\s+/g, "").toUpperCase(); return /^[A-Z0-9_-]{4,32}$/.test(k) ? k : null; };
 const sinhMa = () => Array.from({ length: 10 }, () => CHU[crypto.randomInt(CHU.length)]).join("");
@@ -99,6 +122,10 @@ function nhap(tk, h, ma0, he0) {
     len = DO.NOI.lenCap(h); // lên cấp theo đúng luật chung (trần 200)
     ds.push(`${nhom(e)} điểm kinh nghiệm`);
     if (len > 0) ds.push(`Lên ${len} cấp (cấp ${h.lvl})`);
+  }
+  if (m.qua && m.qua.tuDong) { // mã chung: max hết kỹ năng của phái (26/11/2026) — sau khi lên cấp xong, chỉ nâng không hạ
+    const r = maxKyNangPhai(h);
+    if (r.tong > 0) ds.push(`Kỹ năng của phái lên tối đa (${r.tong} chiêu)`);
   }
   m.dung.push({ tk: tk.ten, nv: h.name, luc: t });
   ghi(all);
