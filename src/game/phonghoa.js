@@ -51,7 +51,7 @@ export const PhongHoa = {
 
   capNhat(p) {
     if (!this.w || !this.D) return;
-    if (!p || p.khong) { this.p = p; return this.roi(p && p.khong ? "Ngươi chưa báo danh trận này — mời về Biện Kinh." : "Trận Phong Hỏa Liên Thành đã kết thúc."); }
+    if (!p || p.khong) { this.p = p; return this.roi(p && p.khong ? "Ngươi chưa báo danh trận này — về Biện Kinh đi, đừng đứng đây." : "Trận Phong Hỏa Liên Thành kết thúc rồi."); }
     if (this.p && this.p.u === p.u && p.gio < this.p.gio) return;
     this.lech = p.gio - Date.now();
     if (this.p && this.p.u !== p.u) { this.spec = null; this.hpSv.clear(); }
@@ -186,7 +186,7 @@ export const PhongHoa = {
     if (t - this.songLuc >= SONG_MS) { this.songLuc = t; Net.wsGui({ t: "phAn", an: document.hidden ? 1 : 0 }); }
     if (!this.laTo()) return this.xin();
     const P = this.p;
-    if (P.ket && P.ra && this.gioSv() >= P.ra) return this.roi("Trận đã kết thúc — mời về Biện Kinh.");
+    if (P.ket && P.ra && this.gioSv() >= P.ra) return this.roi("Trận kết thúc rồi — về Biện Kinh đi.");
     if (P.pha === "bd") this.chan(t);
     if (t - this.datLuc >= DAT_MS) this.dat();
     for (const m of this.mob.values()) if (m.alive && m.duDoan) w.kill(m);
@@ -253,7 +253,7 @@ export const PhongHoa = {
     const w = this.w, p = w.player, D = this.D; if (t - this.chanLuc < CHAN_MS || !D.chan) return;
     for (let r = 0; r < D.chan.length; r++) for (const [x, y] of D.chan[r]) if (ldist(p.x, p.y, x, y) <= CHAN_R) {
       this.chanLuc = t; p.x = D.chanVe[r][0]; p.y = D.chanVe[r][1]; p.path = null; p.target = null; w.holdMove = false;
-      if (this.api) this.api.msg("Trước khi khai chiến các tướng sĩ trong thành đợi lệnh, chuẩn bị nghênh địch!");
+      if (this.api) this.api.msg("Trước khi khai chiến, tướng sĩ trong thành đợi lệnh, chuẩn bị nghênh địch! Đứng yên đấy, đừng chạy lung tung.");
       return;
     }
   },

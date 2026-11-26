@@ -57,7 +57,7 @@ function bdGiao(h, mon) {
   try { const ds = DO.taoQua(h, { mon: mon.map((x) => ({ ...x })) }); return `Hoạt động báo đáp ân sư: nhận được ${ds.join(", ")}.`; }
   catch {
     h.quaCho = [...(Array.isArray(h.quaCho) ? h.quaCho : []), { mon: mon.map((x) => ({ ...x })), luc: Date.now(), he: 1, loi: BD_LOI }]; // he: quà hệ thống
-    return "Hoạt động báo đáp ân sư: hành trang không đủ chỗ — phần thưởng đang chờ, sắp xếp hành trang là tự nhận.";
+    return "Hoạt động báo đáp ân sư: hành trang đầy — phần thưởng đang chờ. Dọn túi là tự nhận.";
   }
 }
 const VA = (() => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets/data/vuot-ai.json"), "utf8")); } catch { return null; } })();
@@ -241,7 +241,7 @@ function xongDotP(P) {
     choThuong(tk, { kn: Math.round(e * heSoTv(P, tk)) + cuoi, ket: P.ket, phong: P.id, rx: CF.ruongXanh | 0, ...(cuoi ? { tinVa: [cauThuong(P.dot, tong, cuoi, nVao, ld)] } : {}), ...(ev.length ? { ev: ev.map((x) => ({ ...x })) } : {}), ...(trungXu ? { xu } : {}) });
   }
   // báo cả máy chủ (kênh hệ thống — trình duyệt hiện ở thẻ Khác / Tất cả): anh 17/11 "ải cuối hiện kênh khác, cả server thấy thì ok" — kèm số kinh nghiệm thưởng thêm
-  TG().thongBao(`${MT.ten(P.truong.ten)}: đội ngũ đã thắng lợi hoàn thành nhiệm vụ Thách thức thời gian ${tenBac(P.cap)}, đã dùng ${phut} phút ${giay % 60} giây!${T > 0 ? ` Mỗi người nhận thêm ${MT.thuong(soVn(T) + " kinh nghiệm")}!` : ""}${trungXu ? ` Cả đội may mắn nhận được ${MT.thuong(xu + " Xu")} mỗi người!` : ""}`);
+  TG().thongBao(`${MT.ten(P.truong.ten)}: đội ngũ thắng Thách thức thời gian ${tenBac(P.cap)}, dùng ${phut} phút ${giay % 60} giây!${T > 0 ? ` Mỗi người nhận thêm ${MT.thuong(soVn(T) + " kinh nghiệm")}!` : ""}${trungXu ? ` Cả đội may mắn nhận được ${MT.thuong(xu + " Xu")} mỗi người!` : ""}`);
 }
 // sát thương của tài khoản tk (kênh tức thời "vad" / nhịp b.vad): { s: số tin, d: [[uid, sát thương]], st: [[uid, choáng ms, chậm ms]] }. Chỉ
 // tính khi người đó còn trong ải, đứng ở bãi ải, đám đã ra; tổng mỗi người theo hạn mức stGiay. Trạng thái choáng / chậm chuyển cho máy khác
@@ -274,20 +274,20 @@ function dangCua(h) {
   return { ...D, P: trong ? P : null, bd: P ? P.bd : D.bd, dot: trong ? P.dot : D.dot, giet: trong ? P.giet : D.giet, ket: trong ? P.ket : D.ket || { thua: 1 } };
 }
 function mo(h, tk) {
-  if (!VA) return { talk: ["Thách thức thời gian chưa mở."] };
+  if (!VA) return { talk: ["Thách thức thời gian chưa mở. Quay lại sau."] };
   const S = tt(h), B = bacCua(h), D = dangCua(h);
-  if (!B) return say(`Thách thức thời gian cần đạt ${R("cấp " + VA.cap[0].lo)} trở lên mới được tham gia.`, [dong]);
-  if (D && !D.ket) return say("Ngươi đang làm nhiệm vụ Thách thức thời gian, hãy quay lại ải.", [["Trở lại ải", "veAi"], dong]);
-  if (S.luot >= CF.luot) return say(`Nhiệm vụ Thách thức thời gian mỗi ngày chỉ được tham gia ${CF.luot} lần. Số lần tham gia của ngươi đã đủ! Ngày mai trở lại nhé!`, [dong]);
+  if (!B) return say(`Đạt ${R("cấp " + VA.cap[0].lo)} trở lên mới tham gia được Thách thức thời gian.`, [dong]);
+  if (D && !D.ket) return say("Ngươi đang làm nhiệm vụ Thách thức thời gian. Quay lại ải đi!", [["Trở lại ải", "veAi"], dong]);
+  if (S.luot >= CF.luot) return say(`Thách thức thời gian mỗi ngày chỉ tham gia được ${CF.luot} lần. Ngươi hết lượt rồi. Mai quay lại!`, [dong]);
   const T = doiCua(tk && tk.ten);
-  if (T && T.truong !== tk.ten) return say(`Xin lỗi! Cần phải là ${R("đội trưởng")} mới có tư cách báo danh tham gia 'Nhiệm vụ Thách thức thời gian'`, [dong]);
+  if (T && T.truong !== tk.ten) return say(`Phải là ${R("đội trưởng")} mới báo danh được 'Nhiệm vụ Thách thức thời gian'.`, [dong]);
   // anh 16/11: tổ đội tối thiểu toiThieu người (vao gọi lại mo — chặn luôn đường 1 người và đội vừa có người rời)
   const toi = toiThieu(), n = T ? T.tv.length : 1;
-  if (n < toi) return say(`Xin lỗi! 'Nhiệm vụ Thách thức thời gian' cần tổ đội tối thiểu ${R(toi + " người")}${n > 1 ? ` (đội đang có ${Y(n + " người")})` : ""} — hãy lập tổ đội rồi để đội trưởng báo danh.`, [dong]);
+  if (n < toi) return say(`'Nhiệm vụ Thách thức thời gian' cần tổ đội tối thiểu ${R(toi + " người")}${n > 1 ? ` (đội đang có ${Y(n + " người")})` : ""}. Lập tổ đội rồi để đội trưởng báo danh.`, [dong]);
   const p = phiLan(S.luot), xuTl = Math.round(Math.max(0, (+CF.xuDoi || 0) * (n - 1)) * 100);
-  const doi = T ? ` Tổ đội ${Y(n + " người")} cùng vào 1 ải, đánh chung quái — mỗi thành viên nộp phí theo số lần đã tham gia hôm nay của mình, cùng bậc ${tenBac(B.cap)}. Quái và boss mạnh ${R("×" + String(hsDoi(n)).replace(".", ","))} (máu, sát thương)${xuTl > 0 && CF.xuSo > 0 ? `; xong ải cả đội có ${Y(xuTl + "%")} cơ hội nhận ${Y((CF.xuSo | 0) + " Xu")} mỗi người` : ""}.` : "";
-  return say(`${B.ten}: khiêu chiến ${R("28 đám quái")} trong ${R(VA.han / 60 + " phút")}. Hôm nay ngươi đã tham gia ${Y(S.luot + "/" + CF.luot)} lần. Lần thứ ${S.luot + 1} cần nộp ${R(p.gian + " Sát Thủ Giản")} ${B.cap === 2 ? "cấp 90" : "cấp 20–80"} và ${R(van(p.tien))}.${doi} Ngươi muốn tham gia không?`,
-    [["Phải! Ta muốn tham gia.", "vaoAi"], ["Không cần", null]]);
+  const doi = T ? ` Tổ đội ${Y(n + " người")} cùng vào 1 ải, đánh chung quái — mỗi người nộp phí theo số lần đã tham gia hôm nay của mình, cùng bậc ${tenBac(B.cap)}. Quái và boss mạnh ${R("×" + String(hsDoi(n)).replace(".", ","))} (máu, sát thương)${xuTl > 0 && CF.xuSo > 0 ? `; xong ải cả đội có ${Y(xuTl + "%")} cơ hội nhận ${Y((CF.xuSo | 0) + " Xu")} mỗi người` : ""}.` : "";
+  return say(`${B.ten}: khiêu chiến ${R("28 đám quái")} trong ${R(VA.han / 60 + " phút")}. Hôm nay ngươi tham gia ${Y(S.luot + "/" + CF.luot)} lần rồi. Lần thứ ${S.luot + 1} nộp ${R(p.gian + " Sát Thủ Giản")} ${B.cap === 2 ? "cấp 90" : "cấp 20–80"} và ${R(van(p.tien))}.${doi} Tham gia không?`,
+    [["Tham gia.", "vaoAi"], ["Không cần", null]]);
 }
 // dragon_join + COT_TeamMemberJoin: đủ điều kiện -> nộp phí, vào ải đám 1 (có tổ đội 2 người trở lên: vaoDoi)
 function vao(h, tk) {
@@ -295,32 +295,32 @@ function vao(h, tk) {
   const T = doiCua(tk && tk.ten);
   if (T) return vaoDoi(h, tk, T);
   const S = tt(h), B = bacCua(h), p = phiLan(S.luot), ds = gianCo(h, B.cap);
-  if ((h.gold || 0) < p.tien) return say(`Tham gia nhiệm vụ Thách thức thời gian lần thứ ${S.luot + 1} cần ${R(van(p.tien))}. Chuẩn bị đủ tiền rồi hãy quay lại!`, [dong]);
-  if (soGian(ds) < p.gian) return say(`${TEN}: Xin lượng thứ, tham gia nhiệm vụ khiêu chiến thời gian ${tenBac(B.cap)} lần thứ ${S.luot + 1} cần có ${R(p.gian)} Sát Thủ Giản ${B.cap === 2 ? "cấp 90" : "cấp 20–80"} trong hành trang (đang có ${soGian(ds)}), xin hãy chuẩn bị rồi hãy đến đây gặp ta`, [dong]);
+  if ((h.gold || 0) < p.tien) return say(`Tham gia Thách thức thời gian lần thứ ${S.luot + 1} cần ${R(van(p.tien))}. Chuẩn bị đủ tiền rồi quay lại!`, [dong]);
+  if (soGian(ds) < p.gian) return say(`${TEN}: Lần thứ ${S.luot + 1} cần ${R(p.gian)} Sát Thủ Giản ${B.cap === 2 ? "cấp 90" : "cấp 20–80"} trong hành trang (đang có ${soGian(ds)}). Chuẩn bị đủ rồi hãy tới gặp ta!`, [dong]);
   tieuGian(h, ds, p.gian);
   h.gold -= p.tien; S.luot++;
   S.dang = { cap: B.cap, bd: Date.now() + CF.chuanBi * 1000, dot: 1, giet: [], luc: Date.now() };
-  return { tin: [`Đã nộp ${p.gian} Sát Thủ Giản + ${van(p.tien)} (lần ${S.luot}/${CF.luot} hôm nay).`, `Còn ${CF.chuanBi} giây nữa quái sẽ xuất hiện, hãy chuẩn bị!`], di: { z: B.bai, at: VA.vao } };
+  return { tin: [`Nộp ${p.gian} Sát Thủ Giản + ${van(p.tien)} (lần ${S.luot}/${CF.luot} hôm nay).`, `Còn ${CF.chuanBi} giây nữa quái xuất hiện. Chuẩn bị đi!`], di: { z: B.bai, at: VA.vao } };
 }
 // đội trưởng báo danh cả đội (COT_CheckTeamRequirement -> COT_TeamJoin): xét từng thành viên (đang trong game, cùng bậc, còn lượt, không đang
 // trong ải, đủ tiền + giản của lần mình) — ai thiếu thì báo tên, không ai vào; đủ thì mỗi người nộp phí, cả đội vào 1 phòng. Thành viên khác:
 // ghi thẳng vào tài khoản của họ (như giao dịch — không có await giữa đọc và ghi), nhịp sau của họ nhận túi mới + lệnh đi vào ải (layDi)
 function vaoDoi(h, tk, T) {
-  if (T.truong !== tk.ten) return say(`Xin lỗi! Cần phải là ${R("đội trưởng")} mới có tư cách báo danh tham gia 'Nhiệm vụ Thách thức thời gian'`, [dong]);
+  if (T.truong !== tk.ten) return say(`Phải là ${R("đội trưởng")} mới báo danh được 'Nhiệm vụ Thách thức thời gian'.`, [dong]);
   const B = bacCua(h), ds = [];
   for (const a of T.tv) {
     const p = TG().dangChoi(a), tkA = a === tk.ten ? tk : DL.docTk(a);
     const hA = a === tk.ten ? h : p && tkA ? tkA.nv.find((x) => x && x.name === p.name) || null : null;
     const ten = (p && p.name) || (hA && hA.name) || a;
-    if (!p || !hA) return say(`Xin lỗi! Trong đội bạn có thành viên ${Y(ten)} không ở trong game, xin kiểm tra lại rồi báo danh!`, [dong]);
+    if (!p || !hA) return say(`Trong đội có thành viên ${Y(ten)} không ở trong game. Kiểm tra lại rồi báo danh!`, [dong]);
     const S = tt(hA), BA = bacCua(hA), D = dangCua(hA);
-    if (!BA) return say(`Xin lỗi! Trong đội bạn có thành viên ${Y(ten)} chưa đạt ${R("cấp " + VA.cap[0].lo)}, xin kiểm tra lại rồi báo danh!`, [dong]);
-    if (BA.cap !== B.cap) return say(B.cap === 1 ? `Xin lỗi! Trong đội bạn có thành viên vượt ${R("cấp 90")} (${Y(ten)}), xin kiểm tra lại rồi báo danh!` : `Xin lỗi! Trong đội bạn có thành viên chưa đạt ${R("cấp 90")} (${Y(ten)}), xin kiểm tra lại rồi báo danh!`, [dong]);
-    if (D && !D.ket) return say(`Xin lỗi! Thành viên ${Y(ten)} đang làm nhiệm vụ Thách thức thời gian.`, [dong]);
-    if (S.luot >= CF.luot) return say(`Nhiệm vụ Thách thức thời gian mỗi ngày chỉ được tham gia ${CF.luot} lần. Số lần tham gia của ${Y(ten)} đã đủ! Ngày mai trở lại nhé!`, [dong]);
+    if (!BA) return say(`Trong đội có thành viên ${Y(ten)} chưa đạt ${R("cấp " + VA.cap[0].lo)}. Kiểm tra lại rồi báo danh!`, [dong]);
+    if (BA.cap !== B.cap) return say(B.cap === 1 ? `Trong đội có thành viên vượt ${R("cấp 90")} (${Y(ten)}). Kiểm tra lại rồi báo danh!` : `Trong đội có thành viên chưa đạt ${R("cấp 90")} (${Y(ten)}). Kiểm tra lại rồi báo danh!`, [dong]);
+    if (D && !D.ket) return say(`Thành viên ${Y(ten)} đang làm nhiệm vụ Thách thức thời gian.`, [dong]);
+    if (S.luot >= CF.luot) return say(`Thách thức thời gian mỗi ngày chỉ tham gia được ${CF.luot} lần. ${Y(ten)} hết lượt rồi. Mai quay lại!`, [dong]);
     const f = phiLan(S.luot), gs = gianCo(hA, B.cap);
-    if ((hA.gold || 0) < f.tien) return say(`Xin lỗi! Thành viên ${Y(ten)} tham gia lần thứ ${S.luot + 1} cần ${R(van(f.tien))} — chưa đủ tiền.`, [dong]);
-    if (soGian(gs) < f.gian) return say(`${TEN}: Xin lượng thứ, trong tổ đội của ngươi có người không có đủ Sát Thủ Giản ${B.cap === 2 ? "cấp 90" : "cấp 20–80"}: ${Y(ten)} lần thứ ${S.luot + 1} cần ${R(f.gian)} (đang có ${soGian(gs)}), xin kiểm tra lại rồi hãy báo danh tham gia!`, [dong]);
+    if ((hA.gold || 0) < f.tien) return say(`Thành viên ${Y(ten)} tham gia lần thứ ${S.luot + 1} cần ${R(van(f.tien))} — chưa đủ tiền.`, [dong]);
+    if (soGian(gs) < f.gian) return say(`${TEN}: Trong đội có người thiếu Sát Thủ Giản ${B.cap === 2 ? "cấp 90" : "cấp 20–80"}: ${Y(ten)} lần thứ ${S.luot + 1} cần ${R(f.gian)} (đang có ${soGian(gs)}). Kiểm tra lại rồi báo danh!`, [dong]);
     ds.push({ a, tkA, hA, ten, f, gs, S });
   }
   const t = Date.now(), bd = t + CF.chuanBi * 1000;
@@ -348,10 +348,10 @@ function vaoDoi(h, tk, T) {
     CHO.delete(x.a);
     if (x.a === tk.ten) continue; // đội trưởng: api.js ghi tài khoản + trả lệnh đi
     DO.chuan(x.hA); DL.ghiTk(x.tkA);
-    DI.set(x.a, { tin: [`Đội trưởng ${h.name} đã báo danh Thách thức thời gian ${tenBac(B.cap)} — cả đội vào ải.`, `Đã nộp ${x.f.gian} Sát Thủ Giản + ${van(x.f.tien)} (lần ${x.S.luot}/${CF.luot} hôm nay).`, `Còn ${CF.chuanBi} giây nữa quái sẽ xuất hiện, hãy chuẩn bị!`], di: { z: B.bai, at: VA.vao } });
+    DI.set(x.a, { tin: [`Đội trưởng ${h.name} báo danh Thách thức thời gian ${tenBac(B.cap)} — cả đội vào ải.`, `Nộp ${x.f.gian} Sát Thủ Giản + ${van(x.f.tien)} (lần ${x.S.luot}/${CF.luot} hôm nay).`, `Còn ${CF.chuanBi} giây nữa quái xuất hiện. Chuẩn bị đi!`], di: { z: B.bai, at: VA.vao } });
   }
   const minh = ds[0];
-  return { tin: [`Đã báo danh cho tổ đội ${ds.length} người: ${tenDoi}.`, `Đã nộp ${minh.f.gian} Sát Thủ Giản + ${van(minh.f.tien)} (lần ${minh.S.luot}/${CF.luot} hôm nay).`, `Còn ${CF.chuanBi} giây nữa quái sẽ xuất hiện, hãy chuẩn bị!`], di: { z: B.bai, at: VA.vao } };
+  return { tin: [`Báo danh cho tổ đội ${ds.length} người: ${tenDoi}.`, `Nộp ${minh.f.gian} Sát Thủ Giản + ${van(minh.f.tien)} (lần ${minh.S.luot}/${CF.luot} hôm nay).`, `Còn ${CF.chuanBi} giây nữa quái xuất hiện. Chuẩn bị đi!`], di: { z: B.bai, at: VA.vao } };
 }
 // ra ải: xong / hết giờ (timer_close) / tử vong (player_death) -> về Ba Lăng chỗ Nhiếp Thí Trần. Còn giờ mà chưa xong thì không ra được
 // (client: chỉ ra khi hết ải, hết giờ, tử vong). Tổ đội: ra khỏi phòng (không nhận thưởng nữa)
@@ -359,9 +359,9 @@ function ra(h, chet) {
   const S = tt(h), D = dangCua(h), ve = { z: VA.ve.z, at: VA.ve.at };
   if (!D) return { di: ve };
   const tin = [];
-  if (chet) tin.push("Không may tại trận tử vong!");
-  else if (!D.ket && conGiay(D) > 0) return { talk: ["Nhiệm vụ chưa kết thúc — hạ hết 28 đám quái hoặc chờ hết giờ."] };
-  else if (!D.ket || D.ket.thua) tin.push("Thời gian làm nhiệm vụ đã kết thúc, khiêu chiến thất bại.");
+  if (chet) tin.push("Ngươi tử vong trong trận!");
+  else if (!D.ket && conGiay(D) > 0) return { talk: ["Nhiệm vụ chưa xong — hạ hết 28 đám quái hoặc chờ hết giờ."] };
+  else if (!D.ket || D.ket.thua) tin.push("Hết giờ. Khiêu chiến thất bại.");
   if (D.P) roiPhong(D.P, D.tk);
   delete S.dang;
   return { tin, di: chet ? { ...ve, hoiSinh: 1 } : ve };
@@ -386,7 +386,7 @@ function nhanGiet(h, Z, id, L) {
   if (!d.ds.every((g, i) => (D.giet[i] | 0) >= g.n)) return r;
   r.kn += Math.round(d.kn * heSo(D)); // số món rơi của đám (d.roi — trang bị client) bỏ: anh 28/10 không rơi trang bị trắng / xanh
   r.bhDam = D.dot; // bang hội đợt 2: đám vừa xong -> do.js gietQuai cộng cống hiến (BH.cong "vuotAi")
-  r.tin.push(`Đội ngũ đã tiêu diệt toàn bộ ${D.dot} đám quái!`);
+  r.tin.push(`Đội ngũ diệt hết đám quái thứ ${D.dot}!`);
   // anh 17/11: thưởng thêm mỗi ải như tổ đội (đi 1 mình = đội trưởng, 1 người — chỉ khi toiThieu cho phép)
   const T1 = Math.round(thuongAi(D.cap, D.dot, B.dot.length, 1) * CF.doiTruong);
   if (T1 > 0) { r.kn += T1; r.tin.push(cauThuong(D.dot, B.dot.length, T1, 1, true)); }
@@ -399,7 +399,7 @@ function nhanGiet(h, Z, id, L) {
   const rx = DO.choRuongXanh(h, CF.ruongXanh | 0);
   if (rx) r.tin.push(`Thưởng hoàn thành ải: ${rx}`);
   const ev = bdMon("vuotAi"); if (ev.length) r.tin.push(bdGiao(h, ev)); // anh 16/11 — Báo Đáp Ân Sư: món sự kiện xong ải (đi 1 mình)
-  r.loa.push(`${MT.ten(h.name)}: đội ngũ đã thắng lợi hoàn thành nhiệm vụ Thách thức thời gian ${tenBac(D.cap)}, đã dùng ${phut} phút ${giay % 60} giây!`);
+  r.loa.push(`${MT.ten(h.name)}: đội ngũ thắng Thách thức thời gian ${tenBac(D.cap)}, dùng ${phut} phút ${giay % 60} giây!`);
   return r;
 }
 // nhịp (z = bãi đang đứng — trong lúc đổi bản đồ trình duyệt báo bãi đang tới): rời ải bằng đường khác (thoát game, đổi bãi) quá 45 giây
@@ -438,7 +438,7 @@ function nhanPhong(h, tk, key) {
     if (r.tinVa) (kq.tinVa = kq.tinVa || []).push(...r.tinVa); // anh 17/11: dòng thưởng mỗi ải — trình duyệt hiện ở kênh Khác
     if (r.rx > 0) kq.tin.push(`Thưởng hoàn thành ải: ${DO.choRuongXanh(h, r.rx)}`);
     if (Array.isArray(r.ev) && r.ev.length) kq.tin.push(bdGiao(h, r.ev)); // anh 16/11 — Báo Đáp Ân Sư: món sự kiện xong ải (tổ đội)
-    if (r.xu > 0) { h.xu = (h.xu | 0) + r.xu; kq.tin.push(`Cả đội may mắn: bạn nhận được ${r.xu} Xu`); try { require("./nhat-ky.js").ghi("hiem", tk, h.name, `Vượt Ải tổ đội: + ${r.xu} Xu (may mắn cả đội)`); } catch {} } // anh 16/11 — chữ thường: khung tin Vượt Ải không đọc thẻ màu (soát)
+    if (r.xu > 0) { h.xu = (h.xu | 0) + r.xu; kq.tin.push(`Cả đội may mắn: ngươi nhận được ${r.xu} Xu.`); try { require("./nhat-ky.js").ghi("hiem", tk, h.name, `Vượt Ải tổ đội: + ${r.xu} Xu (may mắn cả đội)`); } catch {} } // anh 16/11 — chữ thường: khung tin Vượt Ải không đọc thẻ màu (soát)
     if (r.ket) { const D = h.vuotAi && h.vuotAi.dang; if (D && D.phong === r.phong) D.ket = r.ket; }
   }
   const lk = DO.luyenKn(h, kq.kn); if (lk.length) kq.luyen = lk;
@@ -473,7 +473,7 @@ function lam(h, b, tk) {
     case "chet": return ra(h, true);
     case "veAi": { const D = dangCua(h), B = D && !D.ket && capCua(D.cap); return B ? { di: { z: B.bai, at: VA.vao } } : mo(h, tk); }
     case "xem": return {};
-    default: loi("Việc không rõ");
+    default: loi("Không có việc này. Đừng bấm nữa.");
   }
 }
 
@@ -534,7 +534,7 @@ for (const P of require("./giu-phong.js").giu("va", PHONG,
     return P;
   })) {
   PHONG.set(P.id, P); soPhong = Math.max(soPhong, P.id | 0);
-  for (const tk of P.trong) { PHONG_TK.set(tk, P.id); choThuong(tk, { tin: [`Máy chủ vừa khởi động lại — đội ngũ tiếp tục Thách thức thời gian từ đám ${P.dot}, thời gian máy chủ tắt không tính.`] }); }
+  for (const tk of P.trong) { PHONG_TK.set(tk, P.id); choThuong(tk, { tin: [`Máy chủ vừa khởi động lại. Đội ngũ tiếp tục Thách thức thời gian từ đám ${P.dot} — thời gian máy chủ tắt không tính.`] }); }
 }
 
 // ---------- công cụ thử (anh 28/10 "nhớ thêm vào dev tool" — tài khoản quản trị, thẻ "Vượt Ải") ----------
@@ -583,7 +583,7 @@ function dev(h, b) {
       r = { tin: [`Vượt Ải (thử): +${n} Sát Thủ Giản (cấp 80 + 90), ngân lượng ≥ ${van(can)}`] }; break;
     }
     case "ra": if (P) roiPhong(P, DP.tk); delete S.dang; r = { tin: ["Vượt Ải (thử): rời ải"], di: { z: VA.ve.z, at: VA.ve.at } }; break;
-    default: loi("Việc không rõ");
+    default: loi("Không có việc này. Đừng bấm nữa.");
   }
   return { ...r, dev: { va: tomTat(h) } };
 }

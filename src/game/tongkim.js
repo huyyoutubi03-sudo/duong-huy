@@ -196,7 +196,7 @@ export const TongKim = {
   moPhong(m) {
     if (!m || !m.mo) {
       const co = !!this.st, w = this.w; this.mo = null; this.roi();
-      if (w && laZoneTk(w.zone)) return this.veBienKinh("Trận Tống Kim đã kết thúc — mời về Biện Kinh.");
+      if (w && laZoneTk(w.zone)) return this.veBienKinh("Trận Tống Kim kết thúc rồi — về Biện Kinh đi, đừng đứng đây.");
       if (co && this.api && this.api.taiLai) this.api.taiLai();
       return;
     }
@@ -204,10 +204,10 @@ export const TongKim = {
     this.mo = { bai, moi: m.moi ? 1 : 0, chung: m.chung ? 1 : 0, loai: m.loai === "tran" || bai === TK_BAI ? "tran" : "thu" };
     if (this.mo.loai === "tran") this.napDuLieu();
     // trận thật: máy chủ không nhận mình (chưa báo danh trận này / khác nhân vật / trận đã xong mà chưa từng vào — tkVao trả "tkMo" kèm khong)
-    if (m.khong && this.w && this.w.zone.id === bai) { this.roi(); return this.veBienKinh("Ngươi chưa báo danh trận Tống Kim này — mời về Biện Kinh (báo danh ở Mộ binh quan)"); }
+    if (m.khong && this.w && this.w.zone.id === bai) { this.roi(); return this.veBienKinh("Ngươi chưa báo danh trận Tống Kim này — về Biện Kinh đi (báo danh ở Mộ binh quan)."); }
     if (this.st && !this.duocVao(this.w)) { // phòng mở lại ở bãi khác / không cho mình
       this.roi();
-      if (this.w && laZoneTk(this.w.zone)) return this.veBienKinh("Trận Tống Kim đã kết thúc — mời về Biện Kinh.");
+      if (this.w && laZoneTk(this.w.zone)) return this.veBienKinh("Trận Tống Kim kết thúc rồi — về Biện Kinh đi, đừng đứng đây.");
       if (this.api.taiLai) this.api.taiLai();
       return;
     }
@@ -248,7 +248,7 @@ export const TongKim = {
     w.refreshStats(false); // trạng thái vật phẩm Tống Kim / chức trong trận có tác dụng từ giờ (World.bonus)
     if (tran) { this.napDuLieu(); this.napCB(); } // vào trận thật: máy chủ cho rời tổ đội (may-chu/tong-kim.js tkVao)
     this.xinVao();
-    this.api.msg(tran ? "Chiến trường Tống Kim — đang vào trận…" : "Bãi thử Tống Kim — đang vào trận…", "#ffd54a");
+    this.api.msg(tran ? "Chiến trường Tống Kim — đang vào trận… đứng yên chờ." : "Bãi thử Tống Kim — đang vào trận… đứng yên chờ.", "#ffd54a");
   },
   // "tkVao": gửi lúc vào bãi; kênh tức thời chưa mở / chưa có trạng thái thì tick gửi lại mỗi 2 giây
   xinVao() { this.vaoLuc = performance.now(); Net.wsGui({ t: "tkVao", o: this.api.o(), dt: this.api.dt() ? 1 : 0 }); },
@@ -296,7 +296,7 @@ export const TongKim = {
     // doanh 2 phe: bãi thử — tâm vòng an toàn (máy chủ gửi); trận thật — giữa đại doanh 2 phe (gói bản đồ — hướng tiến / lui của bot, Trợ Thủ)
     if (st.tran) { if (!st.D && this.D) st.D = this.D; st.trai = st.D ? st.D.phe.map((P) => P.dai.tam) : p.trai || null; if (st.trai && !(st.trai[0] && st.trai[1])) st.trai = null; }
     else { st.trai = p.trai; st.R = p.R || 220; }
-    if (phe !== st.phe || !st.daBao) { st.daBao = 1; st.phe = phe; st._dich = null; this.api.msg(`${st.tran ? "Chiến trường" : "Bãi thử"} Tống Kim: bạn ở phe ${PHE[phe]}`, MAU[phe]); }
+    if (phe !== st.phe || !st.daBao) { st.daBao = 1; st.phe = phe; st._dich = null; this.api.msg(`${st.tran ? "Chiến trường" : "Bãi thử"} Tống Kim: ngươi ở phe ${PHE[phe]}`, MAU[phe]); }
     const chu = p.chu === me;
     if (chu !== st.chu) this.doiChu(chu);
     if (Array.isArray(p.chucHs) && Array.isArray(p.chucHs[0])) { const cu = JSON.stringify(st.chucHs || null); st.chucHs = p.chucHs; if (cu !== JSON.stringify(p.chucHs)) w.refreshStats(false); } // [sinh lực %, kháng %] theo chức (cau-hinh chucMau / chucThu)
@@ -327,7 +327,7 @@ export const TongKim = {
   // đổi pha: báo danh -> câu chờ khai chiến (khai chiến / kết thúc: tin trong trận của máy chủ); bỏ mục tiêu đang nhắm
   doiPha(cu, moi, p) {
     const w = this.w;
-    if (moi === "bd") this.api.msg(`Chiến trường Tống Kim: đang báo danh — khai chiến sau ${mmss((+p.kc || 0) - this.gioSv())}. Chưa khai chiến thì chưa ra khỏi đại doanh được`, "#ffd54a");
+    if (moi === "bd") this.api.msg(`Chiến trường Tống Kim: đang báo danh — khai chiến sau ${mmss((+p.kc || 0) - this.gioSv())}. Chưa khai chiến thì đừng hòng ra khỏi đại doanh.`, "#ffd54a");
     if (cu && w.player.target && (w.player.target.tkb || w.player.target.tkn)) w.player.target = null;
   },
   // hết trận: Chiến báo kết quả (tkchienbao.js ChienBao.ketQua — module chưa tải xong thì gọi khi xong) + giờ về Biện Kinh (máy chủ p.ra; raSau giây sau
@@ -336,7 +336,7 @@ export const TongKim = {
     const ket = p.ket || {}, now = this.gioSv();
     this.raLuc = +p.ra > 0 ? +p.ra : +ket.ra > 0 ? +ket.ra : (+p.ketLuc > 0 ? +p.ketLuc : now) + (+p.raSau > 0 ? +p.raSau : RA_SAU) * 1000;
     // thưởng đã ghi lúc máy chủ kết thúc trận (may-chu/tong-kim.js traoThuong), nhịp kế tiếp đưa vào túi — không phải chờ về Biện Kinh (soát đầu-cuối 06/11)
-    this.api.msg(`Về Biện Kinh sau ${Math.max(1, Math.round((this.raLuc - now) / 1000))} giây — thưởng cuối trận (người đủ điểm trận) đã gửi vào hành trang`, "#ffd54a");
+    this.api.msg(`Về Biện Kinh sau ${Math.max(1, Math.round((this.raLuc - now) / 1000))} giây — thưởng cuối trận (người đủ điểm trận) đã gửi vào hành trang, coi mà nhận.`, "#ffd54a");
     if (this.CB) this.goiCB("ketQua", ket, this.ctxCB()); else { this._cbCho = ket; this.napCB(); }
   },
   // đổi chủ trận: mình nhận -> não bot + quân chạy ở máy mình từ chỗ đang vẽ; mình thôi -> vẽ theo vị trí chủ mới báo
@@ -346,7 +346,7 @@ export const TongKim = {
     // máy không chạy não: vẽ đủ bùa (tkNaoMoi), động tác đánh theo tốc chiêu chính (tkTaoBot atkDur0 — não cũ có thể để lại độ dài đòn bùa / bị chậm)
     for (const e of st.bots.values()) { e.buf = []; e.path = null; e.ngoai = !chu; if (chu && e.alive) w.tkNaoMoi(e); else if (!chu) { e.bl = e.buaDs || null; if (e.atkDur0) e.atkDur = e.atkDur0; } }
     for (const e of st.binh.values()) { e.buf = []; e.path = null; e.goal = null; e.ngoai = !chu; e.B = null; e._tuyen = null; if (e.act === "attack" || e.act === "walk") w.setAct(e, "stand"); }
-    if (chu && (!st.tran || this.api.qt())) this.api.msg(`${st.tran ? "Chiến trường" : "Bãi thử"} Tống Kim: máy bạn đang chạy não bot${st.tran ? " + quân" : ""} (chủ trận)`, "#9fd8ff");
+    if (chu && (!st.tran || this.api.qt())) this.api.msg(`${st.tran ? "Chiến trường" : "Bãi thử"} Tống Kim: máy ngươi đang chạy não bot${st.tran ? " + quân" : ""} (chủ trận)`, "#9fd8ff");
   },
   // danh sách bot [id, tên, phe, phái, giới, cấp, hạt giống, máu tối đa] (+ vt [[id, x, y]]): thêm con mới vào hàng chờ dựng, bỏ con không còn
   datBot(rows, vt) {
@@ -642,8 +642,8 @@ export const TongKim = {
     if (!this.laTo() || !Array.isArray(k)) return;
     const [a, b, ph, d] = k, me = this.api.ten();
     this.kk = [...this.kk, [Date.now(), a, b, ph, d]].slice(-5);
-    if (a === me) this.api.msg(`Bạn hạ ${b} +${d} điểm`, MAU[ph | 0]);
-    else if (b === me) this.api.msg(`Bạn bị ${a} hạ`, "#ff8a80");
+    if (a === me) this.api.msg(`Ngươi hạ ${b} +${d} điểm`, MAU[ph | 0]);
+    else if (b === me) this.api.msg(`Ngươi bị ${a} hạ`, "#ff8a80");
   },
   // mình trọng thương trong trận (World.onTkChet): báo người / bot vừa đánh mình (≤ 15 giây). Anh 13/11 tối: không tự đứng dậy sau 8 giây nữa — bảng trọng thương
   // của trận (main.js tkChetBox) bấm "Về doanh trại" thì hồi sinh (hoiSinhNgay); 30 giây không bấm (bảng bị đóng…) thì tự hồi sinh — khỏi kẹt
@@ -655,7 +655,7 @@ export const TongKim = {
     Net.wsGui({ t: "tkChet", tu: d || "" });
     this.hoiSinhLuc = performance.now() + Math.max(30, hs * 3) * 1000; // dự phòng: không bấm bảng trọng thương
     if (st.tran) w.tkQuay = [w.player.x, w.player.y, w.time]; // Trợ Thủ: hồi sinh xong ra cổng hậu doanh rồi về chỗ vừa ngã (tkbot.js tkTuRa)
-    this.api.msg(`Bạn bị trọng thương — bấm "Về doanh trại" để hồi sinh ở ${st.tran ? "hậu doanh" : "doanh trại"} phe ${PHE[st.phe]} — hiệu quả các loại hoàn đã mất, phải dùng lại`, "#ff8a80");
+    this.api.msg(`Ngươi bị trọng thương — bấm "Về doanh trại" để hồi sinh ở ${st.tran ? "hậu doanh" : "doanh trại"} phe ${PHE[st.phe]} — hiệu quả các loại hoàn đã mất, dùng lại đi, đừng quên.`, "#ff8a80");
   },
   hoiSinh() {
     const w = this.w, p = w.player, c = this.diemDoanh(this.st.phe);
@@ -663,7 +663,7 @@ export const TongKim = {
     p.jump = null; p.dash = null; p.queueAt = p.queueSelf = null; // khinh công / lướt dở lúc chết (anh 16/11 "vẫn hồi sinh tại chỗ" — jumpTick kéo về đường nhảy cũ)
     w.teleport(c[0], c[1]); w.setAct(p, "stand"); this.hoiSinhLuc = 0; w.tkDon = null;
     // vừa hồi sinh: cổng ra hậu doanh khóa giayHoiSinh() giây (anh 13/11 tối "về đại doanh 8 giây sau được ra" — Trợ Thủ cũng phải chờ, không lao ngay ra chỗ vừa ngã)
-    if (this.st && this.st.tran) { const hs = this.giayHoiSinh(); this.raKhoa = performance.now() + hs * 1000; this.api.msg(`Đã về hậu doanh — ${hs} giây sau mới ra trận được`, "#9fd8ff"); }
+    if (this.st && this.st.tran) { const hs = this.giayHoiSinh(); this.raKhoa = performance.now() + hs * 1000; this.api.msg(`Đã về hậu doanh — ${hs} giây sau mới được ra trận, đừng vội.`, "#9fd8ff"); }
     this.bayKhoa = performance.now() + 800; this.bayTrong = true; // vừa đặt ở hậu doanh: bẫy chỉ bắt khi bước vào lại
   },
   // ---------- bẫy (trận thật — mình; bot dùng bẫy ở máy chủ trận: tkbot.js tkRaHau / tkVe) ----------
@@ -678,17 +678,17 @@ export const TongKim = {
     const P = D.phe[st.phe ? 1 : 0], R = D.bayR, bd = st.pha === "bd";
     // chưa khai chiến (anh 12/11 "chưa khai chiến nhưng có thể bay ra ngoài"): ra khỏi doanh trại bằng bất cứ đường nào (chạy ngựa / máy giật nhảy qua dải bẫy
     // cổng, chiêu lướt…) -> kéo về như giẫm bẫy cổng
-    if (bd && !this.trongDoanh(st.phe, p.x, p.y)) return this.dichChuyen(ganNhat(P.cong.lui, p.x, p.y) || chonNgau(P.dai.diem), "Chưa khai chiến — chưa ra khỏi doanh trại được");
+    if (bd && !this.trongDoanh(st.phe, p.x, p.y)) return this.dichChuyen(ganNhat(P.cong.lui, p.x, p.y) || chonNgau(P.dai.diem), "Chưa khai chiến — đừng hòng ra khỏi doanh trại.");
     const cong = bd && (bayCham(P.cong.bay, p.x, p.y, R) >= 0 || (x0 != null && !this.bayTrong && doanCham(P.cong.bay, x0, y0, p.x, p.y, R))), ra = bayCham(P.ra.bay, p.x, p.y, R) >= 0, ve = bayCham(P.ve.bay, p.x, p.y, R) >= 0;
     if (!cong && !ra && !ve) { this.bayTrong = false; return; }
     if (this.bayTrong) return;
-    if (cong) return this.dichChuyen(ganNhat(P.cong.lui, p.x, p.y) || chonNgau(P.dai.diem), "Chưa khai chiến — chưa ra khỏi doanh trại được");
+    if (cong) return this.dichChuyen(ganNhat(P.cong.lui, p.x, p.y) || chonNgau(P.dai.diem), "Chưa khai chiến — đừng hòng ra khỏi doanh trại.");
     if (ra) {
       const con = (this.raKhoa || 0) - now; // vừa hồi sinh: chưa ra được (hoiSinh)
-      if (con > 0) { if (now - (this._raBao || 0) > 1500) { this._raBao = now; this.api.msg(`Vừa hồi sinh — còn ${Math.ceil(con / 1000)} giây nữa mới ra khỏi hậu doanh được`, "#ffd54f"); } this._bayX = null; return; }
+      if (con > 0) { if (now - (this._raBao || 0) > 1500) { this._raBao = now; this.api.msg(`Vừa hồi sinh — còn ${Math.ceil(con / 1000)} giây nữa mới được ra khỏi hậu doanh, chờ đi.`, "#ffd54f"); } this._bayX = null; return; }
       return this.dichChuyen(chonNgau(P.ra.toi), "Rời hậu doanh — ra đại doanh");
     }
-    if (ve) return this.dichChuyen(chonNgau(P.ve.toi), "Về hậu doanh — khu an toàn, Quân y bán thuốc");
+    if (ve) return this.dichChuyen(chonNgau(P.ve.toi), "Về hậu doanh — khu an toàn, Quân y bán thuốc, mua đi rồi hãy ra.");
   },
   // đặt mình tới điểm c (lệch ≤ 30, ô đi được): bỏ đường / mục tiêu (World.teleport), không tải lại bãi
   dichChuyen(c, cau) {
@@ -708,7 +708,7 @@ export const TongKim = {
     const giay = Math.max(1, Math.min(600, +o.giay || 180));
     this.datBuff(o.k, giay);
     Net.wsGui({ t: "tkBuff", k: o.k, giay });
-    this.api.msg(`${BUFF_TEN[o.k] || "Buff"}: bạn và người cùng phe đứng gần nhận hiệu quả trong ${Math.round(giay / 60)} phút`, "#9fd8ff");
+    this.api.msg(`${BUFF_TEN[o.k] || "Buff"}: ngươi và người cùng phe đứng gần nhận hiệu quả trong ${Math.round(giay / 60)} phút`, "#9fd8ff");
   },
   // "tkBuff" { k, giay, tu } của người cùng phe (máy chủ chỉ chuyển trong phòng, cùng phe): mình đứng trong BUFF_R quanh người đó thì nhận
   nhanBuff(m) {
@@ -716,7 +716,7 @@ export const TongKim = {
     const w = this.w, p = w.player, o = m.tu && w.others.get(m.tu);
     if (!o || p.hp <= 0 || ldist(p.x, p.y, o.x, o.y) > BUFF_R) return;
     this.datBuff(m.k, Math.max(1, Math.min(600, +m.giay || 180)));
-    this.api.msg(`${m.tu} dùng ${BUFF_TEN[m.k] || "vật phẩm"} — bạn nhận hiệu quả trong ${Math.round((+m.giay || 180) / 60)} phút`, "#9fd8ff");
+    this.api.msg(`${m.tu} dùng ${BUFF_TEN[m.k] || "vật phẩm"} — ngươi nhận hiệu quả trong ${Math.round((+m.giay || 180) / 60)} phút`, "#9fd8ff");
   },
   datBuff(k, giay) { this.buffs.set(k, Date.now() + giay * 1000); if (this.w) this.w.refreshStats(false); },
   // Càn Khôn Tạo Hóa Đan (tkHoi { v, giay }): hồi v sinh lực + v nội lực mỗi nửa giây trong giay giây (dùng lại thì tính lại từ đầu)
@@ -740,7 +740,7 @@ export const TongKim = {
   // ---------- mỗi khung (main.js hud) ----------
   tick() {
     // đứng ở chiến trường mà chưa vào được phòng (chưa báo danh / không còn trận — máy chủ không trả trạng thái) KHONG_TT: về Biện Kinh
-    if (this.w && laZoneTk(this.w.zone) && !this.laTo() && performance.now() - (this.vaoLuc0 || 0) > KHONG_TT) this.veBienKinh("Ngươi không có tên trong trận Tống Kim đang diễn ra — mời về Biện Kinh (báo danh ở Mộ binh quan)");
+    if (this.w && laZoneTk(this.w.zone) && !this.laTo() && performance.now() - (this.vaoLuc0 || 0) > KHONG_TT) this.veBienKinh("Ngươi không có tên trong trận Tống Kim đang diễn ra — về Biện Kinh đi (báo danh ở Mộ binh quan).");
     if (!this.laTo()) { if (this.el && this.el.style.display !== "none") { this.el.style.display = "none"; this.veLienSat(0); } return; }
     const now = performance.now(), st = this.st, w = this.w;
     if (this.p && now - this.tinLuc > 5000) this.p = null; // 5 giây không có trạng thái (kênh đứt / bị rơi khỏi phòng): xin vào lại
@@ -757,7 +757,7 @@ export const TongKim = {
     if (st.tran) {
       this.bay(now);
       // xong trận: raSau giây sau tự về Biện Kinh
-      if (st.pha === "xong" && this.raLuc && !this.daRa && this.gioSv() >= this.raLuc) { this.daRa = true; this.veBienKinh("Trận Tống Kim đã kết thúc — mời về Biện Kinh."); }
+      if (st.pha === "xong" && this.raLuc && !this.daRa && this.gioSv() >= this.raLuc) { this.daRa = true; this.veBienKinh("Trận Tống Kim kết thúc rồi — về Biện Kinh đi, đừng đứng đây."); }
     }
     this.tickBuff(now);
     this.ve();
@@ -802,7 +802,7 @@ export const TongKim = {
     const st = this.st, me = p.me || [0, 0, 0, 0], song = [0, 0], tong = [0, 0];
     for (const e of st.bots.values()) { tong[e.tkPhe]++; if (e.alive) song[e.tkPhe]++; }
     const dong = (n, v, c = "") => `<div class="d"><span>${n}</span><i class="${c}">${v}</i></div>`;
-    const chu = p.chu ? (p.chu === this.api.ten() ? "máy bạn" : p.chu) : "—";
+    const chu = p.chu ? (p.chu === this.api.ten() ? "máy ngươi" : p.chu) : "—";
     const t = Date.now(), kk = this.kk.filter((k) => t - k[0] < 8000).slice(-3).map((k) => `<div class="k"><span class="${k[3] ? "kim" : "song"}">${esc(k[1])}</span> hạ ${esc(k[2])} +${k[4]}</div>`).join("");
     // trận thật: pha + giờ (khai chiến sau / còn lại / về Biện Kinh), Nguyên soái 2 phe (chưa ra — ra sau / còn % máu / đã bị hạ), không hiện máy chủ trận /
     // khung hình (quản trị vẫn thấy)
@@ -822,7 +822,7 @@ export const TongKim = {
       + dong("Phe bạn", `<b class="${st.phe ? "kim" : "song"}">${PHE[st.phe]}</b>`)
       + dong("Bạn", `${me[0]} điểm · ${CHUC[me[3] | 0] || ""}`) + dong("Hạ / chết", `${me[1]} / ${me[2]}`)
       + (tong[0] + tong[1] ? dong("Bot sống", `${song[0]}/${tong[0]} · ${song[1]}/${tong[1]}`) : "") + (qt ? dong("Chủ trận", chu) + dong("Khung hình", `${this.api.fps()} / giây`) : "")
-      + (this.cho.length ? dong("Đang dựng bot", String(this.cho.length)) : "") + kk
+      + (this.cho.length ? dong("Đang dựng bot — chờ đấy.", String(this.cho.length)) : "") + kk
       + (st.tran && st.pha !== "xong" ? `<div class="roi"><span data-roi="1">Rời trận</span></div>` : ""); // hết trận: tự về Biện Kinh sau raSau giây
     if (this.el.dataset.sig !== h) { this.el.dataset.sig = h; this.el.innerHTML = h; }
     if (this.el.style.display === "none") this.el.style.display = "";
@@ -831,7 +831,7 @@ export const TongKim = {
   },
   // tóm tắt cho công cụ thử
   tomTat() {
-    const p = this.p, st = this.st; if (!this.laTo() || !p) return this.mo ? `${this.mo.loai === "tran" ? "Trận thật" : "Phòng thử"} mở ở bãi ${this.mo.bai} — chưa vào` : "Chưa mở";
+    const p = this.p, st = this.st; if (!this.laTo() || !p) return this.mo ? `${this.mo.loai === "tran" ? "Trận thật" : "Phòng thử"} mở ở bãi ${this.mo.bai} — chưa vào, bấm vào đi.` : "Chưa mở";
     const song = [0, 0], binh = [0, 0]; for (const e of st.bots.values()) if (e.alive) song[e.tkPhe]++;
     for (const e of st.binh.values()) if (e.alive) binh[e.tkPhe]++;
     const tran = st.tran ? ` · trận thật, ${st.pha === "bd" ? "báo danh" : st.pha === "xong" ? "đã xong" : "đang đánh"} · quân sống ${binh[0]} / ${binh[1]}${this.D ? "" : " · CHƯA có tong-kim.json"}` : "";

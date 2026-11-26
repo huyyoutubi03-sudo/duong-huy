@@ -119,54 +119,54 @@ function trang(H, now) {
   try {
     if (H.id === "phongHoa") {
       const p = MOD.phongHoa().lich();
-      if (p.pha === "bd" || p.pha === "danh") { o.dang = true; o.tu = p.kc - (+CF.baoDanh || 0) * 60000; o.den = p.het; o.chu = p.pha === "bd" ? `Đang báo danh — khai chiến sau ${conPhut(p.kc, now)}` : `Đang đánh — còn ${conPhut(p.het, now)}`; }
-      else if (L.dang) { o.xongHom = true; o.chu = "Trận hôm nay đã kết thúc"; }
+      if (p.pha === "bd" || p.pha === "danh") { o.dang = true; o.tu = p.kc - (+CF.baoDanh || 0) * 60000; o.den = p.het; o.chu = p.pha === "bd" ? `Đang báo danh. Khai chiến sau ${conPhut(p.kc, now)}.` : `Đang đánh. Còn ${conPhut(p.het, now)}.`; }
+      else if (L.dang) { o.xongHom = true; o.chu = "Trận hôm nay kết thúc rồi."; }
     } else if (H.id === "bossTg") {
       // nhiều boss mỗi khung giờ (lượt 86 — boss-tg.js dsTT)
       const M = MOD.bossTg(), ds = M.dangCo() ? (M.dsTT ? M.dsTT("") || [] : [M.trangThai("")]).filter((b) => b && !b.ket) : [];
-      if (ds.length) { o.dang = true; o.tu = L.dang ? L.dang.tu : now; o.den = Math.max(...ds.map((b) => b.het)); o.chu = ds.map((b) => `${b.ten} ở ${b.tenBai} — máu ${Math.max(1, Math.round((b.mau * 100) / Math.max(1, b.mauMax)))} %`).join("; "); }
-      else if (L.dang) { o.xongHom = true; o.chu = "Boss đã bị hạ"; }
+      if (ds.length) { o.dang = true; o.tu = L.dang ? L.dang.tu : now; o.den = Math.max(...ds.map((b) => b.het)); o.chu = ds.map((b) => `${b.ten} ở ${b.tenBai} — máu còn ${Math.max(1, Math.round((b.mau * 100) / Math.max(1, b.mauMax)))} %`).join("; "); }
+      else if (L.dang) { o.xongHom = true; o.chu = "Boss bị hạ rồi."; }
     } else if (H.id === "sanNhim") {
       const M = MOD.sanNhim(), s = M.dangCo() ? M.trangThai("") : null;
-      if (s && !s.ket) { o.dang = true; o.tu = L.dang ? L.dang.tu : now; o.den = s.het; o.chu = `Còn ${s.con}/${s.so} con nhím`; }
-      else if (L.dang) o.chu = "Đã bắt hết nhím đợt này";
+      if (s && !s.ket) { o.dang = true; o.tu = L.dang ? L.dang.tu : now; o.den = s.het; o.chu = `Còn ${s.con}/${s.so} con nhím chưa bắt`; }
+      else if (L.dang) o.chu = "Nhím đợt này bắt hết rồi.";
     } else if (H.id === "ruongTb") {
       const ds = MOD.ruongTb().dong() || [];
-      if (ds.length) { o.dang = true; o.tu = L.dang ? L.dang.tu : now; o.den = L.dang ? L.dang.den : now; o.chu = `Còn ${ds.length} rương chưa ai mở`; }
-      else if (L.dang) { o.xongHom = true; o.chu = "Rương hôm nay đã được mở hết"; }
+      if (ds.length) { o.dang = true; o.tu = L.dang ? L.dang.tu : now; o.den = L.dang ? L.dang.den : now; o.chu = `Còn ${ds.length} rương chưa ai mở. Mau đi tìm.`; }
+      else if (L.dang) { o.xongHom = true; o.chu = "Rương hôm nay mở hết rồi."; }
     } else if (H.id === "pld") {
       const M = MOD.pld(), l = M.lich(now);
       if (!l.nghi && l.t >= 0 && l.t < (+CF.capBo || 39)) {
         o.dang = true; o.tu = l.chuyen; o.den = l.chuyen + (+CF.capBo || 39) * 60000;
-        o.chu = l.t < (+CF.baoDanh || 10) ? `Đang báo danh — thuyền chạy sau ${conPhut(l.chuyen + (+CF.baoDanh || 10) * 60000, now)}` : `Thuyền đang chạy — cập bờ Bắc sau ${conPhut(o.den, now)}`;
+        o.chu = l.t < (+CF.baoDanh || 10) ? `Đang báo danh. Thuyền chạy sau ${conPhut(l.chuyen + (+CF.baoDanh || 10) * 60000, now)}.` : `Thuyền đang chạy. Cập bờ Bắc sau ${conPhut(o.den, now)}.`;
       }
     } else if (H.id === "tongKim") {
       // nhiều trận một ngày (như Săn Nhím): không ép xongHom; trận đã xong / không ai báo danh thì chỉ ghi chữ cho lần đang trong cửa sổ
       const p = MOD.tongKim().lich(now);
       if (p.pha === "bd" || p.pha === "danh") {
         o.dang = true; o.tu = p.u || (L.dang ? L.dang.tu : now); o.den = p.het;
-        o.chu = p.pha === "bd" ? `Đang báo danh — khai chiến sau ${conPhut(p.kc, now)}` : `Đang đánh — Tống ${p.diem[0]} : Kim ${p.diem[1]}, còn ${conPhut(p.het, now)}`;
-      } else if (L.dang) o.chu = p.pha === "xong" ? "Trận này đã kết thúc" : "Trận này không có ai báo danh";
+        o.chu = p.pha === "bd" ? `Đang báo danh. Khai chiến sau ${conPhut(p.kc, now)}.` : `Đang đánh — Tống ${p.diem[0]} : Kim ${p.diem[1]}. Còn ${conPhut(p.het, now)}.`;
+      } else if (L.dang) o.chu = p.pha === "xong" ? "Trận này kết thúc rồi." : "Trận này không ai báo danh.";
       if (p.thienTu) o.chu += `${o.chu ? " · " : ""}Thiên Tử ×2`;
     } else if (H.id === "bauCua") {
       // Bầu Cua (anh 10/11): 1 ván 2 phút — 1 phút đặt cửa, 1 phút xem kết quả
       const v = MOD.bauCua().lich(now);
       if (v.pha !== "nghi") { o.dang = true; o.tu = v.tu; o.den = v.het; o.chu = `Ván ${v.k + 1}/${v.n} — ${v.pha === "dat" ? "đang nhận cược" : "vừa lắc, chờ ván sau"}`; }
-      else if (L.dang) o.chu = "Sòng đã đóng";
+      else if (L.dang) o.chu = "Sòng đóng rồi.";
     } else if (H.id === "duaNgua") {
       // đua ngựa (anh 16/11): mỗi khung 1 lượt — báo danh ở Truy Phong Sứ Giả (Ba Lăng) rồi đua; lượt thử của quản trị không hiện
       const p = MOD.duaNgua().lich();
       if (p.pha === "bd" || p.pha === "dua") {
         o.dang = true; o.tu = p.u || (L.dang ? L.dang.tu : now); o.den = p.pha === "bd" ? p.bat + (+CF.dua || 14) * 60000 : p.het;
-        o.chu = p.pha === "bd" ? `Đang báo danh (${p.n} người) — xuất phát sau ${conPhut(p.bat, now)}` : `Đang đua — ${p.ve}/${p.soVe} người về đích, còn ${conPhut(p.het, now)}`;
-      } else if (L.dang) o.chu = p.pha === "ket" ? (p.huy === "khong" ? "Lượt này không có ai báo danh" : "Lượt đua này đã kết thúc") : "Lượt đua này đã kết thúc";
+        o.chu = p.pha === "bd" ? `Đang báo danh (${p.n} người). Xuất phát sau ${conPhut(p.bat, now)}.` : `Đang đua — ${p.ve}/${p.soVe} người về đích. Còn ${conPhut(p.het, now)}.`;
+      } else if (L.dang) o.chu = p.pha === "ket" ? (p.huy === "khong" ? "Lượt này không ai báo danh." : "Lượt đua này kết thúc rồi.") : "Lượt đua này kết thúc rồi.";
     } else if (H.id === "phuQuy") {
       const hom = GV.vn(now).ngay, quay = GV.lucCua(hom, CF.quay);
-      o.chu = now < quay ? `Chọn số tới ${CF.quay} hôm nay` : `Đã quay số — nhận thưởng tới ${CF.hetNhan} mai`;
+      o.chu = now < quay ? `Chọn số tới ${CF.quay} hôm nay. Nhanh lên.` : `Quay số rồi. Nhận thưởng tới ${CF.hetNhan} mai.`;
       if (S.cho && S.cho.phuQuy) o.chu += ` · từ ${S.cho.phuQuy.tu.slice(8, 10)}/${S.cho.phuQuy.tu.slice(5, 7)}: quay ${S.cho.phuQuy.quay}`;
     }
   } catch (e) { console.error("Lịch hoạt động — trạng thái", H.id, e.message); }
-  if (!o.bat && !o.dang) { o.chu = "Đang tạm dừng"; o.toi = 0; }
+  if (!o.bat && !o.dang) { o.chu = "Đang tạm dừng. Chờ đã."; o.toi = 0; }
   return o;
 }
 // anh 16/11 — Báo Đáp Ân Sư (may-chu/bao-dap-an-su.js, nạp lúc dùng — map-c phương án A): sự kiện theo NGÀY, không theo giờ, không có trong HD (không ở F10 → Lịch
@@ -225,29 +225,29 @@ function xem() {
 // đọc + kiểm b thành giá trị lịch của H (ném lỗi 400 nếu sai)
 function docB(H, CF, b) {
   const v = { bat: b.bat !== false && b.bat !== 0 && b.bat !== "0" };
-  if (H.kieu === "mot") { const g = String(b.gio || "").trim(); if (!GV.hopLe(g)) loi(`${H.ten}: giờ phải dạng HH:MM, ví dụ 19:00`); v.gio = g; }
+  if (H.kieu === "mot") { const g = String(b.gio || "").trim(); if (!GV.hopLe(g)) loi(`${H.ten}: giờ phải dạng HH:MM, ví dụ 19:00. Sửa lại.`); v.gio = g; }
   if (H.kieu === "ds") {
     const L = [...new Set(String(b.gio || "").split(/[,;\s]+/).map((x) => x.trim()).filter(Boolean))];
     if (!L.length || L.length > 24) loi(`${H.ten}: nhập 1–24 giờ dạng HH:MM, cách nhau dấu phẩy`);
-    for (const g of L) if (!GV.hopLe(g)) loi(`${H.ten}: "${g}" không phải giờ HH:MM`);
+    for (const g of L) if (!GV.hopLe(g)) loi(`${H.ten}: "${g}" không phải giờ HH:MM. Sửa lại.`);
     v.gio = L.sort();
   }
   if (H.kieu === "gio") {
     const L = [...new Set(String(b.gio || "").split(/[,;\s]+/).filter(Boolean).map((x) => x.trim()))];
     if (!L.length || L.length > 24) loi(`${H.ten}: nhập 1–24 giờ (số 0–23), cách nhau dấu phẩy`);
-    const so = L.map((x) => { if (!/^\d{1,2}$/.test(x) || +x > 23) loi(`${H.ten}: "${x}" không phải giờ 0–23`); return +x; });
+    const so = L.map((x) => { if (!/^\d{1,2}$/.test(x) || +x > 23) loi(`${H.ten}: "${x}" không phải giờ 0–23. Sửa lại.`); return +x; });
     v.gio = so.sort((a, c) => a - c);
   }
   if (H.kieu === "pq") {
-    for (const k of ["quay", "hetNhan"]) { const g = String(b[k] || "").trim(); if (!GV.hopLe(g)) loi(`${H.ten}: giờ phải dạng HH:MM`); v[k] = g; }
+    for (const k of ["quay", "hetNhan"]) { const g = String(b[k] || "").trim(); if (!GV.hopLe(g)) loi(`${H.ten}: giờ phải dạng HH:MM. Sửa lại.`); v[k] = g; }
   } else {
     const T = Array.isArray(b.thu) ? [...new Set(b.thu.map((x) => x | 0).filter((x) => x >= 0 && x <= 6))].sort() : [0, 1, 2, 3, 4, 5, 6];
-    if (!T.length) loi(`${H.ten}: chọn ít nhất 1 ngày trong tuần (muốn ngừng hẳn thì bỏ ô Bật)`);
+    if (!T.length) loi(`${H.ten}: chọn ít nhất 1 ngày trong tuần. Muốn ngừng hẳn thì bỏ ô Bật.`);
     v.thu = T;
   }
   for (const [k, n, a, c, buoc] of H.so) {
     const b0 = b[k] == null ? CF[k] : b[k], x = buoc ? +(Math.round(+b0 / buoc) * buoc).toFixed(2) : Math.round(+b0); // thiếu ô (trang cũ chưa có ô mới): giữ số đang chạy
-    if (!Number.isFinite(x) || x < a || x > c) loi(`${H.ten}: ${n.toLowerCase()} phải từ ${a} tới ${c}`);
+    if (!Number.isFinite(x) || x < a || x > c) loi(`${H.ten}: ${n.toLowerCase()} phải từ ${a} tới ${c}. Sửa lại.`);
     v[k] = x;
   }
   if (H.id === "phongHoa" && v.chuSoai >= v.danh) loi(`${H.ten}: Chủ soái phải ra trước khi hết giờ đánh (nhỏ hơn ${v.danh} phút)`);
@@ -274,8 +274,8 @@ function sauKhiDoi() {
 }
 function luu(qt, b) {
   if (!napXong) nap();
-  const H = BY.get(String(b.id || "")); if (!H) loi("Không có hoạt động này");
-  const CF = CFcua(H.id); if (!CF) loi("Hoạt động chưa nạp được");
+  const H = BY.get(String(b.id || "")); if (!H) loi("Không có hoạt động này. Kiểm tra lại.");
+  const CF = CFcua(H.id); if (!CF) loi("Hoạt động chưa nạp được. Thử lại sau.");
   const v = docB(H, CF, b);
   if (H.kieu === "pq") {
     // Phú Quý: bật / tắt ngay; giờ quay / hạn nhận đổi -> áp dụng từ ngày mai
@@ -294,8 +294,8 @@ function luu(qt, b) {
 }
 function macDinh(qt, b) {
   if (!napXong) nap();
-  const H = BY.get(String(b.id || "")); if (!H) loi("Không có hoạt động này");
-  const CF = CFcua(H.id), M = MAC[H.id]; if (!CF || !M) loi("Hoạt động chưa nạp được");
+  const H = BY.get(String(b.id || "")); if (!H) loi("Không có hoạt động này. Kiểm tra lại.");
+  const CF = CFcua(H.id), M = MAC[H.id]; if (!CF || !M) loi("Hoạt động chưa nạp được. Thử lại sau.");
   if (H.kieu === "pq") {
     // Phú Quý: bật lại ngay; giờ quay / hạn nhận về mặc định từ ngày mai (như Lưu — đổi giữa ngày làm số đã chọn lệch đợt)
     S.cho = S.cho || {};
@@ -316,7 +316,7 @@ function quanTri(qt, b) {
   if (viec === "xem") return xem();
   if (viec === "luu") return luu(qt, b);
   if (viec === "macDinh") return macDinh(qt, b);
-  loi("Việc không hợp lệ");
+  loi("Việc này không hợp lệ. Đừng bấm nữa.");
 }
 
 module.exports = { chung, cuaToi, quanTri, nap, HD };

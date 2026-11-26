@@ -6,7 +6,7 @@
 //   - xin (menu người chơi — Ctrl + chuột phải / điện thoại: chạm giữ người đó): người kia đang mở giao dịch, cùng bãi, trong GAN (engine
 //     FindAroundPlayer), cả 2 chưa giao dịch -> người kia được hỏi (giữ MOI_GIAY giây); đồng ý thì khung giao dịch mở ở cả 2 bên
 //   - trong phiên: mỗi bên đặt món của túi vào lưới 8 × 4 (món vẫn nằm ở túi tới lúc giao) + số tiền; khóa (engine decision 2) rồi thì không đổi
-//     được nữa; bỏ khóa (3) thì bỏ khóa + xác nhận của CẢ 2 bên; cả 2 khóa rồi mới xác nhận (1): bên đầu chờ ("Chờ đợi"), bên sau xác nhận là giao
+//     được nữa; bỏ khóa (3) thì bỏ khóa + xác nhận của CẢ 2 bên; cả 2 khóa rồi mới xác nhận (1): bên đầu chờ ("Đang chờ đối phương"), bên sau xác nhận là giao
 //   - anh 14/11 ("bỏ tiền vạn vào không cập nhật theo thời gian thực, dễ bị lừa — A bỏ tiền vào, B thấy, mới đồng ý, sau ok rồi mới xác nhận"):
 //     · bên chưa khóa đổi tiền / món (doiPhan) -> bỏ khóa (Đồng ý) + xác nhận của CẢ 2 bên, phần của bên đó lên phiên bản mới (ver); người kia đang
 //       Đồng ý thì có thêm câu báo phải Đồng ý lại. Trước chỉ bỏ xác nhận: đổi tiền sau lúc người kia đã Đồng ý, người kia vẫn khóa
@@ -37,24 +37,24 @@ const KB = () => require("./khu-bang.js"); // khu vực bang (bang hội đợt 
 // Lôi Đài (anh 15/11 — may-chu/loi-dai.js): trong sân không giao dịch (vai trước, bãi sau) — nạp lúc dùng, đệm (don chạy mỗi nhịp). soát 16/11: xét theo nhân vật — ô mình b.o,
 // ô người kia TG.dangChoi(…).o (nhân vật khác cùng tài khoản với người đang có vai vẫn giao dịch được)
 let LD_ = null; const LD = () => LD_ || (LD_ = require("./loi-dai.js"));
-const CAU_LD = "Đang ở lôi đài — không giao dịch được";
+const CAU_LD = "Đang ở lôi đài. Ra khỏi sân rồi hãy giao dịch.";
 
 const GAN = 800;            // px bản đồ web (trục dọc × 2 như World) — xin giao dịch phải đứng gần chừng này
 const MOI_GIAY = 30, BAO_GIU = 10;
 const O_W = 8, O_H = 4;     // lưới món đưa mỗi bên (玩家间交易.ini SelfItemsBox / OtherItemsBox 8 × 4)
 const TIEN_O = 999999999;   // ô tiền 9 chữ số (ini SelfMoney MaxLen 9)
 const CAU = {
-  mo: "Bạn hiện giờ có thể giao dịch.", dong: "Bạn hiện giờ không thể giao dịch.",
-  xin: "Bạn đã xin giao dịch với %s!", tuChoi: "%s cự tuyệt giao dịch với Bạn!", chuaMo: "%s chưa mở giao dịch.",
-  dat: "Đối phương mới đặt lên một vật phẩm.", lay: "Đối phương lấy đi một vật phẩm.", doi: "Đối phương đổi một món vật phẩm.",
-  tien: "Đối phương đổi số lượng tiền, hiện giờ là %s.", khoa: "Đối phương đặt mã khóa giao dịch.", boKhoa: "Đối phương bỏ khóa giao dịch.",
-  xn: "Đối phương đã xác nhận giao dịch.", cho: "Chờ đợi",
-  xong: "Bạn cùng với %s giao dịch thành công.", hong: "Bạn cùng với %s giao dịch thất bại.", huy: "Giao dịch bị hủy bỏ.",
-  tran: "Giao dịch bị hủy bỏ, xin hãy kiểm tra tổng số tiền trong hành trang và tiền nhận được khi giao dịch có phải vượt giới hạn!",
-  choMinh: "Khoảng trống trong túi của Bạn không đủ!", choHo: "%s khoảng trống trong túi không đủ!", khongGd: "Vật phẩm này không thể giao dịch!",
+  mo: "Giao dịch mở rồi. Muốn giao dịch thì lại đây.", dong: "Giao dịch đóng rồi.",
+  xin: "Đã xin giao dịch với %s!", tuChoi: "%s không giao dịch với ngươi!", chuaMo: "%s chưa mở giao dịch. Đợi nó mở đã.",
+  dat: "Đối phương vừa đặt lên một vật phẩm.", lay: "Đối phương vừa lấy đi một vật phẩm.", doi: "Đối phương vừa đổi một món vật phẩm.",
+  tien: "Đối phương vừa đổi tiền, giờ là %s.", khoa: "Đối phương đã đặt mã khóa giao dịch.", boKhoa: "Đối phương đã bỏ khóa giao dịch.",
+  xn: "Đối phương đã xác nhận.", cho: "Đang chờ đối phương",
+  xong: "Giao dịch với %s xong rồi.", hong: "Giao dịch với %s hỏng rồi.", huy: "Giao dịch hủy rồi.",
+  tran: "Giao dịch hủy rồi. Kiểm tra lại tiền trong túi và tiền nhận được có vượt giới hạn không!",
+  choMinh: "Túi của ngươi không đủ chỗ!", choHo: "Túi của %s không đủ chỗ!", khongGd: "Vật phẩm này không giao dịch được!",
   // anh 14/11: đổi tiền / món sau lúc đã Đồng ý (doiPhan) — G_STR_OTHER_NOT_OK cho bên vừa đổi; 2 câu sau không có trong client, viết mới
-  choKhoa: "Chờ đối phương đặt mã khóa", boDongY: "Đối phương vừa đổi tiền / vật phẩm — Bạn kiểm tra lại rồi bấm Đồng ý.",
-  xemLai: "Đối phương vừa đổi tiền / vật phẩm — xem lại khung giao dịch rồi bấm lần nữa",
+  choKhoa: "Chờ đối phương đặt mã khóa đã.", boDongY: "Đối phương vừa đổi tiền / vật phẩm. Kiểm tra lại rồi hãy bấm Đồng ý.",
+  xemLai: "Đối phương vừa đổi tiền / vật phẩm. Xem lại khung giao dịch rồi bấm lần nữa.",
 };
 
 const moGd = new Set();     // tài khoản đang mở giao dịch
@@ -79,7 +79,7 @@ const moiBen = (tk, ten) => ({ tk, ten, ds: [], tien: 0, khoa: 0, xn: 0, ver: 0,
 let dauCuoi = 0;
 const dau = () => (dauCuoi = Math.max(Date.now(), dauCuoi + 1));
 // bên S (đang không khóa — khóa thì không đổi được) vừa đổi tiền / món: bỏ Đồng ý + Xác nhận của CẢ 2 bên, phần của S lên phiên bản mới; câu InfoText cho
-// người kia (cau — câu client G_STR_OPP_*); người kia đang Đồng ý thì thêm câu báo phải Đồng ý lại, bên S thấy "Chờ đối phương đặt mã khóa"
+// người kia (cau — câu client G_STR_OPP_*); người kia đang Đồng ý thì thêm câu báo phải Đồng ý lại, bên S thấy "Chờ đối phương đặt mã khóa đã."
 function doiPhan(S, O, cau) {
   S.ver++;
   if (O.khoa) { bao(O.tk, CAU.boDongY); tinCho(S, CAU.choKhoa, "bo"); }
@@ -138,10 +138,10 @@ function giao(P, tk, h, S, O) {
   if (!hO) { ketThuc(P, (B) => CAU.hong.replace("%s", B === S ? O.ten : S.ten)); return {}; }
   const r = DO.doiDo({ h, ds: S.ds, tien: S.tien }, { h: hO, ds: O.ds, tien: O.tien });
   if (r.loi === "cho" || r.loi === "thuoc") {
-    const thieu = r.ben === 0 ? S : O, kia = r.ben === 0 ? O : S, mang = (DO.LUAT && DO.LUAT.mang) || 60;
+    const thieu = r.ben === 0 ? S : O, kia = r.ben === 0 ? O : S;
     S.xn = O.xn = 0;
-    const minh = r.loi === "cho" ? CAU.choMinh : `Bạn chỉ mang tối đa ${mang} bình thuốc (mọi loại) — không nhận thêm được`;
-    const ho = r.loi === "cho" ? CAU.choHo.replace("%s", thieu.ten) : `${thieu.ten} chỉ mang tối đa ${mang} bình thuốc (mọi loại) — không nhận thêm được`;
+    const minh = r.loi === "cho" ? CAU.choMinh : `Thuốc loại này đã mang đủ rồi. Không nhận thêm được.`;
+    const ho = r.loi === "cho" ? CAU.choHo.replace("%s", thieu.ten) : `${thieu.ten} đã mang đủ thuốc loại đó rồi. Không nhận thêm được.`;
     bao(thieu.tk, minh); bao(kia.tk, ho); tinCho(thieu, minh, "khoa"); tinCho(kia, ho, "khoa");
     return {};
   }
@@ -168,13 +168,13 @@ function lam(tk, h, b) {
   }
   if (viec === "xin") {
     const den = TG.timTen(String(b.ten || "")), a = TG.dangChoi(t), d = den && TG.dangChoi(den);
-    if (!a) loi("Chưa vào game");
-    if (!d || den === t) loi("Người này không còn trong game");
+    if (!a) loi("Chưa vào game. Vào rồi hãy bấm.");
+    if (!d || den === t) loi("Người này rời game rồi.");
     if (LD().chan(t, a.zone, b.o | 0) || LD().chan(den, d.zone, d.o)) loi(CAU_LD);
-    if (phienCua(t)) loi("Bạn đang giao dịch");
+    if (phienCua(t)) loi("Ngươi đang giao dịch dở. Xong rồi hãy xin.");
     if (!moGd.has(den)) loi(CAU.chuaMo.replace("%s", d.name));
-    if (phienCua(den)) loi(`${d.name} đang giao dịch với người khác`);
-    if (a.zone !== d.zone || xa(a, d) > GAN || !KB().cungBan(t, den, a.zone)) loi(`${d.name} ở xa quá — lại gần rồi xin giao dịch`); // khu vực bang: chỉ cùng bản
+    if (phienCua(den)) loi(`${d.name} đang giao dịch với người khác. Đợi nó xong đã.`);
+    if (a.zone !== d.zone || xa(a, d) > GAN || !KB().cungBan(t, den, a.zone)) loi(`${d.name} ở xa quá. Lại gần rồi hãy xin giao dịch.`); // khu vực bang: chỉ cùng bản
     for (const [id, x] of xin) if (x.tu === t && x.den === den) xin.delete(id); // xin lại: thay lời cũ
     const id = ++soId; xin.set(id, { id, tu: t, den, luc: Date.now() });
     day(den); // người kia được hỏi ngay
@@ -182,14 +182,14 @@ function lam(tk, h, b) {
   }
   if (viec === "nhan" || viec === "tuChoi") {
     const x = xin.get(b.id | 0);
-    if (!x || x.den !== t) loi("Lời xin giao dịch đã hết hạn");
+    if (!x || x.den !== t) loi("Lời xin giao dịch hết hạn rồi.");
     xin.delete(x.id);
     if (viec === "tuChoi") { bao(x.tu, CAU.tuChoi.replace("%s", tenCua(t))); return { gd: cua(t) }; }
     const a = TG.dangChoi(x.tu), d = TG.dangChoi(t);
-    if (!a) loi("Người xin giao dịch đã rời game");
+    if (!a) loi("Người xin giao dịch rời game rồi.");
     if (LD().chan(x.tu, a.zone, a.o) || LD().chan(t, d && d.zone, b.o | 0)) loi(CAU_LD);
-    if (phienCua(x.tu) || phienCua(t)) loi(`${a.name} đang giao dịch với người khác`);
-    if (!d || a.zone !== d.zone || xa(a, d) > GAN || !KB().cungBan(x.tu, t, a.zone)) loi(`${a.name} ở xa quá — lại gần rồi giao dịch`); // khu vực bang: chỉ cùng bản
+    if (phienCua(x.tu) || phienCua(t)) loi(`${a.name} đang giao dịch với người khác. Đợi xong đã.`);
+    if (!d || a.zone !== d.zone || xa(a, d) > GAN || !KB().cungBan(x.tu, t, a.zone)) loi(`${a.name} ở xa quá. Lại gần rồi hãy giao dịch.`); // khu vực bang: chỉ cùng bản
     const P = { id: ++soId, ben: [moiBen(x.tu, a.name), moiBen(t, d.name)] };
     phien.set(P.id, P); cuaTk.set(x.tu, P.id); cuaTk.set(t, P.id);
     for (const [id, y] of xin) if ([x.tu, t].includes(y.tu) || [x.tu, t].includes(y.den)) xin.delete(id);
@@ -197,13 +197,13 @@ function lam(tk, h, b) {
     return { gd: cua(t) };
   }
   const P = phienCua(t);
-  if (!P) loi("Không còn giao dịch");
+  if (!P) loi("Không còn giao dịch nào.");
   const [S, O] = benCua(P, t);
   if (viec === "huy") { ketThuc(P, CAU.huy); day(O.tk); return { gd: cua(t) }; }
   // món / tiền / khóa / xác nhận chỉ của đúng nhân vật đang giao dịch (ô o khác cùng tài khoản: không tính)
-  if (!h || h.name !== S.ten) loi("Nhân vật này không ở trong giao dịch");
+  if (!h || h.name !== S.ten) loi("Nhân vật này không tham gia giao dịch này.");
   if (viec === "dat" || viec === "tien") {
-    if (S.khoa) loi("Đã khóa giao dịch — bỏ khóa rồi mới đổi được món / tiền");
+    if (S.khoa) loi("Giao dịch đã khóa. Bỏ khóa rồi mới đổi món / tiền.");
     if (viec === "tien") {
       const n = Math.max(0, Math.min(Math.floor(+b.n) || 0, h.gold || 0, TIEN_O));
       if (n !== S.tien) { S.tien = n; doiPhan(S, O, CAU.tien.replace("%s", DO.tien(n))); day(O.tk); }
@@ -212,13 +212,13 @@ function lam(tk, h, b) {
     const ds = Array.isArray(b.ds) ? b.ds.slice(0, O_W * O_H) : [], moi = [], o = new Set();
     for (const v of ds) {
       const u = v.u | 0, x = v.x | 0, y = v.y | 0, it = (h.bag || []).find((m) => m.u === u);
-      if (!it || moi.some((m) => m.u === u)) loi("Không có món này trong túi");
+      if (!it || moi.some((m) => m.u === u)) loi("Trong túi không có món này.");
       if (it.het) loi(CAU.khongGd);
       if (it.kbh) loi(DO.NOI.CAU_KBH.dat); // khóa bảo hiểm (anh 05/11 — thưởng thăng cấp / online): không giao dịch được
       if (it.tk) loi(DO.NOI.CAU_TK); // thuốc Tống Kim (anh 12/11): không mang ra ngoài trận
       const [w, hh] = DO.coMon(it);
-      if (x < 0 || y < 0 || x + w > O_W || y + hh > O_H) loi("Món nằm ra ngoài khung giao dịch");
-      for (let j = y; j < y + hh; j++) for (let i = x; i < x + w; i++) { const c = j * O_W + i; if (o.has(c)) loi("Món chồng lên món khác"); o.add(c); }
+      if (x < 0 || y < 0 || x + w > O_W || y + hh > O_H) loi("Món nằm ra ngoài khung giao dịch. Đặt lại.");
+      for (let j = y; j < y + hh; j++) for (let i = x; i < x + w; i++) { const c = j * O_W + i; if (o.has(c)) loi("Món chồng lên món khác. Xếp lại."); o.add(c); }
       const ban = DO.banMon(it);
       moi.push({ u, x, y, ban, it: JSON.parse(ban) });
     }
@@ -239,7 +239,7 @@ function lam(tk, h, b) {
   }
   if (viec === "xn") {
     if (!b.on) { if (S.xn) { S.xn = 0; tinCho(S, "", ""); day(O.tk); } return { gd: cua(t) }; }
-    if (!S.khoa || !O.khoa) loi("Hai bên đều bấm Đồng ý rồi mới Xác nhận được");
+    if (!S.khoa || !O.khoa) loi("Hai bên đều bấm Đồng ý rồi mới Xác nhận được. Đợi bên kia.");
     xemLai();
     if (!O.xn) { S.xn = 1; tinCho(S, CAU.cho, "doi"); tinCho(O, CAU.xn, "khoa"); day(O.tk); return { gd: cua(t) }; }
     // bên sau xác nhận: giao bằng tiền / món máy chủ đang giữ (S / O), không nhận số nào trình duyệt gửi kèm. Giao xong: nhịp kế của bên kia mang túi +
@@ -248,7 +248,7 @@ function lam(tk, h, b) {
     if (!r.doi) day(O.tk);
     return { gd: cua(t), ...r };
   }
-  loi("Không rõ việc");
+  loi("Không có việc này. Đừng bấm nữa.");
 }
 
 module.exports = { lam, cua, co, capNhat, roi };

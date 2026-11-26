@@ -298,7 +298,7 @@ function chetBinh(e, A) {
   tin(`Nguyên Soái phe ${TEN_PHE[e.phe]} đã bị ${ai || "quân địch"} hạ!`, "#ffb74d");
   if (D.thang != null) return;
   D.thang = 1 - e.phe;
-  TG().thongBao(`Tống Kim: ${ai ? `${MT.ten(ai)} đã hạ` : "Đã hạ"} Nguyên Soái phe ${TEN_PHE[e.phe]}!`);
+  TG().thongBao(`Tống Kim: ${ai ? `${MT.ten(ai)} hạ` : "Hạ"} Nguyên Soái phe ${TEN_PHE[e.phe]}!`);
   ketThuc(Date.now());
 }
 
@@ -420,7 +420,7 @@ function raSoai(phe) {
   const [x, y] = viTriSoai(phe), e = themBinh(phe, 5, x, y);
   D.soaiRa[phe] = e.id;
   tin(`Nguyên Soái phe ${TEN_PHE[phe]} đã xuất hiện ở đại doanh! Phe nào hạ Nguyên Soái địch trước sẽ giành thắng lợi — trận kết thúc ngay.`, "#ff8a80");
-  TG().thongBao(`Tống Kim: Nguyên Soái phe ${TEN_PHE[phe]} đã xuất hiện ở đại doanh!`);
+  TG().thongBao(`Tống Kim: Nguyên Soái phe ${TEN_PHE[phe]} xuất hiện ở đại doanh!`);
 }
 // tin trong trận (người trong trận thấy ở khung tin — như Msg2MSAll của kịch bản; trình duyệt chỉ nhận dòng mới)
 function tin(text, mau = "") { D.tinId++; D.tin.push([D.tinId, String(text).slice(0, 220), mau]); if (D.tin.length > TIN_GIU) D.tin.shift(); D.doi = true; }
@@ -736,14 +736,14 @@ function moTran(opt = {}) {
     soaiSt: [new Map(), new Map()], dot: [], tin: [], tinId: 0, baoLuc: t, bao3: false, bao1: false, doiCho: new Map() };
   WS.guiHet(moTin());
   const con = Math.max(0, Math.round((kc - t) / 60000));
-  TG().thongBao(`Tống Kim đại chiến đã bắt đầu báo danh! Đẳng cấp từ ${CF.cap} trở lên hãy nhờ Xa phu đưa đến Điểm báo danh Tống Kim (ủng hộ ${N.tien(CF.phi)}). ${con > 0 ? `Còn ${con} phút nữa khai chiến.` : "Sắp khai chiến."}${x2 ? ` Chiến dịch lần này là Đêm Rực Rỡ — ${MT.thuong("phần thưởng gấp đôi")}!` : ""}`, true);
+  TG().thongBao(`Tống Kim đại chiến bắt đầu báo danh! Cấp ${CF.cap} trở lên nhờ Xa phu đưa đến Điểm báo danh Tống Kim (ủng hộ ${N.tien(CF.phi)}). ${con > 0 ? `Còn ${con} phút nữa khai chiến.` : "Sắp khai chiến."}${x2 ? ` Chiến dịch lần này là Đêm Rực Rỡ — ${MT.thuong("phần thưởng gấp đôi")}!` : ""}`, true);
   return lich();
 }
 // khai chiến: không ai báo danh thì thôi trận; bot (cấp theo cấp cao nhất máy chủ lúc này) + Tống binh / Kim binh ra trận, lịch đợt quân bậc cao
 function batDau(t) {
   if (!D.dk.size) {
     const g = D.gio; D = null; WS.guiHet(moTin());
-    TG().thongBao(`Trận Tống Kim${g ? ` ${g}` : ""} không có ai báo danh — trận không mở.`);
+    TG().thongBao(`Trận Tống Kim${g ? ` ${g}` : ""} không có ai báo danh. Trận không mở.`);
     return;
   }
   D.batDau = true; D.cap = capCao() || +CF.cap || 100; D.ten = docTen(); D.thatTen = tenThat(); D.baoLuc = t; D.bdLuc = t; D.tgLuc = t;
@@ -753,7 +753,7 @@ function batDau(t) {
   D.dot = lichDot();
   const c = soPhe();
   tin(`Khai chiến! Quân hai phe đã xuất doanh. Nguyên Soái phe ít điểm xuất hiện ở phút ${vnPhut(D.s1)}, phe kia phút ${vnPhut(D.s2)} — hạ Nguyên Soái địch trước là thắng, trận kết thúc ngay.`, "#ffeb3b");
-  TG().thongBao(`Tống Kim đã khai chiến (Tống ${c[0]} – Kim ${c[1]} người)!${D.vm > 0 ? ` Đẳng cấp ${CF.cap} trở lên vẫn có thể báo danh ở Điểm báo danh Tống Kim ${vaoHet(D) ? "bất cứ lúc nào trước khi trận kết thúc" : `tới phút ${vnPhut(D.vm)} của trận`}.` : ""}`);
+  TG().thongBao(`Tống Kim khai chiến (Tống ${c[0]} – Kim ${c[1]} người)!${D.vm > 0 ? ` Cấp ${CF.cap} trở lên vẫn báo danh được ở Điểm báo danh Tống Kim ${vaoHet(D) ? "bất cứ lúc nào trước khi trận kết thúc" : `tới phút ${vnPhut(D.vm)} của trận`}.` : ""}`);
   D.doi = true;
 }
 // hết giờ / hạ Nguyên Soái địch (chetBinh — anh 06/11) / quản trị kết thúc: phe thắng (hạ Nguyên Soái trước ?? nhiều điểm hơn ?? Tống), bảng kết quả,
@@ -783,7 +783,7 @@ function ketThuc(t = Date.now()) {
   D.bot.clear(); D.binh.clear(); D.vt.clear(); D.sv++; D.bsv++; // bot + quân rút
   D.ket.lyDo = lyDo;
   tin(`Trận Tống Kim kết thúc: phe ${TEN_PHE[thang]} giành thắng lợi (${lyDo})! Tống ${vn(a)} điểm — Kim ${vn(b)} điểm.`, "#7cff7c");
-  TG().thongBao(`Tống Kim${D.gio ? ` ${D.gio}` : ""} kết thúc: phe ${TEN_PHE[thang]} giành thắng lợi — ${lyDo} (Tống ${vn(a)} : Kim ${vn(b)} điểm).`);
+  TG().thongBao(`Tống Kim${D.gio ? ` ${D.gio}` : ""} kết thúc: phe ${TEN_PHE[thang]} thắng — ${lyDo} (Tống ${vn(a)} : Kim ${vn(b)} điểm).`);
   D.doi = true;
   return D.ket;
 }
@@ -848,7 +848,7 @@ function traoNsk(m, mon, t) {
 function huyTran() {
   if (!D || D.loai !== "tran") return false;
   const dang = !D.ket; D = null; WS.guiHet(moTin());
-  if (dang) TG().thongBao("Trận Tống Kim đã bị hủy.");
+  if (dang) TG().thongBao("Trận Tống Kim bị hủy rồi.");
   return true;
 }
 // trong trận mỗi 100 ms: khai chiến, quân ra lại / đợt quân / Nguyên Soái, báo còn 3 / 1 phút, chiến báo, hết giờ; đã xong: giữ bảng kết quả giuKq giây
@@ -856,7 +856,7 @@ function vongTran(t) {
   if (D.ket) { if (t - D.ketLuc > Math.max(0, +CF.giuKq || 0) * 1000) { D = null; WS.guiHet(moTin()); } return; }
   if (!D.batDau) {
     if (t >= D.kc) { batDau(t); return; }
-    if (t - D.baoLuc >= 180000) { D.baoLuc = t; const p = Math.ceil((D.kc - t) / 60000); if (p > 0) TG().thongBao(`Tống Kim đang nhận báo danh ở Điểm báo danh Tống Kim (nhờ Xa phu đưa tới) (đẳng cấp ${CF.cap} trở lên, ủng hộ ${N.tien(CF.phi)}) — còn ${p} phút nữa khai chiến.`); }
+    if (t - D.baoLuc >= 180000) { D.baoLuc = t; const p = Math.ceil((D.kc - t) / 60000); if (p > 0) TG().thongBao(`Tống Kim đang nhận báo danh ở Điểm báo danh Tống Kim (nhờ Xa phu đưa tới) (cấp ${CF.cap} trở lên, ủng hộ ${N.tien(CF.phi)}) — còn ${p} phút nữa khai chiến.`); }
     return;
   }
   // Tống binh / Kim binh ra lại (cùng mã) ở 1 chỗ tiền tuyến ngẫu nhiên của phe mình
@@ -895,7 +895,7 @@ function lichVong(t) {
     // khóa có giờ (GM dời giờ muộn hơn trong ngày vẫn mở trận); ngày tắt trong tuần (CF.thu) thì không báo / không mở
     if (CF.baoTruoc > 0 && v.hm === lui(g, CF.baoTruoc) && !daGoi.has(`${v.ngay} b${g}`) && GV.thuOk(CF, t + CF.baoTruoc * 60000)) {
       daGoi.add(`${v.ngay} b${g}`);
-      if (!dangTran()) TG().thongBao(`${CF.baoTruoc} phút nữa Tống Kim đại chiến sẽ bắt đầu báo danh ở Điểm báo danh Tống Kim (đẳng cấp ${CF.cap} trở lên).`);
+      if (!dangTran()) TG().thongBao(`${CF.baoTruoc} phút nữa Tống Kim đại chiến bắt đầu báo danh ở Điểm báo danh Tống Kim (cấp ${CF.cap} trở lên).`);
     }
     if (v.hm === g && !daGoi.has(`${v.ngay} ${g}`) && GV.thuOk(CF, t)) {
       daGoi.add(`${v.ngay} ${g}`);
@@ -978,7 +978,7 @@ function quanTri(b, tk) {
   if (!D) loi("Chưa mở bãi Tống Kim");
   if (viec === "phe") {
     if (D.loai === "tran") loi("Trận theo lịch: phe theo báo danh ở Mộ binh quan");
-    const m = tk && D.nguoi.get(tk.ten); if (!m) loi("Đại hiệp chưa vào bãi Tống Kim — tới bãi đó trước");
+    const m = tk && D.nguoi.get(tk.ten); if (!m) loi("Chưa vào bãi Tống Kim. Tới bãi đó trước đi!");
     const p = b.phe === 0 || b.phe === "0" ? 0 : b.phe === 1 || b.phe === "1" ? 1 : -1; if (p < 0) loi("Phe: 0 Tống, 1 Kim");
     m.phe = p; D.doi = true;
     return { ok: 1, s: tomTat() };
@@ -986,7 +986,7 @@ function quanTri(b, tk) {
   if (viec === "soBot") { datSoBot(soNguyen(b.soBot, 1, CF.soBotMax | 0, "Số bot mỗi phe")); return { ok: 1, s: tomTat() }; }
   if (viec === "tri") { D.tri = soNguyen(b.tri, 1, 3, "Mức thông minh"); D.doi = true; return { ok: 1, s: tomTat() }; }
   if (viec === "hs") { D.hs = soHs(b.hs); D.doi = true; return { ok: 1, s: tomTat() }; }
-  loi("Việc Tống Kim không đúng");
+  loi("Không có việc Tống Kim này. Đừng bấm nữa.");
 }
 
 // phe trận của tài khoản tk (đã vào phòng đang mở) -> 0 | 1 | null; zone (nếu đưa): chỉ khi đang ở bãi phòng (the-gioi.js pheNay — màu tên / vòng sáng)
@@ -1068,8 +1068,8 @@ const hangTk = () => (Array.isArray(CF.quanNhu) ? CF.quanNhu : []).filter((r) =>
 const giaTk = () => new Map(hangTk());
 
 // ---------- Mộ binh quan / Quân Nhu quan (HTTP /api/tong-kim — câu theo client: battlejoin.lua, battleinfo.lua, song_shop.lua) ----------
-const QN_DANH = "Quân Nhu quan: Chiến tranh đang diễn ra ác liệt phía trước, các vị nên tạm lánh một chút!";
-const LOI_PHE = ["Chúc mừng bạn đã chính thức trở thành tướng sĩ của đại Tống! Hãy chứng tỏ bản lĩnh của mình đi!", "Chúc mừng bạn đã chính thức trở thành tướng sĩ của đại Kim! Hãy chứng tỏ bản lĩnh của mình đi!"];
+const QN_DANH = "Quân Nhu quan: Chiến tranh đang ác liệt phía trước. Tạm lánh đi!";
+const LOI_PHE = ["Ngươi chính thức là tướng sĩ của đại Tống rồi! Chứng tỏ bản lĩnh đi!", "Ngươi chính thức là tướng sĩ của đại Kim rồi! Chứng tỏ bản lĩnh đi!"];
 // trận kế tiếp theo lịch: "12:50 hôm nay" | "10:50 ngày mai" | "…" ("" = lịch đang tắt)
 function tranToi(t = Date.now()) {
   if (CF.bat === false) return "";
@@ -1083,24 +1083,24 @@ function tranToi(t = Date.now()) {
 // luật (battleinfo.lua strmarshalhelp + số của S1)
 function luatChu() {
   const T = CF.thuong, B = CF.diemBinh || [];
-  return `Phương thức bảo vệ Nguyên Soái: khai chiến ${CF.soai1} phút, tại Doanh trại phe ít điểm tích lũy nhất sẽ xuất hiện Nguyên Soái, phút ${CF.soai2} Nguyên Soái phe kia cũng sẽ xuất hiện. Nếu điểm tích lũy bằng nhau thì 2 Nguyên Soái sẽ cùng xuất hiện. Phe hạ Nguyên Soái địch trước giành thắng lợi, trận kết thúc ngay; không ai hạ được thì căn cứ điểm tích lũy của 2 bên phân thắng bại, bằng điểm thì phe Tống thắng.`
+  return `Bảo vệ Nguyên Soái: khai chiến ${CF.soai1} phút, Nguyên Soái xuất hiện tại doanh trại phe ít điểm tích lũy nhất; phút ${CF.soai2} Nguyên Soái phe kia cũng xuất hiện. Bằng điểm thì 2 Nguyên Soái cùng xuất hiện. Phe nào hạ Nguyên Soái địch trước thì thắng, trận kết thúc ngay. Không ai hạ được thì xét điểm tích lũy 2 bên, bằng điểm thì phe Tống thắng.`
     + `<enter>Điểm tích lũy: hạ người chơi / tướng sĩ phe địch ${CF.pk} điểm × hệ số chức, liên trảm 3 mạng thêm ${(CF.lienTram || [])[1] || 0}; hạ Tống binh / Kim binh ${B[0]}, Hiệu úy ${B[1]}, Thống lĩnh ${B[2]}, Phó tướng ${B[3]}, Đại tướng ${B[4]}, Nguyên Soái ${B[5]}. 1000 điểm = Hiệu úy; 3000 điểm = Thống Lĩnh; 6000 điểm = Phó tướng; 10 000 điểm = Đại Tướng.`
     + `<enter>Thưởng cuối trận (từ ${T.diemMin} điểm, còn trong chiến trường): điểm Tống Kim = điểm trận + ${T.thang} (thắng) / ${T.thua} (thua), Nhạc Vương Hồn Thạch, kinh nghiệm theo điểm và đẳng cấp, Huân công bài (thắng, từ ${T.hcDiem} điểm, tối đa ${T.hcNgay} mỗi ngày). Trận cuối ngày thứ ba, năm, bảy là Đêm Rực Rỡ — điểm và kinh nghiệm gấp đôi.`
-    + `<enter>Chú ý: sau khi báo danh sẽ được đưa vào hậu doanh; trước khi khai chiến không được rời khỏi đại doanh. Bị trọng thương không mất gì, ${CF.hoiSinh} giây sau trở lại hậu doanh.`;
+    + `<enter>Chú ý: báo danh xong thì vào hậu doanh; trước khi khai chiến không được rời đại doanh. Bị trọng thương không mất gì, ${CF.hoiSinh} giây sau trở lại hậu doanh.`;
 }
-const xemThienTu = (R) => (R && R.x2 ? "<enter>Chiến dịch lần này là <color=yellow>Đêm Rực Rỡ<color>, phần thưởng gấp đôi so với bình thường! Cơ hội không nên bỏ qua!" : "");
+const xemThienTu = (R) => (R && R.x2 ? "<enter>Chiến dịch lần này là <color=yellow>Đêm Rực Rỡ<color>, phần thưởng gấp đôi! Đừng bỏ qua!" : "");
 // khung đầu Mộ binh quan
 // chiPhe: Mộ binh quan của 1 phe ở Điểm báo danh (song_signup / jin_signup — anh 09/11 "có tống và kim như client"): chỉ nhận phe đó
 function moBinh(h, R, pha, dk, t, chiPhe) {
-  const toi = tranToi(t), L = [["Tìm hiểu quy tắc Tống Kim", "luat"], ["Để ta suy nghĩ lại!", null]];
-  const ke = toi ? `<enter>Trận kế tiếp: ${Y(toi)} — báo danh ${CF.baoDanh} phút, đẳng cấp ${CF.cap} trở lên.` : "";
-  if (!R || pha === "xong") return say(`${pha === "xong" ? "Xin lỗi! Đại chiến đã kết thúc! Lần sau quay lại nhé!" : "Đại quân của ta vẫn chưa xuất phát! Hãy tạm thời nghỉ ngơi đợi tin nhé!"}${ke}`, L);
+  const toi = tranToi(t), L = [["Tìm hiểu quy tắc Tống Kim", "luat"], ["Để ta nghĩ lại đã.", null]];
+  const ke = toi ? `<enter>Trận kế tiếp: ${Y(toi)} — báo danh ${CF.baoDanh} phút, cấp ${CF.cap} trở lên.` : "";
+  if (!R || pha === "xong") return say(`${pha === "xong" ? "Đại chiến kết thúc rồi! Lần sau quay lại!" : "Đại quân chưa xuất phát. Nghỉ ngơi đợi tin đi!"}${ke}`, L);
   const c = soPhe(), qs = `Hiện thời quân số 2 bên là: ${c[0]} --- ${c[1]}`;
-  if (dk) return say(`${LOI_PHE[dk.phe]}<enter>${qs}${xemThienTu(R)}`, [["Hãy cho ta tham gia", "vao"], ["Để ta suy nghĩ lại!", null]]);
-  if ((h.lvl | 0) < CF.cap) return say(`Chiến trường chỉ dành cho người từ cấp ${CF.cap} trở lên, ngươi chưa đủ điều kiện. Cố gắng tập luyện thêm đi!`, [["Được!", null], ["Ta muốn tìm hiểu thông tin chiến dịch.", "luat"]]);
-  if (pha === "danh" && t >= R.kc + R.vm) return say(`Trống trận đã rền vang! Trận đã đánh quá ${vnPhut(R.vm)} phút, Mộ binh quan không nhận thêm người — lần sau quay lại nhé!${ke}`, L);
+  if (dk) return say(`${LOI_PHE[dk.phe]}<enter>${qs}${xemThienTu(R)}`, [["Hãy cho ta tham gia", "vao"], ["Để ta nghĩ lại đã.", null]]);
+  if ((h.lvl | 0) < CF.cap) return say(`Chiến trường chỉ dành cho người từ cấp ${CF.cap} trở lên. Ngươi chưa đủ điều kiện. Luyện thêm đi!`, [["Được!", null], ["Ta muốn tìm hiểu thông tin chiến dịch.", "luat"]]);
+  if (pha === "danh" && t >= R.kc + R.vm) return say(`Trống trận rền vang rồi! Trận đánh quá ${vnPhut(R.vm)} phút, Mộ binh quan không nhận thêm người. Lần sau quay lại!${ke}`, L);
   const luc = pha === "bd" ? `còn ${Math.max(1, Math.ceil((R.kc - t) / 60000))} phút nữa khai chiến` : vaoHet(R) ? "đang khai chiến — vẫn nhận thêm người tới khi hết trận" : `đang khai chiến — nhận thêm người tới phút ${vnPhut(R.vm)}`;
-  return say(`Trống trận đã rền vang! Sao ngươi chưa tham gia chiến?<enter>${qs} (${luc}).<enter>Đẳng cấp ${CF.cap} trở lên, ủng hộ ${Y(N.tien(CF.phi))} mỗi trận; quân số hai phe hơn kém nhau tối đa 1 người.${xemThienTu(R)}`,
+  return say(`Trống trận rền vang rồi! Sao ngươi chưa tham gia chiến?<enter>${qs} (${luc}).<enter>Cấp ${CF.cap} trở lên, ủng hộ ${Y(N.tien(CF.phi))} mỗi trận; quân số hai phe hơn kém nhau tối đa 1 người.${xemThienTu(R)}`,
     [...(chiPhe === 1 ? [] : [["Gia nhập phe Tống", "phe", 0]]), ...(chiPhe === 0 ? [] : [["Gia nhập phe Kim", "phe", 1]]), ...L]);
 }
 // vào (lại) hậu doanh phe mình: rời tổ đội, chỗ ra ngẫu nhiên ở hậu doanh
@@ -1114,7 +1114,7 @@ function ducKiem(h, tk) {
   const k = CF.thuong.htMon, can = Math.max(1, CF.duc.can | 0), x = N.BY.get(CF.duc.mon), c = N.coMon({ k: CF.duc.mon });
   if (!x) loi("Chưa có Nhạc Vương Kiếm trong dữ liệu vật phẩm");
   const co = (h.bag || []).reduce((s, o) => s + (o.k === k ? o.n || 1 : 0), 0);
-  if (co < can) return talk("Quân Nhu quan: Ngươi không có nhiều Nhạc Vương Hồn Thạch, hãy kiểm tra lại đi! Thanh Nhạc Vương Kiếm không phải người nào cũng có được đâu.");
+  if (co < can) return talk("Quân Nhu quan: Ngươi không đủ Nhạc Vương Hồn Thạch. Kiểm tra lại đi! Nhạc Vương Kiếm không phải ai cũng có được đâu.");
   const bag0 = h.bag.map((o) => ({ ...o })), uN0 = h.uN | 0;
   let con = can, kbh = 0;
   for (const o of h.bag.filter((v) => v.k === k).sort((a, b) => (b.kbh | 0) - (a.kbh | 0))) {
@@ -1124,19 +1124,19 @@ function ducKiem(h, tk) {
   }
   try {
     if (N.xepChong(x)) N.themChong(h, x, 1, kbh);
-    else if (!N.vaoTui(h, { k: x.k, n: 1, ...(kbh ? { kbh } : {}), u: ++h.uN })) loi("Hành trang không đủ chỗ");
+    else if (!N.vaoTui(h, { k: x.k, n: 1, ...(kbh ? { kbh } : {}), u: ++h.uN })) loi("Hành trang đầy rồi. Dọn túi đi.");
   } catch {
     h.bag = bag0; h.uN = uN0;
-    return talk(`Quân Nhu quan: Nhạc Vương Kiếm chiếm không gian trong hành trang là ${Y(`${c[0] * c[1]} (${c[0]} X ${c[1]})`)}ô — ngươi hãy xếp gọn hành trang rồi quay lại.`);
+    return talk(`Quân Nhu quan: Nhạc Vương Kiếm chiếm ${Y(`${c[0] * c[1]} (${c[0]} X ${c[1]})`)} ô trong hành trang. Xếp gọn rồi quay lại.`);
   }
   NK().ghi("hd", tk, h.name, `Tống Kim — Quân Nhu quan: đúc Nhạc Vương Kiếm (${can} Nhạc Vương Hồn Thạch${kbh ? "; có viên khóa bảo hiểm — kiếm khóa" : ""})`);
-  return { ...talk("Quân Nhu quan: Thanh Nhạc Vương Kiếm này rất quý báu, ngươi phải biết tận dụng tốt đấy!"), tin: ["Bạn nhận được Nhạc Vương Kiếm"] };
+  return { ...talk("Quân Nhu quan: Nhạc Vương Kiếm này quý lắm. Tận dụng cho tốt!"), tin: ["Nhận được Nhạc Vương Kiếm"] };
 }
 // { o, viec, x? } -> { say?: { text, opts: [[nhãn, việc, x?]] }, talk?: { text }, vao?: { zone, at: [x, y] }, shop?: { hang: [[khóa, giá]], diem }, tin?: [câu],
 // phe? } — Mộ binh quan: "mo" (khung đầu) | "phe" (x = 0 Tống | 1 Kim — báo danh, nộp phí, vào) | "vao" (vào lại, không phí) | "luat"; Quân Nhu quan: "qn" |
 // "shop" | "duc" (x = 1: bước 2 — cảnh báo chỗ) | "ducOk". Câu từ chối theo client trả bằng talk / say (lỗi khác: 400)
 function lam(h, b, tk) {
-  if (!h) loi("Chưa chọn nhân vật");
+  if (!h) loi("Chưa chọn nhân vật. Chọn rồi hãy vào.");
   b = b && typeof b === "object" ? b : {};
   const o = b.o | 0, key = tk + "|" + o, viec = String(b.viec || "mo"), t = Date.now(), z = N.BAI_NAY.get(key);
   const R = D && D.loai === "tran" ? D : null, pha = R ? phaCua(t) : "", dk = R ? R.dk.get(key) || null : null;
@@ -1152,17 +1152,17 @@ function lam(h, b, tk) {
       // đăng nhập lại khi chỗ lưu ở chiến trường (main.js tkDangNhap — nhịp cuối của nhân vật báo bãi chiến trường): người đã báo danh trận này vào lại được
       // (soát đầu-cuối 06/11: trước coi như "đứng ở bãi khác" -> thoát game giữa trận vào lại thì bị đưa về Biện Kinh). Đang ở trong phòng (trang đang chơi
       // ở chiến trường) thì không — gọi API thẳng không thành chỗ dịch chuyển về hậu doanh
-      if (xa && !(dk && z === R.bai && !trong(t).has(tk))) return talk("Mộ binh quan: Muốn tham gia chiến trường Tống Kim hãy nhờ Xa phu đưa đến Điểm báo danh Tống Kim.");
+      if (xa && !(dk && z === R.bai && !trong(t).has(tk))) return talk("Mộ binh quan: Muốn tham gia chiến trường Tống Kim thì nhờ Xa phu đưa đến Điểm báo danh Tống Kim.");
       if (!R || pha === "xong") return moBinh(h, R, pha, dk, t);
       if (dk) return vaoTran(R, dk, h, tk, false); // đã báo danh trận này: vào lại phe cũ, không thu phí (anh chốt)
       const x = b.x === 1 || b.x === "1" ? 1 : b.x === 0 || b.x === "0" ? 0 : -1;
       if (viec === "vao" || x < 0 || (h.lvl | 0) < CF.cap || (pha === "danh" && t >= R.kc + R.vm)) return moBinh(h, R, pha, dk, t);
       const khac = [...R.dk.values()].find((v) => v.tk === tk);
-      if (khac) return talk(`Mộ binh quan: Nhân vật ${khac.ten} của tài khoản này đã báo danh trận này — mỗi tài khoản 1 nhân vật mỗi trận.`);
+      if (khac) return talk(`Mộ binh quan: Nhân vật ${khac.ten} của tài khoản này báo danh trận này rồi. Mỗi tài khoản 1 nhân vật mỗi trận.`);
       const c = soPhe();
-      if (c[x] > c[1 - x]) return say(`Hiện tại binh lực phe ta là ${Y(`${c[x]} người`)}, địch phương là ${Y(`${c[1 - x]} người`)}, cách biệt ${Rd(`${c[x] - c[1 - x]} người`)}. Quân lực của ta hiện giờ đã dư sức tiêu diệt ${x ? "Tống quân" : "Kim binh"}. Tráng sĩ hãy sang trợ lực phe ${TEN_PHE[1 - x]}!`,
-        [[`Gia nhập phe ${TEN_PHE[1 - x]}`, "phe", 1 - x], ["Để ta suy nghĩ lại!", null]]);
-      if ((h.gold || 0) < CF.phi) return talk(`Muốn tham gia chiến trường Tống Kim hãy ủng hộ ${N.tien(CF.phi)}`);
+      if (c[x] > c[1 - x]) return say(`Binh lực phe ta là ${Y(`${c[x]} người`)}, địch là ${Y(`${c[1 - x]} người`)}, cách biệt ${Rd(`${c[x] - c[1 - x]} người`)}. Phe ta dư sức tiêu diệt ${x ? "Tống quân" : "Kim binh"} rồi. Sang trợ lực phe ${TEN_PHE[1 - x]} đi!`,
+        [[`Gia nhập phe ${TEN_PHE[1 - x]}`, "phe", 1 - x], ["Để ta nghĩ lại đã.", null]]);
+      if ((h.gold || 0) < CF.phi) return talk(`Muốn tham gia chiến trường Tống Kim thì ủng hộ ${N.tien(CF.phi)} trước đã.`);
       h.gold -= CF.phi;
       const moi = { tk, o, ten: h.name, phe: x, lv: h.lvl | 0, nop: CF.phi, luc: t };
       R.dk.set(key, moi); R.doi = true;
@@ -1171,22 +1171,22 @@ function lam(h, b, tk) {
     }
     case "qn":
       if (dangDanh(t)) return talk(QN_DANH);
-      return say(`Quân Nhu Quan: Hiện tại ngươi có ${Y(vn(h.diemTk | 0))} điểm tích lũy, có muốn mua gì không?`,
-        [["Ta muốn mua đạo cụ", "shop"], ["Sử dụng Nhạc Vương Hồn Thạch để đúc luyện Nhạc Vương Kiếm", "duc"], ["Không cần đâu! Cảm ơn!", null]]);
+      return say(`Quân Nhu Quan: Ngươi có ${Y(vn(h.diemTk | 0))} điểm tích lũy. Muốn mua gì không?`,
+        [["Ta muốn mua đạo cụ", "shop"], ["Đúc Nhạc Vương Kiếm bằng Nhạc Vương Hồn Thạch", "duc"], ["Không cần.", null]]);
     case "shop":
       if (dangDanh(t)) return talk(QN_DANH);
       return { shop: { hang: hangTk(), diem: h.diemTk | 0 } };
     case "duc": {
       if (dangDanh(t)) return talk(QN_DANH);
       const c = N.coMon({ k: CF.duc.mon });
-      if (b.x === 1 || b.x === "1") return say(`Quân Nhu quan: Nhạc Vương Kiếm chiếm không gian trong hành trang là ${Y(`${c[0] * c[1]} (${c[0]} X ${c[1]})`)}ô, ngươi xác định còn chỗ trống trong hành trang chưa?`, [["Muốn", "ducOk"], ["Để ta xếp gọn hành trang đã", null]]);
-      return say(`Quân Nhu quan: Từ những tinh hoa có được trong Nhạc Vương Hồn Thạch ta chế tạo ra Nhạc Vương Kiếm, cần phải tốn ${Y(CF.duc.can)} Viên Nhạc Vương Hồn Thạch này xác định đổi phải không?`, [["Muốn", "duc", 1], ["Để ta xem lại", null]]);
+      if (b.x === 1 || b.x === "1") return say(`Quân Nhu quan: Nhạc Vương Kiếm chiếm ${Y(`${c[0] * c[1]} (${c[0]} X ${c[1]})`)} ô trong hành trang. Ngươi chắc còn chỗ trống chưa?`, [["Muốn", "ducOk"], ["Để ta xếp gọn hành trang đã", null]]);
+      return say(`Quân Nhu quan: Ta dùng tinh hoa Nhạc Vương Hồn Thạch chế ra Nhạc Vương Kiếm, tốn ${Y(CF.duc.can)} viên. Ngươi chắc chắn đổi chứ?`, [["Muốn", "duc", 1], ["Để ta xem lại", null]]);
     }
     case "ducOk":
       if (dangDanh(t)) return talk(QN_DANH);
-      if (xa) return talk("Quân Nhu quan: Muốn đúc Nhạc Vương Kiếm hãy đến gặp ta ở Điểm báo danh Tống Kim.");
+      if (xa) return talk("Quân Nhu quan: Muốn đúc Nhạc Vương Kiếm thì tới gặp ta ở Điểm báo danh Tống Kim.");
       return ducKiem(h, tk);
-    default: loi("Việc Tống Kim không đúng");
+    default: loi("Không có việc Tống Kim này. Đừng bấm nữa.");
   }
 }
 

@@ -72,7 +72,7 @@ function dangKhoaNhap(tk) {
 }
 // lỗi nhập sai / đang khóa nhập: 400 kèm ma ("sai-mk" | "khoa-nhap") để khung bàn phím biết còn cho nhập lại hay đóng
 const loiNhap = (msg, ma) => { throw Object.assign(new Error(msg), { code: 400, ma }); };
-function chanKhoaNhap(tk) { const con = dangKhoaNhap(tk); if (con) loiNhap(`Nhập sai quá ${SAI_MAX} lần — thử lại sau ${phut(con)} phút`, "khoa-nhap"); }
+function chanKhoaNhap(tk) { const con = dangKhoaNhap(tk); if (con) loiNhap(`Nhập sai quá ${SAI_MAX} lần. Đứng đó chờ ${phut(con)} phút rồi nhập lại.`, "khoa-nhap"); }
 // 1 lần nhập sai (loai: "mật khẩu cấp 2" | "mật khẩu đăng nhập"): đếm, nhật ký, đủ SAI_MAX thì khóa nhập + báo chủ tài khoản lần vào tới
 function ghiSai(tk, ip, loai) {
   const t = Date.now(), s0 = SAI.get(tk.ten), s = s0 && t < s0.den ? s0 : { n: 0, den: 0 };
@@ -84,8 +84,8 @@ function ghiSai(tk, ip, loai) {
   if (s.n >= SAI_MAX) NK.ghi("mk", tk.ten, null, `Khóa nhập mật khẩu ${phut(SAI_KHOA)} phút sau ${SAI_MAX} lần sai`, { ip });
   D.ghiTk(tk);
   const Loai = loai[0].toUpperCase() + loai.slice(1);
-  if (s.n >= SAI_MAX) loiNhap(`${Loai} không đúng — đã sai ${SAI_MAX} lần, khóa nhập ${phut(SAI_KHOA)} phút`, "khoa-nhap");
-  loiNhap(`${Loai} không đúng (còn ${SAI_MAX - s.n} lần thử)`, "sai-mk");
+  if (s.n >= SAI_MAX) loiNhap(`${Loai} không đúng. Sai đủ ${SAI_MAX} lần rồi — khóa nhập ${phut(SAI_KHOA)} phút.`, "khoa-nhap");
+  loiNhap(`${Loai} không đúng. Còn ${SAI_MAX - s.n} lần thử. Gõ cho cẩn thận.`, "sai-mk");
 }
 const hetSai = (tk) => SAI.delete(tk.ten);
 const xoaSai = (ten) => SAI.delete(ten); // quản trị đặt lại mật khẩu (đã xác minh chủ tài khoản): gỡ khóa nhập
@@ -96,18 +96,18 @@ const deDoan = (s) => /^(\d)\1{5}$/.test(s) || DAY.includes(s) || DAY_NGUOC.incl
 // mật khẩu đăng nhập mới hợp lệ không (người chơi tự đặt)
 function kiemMk1(tk, moi) {
   const s = String(moi ?? "");
-  if (s.length < MK1_MIN || s.length > MK1_MAX) loi(`Mật khẩu mới ${MK1_MIN}–${MK1_MAX} ký tự`);
-  if (s.trim() !== s) loi("Mật khẩu không được có khoảng trắng ở đầu hoặc cuối");
-  if (s.toLowerCase() === String(tk.ten).toLowerCase()) loi("Mật khẩu không được trùng tên tài khoản");
-  if (D.dungMk(tk, s)) loi("Mật khẩu mới phải khác mật khẩu đang dùng");
-  if (tk.mk2 && dung(tk.mk2, s)) loi("Mật khẩu đăng nhập không được trùng mật khẩu cấp 2");
+  if (s.length < MK1_MIN || s.length > MK1_MAX) loi(`Mật khẩu mới phải ${MK1_MIN}–${MK1_MAX} ký tự. Gõ lại.`);
+  if (s.trim() !== s) loi("Mật khẩu không được có khoảng trắng ở đầu hoặc cuối. Gõ lại cho sạch.");
+  if (s.toLowerCase() === String(tk.ten).toLowerCase()) loi("Mật khẩu trùng tên tài khoản rồi. Đổi cái khác.");
+  if (D.dungMk(tk, s)) loi("Mật khẩu mới phải khác mật khẩu đang dùng. Đổi cái khác.");
+  if (tk.mk2 && dung(tk.mk2, s)) loi("Mật khẩu đăng nhập trùng mật khẩu cấp 2 rồi. Đổi đi.");
   return s;
 }
 function kiemMk2(tk, moi) {
   const s = String(moi ?? "");
-  if (!MK2_RE.test(s)) loi("Mật khẩu cấp 2 gồm đúng 6 chữ số");
-  if (deDoan(s)) loi("Mật khẩu cấp 2 quá dễ đoán (như 111111, 123456, 121212) — chọn dãy số khác");
-  if (D.dungMk(tk, s)) loi("Mật khẩu cấp 2 không được trùng mật khẩu đăng nhập");
+  if (!MK2_RE.test(s)) loi("Mật khẩu cấp 2 đúng 6 chữ số. Nhập lại.");
+  if (deDoan(s)) loi("Mật khẩu cấp 2 dễ đoán quá (111111, 123456, 121212). Chọn dãy khác.");
+  if (D.dungMk(tk, s)) loi("Mật khẩu cấp 2 trùng mật khẩu đăng nhập rồi. Đổi đi.");
   return s;
 }
 
@@ -124,48 +124,48 @@ function lam(tk, b, ctx) {
   const trang = ctx.trang, ip = ctx.ip || "", viec = String(b.viec || "");
   const ra = (them = {}) => ({ ...trangThai(tk, trang), batDoiMk: tk.batDoiMk ? 1 : 0, ...them });
   if (viec === "xem") return ra({ khoaNhap: dangKhoaNhap(tk) });
-  if (viec === "khoa") { khoaLai(tk.ten); return ra({ msg: "Đã khóa an toàn" }); }
-  if (tk.batDoiMk && viec !== "doiMk1") throw loiMa("Tài khoản cần đổi mật khẩu đăng nhập trước", "bat-doi-mk");
+  if (viec === "khoa") { khoaLai(tk.ten); return ra({ msg: "Đã khóa an toàn rồi." }); }
+  if (tk.batDoiMk && viec !== "doiMk1") throw loiMa("Đổi mật khẩu đăng nhập trước đã. Việc khác để sau.", "bat-doi-mk");
   if (viec === "dat") {
-    if (tk.mk2) loi("Tài khoản đã có mật khẩu cấp 2 — dùng Đổi mật khẩu cấp 2");
+    if (tk.mk2) loi("Đã có mật khẩu cấp 2 rồi. Muốn đổi thì bấm Đổi mật khẩu cấp 2.");
     chanKhoaNhap(tk);
     if (!D.dungMk(tk, b.mk1)) loi(ghiSai(tk, ip, "mật khẩu đăng nhập"));
     const s = kiemMk2(tk, b.moi);
     hetSai(tk); tk.mk2 = bam(s); tk.mk2Luc = Date.now(); moRieng(tk, trang);
     NK.ghi("mk", tk.ten, null, "Đặt mật khẩu cấp 2", { ip });
-    return ra({ msg: "Đã đặt mật khẩu cấp 2 — khóa an toàn đang mở cho tới khi thoát game hoặc tải lại trang" });
+    return ra({ msg: "Đã đặt mật khẩu cấp 2. Khóa an toàn mở tới khi thoát game hoặc tải lại trang." });
   }
   if (viec === "mo") {
-    if (!tk.mk2) throw loiMa("Tài khoản chưa có mật khẩu cấp 2 — đặt trước", "can-dat-mk2");
+    if (!tk.mk2) throw loiMa("Chưa có mật khẩu cấp 2. Đặt trước đã.", "can-dat-mk2");
     chanKhoaNhap(tk);
     if (!dung(tk.mk2, b.mk)) loi(ghiSai(tk, ip, "mật khẩu cấp 2"));
     hetSai(tk); moCho(tk, trang);
     return ra({ msg: "Đã mở khóa an toàn" });
   }
   if (viec === "doi") {
-    if (!tk.mk2) throw loiMa("Tài khoản chưa có mật khẩu cấp 2 — đặt trước", "can-dat-mk2");
+    if (!tk.mk2) throw loiMa("Chưa có mật khẩu cấp 2. Đặt trước đã.", "can-dat-mk2");
     chanKhoaNhap(tk);
     if (!dung(tk.mk2, b.cu)) loi(ghiSai(tk, ip, "mật khẩu cấp 2"));
     const s = kiemMk2(tk, b.moi);
-    if (s === String(b.cu)) loi("Mật khẩu cấp 2 mới phải khác mật khẩu cũ");
+    if (s === String(b.cu)) loi("Mật khẩu cấp 2 mới phải khác mật khẩu cũ. Đổi cái khác.");
     hetSai(tk); tk.mk2 = bam(s); tk.mk2Luc = Date.now(); moRieng(tk, trang);
     NK.ghi("mk", tk.ten, null, "Đổi mật khẩu cấp 2", { ip });
-    return ra({ msg: "Đã đổi mật khẩu cấp 2" });
+    return ra({ msg: "Đã đổi mật khẩu cấp 2 rồi." });
   }
   if (viec === "doiMk1") {
     const bat = !!tk.batDoiMk;
     // tự đổi (không bị bắt): như mọi việc được bảo vệ — chưa có mật khẩu cấp 2 thì bắt đặt trước (lựa chọn 1a), có rồi thì phải mở khóa
-    if (!bat && !daMo(tk, trang)) throw tk.mk2 ? loiMa("Cần mở khóa an toàn (mật khẩu cấp 2) trước khi đổi mật khẩu đăng nhập", "can-mk2")
-      : loiMa("Cần đặt mật khẩu cấp 2 trước khi đổi mật khẩu đăng nhập", "can-dat-mk2");
+    if (!bat && !daMo(tk, trang)) throw tk.mk2 ? loiMa("Mở khóa an toàn (mật khẩu cấp 2) trước rồi mới đổi mật khẩu đăng nhập.", "can-mk2")
+      : loiMa("Đặt mật khẩu cấp 2 trước rồi mới đổi mật khẩu đăng nhập.", "can-dat-mk2");
     chanKhoaNhap(tk);
     if (!D.dungMk(tk, b.cu)) loi(ghiSai(tk, ip, bat ? "mật khẩu quản trị cấp" : "mật khẩu đăng nhập"));
     const s = kiemMk1(tk, b.moi), mo0 = daMo(tk, trang);
     hetSai(tk); tk.bam = bam(s); tk.mkLuc = Date.now(); delete tk.batDoiMk;
     tk.phien = crypto.randomBytes(24).toString("base64url"); MO.delete(tk.ten); if (mo0) moCho(tk, trang); // phiên mới (api.js gửi cookie), trang này giữ trạng thái mở
     NK.ghi("mk", tk.ten, null, bat ? "Đổi mật khẩu đăng nhập lần đầu (mật khẩu quản trị cấp)" : "Đổi mật khẩu đăng nhập", { ip });
-    return ra({ msg: "Đã đổi mật khẩu đăng nhập" });
+    return ra({ msg: "Đã đổi mật khẩu đăng nhập rồi." });
   }
-  loi("Việc không rõ");
+  loi("Không có việc này. Đừng bấm nữa.");
 }
 
 // ---- chặn trước mọi API (api.js xuLyApi, sau khi đọc tài khoản): null = cho qua, { msg, ma } = trả 403 kèm mã để trình duyệt hỏi rồi gửi lại
@@ -194,9 +194,9 @@ function canMo(tk, p, m, b) {
   return false;
 }
 function chan(tk, trang, p, m, b) {
-  if (tk.batDoiMk) return CHO_KHI_BAT_DOI.has(p) ? null : { msg: "Tài khoản cần đổi mật khẩu đăng nhập trước khi vào game", ma: "bat-doi-mk" };
+  if (tk.batDoiMk) return CHO_KHI_BAT_DOI.has(p) ? null : { msg: "Đổi mật khẩu đăng nhập trước rồi mới vào game.", ma: "bat-doi-mk" };
   if (!canMo(tk, p, m, b || {}) || daMo(tk, trang)) return null;
-  return tk.mk2 ? { msg: "Cần mở khóa an toàn — nhập mật khẩu cấp 2", ma: "can-mk2" } : { msg: "Cần đặt mật khẩu cấp 2 trước (khóa an toàn)", ma: "can-dat-mk2" };
+  return tk.mk2 ? { msg: "Mở khóa an toàn đi. Nhập mật khẩu cấp 2.", ma: "can-mk2" } : { msg: "Đặt mật khẩu cấp 2 trước đã (khóa an toàn).", ma: "can-dat-mk2" };
 }
 
 // quản trị xóa mật khẩu cấp 2 (F10 — người chơi quên, quản trị đã xác minh)

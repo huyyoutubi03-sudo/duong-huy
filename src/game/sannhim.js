@@ -70,7 +70,7 @@ export const SanNhim = {
   trung(m, v) {
     const s = this.s; if (!s || s.ket || !m.nhim) return;
     if (this.du()) {
-      if (this.baoDu !== s.u && this.api) { this.baoDu = s.u; this.api.canh(`Hôm nay bạn đã bắt đủ ${s.toiDa} con ${s.ten} — đánh nữa không còn tác dụng, mai hãy quay lại.`); }
+      if (this.baoDu !== s.u && this.api) { this.baoDu = s.u; this.api.canh(`Hôm nay ngươi đã bắt đủ ${s.toiDa} con ${s.ten} — đánh nữa cũng vô ích, mai quay lại.`); }
       return;
     }
     this.cho.set(m.nhim, (this.cho.get(m.nhim) || 0) + v);
@@ -106,16 +106,16 @@ export const SanNhim = {
     for (const r of ds) {
       if (r.lai) { if (r.mon.length) A.msg(`Săn nhím: đã nhận phần quà còn chờ — ${mon(r.mon)}.`, "tien"); continue; }
       // anh 18/11 — nguồn sự kiện: đánh trúng nhím may mắn ra món sự kiện (Trung Dược)
-      if (r.loai === "nsk") { if (r.mon.length) A.msg(`Săn nhím: may mắn nhận được ${mon(r.mon)}!`, "tien"); if (r.day) A.canh(`Săn nhím: hành trang đầy — dọn chỗ để nhận ${mon(r.cho || [])} (giữ 30 phút).`); continue; }
+      if (r.loai === "nsk") { if (r.mon.length) A.msg(`Săn nhím: may mắn vớ được ${mon(r.mon)}!`, "tien"); if (r.day) A.canh(`Săn nhím: hành trang đầy — dọn chỗ mà nhận ${mon(r.cho || [])} (giữ 30 phút, quá giờ thì mất).`); continue; }
       // lượt 86: thưởng phát hiện (đánh trúng đầu tiên) / tham gia lúc nhím bị bắt — kinh nghiệm + Xu may mắn
       if (r.loai === "phat" || r.loai === "tham") {
         A.msg(`${r.loai === "phat" ? "Phát hiện" : "Tham gia bắt"} ${ten(r)} ở ${r.tenBai}${r.kn ? ` — nhận ${A.fmt(r.kn)} điểm kinh nghiệm` : ""}.`, "kn");
-        if (r.xu) A.msg(`Săn nhím: may mắn nhận được ${r.xu} Xu!`, "tien");
+        if (r.xu) A.msg(`Săn nhím: may mắn vớ được ${r.xu} Xu!`, "tien");
         continue;
       }
       A.msg(`Bắt được ${ten(r)} ở ${r.tenBai} (con thứ ${r.dem}/${r.toiDa} hôm nay) — nhận ${A.fmt(r.kn)} điểm kinh nghiệm.`, "kn");
       if (r.mon.length) A.msg(`Quà săn nhím: ${mon(r.mon)}.`, "tien");
-      if (r.day) A.canh(`Săn nhím: hành trang đầy — dọn chỗ để nhận ${mon(r.cho || [])} (giữ 30 phút).`);
+      if (r.day) A.canh(`Săn nhím: hành trang đầy — dọn chỗ mà nhận ${mon(r.cho || [])} (giữ 30 phút, quá giờ thì mất).`);
     }
   },
 

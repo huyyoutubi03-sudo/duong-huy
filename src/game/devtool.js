@@ -588,7 +588,7 @@ export class DevTool {
         return api.msg(b ? `${b.name} (cấp ${b.lvl}) xuất hiện` : "Không tìm được chỗ đặt trùm");
       }
       case "killAll": { const n = w.mobs.filter((m) => m.alive).length; for (const m of [...w.mobs]) if (m.alive) w.kill(m); return api.msg(`Giết ${n} quái`); }
-      case "clearMobs": w.mobs = []; p.target = null; return api.msg("Xóa hết quái" + (w.dev.noSpawn ? "" : " (quái sẽ sinh lại — bật Dừng sinh quái để giữ trống)"));
+      case "clearMobs": w.mobs = []; p.target = null; return api.msg("Xóa hết quái" + (w.dev.noSpawn ? "" : " (quái sẽ sinh lại. Bật Dừng sinh quái để giữ trống.)"));
       case "zone": {
         const z = api.zones().find((x) => x.id === +val("zone"));
         if (!z || z.id === w.zone.id) return;

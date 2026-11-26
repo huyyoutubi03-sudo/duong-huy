@@ -28,7 +28,7 @@ const ASF_BORDER = [0, 0, 0]; // TẠM: viền mặc định đen (ảnh client:
 export class UiWins {
   static async load(base = BASE) {
     const r = await fetch(base + "win.json");
-    if (!r.ok) throw new Error("Không đọc được win.json");
+    if (!r.ok) throw new Error("Đọc không nổi win.json");
     return new UiWins(await r.json(), base);
   }
 

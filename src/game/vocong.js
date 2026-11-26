@@ -57,9 +57,9 @@ const inVung = (x, y, e, n) => { const h = (n + 0.5) * CELL + (e.radius || 0); r
 const SLOW_T = 18, SLOW_K = 0.5;         // băng sát: chậm 50 % trong 18 vòng (1 giây) × (1 + coldenhance %) — TẠM (quái có võ công bật: khungCham như engine)
 const CHAM_MIN = 60;                     // băng sát làm chậm ít nhất 60 vòng (engine defNORMAL_COLD_TIME — 3,3 giây) — khungCham
 const HURT_T = 12 * TICK;                // động tác bị đánh của nhân vật (world.js DUR.hurt) — giật lúc quái có võ công (giatHero)
-const WEAPON_MSG = "Vũ khí mà bạn trang bị không phù hợp với loại võ công mà bạn hiện đang sử dụng"; // client stringtable_core G_SkillList_1
+const WEAPON_MSG = "Cầm sai vũ khí rồi. Chiêu này đòi đúng loại — đổi đi, đừng để ta nhắc lần nữa."; // client stringtable_core G_SkillList_1
 // cột HorseLimited của skills.txt (s.horse): 1 = cưỡi ngựa không dùng được, 2 = phải cưỡi ngựa mới dùng được — câu báo G_SkillList_2 / 3
-const HORSE_MSG = ["", "Võ công mà bạn sử dụng hiện giờ không thể cỡi ngựa!", "Võ công mà bạn hiện đang sử dụng cần phải cỡi ngựa!"];
+const HORSE_MSG = ["", "Chiêu này không dùng được khi cưỡi ngựa. Xuống ngựa đi rồi đánh!", "Chiêu này phải cưỡi ngựa mới dùng được. Lên ngựa đi!"];
 const TURN = (Math.PI * 2) / 32;        // đạn bám mục tiêu (MoveKind 5) quay tối đa 1/32 vòng mỗi vòng engine — TẠM
 const TRAP_MAX = 5, TRAP_LIFE = 180;     // bẫy: tối đa 5 cái mỗi loại (TẠM), đạn đứng yên trúng là mất sống ≥ 10 giây mới tính là bẫy
 const AURA_T = 18;                       // vòng sáng đánh địch: phát chiêu con mỗi 18 vòng (1 giây — TẠM)
@@ -216,7 +216,7 @@ const SUA = {
 // Khinh công (anh 10/11 — client settings\skills.txt 210, script\skill\special\轻功.lua): SkillStyle 1 kiểu Melee_Jump, tầm 400, 50 thể lực, chỉ tay phải (LRSkill 2), cấm cưỡi ngựa, trong
 // thành dùng được; ai đã vào phái đều có (script\global\skills_table.lua AddMagic(210)) nên không nằm trong hero.skills, không tốn điểm. Cách nhảy: World.khinhCong (world.js)
 export const KC_ID = 210, KC_PHI = 50;
-const KHINH_CONG = { id: KC_ID, n: "Khinh công", prop: "", desc: "Tung mình tới chỗ chỉ định, tốn thể lực. Không dùng được khi đang cưỡi ngựa.", series: -1, req: 1, max: 1, style: 1, attrib: 0, eqt: -2, horse: 1, melee: 0, phys: 0, aura: 0, radius: 400, anim: 13, wait: 0, target: { enemy: 0, ally: 0, self: 0, only: 0 }, missileN: 0, missileLevel: -1, base: 0, exp: 0, cost: { type: 1, v: KC_PHI }, state: 0, sub: { child: 0, start: 0, fly: 0, collide: 0, vanish: 0 }, script: "", lv: { skill_cost_v: [[KC_PHI, 0, 0]] }, lvKeys: ["skill_cost_v"] };
+const KHINH_CONG = { id: KC_ID, n: "Khinh công", prop: "", desc: "Nhảy vọt tới chỗ chỉ định, tốn thể lực. Đang cưỡi ngựa thì đừng hòng dùng.", series: -1, req: 1, max: 1, style: 1, attrib: 0, eqt: -2, horse: 1, melee: 0, phys: 0, aura: 0, radius: 400, anim: 13, wait: 0, target: { enemy: 0, ally: 0, self: 0, only: 0 }, missileN: 0, missileLevel: -1, base: 0, exp: 0, cost: { type: 1, v: KC_PHI }, state: 0, sub: { child: 0, start: 0, fly: 0, collide: 0, vanish: 0 }, script: "", lv: { skill_cost_v: [[KC_PHI, 0, 0]] }, lvKeys: ["skill_cost_v"] };
 // Ngự Tuyết Ẩn (Thúy Yên 120 — anh 12/11 "tàng hình của thúy yên 120 có thể dùng khi lên ngựa"): bỏ cờ cấm cưỡi ngựa của dữ liệu client (horse 1)
 export const NGU_TUYET_AN = 713;
 export function suaVoCong(db) {
@@ -446,13 +446,13 @@ export function installVoCong(World) {
     skCan(id, cost = true) {
       const s = this.skDef(id), k = this.P.vc && this.P.vc.sk(id), lv = this.skLv(id), p = this.player;
       if (this.camVc) return { why: this.camVc }; // đường đua (duangua.js): cấm võ công — bùa / Trợ Thủ / chiêu đánh
-      if (!this.vcOpen) return { why: "Võ công phái này đang soát — sắp mở (tạm đánh đòn thường)" };
-      if (!s || !k) return { why: "Chiêu này chưa dùng được" };
-      if (lv < 1) return { why: `Chưa học ${s.n}` };
+      if (!this.vcOpen) return { why: "Chiêu phái này đang soát, sắp mở. Đánh đòn thường tạm đi!" };
+      if (!s || !k) return { why: "Chiêu này chưa dùng được. Đừng bấm bừa." };
+      if (lv < 1) return { why: `Chiêu ${s.n} chưa học. Học đi rồi hãy dùng.` };
       if (!eqtOk(s, this.wk)) return { why: WEAPON_MSG, weapon: true };
       if (s.horse === 1 ? this.riding() : s.horse === 2 && !this.riding()) return { why: HORSE_MSG[s.horse], horse: s.horse };
-      if ((p.cd[id] || 0) > this.time) return { why: `${s.n}: chưa hồi chiêu`, cd: true };
-      if (cost) { const c = this.skCost(id, lv), t = s.cost ? s.cost.type : 0, have = t === 1 ? p.st : t === 2 ? p.hp - 1 : p.mp; if (have < c) return { why: t === 1 ? "Không đủ thể lực" : t === 2 ? "Không đủ sinh lực" : "Không đủ nội lực", mp: true }; }
+      if ((p.cd[id] || 0) > this.time) return { why: `${s.n} chưa hồi chiêu. Đợi đi, giục cũng vô ích.`, cd: true };
+      if (cost) { const c = this.skCost(id, lv), t = s.cost ? s.cost.type : 0, have = t === 1 ? p.st : t === 2 ? p.hp - 1 : p.mp; if (have < c) return { why: t === 1 ? "Thể lực cạn rồi. Nghỉ một hơi đã, bấm bừa cũng vô ích." : t === 2 ? "Sinh lực không đủ. Hồi máu trước đã, đừng cố dùng." : "Nội lực cạn rồi. Đứng yên mà hồi, bấm bừa cũng vô ích.", mp: true }; }
       return { ok: true };
     },
     // chiêu sẽ đánh con đang nhắm: chiêu 1 lần (chuột phải) > chiêu đánh chính (Trợ Thủ) / ô tay trái; không dùng được -> đòn thường
@@ -859,8 +859,8 @@ export function installVoCong(World) {
       }
     },
     vcNearMob(x, y, R) { let best = null, bd = R; for (const e of this.mobs) { if (!e.alive || e.an) continue; const k = ldist(x, y, e.x, e.y); if (k < bd) { bd = k; best = e; } } return best; },
-    // mục tiêu đạn có thể trúng: đạn người chơi -> quái; đạn của quái có võ công (m.src.who) -> người chơi; đạn Tống Kim (tkA) -> theo phe (tkbot.js tkDich)
-    vcDich(m) { if (m.src.tkA && this.tk) return this.tkDich(m.src.tkA); return m.src.who ? (this.player.hp > 0 ? [this.player] : []) : this.mobs; },
+    // mục tiêu đạn có thể trúng: đạn người chơi -> quái (+ NPC nhân vật mẫu khi không phải đạn quái / phân thân / Tống Kim / phát lại — vocong.js vcDich: đạn "ao" của người khác tuyệt đối không báo đòn lên bot); đạn của quái có võ công (m.src.who) -> người chơi; đạn Tống Kim (tkA) -> theo phe (tkbot.js tkDich)
+    vcDich(m) { if (m.src.tkA && this.tk) return this.tkDich(m.src.tkA); if (m.src.who) return this.player.hp > 0 ? [this.player] : []; const ds = this.mobs; if (!m.src.ptA && !m.src.ao && this._npcChoi && this._npcChoi.alive) return [...ds, this._npcChoi]; return ds; },
     evLv(m) { const A = lvAttrs(this.skDef(m.src.id), m.src.lv); return (A.skill_eventskilllevel && A.skill_eventskilllevel[0]) || m.src.lv; },
     // sát thương vùng: ±DmgRange ô quanh tâm tới mép thân quái (vungO / inVung). 26/10 đã thu về đúng cỡ engine ±DmgRange/2 ô ("phạm vi cho
     // chính xác") -> 27/10 anh thấy chiêu vùng gần như đánh đơn (quái ở đây đứng thưa hơn client) nên nới lại
@@ -925,8 +925,8 @@ export function installVoCong(World) {
       if (e.kind === "mob" && laBossVc(e) && this.ganBoss && !this.ganBoss(p, e)) return;
       if (!Object.keys(A).some((k) => DMG.test(k))) return this.curseOn(e, m.src.id, m.src.lv, A); // bùa hại / chiêu chỉ gây trạng thái
       const r = this.skDamage(s, A, m.src, e);
-      if (r.miss) return this.hit(p, e, r);
-      this.hit(p, e, r);
+      if (r.miss) return this.hit(p, e, r, m.src.id);
+      this.hit(p, e, r, m.src.id);
       // hút sinh lực / nội lực: của võ công bị động mọi chiêu; của đồ (hutSinh / hutNoi) chỉ chiêu ngoại công (engine "Hut ... o ngoai cong");
       // + dòng hút của chính chiêu đang đánh (anh 12/11 "skill 90 của vân long kích không có tác dụng hút sinh nội lực" — steallife_p /
       // stealmana_p của Vân Long Kích, Thâu Thiên Hoán Nhật, Nhân Kiếm Hợp Nhất, chiêu 150; bản trước chỉ cộng của bị động + đồ).
@@ -943,7 +943,7 @@ export function installVoCong(World) {
       if (A.stun_p && Math.random() * 100 < A.stun_p[0]) e.stunUntil = Math.max(e.stunUntil || 0, this.time + (A.stun_p[1] || 9) * TICK);
       if (r.cold > 0) this.slowMob(e, this.quaiVC ? this.khungCham(A) : null);
       if (e.vaDoi && this.onVaTT) this.onVaTT(e); // Vượt Ải tổ đội: choáng / chậm vừa gây chuyển cho máy khác cùng ải (vadoi.js)
-      if (A.poisondamage_v) {
+      if (A.poisondamage_v && !e.npc) { // NPC nhân vật mẫu: độc không mô hình phía máy chủ — không gắn lớp độc lên bot
         const po = this.poisonOf(s, A, m.src), res = this.khangDoc(e), dur = po.dur * (1 - this.mobMod(e, "poisontimereduce_p") / 100);
         // độc CỘNG DỒN (anh báo 26/10 bẫy độc sai sát thương — bản đầu mỗi lần trúng ghi đè độc cũ, bẫy Độc Thích Cốt nổ 5 lần mà quái chỉ
         // chịu 1 lớp): mỗi lần trúng là 1 lớp riêng (điểm / lần, hết hạn riêng), mỗi nhịp mất tổng các lớp còn hạn
@@ -957,7 +957,7 @@ export function installVoCong(World) {
         // 60 vòng (KNpcAttribModify defPOISON_DAMAGE_INTERVAL / TIME) — như đòn thường (World.docDon)
         // anh 17/11 ("CBR mang vũ khí độc sát nội đánh ra độc sát"): chỉ đồ NGOẠI công gắn độc vào chiêu ngoại không có độc; độc sát nội của đồ / hoàn chỉ vào chiêu nội CÓ độc (poisonOf)
         const add = s.phys ? p.elem.poison || 0 : 0;
-        if (add > 0 && e.alive) this.docDon(e, Math.max(1, Math.floor(((add * (100 - this.khangDoc(e))) / 100) * this.serK(s, A, m.src, e))));
+        if (add > 0 && e.alive && !e.npc) this.docDon(e, Math.max(1, Math.floor(((add * (100 - this.khangDoc(e))) / 100) * this.serK(s, A, m.src, e))));
       }
       // chiêu không có bùa riêng mà có dòng âm (vd Vô Hình Độc làm chậm): gắn như bùa hại
       const neg = Object.fromEntries(Object.entries(A).filter(([k, v]) => !DMG.test(k) && v[1] > 0 && v[0] < 0 && !/^(skill_|missle_|addskill|seriesdamage|stun_p|deadlystrike)/.test(k)));

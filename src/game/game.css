@@ -844,7 +844,7 @@ body.dt-cs #dt .dt-tin, body.dt-cs #dt .dt-nutt, body.dt-chat #dt .dt-tin, body.
 #dt .dt-moin:active { filter: brightness(1.3); }
 body.dt-cs #dt .dt-moidoi, body.dt-chat #dt .dt-moidoi { display: none !important; }
 body.dt-cando #dt .dt-moidoi { top: calc(var(--dt-day) - 346px); }
-body.dt.dt-ngang #dt .dt-moidoi { top: auto !important; bottom: 156px; }
+body.dt.dt-ngang #dt .dt-moidoi { top: auto !important; bottom: calc(clamp(180px, calc(var(--vh100, 100vh) * .6), 290px) + 8px); } /* trên vùng cần như nút Chat (theo bố cục tham chiếu) */
 /* cần điều khiển (dienthoai.js _cuaCan — Trợ Thủ → Khác; anh 31/10 "đưa vào khu vực trung tâm, khóa hoặc không khóa"; lần 3 "chỗ chat và cái
    joystick nên điều chỉnh vị trí, bị cấn quá" — kiểu B): vùng = phần cảnh dưới bên trái cao 292, từ mép trái tới trước cụm ô kỹ năng 16 điểm
    (--dt-cum — dienthoai.js _xepO); vòng (b) nghỉ ở 28% bề ngang, cao hơn đáy cảnh 150, mờ khi không dùng; không khóa: chạm đâu trong vùng vòng hiện
@@ -1109,8 +1109,8 @@ body.dt.dt-ngang.dt-chat #dt .dt-chatp { left: 0; right: auto; width: 46%; top: 
 /* trên cảnh: tên bãi dưới bản đồ nhỏ, dòng tin + nút Chat trên cần điều khiển, nút Nói chuyện giữa đáy */
 body.dt.dt-ngang #dt .dt-mm { right: 6px; top: 6px; width: 88px; height: 88px; }
 body.dt.dt-ngang #dt .dt-bd { left: auto; right: 6px; top: 100px; transform: none; max-width: 260px; font-size: 14px; }
-body.dt.dt-ngang #dt .dt-tin { left: 6px; top: auto !important; bottom: 190px; width: 300px; }
-body.dt.dt-ngang #dt .dt-nutt { left: 6px; top: auto !important; bottom: 156px; }
+body.dt.dt-ngang #dt .dt-tin { left: 6px; top: auto !important; bottom: calc(clamp(180px, calc(var(--vh100, 100vh) * .6), 290px) + 42px); width: 300px; }
+body.dt.dt-ngang #dt .dt-nutt { left: 6px; top: auto !important; bottom: calc(clamp(180px, calc(var(--vh100, 100vh) * .6), 290px) + 8px); } /* nút Chat lên trên vùng cần (theo bố cục tham chiếu: nút Chat ở mép trái, trên cần điều khiển) */
 /* cần điều khiển màn ngang (anh 10/11: "mặc định đưa vào trong và lên tí như các game moba, hiện tại em đang để sát màn hình quá"): tâm vòng cách mép
    trái ~14% bề ngang, cách đáy ~27% bề cao; vùng chạm (không khóa: đặt ngón đâu vòng hiện đó) rộng ra quanh đó. Nút Chat / lời mời tổ đội nằm trên vùng */
 body.dt.dt-ngang #dt .dt-can { left: 0; top: auto; bottom: 0; width: clamp(220px, calc(var(--vw100, 100vw) * .34), 360px); height: clamp(180px, calc(var(--vh100, 100vh) * .6), 290px); }
@@ -1632,9 +1632,8 @@ body.dt #jxhud .jx-slot { touch-action: none; }
 #dt .dt-bcua.hien { display: flex; }
 #dt .dt-bcua.dat { color: #7fe06a; }
 #dt .dt-bcua svg { flex: none; width: 16px; height: 16px; }
-body.dt.dt-ngang #dt .dt-bcua { top: 158px; z-index: 1; }
-@media (max-height: 387px) { body.dt.dt-ngang #dt .dt-bcua { top: 94px; right: 100px; } }
-@media (max-height: 349px) { body.dt.dt-ngang #dt .dt-bcua { top: 100px; right: 106px; } }
+/* cột phải màn ngang (từ trên xuống: bản đồ nhỏ / tên bãi / Tự đánh 128 / AUTO 158 / khóa 196 / Bầu Cua 238): Bầu Cua ở dưới khóa, không đè AUTO, không chạm vòng kỹ năng (ô ngoài cùng cách mép phải ≥170 điểm) */
+body.dt.dt-ngang #dt .dt-bcua { top: 238px; z-index: 1; }
 body.dt.dt-ngang:not(.dt-gon):not(.dt-chat) #dt .dt-bcua.hien { display: none; }
 /* Khóa an toàn — mật khẩu cấp 2 (anh 10/11 "Duyệt hết a" — src/game/khoaantoan.js): lớp riêng trên cùng trang (dùng cả ở màn chọn nhân vật), khung như
    bàn cược Bầu Cua (nền tối, viền ridge vàng, tiêu đề vàng); bàn phím số: hình + chỗ phím của client 数字键盘.ini (dải 3 khung: thường / nhấn / rê) */
@@ -1689,10 +1688,23 @@ body.dt.dt-ngang:not(.dt-gon):not(.dt-chat) #dt .dt-bcua.hien { display: none; }
 #dt .dt-kat::before { content: ""; position: absolute; inset: -6px -8px; }
 #dt .dt-kat.dong { background-image: url("../../assets/ui/hud/btn/khoa_dong.png"); }
 #dt .dt-kat.chua::after { content: ""; position: absolute; right: -3px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: rgb(230,40,40); box-shadow: 0 0 0 1px #000; }
-body.dt:not(.dt-ngang) #dt .dt-bcua { top: 236px; }
-body.dt.dt-ngang #dt .dt-kat { top: 10px; right: 152px; }
+body.dt:not(.dt-ngang) #dt .dt-bcua { top: 284px; }
+/* điện thoại dọc — hàng nút vuông dưới nút Tự đánh (theo bố cục tham chiếu: bản đồ nhỏ / Tự đánh / hàng nút vuông / Bầu Cua):
+   khóa an toàn + Zalo thành 2 ô vuông 40 × 40; nút AUTO và thanh Bầu Cua dời xuống dưới cho khỏi đè nhau (trước đây Bầu Cua đè đúng lên AUTO) */
+body.dt:not(.dt-ngang) #dt .dt-kat { top: 202px; width: 40px; height: 40px; border: 1px solid #7f9f90; box-shadow: inset 0 0 0 1px #000;
+  background: url("../../assets/ui/hud/btn/khoa_mo.png") center / 50px 30px no-repeat, linear-gradient(#22302b, #0d1512); }
+body.dt:not(.dt-ngang) #dt .dt-kat.dong { background-image: url("../../assets/ui/hud/btn/khoa_dong.png"), linear-gradient(#22302b, #0d1512); }
+body.dt:not(.dt-ngang) #dt .dt-zalo { display: grid; place-items: center; top: 202px; right: 52px; width: 40px; height: 40px; box-sizing: border-box;
+  border: 1px solid #7f9f90; background: linear-gradient(#22302b, #0d1512); box-shadow: inset 0 0 0 1px #000; z-index: 1; touch-action: manipulation; }
+body.dt:not(.dt-ngang) #dt .dt-zalo i { width: 28px; height: 28px; background-size: contain; background-position: center; background-repeat: no-repeat; }
+body.dt:not(.dt-ngang) #dt .dt-zalo:active { filter: brightness(1.4); }
+body.dt:not(.dt-ngang) #dt .dt-auto { top: 248px; }
+/* mở bảng / cửa sổ / chat: ẩn nút AUTO dọc cho khỏi đè lên bảng (như màn ngang đã ẩn AUTO + Zalo khi mở bảng) */
+body.dt:not(.dt-ngang):not(.dt-gon) #dt .dt-auto { display: none; }
+/* màn ngang: khóa an toàn vào cột phải dưới nút AUTO (trước đây top:10/right:152 đè lên ô thẻ phải cùng khi mở rộng hàng thẻ) */
+body.dt.dt-ngang #dt .dt-kat { top: 200px; right: 6px; }
 body.dt.dt-ngang:not(.dt-gon) #dt .dt-kat { display: none; }
-@media (max-height: 387px) { body.dt.dt-ngang #dt .dt-kat { top: 8px; right: 146px; } }
+@media (max-height: 387px) { body.dt.dt-ngang #dt .dt-kat { top: 200px; right: 6px; } }
 /* Bầu Cua — Luật chơi (anh 10/11 lần 4 "cái giải thích bầu cua lỗi form" — baucua.js _luat): hiện trong bàn cược thay 6 cửa, nút Quay lại */
 #jxwin .bcua-khung .bcua-luat { display: none; padding: 2px 0 0; }
 #jxwin .bcua-khung.xem-luat .bcua-luat { display: block; }
@@ -2208,3 +2220,68 @@ body.dt .poster .pt-goi { font-size: 11px; }
 #jxhud .jx-slot.jx-skill { border: 0; background: transparent; box-shadow: none; }
 #jxhud .jx-slot:has(.jx-qi) { background: transparent; }
 #jxhud .jx-slot .jx-qk { color: #9fd8ff; }
+
+/* bảng Auto nhanh (anh 25/11 — auto-nhanh.js): 6 công tắc to, cả web lẫn điện thoại; gỗ tối / vàng như khung Trợ Thủ */
+.an-nen { position: fixed; inset: 0; z-index: 59; background: rgba(0,0,0,.45); touch-action: manipulation; }
+.an-panel { position: fixed; z-index: 60; width: 300px; box-sizing: border-box; border: 1px solid #8a6d2f; border-radius: 6px;
+  background: linear-gradient(#2c2110, #181106); box-shadow: 0 4px 18px #000c, inset 0 0 0 1px #000; color: #f0e6c8; font: 14px/18px var(--jx);
+  right: 40px; bottom: 100px; max-height: calc(100vh - 120px); overflow-y: auto; overscroll-behavior: contain; animation: an-vao .16s ease-out; touch-action: manipulation; }
+@keyframes an-vao { from { opacity: 0; transform: translateY(8px); } }
+.an-dau { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px 7px; color: #ffe48a; font-size: 16px; text-shadow: 1px 1px 0 #000; }
+.an-dong { cursor: pointer; width: 30px; height: 26px; line-height: 26px; text-align: center; color: #d8cba0; font-size: 15px; }
+.an-dong:active { color: #fff; }
+.an-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; border-top: 1px solid rgba(214,172,84,.25); cursor: pointer; min-height: 44px; box-sizing: border-box; }
+.an-row.tat { opacity: .45; }
+.an-chu { min-width: 0; }
+.an-chu b { display: block; font-weight: normal; font-size: 15px; }
+.an-chu em { display: block; font-style: normal; font-size: 12px; line-height: 15px; color: #b9a86f; }
+.an-sw { position: relative; flex: none; width: 46px; height: 26px; box-sizing: border-box; border-radius: 13px; border: 1px solid #8a6d2f; background: #3a2f1a; box-shadow: inset 0 2px 4px #0009; cursor: pointer; }
+.an-sw::after { content: ""; position: absolute; left: 2px; top: 2px; width: 20px; height: 20px; border-radius: 50%; background: #8a7a52; box-shadow: 0 1px 3px #000; transition: left .12s, background .12s; }
+.an-sw.on { background: linear-gradient(#6a8a2f, #3f5a1a); border-color: #9fd86a; }
+.an-sw.on::after { left: 22px; background: #ffe48a; }
+.an-sw.khoa { opacity: .5; }
+.an-ghi { padding: 8px 12px 4px; font-size: 12px; line-height: 15px; color: #b9a86f; }
+.an-mo { display: block; width: calc(100% - 24px); margin: 8px 12px 12px; height: 40px; box-sizing: border-box; border: 1px solid #a8893f; border-radius: 4px;
+  background: linear-gradient(#8a6d2f, #5a451a); color: #fff8dc; font: 15px/38px var(--jx); text-shadow: 1px 1px 0 #000; cursor: pointer; text-align: center; }
+.an-mo:active { filter: brightness(1.25); }
+/* nút AUTO bản web: ô 7 cột icon phải (auto-nhanh.js đặt vị trí theo ô Bầu Cua) */
+.an-webbtn { background: linear-gradient(#3a2c12, #1c1408); border: 1px solid #8a6d2f; border-radius: 3px; color: #ffe48a; font: bold 12px/21px var(--jx); text-align: center; text-shadow: 1px 1px 0 #000; cursor: pointer; }
+.an-webbtn.mo { border-color: #ffe48a; color: #fff; box-shadow: 0 0 8px #ffe48a88; }
+/* nút AUTO trên điện thoại: cột phải dưới nút Tự đánh (dọc) / hàng ngang dưới bản đồ nhỏ (ngang — xem cuối file) */
+#dt .dt-auto { right: 6px; top: 236px; width: 92px; height: 30px; box-sizing: border-box; border: 1px solid #7f9f90; border-radius: 4px;
+  background: linear-gradient(#22302b, #0d1512); color: #ffe48a; font: bold 15px/28px var(--jx); text-align: center; text-shadow: 1px 1px 0 #000; z-index: 1; touch-action: manipulation; }
+#dt .dt-auto:active { filter: brightness(1.4); }
+/* điện thoại dọc: bảng full chiều ngang phía dưới; ngang: trượt từ mép phải, full chiều cao */
+body.dt .an-panel { left: 6px; right: 6px; bottom: 8px; width: auto; max-height: 64vh; }
+body.dt .an-sw { width: 56px; height: 32px; border-radius: 16px; }
+body.dt .an-sw::after { width: 26px; height: 26px; }
+body.dt .an-sw.on::after { left: 26px; }
+body.dt .an-row { min-height: 52px; padding: 10px 14px; }
+body.dt.dt-ngang .an-panel { left: auto; right: 6px; top: 6px; bottom: 6px; width: min(340px, 46vw); max-height: none; animation: an-vao-ngang .18s ease-out; }
+@keyframes an-vao-ngang { from { opacity: 0; transform: translateX(30px); } }
+body.dt.dt-ngang #dt .dt-auto { top: 158px; right: 6px; width: 96px; height: 30px; }
+/* hàng nút ngang dưới bản đồ nhỏ, màn ngang (Huy 25/11: AUTO nằm ngang dưới mini map; dời hết nút vướng khỏi vùng cần điều khiển + vòng kỹ năng):
+   phải -> trái: AUTO | Bầu Cua | khóa an toàn | Zalo | Tự đánh. Chỉ màn ngang — dọc + web giữ nguyên (AUTO dọc vẫn cột phải, Zalo dọc vẫn trong bảng Giang hồ).
+   Hàng ở y 68–96, mép phải cách mép phải màn 100 điểm (khỏi đè bản đồ nhỏ): trên tên bãi (y 100), dưới hàng thẻ (hết y 64), trên vùng cần
+   (bắt đầu y 144 ở màn thấp nhất) và trên vòng kỹ năng (bắt đầu y 128 ở cỡ giao diện 100%). Màn cực thấp (< 349 điểm bố cục): hàng xuống y 96. */
+#dt .dt-zalo { display: none; }
+body.dt.dt-ngang #dt .dt-zalo { display: grid; place-items: center; top: 68px; right: 365px; width: 44px; height: 28px; box-sizing: border-box; border: 1px solid #7f9f90; border-radius: 4px; background: linear-gradient(#22302b, #0d1512); z-index: 1; touch-action: manipulation; }
+body.dt.dt-ngang #dt .dt-zalo i { width: 24px; height: 24px; background-size: contain; background-position: center; background-repeat: no-repeat; }
+body.dt.dt-ngang #dt .dt-zalo:active { filter: brightness(1.4); }
+body.dt.dt-ngang #dt .dt-auto { top: 68px; right: 100px; width: 120px; height: 28px; font-size: 14px; line-height: 26px; }
+body.dt.dt-ngang #dt .dt-tudanh { top: 68px; right: 417px; width: 96px; height: 28px; line-height: 26px; }
+body.dt.dt-ngang #dt .dt-kat { top: 68px; right: 332px; }
+body.dt.dt-ngang #dt .dt-bcua { top: 68px; right: 228px; width: 96px; height: 28px; }
+/* đang mở bảng chức năng / cửa sổ (không phải thu gọn, không phải chat): ẩn AUTO + Zalo cho khỏi đè lưới chức năng — như Bầu Cua/khóa đã ẩn sẵn; Tự đánh giữ chỗ riêng trên nút Đóng như cũ */
+body.dt.dt-ngang:not(.dt-gon):not(.dt-chat) #dt .dt-auto, body.dt.dt-ngang:not(.dt-gon):not(.dt-chat) #dt .dt-zalo { display: none; }
+@media (max-height: 349px) { body.dt.dt-ngang #dt .dt-auto, body.dt.dt-ngang #dt .dt-zalo, body.dt.dt-ngang #dt .dt-tudanh, body.dt.dt-ngang #dt .dt-kat, body.dt.dt-ngang #dt .dt-bcua { top: 96px; } }
+
+/* Bố cục màn NGANG theo ảnh tham chiếu "Tuyệt Thế Anh Hùng" (Huy gửi 26/11/2026 — chỉ vị trí/nhóm, không chép hình/chữ/tên game đó):
+   - Chỉ dẫn tân thủ (.dt-chidan) về góc trái trên, dưới dải FPS (tham chiếu: bảng nhiệm vụ góc trái trên); trước đây ở giữa mép trên, đè hàng thẻ.
+   - Khung chat (.dt-chatp) về giữa-dưới, thẻ kênh lên trên (tham chiếu: khung chat giữa-dưới + thẻ kênh trên cùng); trước đây chiếm nửa trái full chiều cao.
+   - Bảng Auto nhanh (.an-panel) về giữa-dưới (tham chiếu: nút Auto trên khung chat, giữa màn); trước đây trượt từ mép phải full chiều cao, che vòng kỹ năng.
+   Hàng nút dưới bản đồ nhỏ (AUTO/Zalo/Bầu Cua/khóa/Tự đánh), vòng kỹ năng, ngựa/khóa trên vòng, màn dọc: GIỮ NGUYÊN. */
+body.dt.dt-ngang #dt .dt-chidan { left: 6px; right: auto; top: 96px; width: min(300px, 36vw); transform: none; }
+@media (max-height: 349px) { body.dt.dt-ngang #dt .dt-chidan { top: 130px; } } /* màn cực thấp: hàng nút xuống y 96, chỉ dẫn xuống dưới hàng */
+body.dt.dt-ngang.dt-chat #dt .dt-chatp { left: 50%; right: auto; top: auto; bottom: 0; width: min(360px, 44vw); height: min(300px, 76vh); transform: translateX(-50%); }
+body.dt.dt-ngang .an-panel { left: 50%; right: auto; top: auto; bottom: 8px; width: min(360px, 44vw); max-height: calc(100vh - 110px); transform: translateX(-50%); }

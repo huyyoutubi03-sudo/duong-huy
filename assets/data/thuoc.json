@@ -7,7 +7,7 @@
  "items": {
   "potion:1": {
    "n": "Kim Sáng Dược (tiểu)",
-   "intro": "Hồi phục chút ít khí huyết",
+   "intro": "Hồi chút ít khí huyết. Uống đi, đừng để chết rồi mới nhớ.",
    "ic": "item/medecine/obj-potion01.png",
    "c": [
     1,
@@ -22,7 +22,7 @@
   },
   "potion:2": {
    "n": "Kim Sáng Dược (trung)",
-   "intro": "Hồi phục khí huyết tương đối nhanh.",
+   "intro": "Hồi khí huyết tương đối nhanh. Uống đi, đừng chờ máu cạn.",
    "ic": "item/medecine/obj-potion01.png",
    "c": [
     1,
@@ -37,7 +37,7 @@
   },
   "potion:3": {
    "n": "Kim Sáng Dược (đại)",
-   "intro": "Hồi phục khí huyết cực nhanh.",
+   "intro": "Hồi khí huyết cực nhanh. Uống đi, đừng tiếc.",
    "ic": "item/medecine/obj-potion02.png",
    "c": [
     1,
@@ -52,7 +52,7 @@
   },
   "potion:4": {
    "n": "Hồi Thiên đan",
-   "intro": "Thần dược chữa thương, cải tử hoàn sinh",
+   "intro": "Thần dược chữa thương, cải tử hoàn sinh. Uống vào, đừng để dành tới lúc chết.",
    "ic": "item/medecine/obj-potion02.png",
    "c": [
     1,
@@ -67,7 +67,7 @@
   },
   "potion:5": {
    "n": "Cửu Chuyển Hoàn Hồn đan",
-   "intro": "Lập tức hồi phục 5000 điểm sinh lực",
+   "intro": "Lập tức hồi 5000 điểm sinh lực. Uống vào, đừng tiếc.",
    "ic": "item/medecine/obj-potion03.png",
    "c": [
     1,
@@ -82,7 +82,7 @@
   },
   "potion:6": {
    "n": "Ngưng Thần đan (tiểu)",
-   "intro": "Có thể hồi phục chút ít Nội lực",
+   "intro": "Hồi chút ít nội lực. Uống đi, đừng bấm chiêu bừa khi nội lực cạn.",
    "ic": "item/medecine/obj-potion06.png",
    "c": [
     1,
@@ -97,7 +97,7 @@
   },
   "potion:7": {
    "n": "Ngưng Thần đan (trung)",
-   "intro": "Hồi phục Nội lực tương đối nhanh.",
+   "intro": "Hồi nội lực tương đối nhanh. Uống đi, đừng chờ nội lực cạn.",
    "ic": "item/medecine/obj-potion06.png",
    "c": [
     1,
@@ -112,7 +112,7 @@
   },
   "potion:8": {
    "n": "Ngưng Thần đan (đại)",
-   "intro": "Hồi phục Nội lực cục nhanh",
+   "intro": "Hồi nội lực cực nhanh. Uống đi, đừng tiếc.",
    "ic": "item/medecine/obj-potion07.png",
    "c": [
     1,
@@ -127,7 +127,7 @@
   },
   "potion:9": {
    "n": "Đại Bổ tán",
-   "intro": "Hồi phục Nội lục trong nháy mắt",
+   "intro": "Hồi nội lực trong nháy mắt. Uống vào, đừng để dành.",
    "ic": "item/medecine/obj-potion07.png",
    "c": [
     1,
@@ -142,7 +142,7 @@
   },
   "potion:10": {
    "n": "Ô đầu Hoàn thần đan",
-   "intro": "Lập tức hồi phục 5000 điểm Nội lực",
+   "intro": "Lập tức hồi 5000 điểm nội lực. Uống vào, đừng tiếc.",
    "ic": "item/medecine/obj-potion08.png",
    "c": [
     1,
@@ -157,7 +157,7 @@
   },
   "potion:11": {
    "n": "Thừa Tiên Mật (tiểu)",
-   "intro": "Đồng thời hồi phục chút ít Sinh lực và Nội lực.",
+   "intro": "Đồng thời hồi chút ít sinh lực và nội lực. Uống đi, đừng chờ cả hai cùng cạn.",
    "ic": "item/medecine/obj-potion11.png",
    "c": [
     1,
@@ -176,7 +176,7 @@
   },
   "potion:12": {
    "n": "Thừa Tiên Mật (trung)",
-   "intro": "Đồng thời hồi phục nhanh Sinh lực và Nội lực",
+   "intro": "Đồng thời hồi nhanh sinh lực và nội lực. Uống đi, đừng tiếc.",
    "ic": "item/medecine/obj-potion11.png",
    "c": [
     1,
@@ -195,7 +195,7 @@
   },
   "potion:13": {
    "n": "Thừa Tiên Mật (đại)",
-   "intro": "Đồng thời hồi phục cực nhanh Sinh lực và Nội lực",
+   "intro": "Đồng thời hồi cực nhanh sinh lực và nội lực. Uống đi, đừng tiếc.",
    "ic": "item/medecine/obj-potion12.png",
    "c": [
     1,
@@ -214,7 +214,7 @@
   },
   "potion:14": {
    "n": "Thất Khiếu Bổ tâm đan",
-   "intro": "Lập tức hồi phục Sinh lực và Nội lực",
+   "intro": "Lập tức hồi sinh lực và nội lực. Uống vào, đừng để dành.",
    "ic": "item/medecine/obj-potion12.png",
    "c": [
     1,
@@ -233,7 +233,7 @@
   },
   "potion:15": {
    "n": "Ngũ Hoa Ngọc Lộ Hoàn",
-   "intro": "Đồng thời hồi phục 5000 điểm Sinh lực và Nội lực",
+   "intro": "Đồng thời hồi 5000 điểm sinh lực và nội lực. Uống vào, đừng tiếc.",
    "ic": "item/medecine/obj-potion13.png",
    "c": [
     1,

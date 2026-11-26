@@ -62,10 +62,10 @@ const SERIES = ["Kim", "Mộc", "Thủy", "Hỏa", "Thổ"];
 const fmt = (n) => Math.round(n).toLocaleString("vi-VN");
 // mua lại đồ đã bán cho NPC (anh 13/11 lượt 88 — may-chu/do.js act muaLai): câu khịa của chủ tiệm; danh sách hero.muaLai [{ it: món, gia, het: giờ máy chủ }] còn hạn —
 // now = giờ máy chủ ước tính (lech: GameWindows.mlLech — main.js applyServer)
-const CAU_KHIA = "Bán rồi còn đòi lại à? Vậy thì phải trả cái giá tương xứng nhé đại hiệp, hahaha!";
+const CAU_KHIA = "Bán rồi còn đòi lại à? Được thôi — trả giá gấp mấy lần đi, đừng có mặc cả với ta, hahaha!";
 const dsMuaLai = (h, lech = 0) => { const t = Date.now() + lech; return (Array.isArray(h && h.muaLai) ? h.muaLai : []).filter((e) => e && e.it && e.it.k && e.het > t && e.gia > 0); };
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-const SERVER_ONLY = "cần máy chủ chơi nội bộ — làm khi dựng máy chủ";
+const SERVER_ONLY = "chưa mở — máy chủ chưa dựng xong, đợi đấy";
 // Bang hội đợt 1 (anh 14/11 — THIET-KE-BANG-HOI.md): tên chức vụ theo mã máy chủ (client tong_header.lua = core 325–329, bỏ dấu cách thừa), thứ tự chức, phe bang
 // (mã phe của game: 1 Chánh, 2 Tà, 3 Trung lập — chữ của 帮会基础信息页面.ini), số dòng mỗi trang danh sách thành viên (23 × 14: hàng nút y 343 đè đáy ô 340),
 // danh hiệu tối đa 12 chữ (ini cho 80, NPC client nói "4 chữ hán" — kq3 F.6), câu nút của đợt sau
@@ -85,7 +85,7 @@ let BH_CONG = () => 0; // điểm cống hiến cá nhân đang có (cửa hàng
 const bhTen = (s) => String(s ?? "").replace(/[<>]/g, "").replace(/%/g, "%\u200b").replace(/\{/g, "{\u200b"); // ký tự rộng 0 viết dạng thoát (soát 14/11 — công cụ xóa ký tự vô hình không làm hỏng)
 const bhVang = (s) => `<color=yellow>${bhTen(s)}<color>`;
 const bhSo = (v) => { const n = v == null || v === "" ? -1 : Math.floor(+v); return Number.isFinite(n) ? n : -1; }; // mục menu chiêu mộ: số từ 0, -1 = chưa chọn
-const KBH_DAT = "Không thể đặt vào vật phẩm đã được khóa bảo hiểm!"; // client G_STR_NO_BINDITEM — món khóa bảo hiểm (anh 05/11) vào khung giao dịch / sạp
+const KBH_DAT = "Món khóa bảo hiểm thì đừng hòng đặt vào đây!"; // client G_STR_NO_BINDITEM — món khóa bảo hiểm (anh 05/11) vào khung giao dịch / sạp
 const STATUS_TABS = { BtnAttribPage: "attr", BtnEquipPage: "equip", BtnJudgePage: "judge", BtnMeridianPage: "meridian" };
 const EQUIP_SLOTS = ["Cap", "Weapon", "Necklace", "Mask", "Bangle", "Cloth", "Sash", "Ring1", "Ring2", "Pendant", "Shoes", "Horse", "Mantle", "Signet", "Shipin"];
 const UNIT = 28; // 1 ô túi đồ = 28 px (ItemBox 168×280 / HUnits 6 × VUnits 10)
@@ -93,12 +93,12 @@ const UNIT = 28; // 1 ô túi đồ = 28 px (ItemBox 168×280 / HUnits 6 × VUni
 // đặc tả đợt 2: hero.diemTk, máy chủ do.js muaTk). ten: ghi ở gợi ý giá, o: ô đơn vị khung mua (~5 chữ), co(h): đang có, act: việc mua, thieu: nút Mua tối đa
 const TK_GIA_THUOC = 1; // thuốc mua ở Quân y trong trận Tống Kim: mọi loại 1 lượng / bình (anh 13/11 lượt 86 "máu tống kim giờ mua đồng giá 1 đồng" — máy chủ tong-kim.js CF.giaThuocCo)
 const TIEN_DIEM = {
-  pd: { ten: "điểm phúc duyên", o: "điểm", co: (h) => ((h && h.pd) || {}).diem | 0, act: "muaPd", thieu: "Không đủ phúc duyên" },
-  tk: { ten: "điểm Tống Kim", o: "điểm", co: (h) => (h && h.diemTk) | 0, act: "muaTk", thieu: "Không đủ điểm Tống Kim" },
+  pd: { ten: "điểm phúc duyên", o: "điểm", co: (h) => ((h && h.pd) || {}).diem | 0, act: "muaPd", thieu: "Phúc duyên không đủ" },
+  tk: { ten: "điểm Tống Kim", o: "điểm", co: (h) => (h && h.diemTk) | 0, act: "muaTk", thieu: "Điểm Tống Kim không đủ" },
   // Lễ phẩm của Khu Lễ vật (Bang hội đợt 2 — anh 14/11): giá bằng điểm cống hiến cá nhân (BangXem toi.cong), mua qua api.bh({ viec: "lePham" }) — không qua /api/do (_bhMua)
-  bh: { ten: "điểm cống hiến", o: "điểm", co: () => BH_CONG(), thieu: "Không đủ điểm cống hiến", bh: 1 },
+  bh: { ten: "điểm cống hiến", o: "điểm", co: () => BH_CONG(), thieu: "Điểm cống hiến không đủ", bh: 1 },
   // Shop đặc biệt của Thương nhân thần bí (anh 17/11 lần 2 — Hoán Linh Thạch, Hoán Hình Phù, Hoán Tính Lệnh): giá Xu, mua qua api.khamNam({ viec: "muaDb" }) (_dbMua)
-  db: { ten: "Xu", o: "Xu", co: (h) => (h && h.xu) | 0, thieu: "Không đủ Xu", db: 1 },
+  db: { ten: "Xu", o: "Xu", co: (h) => (h && h.xu) | 0, thieu: "Xu không đủ", db: 1 },
 };
 // lưới nhận món (data-tha) -> món cầm từ đâu thì bấm vào lưới đó là đặt đúng ô dưới chuột (khung chỗ đặt — _oDat; ô trang bị "mac": riêng)
 const THA = { tui: ["bag", "kho", "equip"], kho: ["bag", "kho"], giao: ["bag", "giao"], gd: ["bag", "gd"] };
@@ -189,9 +189,9 @@ export class GameWindows {
       el.classList.add("jw-link"); el.style.pointerEvents = "auto";
       el.onclick = async () => {
         const con = api.hero().pts | 0;
-        if (con < 1) return api.msg("Không còn điểm tiềm năng để cộng");
+        if (con < 1) return api.msg("Hết điểm tiềm năng rồi. Đừng cộng nữa.");
         const n = await this.chonSo({ tieuDe: "Cộng điểm tiềm năng", ten, toiDa: con, san: con, thongTin: (v) => `Còn lại ${con - v} điểm` });
-        if (!n || !(await this.hoi(`Cộng <color=yellow>${n}<color> điểm vào <color=yellow>${ten}<color>?<enter>Cộng rồi không trả lại được (trừ Tẩy Tủy).`))) return;
+        if (!n || !(await this.hoi(`Cộng <color=yellow>${n}<color> điểm vào <color=yellow>${ten}<color>?<enter>Cộng rồi thì đừng đòi trả lại (trừ Tẩy Tủy).`))) return;
         if (api.world().addPoint(k, n)) { api.P.audio.ui("click"); api.save(); this.refresh(true); }
       };
     }
@@ -505,8 +505,8 @@ export class GameWindows {
         q.ten.textContent = x.n.trim(); q.so1.textContent = q.so2.textContent = h.gia;
         q.box.innerHTML = x.ic ? `<img src="assets/web/icon/${esc(x.ic)}" alt="" style="max-width:${IB.w + 6}px;max-height:${IB.h + 6}px;image-rendering:pixelated">` : "";
         // món mua bằng Xu khóa bảo hiểm vĩnh viễn (anh 12/11 — may-chu/do.js muaKtc): ô xem hiện sẵn dòng khóa + cách hủy như món sẽ nhận
-        const it = { k: h.k, kbh: 2 }, KHOA_XU = "Không giao dịch, bày bán, vứt, bán — hủy ở Lễ quan (Ba Lăng)";
-        q.box.onmousemove = (e) => this._showTip(it, e, x.dung ? [KHOA_XU, "Bấm Mua để mua"] : [x.goiY || "Chưa dùng được (game chưa có chức năng này)", KHOA_XU, "Bấm Mua để mua"], null, h.gia);
+        const it = { k: h.k, kbh: 2 }, KHOA_XU = "Không giao dịch, bày bán, vứt hay bán được — không cần nữa thì tới Lễ quan (Ba Lăng) mà hủy.";
+        q.box.onmousemove = (e) => this._showTip(it, e, x.dung ? [KHOA_XU, "Bấm Mua mà mua."] : [x.goiY || "Chưa dùng được — game chưa có chức năng này.", KHOA_XU, "Bấm Mua mà mua."], null, h.gia);
         q.box.onmouseleave = () => this._hideTip();
         q.bi.fn = () => { this._hideTip(); api.P.audio.ui("click"); this._ktcMua(h, x); };
       });
@@ -515,7 +515,7 @@ export class GameWindows {
     const trang = (d) => { const n = (this.ktcTrang[this.shopTab | 0] || []).length; if (n < 2) return; this.ktcSo = ((this.ktcSo | 0) + d + n) % n; this._hideTip(); ve(); };
     w.on("LeftBtn", () => trang(-1)).on("RightBtn", () => trang(1));
     w.on("PrePaid", () => api.msg(`Trên người có ${fmt(api.hero().xu | 0)} Xu — đổi ngân lượng lấy Xu ở Chủ tiền trang (Ba Lăng), nhận Xu mỗi ngày ở Đăng nhập nhận thưởng`));
-    w.on("ShoppingCart", () => api.msg("Bấm nút Mua ở từng món để mua"));
+    w.on("ShoppingCart", () => api.msg("Bấm nút Mua ở từng món mà mua."));
     w.cb.hide = () => this._hideTip();
     w.cb.show = () => ve(); // mở lại khung: hàng sự kiện theo trạng thái lúc này (anh 16/11 — Báo Đáp Ân Sư)
     if (tabs.length) tabs[0].fn();
@@ -533,16 +533,16 @@ export class GameWindows {
   // mua món Kỳ Trân Các: khung mua bán của client (Số lượng / Tổng + − / Giá Xu / Mua tối đa) — 1 bước, Xác nhận là mua
   _ktcMua(h, x) {
     // chỉ mua ở thành thị / thôn trang, ở bãi luyện công chỉ xem (anh 28/10 lần 3 — máy chủ cũng chặn: may-chu/do.js muaKtc)
-    if (this.api.oThanh && !this.api.oThanh()) return this.bao("Bảo vật chỉ mua được ở <color=yellow>thành thị<color> hoặc <color=yellow>thôn trang<color> — ở bãi luyện công chỉ xem được.");
+    if (this.api.oThanh && !this.api.oThanh()) return this.bao("Bảo vật chỉ mua được ở <color=yellow>thành thị<color> hoặc <color=yellow>thôn trang<color> — ở bãi luyện công thì chỉ xem thôi.");
     const co = this.api.hero().xu | 0;
-    if (co < h.gia) return this.bao(`Không đủ Xu — <color=yellow>${x.n.trim()}<color> giá ${h.gia} Xu, trên người có ${co} Xu.<enter>Đổi ngân lượng lấy Xu ở Chủ tiền trang (Ba Lăng).`);
+    if (co < h.gia) return this.bao(`Xu không đủ — <color=yellow>${x.n.trim()}<color> giá ${h.gia} Xu, trên người có ${co} Xu.<enter>Đổi ngân lượng lấy Xu ở Chủ tiền trang (Ba Lăng).`);
     this._tradeOpen("ktc", { k: h.k, gia: h.gia });
   }
   _cart() {
     const w = this.W.get("cart"), api = this.api;
     for (const k of w.def.order) if (/^GoodsInfo/.test(k)) w.hideItem(k, true);
     w.on("PrePaid", () => api.msg("Nạp thẻ: " + SERVER_ONLY));
-    w.on("ConfirmBuy", () => api.msg("Giỏ hàng trống"));
+    w.on("ConfirmBuy", () => api.msg("Giỏ hàng trống trơn."));
     w.cb.show = () => w.set("TotalCostValueText", 0).set("TotalSaveValueText", 0).set("OwnValueText", fmt(api.hero().coin || 0));
   }
 
@@ -572,7 +572,7 @@ export class GameWindows {
     w.node("InputEdit").appendChild(inp);
     const moi = () => {
       const ten = inp.value.trim() || chonGan;
-      if (!ten) return api.msg("Chọn người chơi ở danh sách bên phải hoặc gõ tên vào ô Tìm kiếm");
+      if (!ten) return api.msg("Chọn người chơi ở danh sách bên phải hoặc gõ tên vào ô Tìm kiếm đi.");
       api.doi({ viec: "moi", ten }).then((j) => { if (j) inp.value = ""; });
     };
     inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === "Enter") moi(); else if (e.key === "Escape") inp.blur(); };
@@ -606,7 +606,7 @@ export class GameWindows {
       const t = this.doiTt;
       if (!t) api.doi({ viec: "lap" });
       else if (t.truong === (api.hero() || {}).name) api.doi({ viec: "mo", on: t.mo ? 0 : 1 });
-      else api.msg("Chỉ nhóm trưởng mới mở / đóng nhận người vào nhóm");
+      else api.msg("Chỉ nhóm trưởng mới mở / đóng nhận người vào nhóm được.");
       draw();
     });
     w.on("Cancel", () => w.hide());
@@ -672,7 +672,7 @@ export class GameWindows {
     const w = this.W.get("chatroom");
     for (const k of ["PublicList_Scroll_Btn", "PrivateList_Scroll_Btn"]) w.hideItem(k, true);
     this._server(w, ["BtnCreateRoom", "BtnExitRoom", "BtnEnterRoom", "BtnRefresh"]);
-    w.set("TxtCurRoomTitle", "Chưa vào phòng nào");
+    w.set("TxtCurRoomTitle", "Chưa vào phòng nào cả.");
   }
 
   // ---------- Đồ dùng ----------
@@ -688,7 +688,7 @@ export class GameWindows {
     for (const k of ["GoldCoin", "EnergyIcon"]) w.node(k).title = "Xu — tiền của Kỳ Trân Các (chưa có)";
     w.on("OpenStatus", () => { const s = this.W.get("status"); s.show(); s.it.BtnEquipPage.fn(); });
     // nút "Gửi tiền" của client: khi đang mở rương -> khung nhập số tiền gửi vào rương (G_STR_STORE_MONEY "Ngân lượng muốn gửi")
-    w.on("GetMoneyBtn", () => (this.W.get("store").visible ? this._moneyOpen("gui") : api.msg("Gửi tiền: mở Rương chứa đồ ở Ba Lăng (cạnh Tạp hóa, Dược điếm) rồi bấm Gửi tiền")));
+    w.on("GetMoneyBtn", () => (this.W.get("store").visible ? this._moneyOpen("gui") : api.msg("Muốn gửi tiền thì mở Rương chứa đồ ở Ba Lăng (cạnh Tạp hóa, Dược điếm) rồi bấm Gửi tiền.")));
     const box = w.node("ItemBox"); // nút Lời rao / Định giá / Rao bán: chợ trời (src/game/chotroi.js nutTui — gắn sau khi dựng các khung)
     box.classList.add("jw-box");
     box.dataset.tha = "tui";
@@ -843,7 +843,7 @@ export class GameWindows {
     const H = this.hand, eq = this.api.hero().equip || {};
     if (H) {
       if (H.from === "equip") { if (H.slot === s) this._handDrop(); return; }
-      if (H.from === "kho") return this.api.msg("Lấy món ra túi trước rồi mới mặc");
+      if (H.from === "kho") return this.api.msg("Lấy món ra túi trước rồi mới mặc được.");
       if (this._khoaChan()) return; // rương đang khóa: không mặc / tháo
       return this.api.doItem({ act: "mac", u: H.it.u, slot: s }).then((ok) => { if (ok && this.hand === H) this._handDrop(); });
     }
@@ -854,8 +854,8 @@ export class GameWindows {
   _sua() { return this.shopMode === "repair" && this.W.get("shop").visible; }
   _suaHint(it) {
     const mx = benMax(it.k);
-    if (!mx) return "Vật phẩm này không thể sửa!";
-    if (benCua(it) >= mx) return "Vật phẩm này không cần sửa!";
+    if (!mx) return "Vật phẩm này không sửa được!";
+    if (benCua(it) >= mx) return "Vật phẩm này không cần sửa.";
     return [`Giá sửa: ${fmtMoney(giaSua(it, this.api.luat().sua))}`, "Bấm: sửa"];
   }
 
@@ -864,7 +864,7 @@ export class GameWindows {
   _ktcHint(b, x) {
     const D = x.dung, h = this.api.hero(), L = [];
     if (b.n > 1) L.push(`Có ${b.n} món`);
-    if (!D) L.push(x.goiY || "Chưa dùng được (game chưa có chức năng này)"); // goiY: cách dùng của S1 (Tinh Hồng / Thủy Tinh — đảo Tẩy Tủy; Nhạc Vương Kiếm)
+    if (!D) L.push(x.goiY || "Chưa dùng được — game chưa có chức năng này."); // goiY: cách dùng của S1 (Tinh Hồng / Thủy Tinh — đảo Tẩy Tủy; Nhạc Vương Kiếm)
     else if (D.loai === "leBao") L.push(`Trong bao còn ${b.con ?? D.so} viên`, "Chuột phải: rút thuốc");
     else if (D.loai === "kimTe") L.push(`Độ bền còn ${b.con ?? D.ben} / ${D.ben}${b.n > 1 ? " (viên đang dùng)" : ""}`, "Chuột phải: sửa đồ");
     else if (D.loai === "trangThai" && D.lamMoi) {
@@ -903,11 +903,11 @@ export class GameWindows {
     else if (D.loai === "kinhNghiem") L.push(`+${fmt(D.kn || 0)} điểm kinh nghiệm`, "Chuột phải: dùng");
     else if (D.loai === "kyNang") L.push(`Mọi kỹ năng đã học +${D.cap} cấp trong ${D.ngay} ngày`, `Cộng dồn tối đa +3 (đang +${ccCong(h)}) — hạn trôi cả lúc rời mạng`,
       ...(D.capNv ? [`Cần cấp ${D.capNv}${(h.lvl | 0) < D.capNv ? " (chưa đủ)" : ""}`] : []), "Chuột phải: dùng");
-    else if (D.loai === "ngua" && D.vinhVien) L.push(`Nhận 1 ${String((ItemDB.item(D.ngua) || {}).n || "ngựa").trim()} — không hạn sử dụng`, "Ngựa không bán cho cửa hàng được", "Chuột phải: dùng");
+    else if (D.loai === "ngua" && D.vinhVien) L.push(`Nhận 1 ${String((ItemDB.item(D.ngua) || {}).n || "ngựa").trim()} — không hạn sử dụng`, "Ngựa không bán cho cửa hàng được đâu.", "Chuột phải: dùng");
     else if (D.loai === "trangThai" && (D.buff === "kichCong" || D.buff === "amDuong")) {
       const T = ItemDB.buffDef(D.buff) || {}, dong = [];
       for (const p of String(T.d || "").split(/,\s*/).filter(Boolean)) { if (dong.length && (dong[dong.length - 1] + ", " + p).length <= 44) dong[dong.length - 1] += ", " + p; else dong.push(p); }
-      L.push(...dong, `Trong ${Math.round((D.giay || 1800) / 60)} phút — chỉ trôi lúc đang chơi`, "Đang có hiệu quả thì dùng thêm vô hiệu", ...(this._heHoan(T).length ? ["Vật lý nội công: chỉ chiêu nội có vật lý"] : []), ...this._tkHoan(D), "Chuột phải: dùng");
+      L.push(...dong, `Trong ${Math.round((D.giay || 1800) / 60)} phút — chỉ trôi lúc đang chơi`, "Đang có hiệu quả mà dùng thêm thì vô hiệu. Đừng phí.", ...(this._heHoan(T).length ? ["Vật lý nội công: chỉ chiêu nội có vật lý"] : []), ...this._tkHoan(D), "Chuột phải: dùng");
     }
     else L.push(D.loai === "bch" ? `Chuột phải: dùng — ủy thác đang còn ${Math.floor((h.bch | 0) / 3600)} giờ ${Math.floor(((h.bch | 0) % 3600) / 60)} phút` : "Chuột phải: dùng");
     L.push("Bấm: cầm lên");
@@ -927,12 +927,12 @@ export class GameWindows {
   _tkHoan(D) {
     if (!D || !laHoan(D.buff)) return [];
     const p = Math.max(1, Math.round((+(this.api.luat() || {}).tkHoan || 180) / 60));
-    return D.tk ? ["Trọng thương thì mất hiệu quả — phải dùng lại"] : [`Tống Kim: tối đa ${p} phút, trọng thương thì mất`];
+    return D.tk ? ["Trọng thương thì mất hiệu quả — dùng lại đi."] : [`Tống Kim: tối đa ${p} phút, trọng thương thì mất`];
   }
   // anh 16/11 — Báo Đáp Ân Sư: nguyên liệu (bdasNl) mang tới đâu, làm gì (DAC-TA mục 6 / client config.lua [4]–[9]) — chuột phải chỉ báo, không trừ món
   _bdasNl(x) {
     const ten = (k) => String((ItemDB.item(k) || {}).n || k).trim(), HB = { "ms:2574": "ms:2577", "ms:2575": "ms:2578", "ms:2576": "ms:2579" };
-    if (x.k === "ms:2572") return ["Mang tới Võ Sư (Ba Lăng huyện): mời võ sư dùng", "— nhận kinh nghiệm và 3 hoặc 6 Tây Hồ Long Tĩnh Trà"];
+    if (x.k === "ms:2572") return ["Mang tới Võ Sư (Ba Lăng huyện) mà mời võ sư dùng.", "— nhận kinh nghiệm và 3 hoặc 6 Tây Hồ Long Tĩnh Trà"];
     if (x.k === "ms:2573") return ["Mang tới Chưởng Đăng Cung Nữ (Ba Lăng huyện):", "1 trà + 1 Tơ Tằm / Sợi chỉ màu / Trung Dược", "đổi 1 Tơ Tằm / Ngũ Sắc / Trung Dược Hương Bao"];
     if (HB[x.k]) return ["Mang tới Chưởng Đăng Cung Nữ (Ba Lăng huyện):", `1 ${ten(x.k)} + 1 ${ten("ms:2573")}`, `đổi 1 ${ten(HB[x.k])}`];
     return ["Nguyên liệu sự kiện Báo Đáp Ân Sư"];
@@ -962,7 +962,7 @@ export class GameWindows {
   _potHint(x, n, act, tk) {
     const p = (e, t) => `${e[0] * e[1]} ${t} / ${String(e[1] / 2).replace(".", ",")} giây`;
     return [...(n != null ? [`Còn ${n} bình`] : []), "Hồi " + [x.hp && p(x.hp, "sinh lực"), x.mp && p(x.mp, "nội lực")].filter(Boolean).join(" · "),
-      ...(tk ? ["Thuốc Tống Kim: chỉ dùng trong trận — rời trận / hết trận tự mất, không cất rương / giao dịch / bán"] : []), ...(act ? [].concat(act) : [])];
+      ...(tk ? ["Thuốc Tống Kim: chỉ dùng trong trận — rời trận / hết trận tự mất, không cất rương / giao dịch / bán được."] : []), ...(act ? [].concat(act) : [])];
   }
 
   // Cửa sổ mở cùng nhau (anh 26/10: "mở lên đồng nhất, tránh lệch lạc"): khung bên trái (cửa hàng, rương) đỉnh ngang đỉnh cửa sổ Đồ dùng
@@ -987,7 +987,7 @@ export class GameWindows {
     // nữa / Mua -> về hàng của tiệm. Số nhỏ trên nút = số món còn mua lại được
     const nut = document.createElement("div"); nut.className = "jw-mualai";
     const ML = () => ({ phut: 5, heSo: 50, ...((api.luat && api.luat().muaLai) || {}) }); // số của máy chủ (cau-hinh.json muaLai — F10)
-    this._mlSo = ML; nut.onmouseenter = () => { nut.dataset.tip = `Mua lại đồ vừa bán (giữ ${ML().phut} phút, giá gấp ${ML().heSo} lần lúc bán)`; };
+    this._mlSo = ML; nut.onmouseenter = () => { nut.dataset.tip = `Mua lại đồ vừa bán (giữ ${ML().phut} phút, giá gấp ${ML().heSo} lần lúc bán). Muốn lấy lại thì trả giá đó.`; };
     nut.dataset.tip = "Mua lại đồ vừa bán";
     nut.innerHTML = "<i></i>"; this.nutMuaLai = nut;
     nut.onclick = (e) => { e.stopPropagation(); api.P.audio.ui("click"); mode(this.shopMode === "muaLai" ? "buy" : "muaLai"); };
@@ -1004,7 +1004,7 @@ export class GameWindows {
       if (bag) bag.style.cursor = m === "sell" ? api.P.hud.cursorCss(6) : m === "repair" ? api.P.hud.cursorCss(7) : "";
       if (eqp) eqp.el.style.cursor = m === "repair" ? api.P.hud.cursorCss(7) : "";
     };
-    const chiDoi = () => { if (this.shopTien !== "bh") return false; api.msg("Tổng quản Lễ phẩm phường chỉ đổi lễ phẩm bằng điểm cống hiến"); return true; }; // cửa hàng Lễ phẩm (Bang hội đợt 2): không bán / sửa
+    const chiDoi = () => { if (this.shopTien !== "bh") return false; api.msg("Tổng quản Lễ phẩm phường chỉ đổi lễ phẩm bằng điểm cống hiến. Không có điểm thì đừng tới."); return true; }; // cửa hàng Lễ phẩm (Bang hội đợt 2): không bán / sửa
     w.on("BuyBtn", () => mode("buy")).on("SellBtn", () => { if (!chiDoi()) mode(this.shopMode === "sell" ? "buy" : "sell"); });
     // Sửa: mở luôn trang Trang bị để bấm món đang mặc
     w.on("RepairBtn", () => {
@@ -1012,7 +1012,7 @@ export class GameWindows {
       if (this.shopMode === "repair") return mode("buy");
       mode("repair");
       const s = this.W.get("status"); s.show(); s.it.BtnEquipPage.fn(); this._giua(s, w);
-      api.msg("Sửa: bấm trang bị trong túi hoặc ô đang mặc (rê chuột xem giá sửa) — bấm Sửa lần nữa để thôi");
+      api.msg("Sửa: bấm trang bị trong túi hoặc ô đang mặc (rê chuột xem giá sửa) — bấm Sửa lần nữa để thôi sửa.");
     });
     // ◀ ▶: trang hàng (openShop chia trang khi lưới 6 × 10 đầy)
     const trang = (d) => {
@@ -1109,7 +1109,7 @@ export class GameWindows {
       Object.assign(el.style, { left: at[0] * UNIT + "px", top: at[1] * UNIT + "px", width: cw * UNIT + "px", height: ch * UNIT + "px" });
       el.innerHTML = (x.ic ? `<img class="jw-icon" src="assets/web/icon/${esc(x.ic)}" alt="">` : "") + (!eq && (e.n | 0) > 1 ? `<b class="jw-n">${e.n}</b>` : "");
       const con = () => { const s = Math.max(0, Math.round((ml.het - Date.now() - (this.mlLech || 0)) / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
-      const hint = () => [`Mua lại: ${fmt(ml.gia)} lượng (gấp ${So.heSo} lần lúc bán)`, `Còn ${con()} nữa chủ tiệm bán cho người khác`, dt ? "Chuột phải: mua lại" : "Bấm: mua lại"];
+      const hint = () => [`Mua lại: ${fmt(ml.gia)} lượng (gấp ${So.heSo} lần lúc bán)`, `Còn ${con()} nữa là chủ tiệm bán cho người khác đấy`, dt ? "Chuột phải: mua lại" : "Bấm: mua lại"];
       el.onmousemove = (ev) => { if (!this.hand) { this.mlTip = true; this._showTip(e, ev, hint()); } };
       el.onmouseleave = () => { this.mlTip = false; this._hideTip(); };
       const mua = () => {
@@ -1141,8 +1141,8 @@ export class GameWindows {
       const TD = TIEN_DIEM[this.shopTien], pd = !!TD, hintPd = pd ? [`Giá: ${fmt(gia)} ${TD.ten} (đang có ${fmt(TD.co(this.api.hero()))})`, ...(o.goi ? [o.goi] : []), o.mo ? "" : dt ? "Chuột phải: mua 1 · Bấm: mua nhiều" : "Bấm: mua · Shift + chuột phải: mua ngay 1"].filter(Boolean) : null;
       el.onmousemove = (e) => { if (!this.hand) this._showTip(it, e, pd ? hintPd : x.thuoc ? this._potHint(x, null, hint, tk) : hint, null, pd ? null : gia); };
       el.onmouseleave = () => this._hideTip();
-      el.onclick = (e) => { e.stopPropagation(); if (this.hand) return; this._hideTip(); if (o.mo) return this.api.msg(o.goi || "Chưa đổi được món này"); this._tradeOpen(pd ? this.shopTien : "buy", it); };
-      el.oncontextmenu = (e) => { e.preventDefault(); if ((e.shiftKey || dt) && !this.hand) { this._hideTip(); if (o.mo) return this.api.msg(o.goi || "Chưa đổi được món này"); if (pd) return TD.bh ? this._bhMua(k, 1) : TD.db ? this._dbMua(k, 1) : this.api.doItem({ act: TD.act, k, n: 1 }); this.api.doItem({ act: "mua", k, n: 1 }).then((ok) => ok && this.api.bought(k)); } };
+      el.onclick = (e) => { e.stopPropagation(); if (this.hand) return; this._hideTip(); if (o.mo) return this.api.msg(o.goi || "Món này chưa đổi được."); this._tradeOpen(pd ? this.shopTien : "buy", it); };
+      el.oncontextmenu = (e) => { e.preventDefault(); if ((e.shiftKey || dt) && !this.hand) { this._hideTip(); if (o.mo) return this.api.msg(o.goi || "Món này chưa đổi được."); if (pd) return TD.bh ? this._bhMua(k, 1) : TD.db ? this._dbMua(k, 1) : this.api.doItem({ act: TD.act, k, n: 1 }); this.api.doItem({ act: "mua", k, n: 1 }).then((ok) => ok && this.api.bought(k)); } };
       box.appendChild(el);
     }
     // số trang trên nút ◀ ▶ (client: chữ của nút trống — game ghi "trang / tổng" khi có nhiều trang)
@@ -1162,7 +1162,7 @@ export class GameWindows {
     inp.className = "jw-num"; inp.maxLength = sec.BuyNumber.maxLen || 2; inp.inputMode = "numeric"; inp.spellcheck = false; inp.autocomplete = "off"; inp.name = "sl-mua";
     inp.style.color = `rgb(${sec.BuyNumber.color})`;
     w.node("BuyNumber").appendChild(inp);
-    // mỗi lần mua ≤ luat().mua, và cả túi mang ≤ luat().mang bình thuốc mọi loại (anh 25/10) — máy chủ cũng chặn
+    // mỗi lần mua ≤ luat().mua, và loại thuốc này mang ≤ chongMax của nó (chongRieng — bình máu / mana 999, 25/11/2026) — máy chủ cũng chặn
     // Thổ Địa Phù: ≤ luat().mua mỗi lần (không tính giới hạn thuốc); đồ trắng: 1 món mỗi lần
     // Kỳ Trân Các (mode ktc — anh 27/10 "sao lại tận 2 bước xác nhận"): cùng khung này, giá bằng Xu, mỗi lần ≤ luat().mua món
     // chợ trời (mode sap — src/game/chotroi.js): mua cả món / cả chồng trên sạp, giá gồm thuế (it.mua), ô số lượng chỉ để xem
@@ -1173,10 +1173,12 @@ export class GameWindows {
       if (this.trade && (this.trade.mode === "ktc" || TIEN_DIEM[this.trade.mode])) return L.mua;
       if (x && x.phu) return L.mua;
       if (x && !x.thuoc) return 1;
-      const co = (api.hero().bag || []).reduce((t, b) => t + ((ItemDB.item(b.k) || {}).thuoc ? b.n || 0 : 0), 0); return Math.min(L.mua, (L.mang || 60) - co);
+      const co = (api.hero().bag || []).reduce((t, b) => t + (b.k === this.trade.it.k && (ItemDB.item(b.k) || {}).thuoc ? b.n || 0 : 0), 0);
+      const mx = (L.chongRieng && +L.chongRieng[this.trade.it.k]) || L.chong || 60;
+      return Math.min(L.mua, mx - co);
     };
     const max = () => Math.max(1, con());
-    // "Mua tối đa" (anh 26/10): đủ tới giới hạn mang trên người (≤ luat().mua mỗi lần), không quá số tiền đang có (Xu / điểm phúc duyên / điểm Tống Kim)
+    // "Mua tối đa" (anh 26/10): đủ tới giới hạn mang của loại thuốc này (≤ luat().mua mỗi lần), không quá số tiền đang có (Xu / điểm phúc duyên / điểm Tống Kim)
     const tien = () => (this.trade && this.trade.mode === "ktc" ? api.hero().xu | 0 : this.trade && TIEN_DIEM[this.trade.mode] ? TIEN_DIEM[this.trade.mode].co(api.hero()) : api.hero().gold || 0);
     const toiDa = () => { const T = this.trade, x = T && ItemDB.item(T.it.k); return x ? Math.max(0, Math.min(con(), Math.floor(tien() / Math.max(1, T.it.gia ?? x.gia)))) : 0; };
     const btMax = document.createElement("button");
@@ -1196,24 +1198,24 @@ export class GameWindows {
       const p = price(), t = w.item("Price");
       w.set("Price", p);
       t.lab.style.color = `rgb(${this.trade && this.trade.mode !== "sell" && p > tien() ? sec.Price.cantBuyColor : sec.Price.color})`;
-      const n = toiDa(); btMax.disabled = n < 1; btMax.textContent = n > 0 ? `Mua tối đa (${n})` : con() > 0 ? (this.trade && this.trade.mode === "ktc" ? "Không đủ Xu" : this.trade && TIEN_DIEM[this.trade.mode] ? TIEN_DIEM[this.trade.mode].thieu : "Không đủ tiền") : "Đã mang đủ thuốc";
+      const n = toiDa(); btMax.disabled = n < 1; btMax.textContent = n > 0 ? `Mua tối đa (${n})` : con() > 0 ? (this.trade && this.trade.mode === "ktc" ? "Xu không đủ" : this.trade && TIEN_DIEM[this.trade.mode] ? TIEN_DIEM[this.trade.mode].thieu : "Tiền không đủ") : "Đã mang đủ thuốc rồi";
     };
     const step = (d) => { inp.value = String(Math.max(1, Math.min(max(), num() + d))); upd(); };
     inp.oninput = () => { inp.value = inp.value.replace(/\D/g, ""); if (num() > max() || +inp.value > max()) inp.value = String(max()); upd(); };
     const ok = () => {
       const T = this.trade; if (!T) return;
       if (T.mode === "sap") {
-        if (T.it.mua > tien()) return api.msg("Bạn chưa đủ tiền.");
+        if (T.it.mua > tien()) return api.msg("Tiền chưa đủ.");
         return this.cho.mua(T.it).then((r) => { if (r && this.trade === T) w.hide(); });
       }
       if (T.mode === "ktc") {
         const n = num(); if (!n) return;
-        if (T.it.gia * n > tien()) return api.msg(`Không đủ Xu — cần ${T.it.gia * n} Xu, trên người có ${tien()} Xu`);
+        if (T.it.gia * n > tien()) return api.msg(`Xu không đủ — cần ${T.it.gia * n} Xu, trên người có ${tien()} Xu`);
         return api.doItem({ act: "muaKtc", k: T.it.k, n }).then((r) => { if (r && this.trade === T) w.hide(); });
       }
       if (TIEN_DIEM[T.mode]) { // cửa hàng bán bằng điểm: phúc duyên (Thần bí Thương Nhân Liễu Ất) / Tống Kim (Quân Nhu quan)
         const n = num(), TD = TIEN_DIEM[T.mode]; if (!n) return;
-        if (T.it.gia * n > tien()) return api.msg(`Không đủ ${TD.ten} — cần ${fmt(T.it.gia * n)}, đang có ${fmt(tien())}`);
+        if (T.it.gia * n > tien()) return api.msg(`${TD.ten} không đủ — cần ${fmt(T.it.gia * n)}, đang có ${fmt(tien())}`);
         if (TD.bh) return this._bhMua(T.it.k, n).then((r) => { if (r && this.trade === T) w.hide(); });
         if (TD.db) return this._dbMua(T.it.k, n).then((r) => { if (r && this.trade === T) w.hide(); }); // Shop đặc biệt (anh 17/11 lần 2): /api/kham-nam muaDb // Lễ phẩm (Bang hội đợt 2): việc bang hội, không qua /api/do
         return api.doItem({ act: TD.act, k: T.it.k, n }).then((r) => { if (r && this.trade === T) w.hide(); });
@@ -1277,7 +1279,7 @@ export class GameWindows {
       const r = rCua(); if (r == null) return;
       const [cx, cy] = this._cellAt(box, e), H = this.hand;
       if (H) {
-        if (H.from === "equip") return api.msg("Tháo món này vào túi trước rồi mới cất");
+        if (H.from === "equip") return api.msg("Tháo món này vào túi trước rồi mới cất được.");
         const x = cx - H.grab[0], y = cy - H.grab[1];
         const req = H.from === "kho" ? (H.r === r ? { act: "datR", u: H.it.u, x, y, r } : { act: "chuyenR", u: H.it.u, x, y, tu: H.r, den: r }) : { act: "cat", u: H.it.u, x, y, r };
         return api.doItem(req).then((ok) => { if (ok && this.hand === H) this._handDrop(); });
@@ -1318,10 +1320,10 @@ export class GameWindows {
   }
   xep(kho) {
     const api = this.api;
-    if (this.hand) return api.msg("Đặt món đang cầm xuống rồi mới sắp xếp được");
-    if (this._gd) return api.msg("Đang giao dịch, không thể sắp xếp");
-    if (this.giaoMo) return api.msg("Đang giao vật phẩm — đóng khung Giao vật phẩm rồi mới sắp xếp");
-    if (this.cho && this.cho.dinhGiaMo) return api.msg("Đang định giá bày bán — tắt Định giá rồi mới sắp xếp");
+    if (this.hand) return api.msg("Đặt món đang cầm xuống rồi mới sắp xếp được.");
+    if (this._gd) return api.msg("Đang giao dịch, không sắp xếp được.");
+    if (this.giaoMo) return api.msg("Đang giao vật phẩm — đóng khung Giao vật phẩm rồi mới sắp xếp được.");
+    if (this.cho && this.cho.dinhGiaMo) return api.msg("Đang định giá bày bán — tắt Định giá rồi mới sắp xếp được.");
     return api.doItem({ act: "xep", kho });
   }
   // kho nhận món khi chuột phải món trong túi: khung Mở rộng rương đang mở -> rương mở rộng đang xem; rương chính đang mở -> rương chính;
@@ -1334,7 +1336,7 @@ export class GameWindows {
     return null;
   }
   // chưa mua chức năng mở rộng rương: câu client G_UI_BOX_WITHOUT (khung thông báo)
-  _chuaMoRong() { this.bao(this.W.strings.G_UI_BOX_WITHOUT || "Bạn vẫn chưa mở chức năng bảo hộ và mở rộng rương. Xin hãy đến huyện Ba Lăng gặp Thẩm Cửu (188, 198) mua chức năng này."); }
+  _chuaMoRong() { this.bao(this.W.strings.G_UI_BOX_WITHOUT || "Ngươi vẫn chưa mở chức năng bảo hộ và mở rộng rương. Tới huyện Ba Lăng gặp Thẩm Cửu (188, 198) mà mua."); }
 
   // ---------- Rương chứa đồ (储物箱.ini: lưới 6 × 10, dòng Tiền, Rút tiền / Đóng, Khóa / Mật mã / Mở rộng) ----------
   // Rương chính. Nút Mở rộng (anh 27/10: "nên làm như này, đẹp và linh hoạt hơn") mở khung "Mở rộng rương" của client cạnh rương — thẻ 1 / 2 / 3 =
@@ -1363,7 +1365,7 @@ export class GameWindows {
     const api = this.api, h = api.hero();
     if (h.khoa) return this.banPhim().then((mk) => mk && api.doItem({ act: "moKhoa", mk }));
     if (!h.ruongMo) return this._chuaMoRong();
-    if (!h.coMk) return this.bao("Chưa thiết lập mật mã rương — mở Rương chứa đồ, bấm nút <color=yellow>Mật mã<color> để thiết lập (1 – 9 chữ số).");
+    if (!h.coMk) return this.bao("Chưa thiết lập mật mã rương — mở Rương chứa đồ, bấm nút <color=yellow>Mật mã<color> mà thiết lập (1 – 9 chữ số).");
     api.doItem({ act: "khoa" });
   }
   openStore() { const w = this.W.get("store"); w.show(); this.W.get("items").show(); this._ngang(w); this.refresh(true); this.api.P.audio.ui("click"); }
@@ -1382,7 +1384,7 @@ export class GameWindows {
     const w = this.W.get("itemex"), api = this.api;
     const pg = (n) => {
       const h = api.hero(), gia = (api.luat().ruong || {}).moRong || [];
-      if (n > (h.ruongMo | 0)) return this.bao(`Rương mở rộng thứ <color=yellow>${n}<color> chưa mua — đến Thẩm Cửu (Ba Lăng 188, 198)${gia[h.ruongMo | 0] != null ? `, rương kế tiếp giá <color=yellow>${gia[h.ruongMo | 0]} Xu<color>` : ""}.`);
+      if (n > (h.ruongMo | 0)) return this.bao(`Rương mở rộng thứ <color=yellow>${n}<color> chưa mua — tới Thẩm Cửu (Ba Lăng 188, 198)${gia[h.ruongMo | 0] != null ? `, rương kế tiếp giá <color=yellow>${gia[h.ruongMo | 0]} Xu<color>` : ""}.`);
       if (this.hand && this.hand.from === "kho" && this.hand.r === this.exPage) this._handDrop();
       this.exPage = n; this._exSig = null;
       for (const i of [1, 2, 3]) w.check("BtnPage" + i, i === n);
@@ -1565,7 +1567,7 @@ export class GameWindows {
   }
   _moneyOpen(m) {
     const h = this.api.hero(), co = m === "gui" ? h.gold || 0 : h.tienRuong || 0;
-    if (co <= 0) return this.api.msg(m === "gui" ? "Không mang theo ngân lượng nào để gửi" : "Rương không có ngân lượng");
+    if (co <= 0) return this.api.msg(m === "gui" ? "Không mang theo ngân lượng nào để gửi cả." : "Rương không có ngân lượng nào.");
     this.moneyMode = m;
     this._moneyInp.value = String(co);
     const w = this.W.get("money"), M = w.def.sec.Main, S = this.W.get(m === "gui" ? "items" : "store"), b = S.def.sec.GetMoneyBtn, gap = 4;
@@ -1671,7 +1673,7 @@ export class GameWindows {
     box.onclick = (e) => {
       const [cx, cy] = this._cellAt(box, e), H = this.hand;
       if (H) {
-        if (H.from !== "bag" && H.from !== "giao") return this.api.msg("Chỉ đặt được món trong hành trang");
+        if (H.from !== "bag" && H.from !== "giao") return this.api.msg("Chỉ đặt được món trong hành trang thôi.");
         return this._giaoDat(H, cx - H.grab[0], cy - H.grab[1]);
       }
       const o = this._giaoTai(cx, cy); if (!o) return;
@@ -1725,7 +1727,7 @@ export class GameWindows {
       const x = i % I.hUnits, y = (i / I.hUnits) | 0, de = this._giaoCho(c, x, y);
       if (de && !de.length) { this._giaoDs.push({ u: b.u, x, y }); this._giaoVe(); this._bagSig = null; this.refresh(true); this.api.P.audio.ui("click"); return; }
     }
-    this.api.msg("Khung giao không còn chỗ");
+    this.api.msg("Khung giao hết chỗ rồi.");
   }
   // giaoDo({ tieuDe, loi }) -> Promise<[mã món] | null>; mở kèm cửa sổ Đồ dùng
   giaoDo(o) {
@@ -1762,10 +1764,10 @@ export class GameWindows {
       el.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); if (this.hand) return this._handDrop(); if (this._khamBan) return; this._khamBo(o); };
       el.onclick = (e) => {
         e.stopPropagation();
-        if (this._khamBan) return this.api.msg("Đang khảm nạm, xin chờ…");
+        if (this._khamBan) return this.api.msg("Đang khảm nạm, chờ đấy…");
         const H = this.hand;
         if (!H) return this._khamBo(o); // ô có món: trả về túi
-        if (H.from !== "bag") return this.api.msg("Chỉ đặt được món trong hành trang");
+        if (H.from !== "bag") return this.api.msg("Chỉ đặt được món trong hành trang thôi.");
         if (this._khamDat(H.it, o)) this._handDrop();
       };
       el.onmousemove = (e) => { if (this.hand) return; const b = this._khamMon(o); if (b) this._showTip(b, e, "Bấm / chuột phải: trả về hành trang"); }; // ô trống: chữ gợi ý data-tip (_khamVe — _tipChu)
@@ -1779,8 +1781,8 @@ export class GameWindows {
       if (this._khamBan) return;
       const K = this._khamS, L = (this.api.luat() || {}).khamNam || {}, h = this.api.hero();
       const mon = this._khamMon("mon"), da = K.da ? (h.bag || []).find((v) => v.u === K.da) : null;
-      if (!mon) return this.api.msg(S.G_TREMBLEITEM_1 || "Xin đặt lên vật phẩm muốn khảm Bảo Thạch.");
-      if (!da) return this.api.msg(S.G_TREMBLEITEM_0 || "Xin đặt lên ít nhất 1 viên Bảo Thạch");
+      if (!mon) return this.api.msg(S.G_TREMBLEITEM_1 || "Đặt lên vật phẩm muốn khảm Bảo Thạch đi.");
+      if (!da) return this.api.msg(S.G_TREMBLEITEM_0 || "Đặt lên ít nhất 1 viên Bảo Thạch đi.");
       const x = ItemDB.item(mon.k) || {}, tenMon = String(x.n || "").trim(), tenDa = String((ItemDB.item(da.k) || {}).n || "").trim(), cl = this._khamCap(mon.k);
       const hl = da.k === (L.hl || {}).k, phi = hl ? +(L.hl || {}).phi || 0 : (+L.phiCap || 0) * cl;
       const HE = ["Kim", "Mộc", "Thủy", "Hỏa", "Thổ"];
@@ -1831,10 +1833,10 @@ export class GameWindows {
   // món b (trong túi) đặt vào ô o? -> true đã đặt (false: báo lý do)
   _khamDat(b, o) {
     const L = (this.api.luat() || {}).khamNam || {}, D = L.da || {}, x = ItemDB.item(b.k) || {}, K = this._khamS;
-    if (this._khamBan) { this.api.msg("Đang khảm nạm, xin chờ…"); return false; }
+    if (this._khamBan) { this.api.msg("Đang khảm nạm, chờ đấy…"); return false; }
     if (o === "mon") {
       if (x.ktc || x.thuoc || x.phu || !(x.t >= 0 && x.t <= 9)) { this.api.msg("Ô giữa chỉ đặt trang bị (vũ khí, áo, mũ, đai, giày, hộ uyển, nhẫn, dây chuyền, ngọc bội)"); return false; }
-      if (b.het) { this.api.msg("Trang bị có hạn sử dụng không khảm được"); return false; }
+      if (b.het) { this.api.msg("Trang bị có hạn sử dụng thì không khảm được."); return false; }
       K.mon = b.u;
     } else {
       const hop = o === "cap" ? b.k === D.tu : o === "linh" ? b.k === D.luc : b.k === D.lam || b.k === (L.hl || {}).k;
@@ -1851,14 +1853,14 @@ export class GameWindows {
   }
   // chuột phải món trong túi khi khung đang mở: trang bị -> ô giữa; Tử -> Đẳng cấp; Lục -> Linh lực; Lam -> ô ngũ hành khác hệ món; Hoán Linh: phải kéo vào ô hệ muốn đổi
   _khamThem(b) {
-    if (this._khamBan) return this.api.msg("Đang khảm nạm, xin chờ…");
+    if (this._khamBan) return this.api.msg("Đang khảm nạm, chờ đấy…");
     const L = (this.api.luat() || {}).khamNam || {}, D = L.da || {}, x = ItemDB.item(b.k) || {};
-    if (b.k === (L.hl || {}).k) return this.api.msg("Kéo Hoán Linh Thạch vào ô ngũ hành muốn đổi sang");
+    if (b.k === (L.hl || {}).k) return this.api.msg("Kéo Hoán Linh Thạch vào ô ngũ hành muốn đổi sang đi.");
     if (b.k === D.tu) return this._khamDat(b, "cap");
     if (b.k === D.luc) return this._khamDat(b, "linh");
     if (b.k === D.lam) { const m = this._khamMon("mon"); return this._khamDat(b, m && (m.s | 0) === 0 ? 1 : 0); }
     if (!x.ktc && x.t >= 0 && x.t <= 9) return this._khamDat(b, "mon");
-    this.api.msg("Món này không dùng ở khung khảm nạm");
+    this.api.msg("Món này không dùng ở khung khảm nạm được.");
   }
   // vẽ icon các món đang đặt vào đúng ô (canh giữa ô, giữ cỡ icon)
   _khamVe() {
@@ -1920,12 +1922,12 @@ export class GameWindows {
       tenHo.parentNode.appendChild(e); return e.firstChild;
     };
     this._gdNhan = { tenMinh: them("gdTenMinh", 196), ttHo: them("gdTtHo", 39, 150, 82), ttMinh: them("gdTtMinh", 196, 150, 82) };
-    const khoa = () => { const g = this._gd; if (g && g.p.khoa) { api.msg("Đã khóa giao dịch — bấm Đồng ý lần nữa để bỏ khóa rồi mới đổi món / tiền"); return true; } return false; };
+    const khoa = () => { const g = this._gd; if (g && g.p.khoa) { api.msg("Đã khóa giao dịch — bấm Đồng ý lần nữa để bỏ khóa rồi mới đổi món / tiền được."); return true; } return false; };
     // lưới mình: đang cầm món -> đặt vào ô; tay trống -> cầm món đã đặt lên (đặt ô khác / bấm túi = trả về túi)
     minh.onclick = (e) => {
       const g = this._gd, H = this.hand; if (!g || khoa()) return;
       const [cx, cy] = this._cellAt(minh, e);
-      if (H) { if (H.from !== "bag" && H.from !== "gd") return api.msg("Chỉ đặt được món trong hành trang"); return this._gdDat(H, cx - H.grab[0], cy - H.grab[1]); }
+      if (H) { if (H.from !== "bag" && H.from !== "gd") return api.msg("Chỉ đặt được món trong hành trang thôi."); return this._gdDat(H, cx - H.grab[0], cy - H.grab[1]); }
       const o = this._gdTai(cx, cy), b = o && (api.hero().bag || []).find((v) => v.u === o.u); if (!b) return;
       g.ds = g.ds.filter((v) => v !== o);
       this._handPick({ ...b, x: o.x, y: o.y }, "gd", null, e, [cx - o.x, cy - o.y]);
@@ -2048,7 +2050,7 @@ export class GameWindows {
   _gdDat(H, x, y) {
     const g = this._gd, de = this._gdCho(this._giaoCo(H.it.u), x, y);
     if (!de || de.length > 1) return;
-    if (H.it.het) return this.api.msg("Vật phẩm này không thể giao dịch!"); // món có hạn dùng (ngựa Kỳ Trân Các)
+    if (H.it.het) return this.api.msg("Vật phẩm này không giao dịch được!"); // món có hạn dùng (ngựa Kỳ Trân Các)
     if (H.it.kbh) return this.api.msg(KBH_DAT); // khóa bảo hiểm (anh 05/11)
     g.ds.push({ u: H.it.u, x, y });
     this._handDrop();
@@ -2062,15 +2064,15 @@ export class GameWindows {
   // chuột phải món trong túi mang theo: ô trống đầu tiên của lưới mình (trên xuống, trái sang)
   _gdThem(b) {
     const g = this._gd; if (!g || g.ds.some((o) => o.u === b.u)) return;
-    if (g.p.khoa) return this.api.msg("Đã khóa giao dịch — bấm Đồng ý lần nữa để bỏ khóa rồi mới đổi món / tiền");
-    if (b.het) return this.api.msg("Vật phẩm này không thể giao dịch!");
+    if (g.p.khoa) return this.api.msg("Đã khóa giao dịch — bấm Đồng ý lần nữa để bỏ khóa rồi mới đổi món / tiền được.");
+    if (b.het) return this.api.msg("Vật phẩm này không giao dịch được!");
     if (b.kbh) return this.api.msg(KBH_DAT); // khóa bảo hiểm (anh 05/11)
     const I = this.W.get("exchange").def.sec.SelfItemsBox, c = this._giaoCo(b.u);
     for (let i = 0; i < I.hUnits * I.vUnits; i++) {
       const x = i % I.hUnits, y = (i / I.hUnits) | 0, de = this._gdCho(c, x, y);
       if (de && !de.length) { g.ds.push({ u: b.u, x, y }); this._gdGui(); this._gdVe(true); this.api.P.audio.ui("click"); return; }
     }
-    this.api.msg("Khung giao dịch không còn chỗ");
+    this.api.msg("Khung giao dịch hết chỗ rồi.");
   }
   // vẽ khung giao dịch (đổi gì mới vẽ lại — luon: vẽ ngay)
   _gdVe(luon) {
@@ -2121,7 +2123,7 @@ export class GameWindows {
           e.preventDefault(); e.stopPropagation(); this._hideTip();
           if (this.hand) return;
           if (xem !== false) return this._gdThem(b);
-          if (g.p.khoa) return this.api.msg("Đã khóa giao dịch — bấm Đồng ý lần nữa để bỏ khóa rồi mới đổi món / tiền");
+          if (g.p.khoa) return this.api.msg("Đã khóa giao dịch — bấm Đồng ý lần nữa để bỏ khóa rồi mới đổi món / tiền được.");
           g.ds = g.ds.filter((o) => o.u !== b.u); this._gdGui(); this._gdVe(true);
         };
       }
@@ -2171,7 +2173,7 @@ export class GameWindows {
   _khoaChan() {
     if (!this.api.hero().khoa) return false;
     this._hideTip();
-    this.bao((this.W.strings.G_STR_ITEM_LOCK_CANNOT_OPERATE || "Trang bị đã bị khóa mã rương, không thể thao tác!") + "<enter>Mở khóa: Rương chứa đồ → nút <color=yellow>Mở khóa<color>, nhập mật mã.");
+    this.bao((this.W.strings.G_STR_ITEM_LOCK_CANNOT_OPERATE || "Trang bị đã bị khóa mã rương, không thao tác được!") + "<enter>Mở khóa: Rương chứa đồ → nút <color=yellow>Mở khóa<color>, nhập mật mã.");
     return true;
   }
 
@@ -2194,8 +2196,8 @@ export class GameWindows {
     const ve = () => w.set("Number", "*".repeat(s.length));
     const xong = (v) => { const r = this._bpCb; this._bpCb = null; removeEventListener("keydown", this._bpKey, true); w.hide(); if (r) r(v); };
     const them = (d) => {
-      if (!s && d === "0") return this.api.msg(S.G_UI_NO_ZERO_HEAD || "Số đầu của mật mã không thể là số 0.");
-      if (s.length >= 9) return this.api.msg(S.G_UI_PWD_LEN_OVERFLOW || "Mật mã của Bạn đã đủ độ dài.");
+      if (!s && d === "0") return this.api.msg(S.G_UI_NO_ZERO_HEAD || "Số đầu của mật mã không được là số 0.");
+      if (s.length >= 9) return this.api.msg(S.G_UI_PWD_LEN_OVERFLOW || "Mật mã đủ độ dài rồi.");
       s += d; ve();
     };
     for (let i = 0; i <= 9; i++) w.on(String(i), () => { this.api.P.audio.ui("click"); them(String(i)); });
@@ -2203,7 +2205,7 @@ export class GameWindows {
     w.on("Clear", () => { this.api.P.audio.ui("click"); s = ""; ve(); });
     w.on("Confirm", () => {
       this.api.P.audio.ui("click");
-      if (!s) return this.api.msg(S.G_UI_PASSWORD_NO_ZERO || "Mật mã không thể là số 0 hoặc để trống.");
+      if (!s) return this.api.msg(S.G_UI_PASSWORD_NO_ZERO || "Mật mã không được là số 0 hay để trống.");
       xong(s);
     }).on("Cancel", () => xong(null));
     this._bpKey = (e) => {
@@ -2241,9 +2243,9 @@ export class GameWindows {
     }
     const ok = () => {
       const moi = o.NewPassword, lai = o.NewPassConfirm;
-      if (o.Password !== undefined && !o.Password && sec.Password) return this.api.msg("Bấm vào ô mật mã cũ để nhập");
-      if (!moi) return this.api.msg(S.G_UI_PASSWORD_NO_ZERO || "Mật mã không thể là số 0 hoặc để trống.");
-      if (moi !== lai) return this.api.msg(S.G_UI_PASSWORD_NOT_MATCH || "Mật mã điền nhập không phù hợp");
+      if (o.Password !== undefined && !o.Password && sec.Password) return this.api.msg("Bấm vào ô mật mã cũ mà nhập.");
+      if (!moi) return this.api.msg(S.G_UI_PASSWORD_NO_ZERO || "Mật mã không được là số 0 hay để trống.");
+      if (moi !== lai) return this.api.msg(S.G_UI_PASSWORD_NOT_MATCH || "Mật mã nhập vào không khớp.");
       this.api.doItem(sec.Password ? { act: "doiMk", mk: o.Password || "", moi } : { act: "datMk", moi }).then((r) => { if (r) w.hide(); });
     };
     w.on("Confirm", ok).on("Cancel", () => w.hide());
@@ -2357,13 +2359,13 @@ export class GameWindows {
     const oKn = (kn) => `<div class="bk-o" data-tip="${so(kn)} điểm kinh nghiệm">${exp ? `<img src="${W.base}${exp.file}" width="${exp.w}" height="${exp.h}" alt="" draggable="false">` : ""}</div>`;
     const phan = (tieu, kn, L) => `<div class="bk-tieu">${tieu}${kn ? ` <em>${so(kn)} kinh nghiệm</em>` : ""}</div>` + (kn || L.length ? `<div class="bk-luoi">${kn ? oKn(kn) : ""}${L.map(oMon).join("")}</div>` : "");
     msg.innerHTML = `<div class="bk-dau">${esc(r.ten)}</div>`
-      + (r.chiXem ? `<div class="bk-dong">Bạn: đứng xem, không đánh · ${r.so || bang.length} người đánh</div>` : `<div class="bk-dong">Bạn: <span style="color:${vang}">hạng ${r.hang}/${r.so || bang.length}</span> — ${pt(r.pct)}% sát thương</div>`)
+      + (r.chiXem ? `<div class="bk-dong">Ngươi: đứng xem, không đánh · ${r.so || bang.length} người đánh</div>` : `<div class="bk-dong">Ngươi: <span style="color:${vang}">hạng ${r.hang}/${r.so || bang.length}</span> — ${pt(r.pct)}% sát thương</div>`)
       // chưa đủ % (anh 11/11 "không vào top vẫn có exp"): vẫn có kinh nghiệm theo %, không có quà xếp hạng
-      + (r.chiXem ? `<div class="bk-tieu">Thưởng xếp hạng</div><div class="bk-dong bk-khong">Không đánh boss — không có thưởng</div>`
-        : r.khongDu ? phan("Thưởng xếp hạng", r.kn, []) + `<div class="bk-dong bk-khong">Chưa đủ ${r.khongDu}% sát thương — không có quà xếp hạng</div>` : phan("Thưởng xếp hạng", r.kn, nhan))
+      + (r.chiXem ? `<div class="bk-tieu">Thưởng xếp hạng</div><div class="bk-dong bk-khong">Không đánh boss thì không có thưởng</div>`
+        : r.khongDu ? phan("Thưởng xếp hạng", r.kn, []) + `<div class="bk-dong bk-khong">Chưa đủ ${r.khongDu}% sát thương — không có quà xếp hạng đâu</div>` : phan("Thưởng xếp hạng", r.kn, nhan))
       + (r.tg ? phan("Quà tham gia", 0, [{ k: "ms:1884", n: r.tg }]) : "") // anh 11/11: ai đánh boss cũng có Bảo rương đồ xanh (vào túi ở nhịp — hàng chờ)
       + (K ? phan("Thưởng kích sát", K.kn, K.mon || []) : "")
-      + (cho.length ? `<div class="bk-dong bk-day">Hành trang đầy — dọn chỗ để nhận (giữ 30 phút):</div><div class="bk-luoi bk-cho">${cho.map(oMon).join("")}</div>` : "");
+      + (cho.length ? `<div class="bk-dong bk-day">Hành trang đầy — dọn chỗ đi mà nhận (giữ 30 phút):</div><div class="bk-luoi bk-cho">${cho.map(oMon).join("")}</div>` : "");
     for (const x of this._bk.cuon) x.sync();
     idx.scrollTop = 0; msg.scrollTop = 0;
     Object.assign(w.el.style, { left: Math.round((1024 - (parseInt(w.el.style.width, 10) || sec.Main.w)) / 2) + "px", top: Math.round((768 - sec.Main.h) / 2) + "px" });
@@ -2405,7 +2407,7 @@ export class GameWindows {
     }).join("");
     const song = [0, 1].map((i) => ds.filter((x) => x.ben === i && x.song).length), minh = ds.find((x) => x.ten === o.ten);
     const top = ds.reduce((b, x) => (x.giet > (b ? b.giet : 0) ? x : b), null);
-    const ketMinh = !minh ? "Bạn xem trận này" : `${esc(minh.ten)} · <span style="color:${MAU[minh.ben]}">${BEN[minh.ben]}</span> · hạ ${minh.giet} · `
+    const ketMinh = !minh ? "Ngươi xem trận này" : `${esc(minh.ten)} · <span style="color:${MAU[minh.ben]}">${BEN[minh.ben]}</span> · hạ ${minh.giet} · `
       + (huy ? `<span class="ldk-xam">trận hủy</span>` : th < 0 ? `<span style="color:${vang}">Hòa</span>` : th === minh.ben ? `<span style="color:#7dff8a">Thắng</span>` : `<span style="color:#ff8a6a">Thua</span>`);
     msg.innerHTML = `<div class="bk-dau">${kq.tt ? "Tỉ thí · " : ""}Lôi đài ${o.so | 0} · ${o.che | 0} vs ${o.che | 0}</div>`
       + (huy ? `<div class="ldk-to ldk-xam">Trận hủy</div>` : th < 0 ? `<div class="ldk-to" style="color:${vang}">Hòa</div>` : `<div class="ldk-to" style="color:${MAU[th]}">${BEN[th]} thắng</div>`)
@@ -2413,7 +2415,7 @@ export class GameWindows {
       + (huy ? "" : `<div class="ldk-d">Còn trụ: <span style="color:${MAU[0]}">Giáp ${song[0]}</span> · <span style="color:${MAU[1]}">Ất ${song[1]}</span></div>`)
       // tỉ thí (anh 17/11): tổng sát thương mỗi bên — hết giờ bên nhiều hơn thắng
       + (kq.tt && Array.isArray(kq.st) && !huy ? `<div class="ldk-d">Sát thương: ${[0, 1].map((i) => `<span style="color:${MAU[i]}">${esc(tenDoi(i) || BEN[i])} ${Math.round(+kq.st[i] || 0).toLocaleString("vi-VN")}</span>`).join(" · ")}</div>` : "")
-      + `<div class="bk-tieu">Bạn</div><div class="ldk-d">${ketMinh}</div>`
+      + `<div class="bk-tieu">Ngươi</div><div class="ldk-d">${ketMinh}</div>`
       + (top ? `<div class="bk-tieu">Trận này</div><div class="ldk-d">Hạ nhiều nhất: <span style="color:${MAU[top.ben]}">${esc(top.ten)}</span> (${top.giet})</div>` : "")
       + `<div class="ldk-d ldk-dem"></div>`;
     // đếm lùi tới lúc tự về (loidai.js tick đưa về — ở đây chỉ chữ)
@@ -2459,7 +2461,7 @@ export class GameWindows {
     msg.innerHTML = `<div class="bk-dau">${esc(d.ten || "Truy Phong Đại Loạn Đấu")}${d.thu ? ` <small style="font:13px/18px var(--jx);color:#a8a290">(lượt thử)</small>` : ""}</div>`
       + `<div class="ldk-to" style="color:${th ? vang : "#e9e3cf"}">${th ? `Về đích hạng ${th.hang | 0}` : d.ket ? "Cuộc đua kết thúc" : "Đang đua"}</div>`
       + (th ? `<div class="ldk-d">Thời gian: ${gio(th.giay)}</div><div class="bk-tieu">Phần thưởng</div><div class="ldk-d">${esc(th.chu || "—")}</div>`
-        : `<div class="ldk-d">Bạn chưa về đích${d.roi ? " (đã rời đường đua)" : ""}${d.ket ? " — lượt này không có thưởng" : ""}.</div>`)
+        : `<div class="ldk-d">Ngươi chưa về đích${d.roi ? " (đã rời đường đua)" : ""}${d.ket ? " — lượt này không có thưởng" : ""}.</div>`)
       + `<div class="bk-tieu">${d.ket ? "Lượt đua" : "Hiện tại"}</div><div class="ldk-d">${d.ve | 0} / ${d.soVe | 0} người về đích · ${d.n | 0} người đua</div>`
       + (d.ket ? "" : `<div class="ldk-d ldk-xam">Bảng tổng kết hiện lại khi cuộc đua kết thúc.</div>`)
       + `<div class="ldk-d ldk-dem"></div>`;
@@ -2513,7 +2515,7 @@ export class GameWindows {
       t.el.onmouseleave = () => this._hideSkTip();
     }
     tab("fight");
-    w.cb.show = () => { this._fillSkills(api.hero(), true); if (api.hero().fac == null) api.msg("Võ công: chưa nhập môn phái — gặp đệ tử tiếp dẫn của phái cùng hệ ở Ba Lăng huyện (cấp 10)"); };
+    w.cb.show = () => { this._fillSkills(api.hero(), true); if (api.hero().fac == null) api.msg("Võ công: chưa nhập môn phái — tới gặp đệ tử tiếp dẫn của phái cùng hệ ở Ba Lăng huyện (cấp 10)."); };
     w.cb.hide = () => this._hideSkTip();
   }
   // chiêu đang hiện: mốc 10..70 của phái, mốc và y/c cấp ≤ cấp nhân vật (anh 01/11 — rules.js MOC), theo thứ tự mốc; rồi chiêu sách 90 / 120: chỉ chiêu đã học qua sách
@@ -2567,7 +2569,7 @@ export class GameWindows {
   }
   _addSkill(id) {
     const api = this.api, h = api.hero(), s = id != null && api.P.skillDb[id];
-    if (s && LUYEN.has(+id)) return api.msg(`${s.n.trim()}: kỹ năng luyện — lên cấp bằng độ luyện khi dùng đánh quái, không cộng điểm`);
+    if (s && LUYEN.has(+id)) return api.msg(`${s.n.trim()}: kỹ năng luyện — lên cấp bằng độ luyện khi dùng đánh quái, khỏi cộng điểm`);
     if (!s || (h.skPts | 0) <= 0) return;
     h.skills = h.skills || {};
     const lv = h.skills[id] | 0;
@@ -2716,7 +2718,7 @@ export class GameWindows {
     const chip = (m) => { const [t, c] = TRANG[m.trang] || TRANG.lam; return `<em style="color:${c};border-color:${c}">${t}</em>`; };
     const thanh = (a, b, ten) => `<div class="nvx-th"><span>${ten}</span><i><u style="width:${Math.round(Math.min(1, b ? a / b : 0) * 100)}%"></u></i><b>${a}/${b}</b></div>`;
     const thanhs = (m) => (m.td ? thanh(m.td[0], m.td[1], "Tiến độ") : "") + (m.hom ? thanh(m.hom[0], m.hom[1], "Hôm nay") : "");
-    if (!ds.length) { box.innerHTML = `<div class="nvx-trong">Chưa nhận nhiệm vụ nào</div>`; return; }
+    if (!ds.length) { box.innerHTML = `<div class="nvx-trong">Chưa nhận nhiệm vụ nào cả</div>`; return; }
     // ô nhiệm vụ như client: 2 hàng × 7 ô của nền khung (mỗi nhiệm vụ 1 ô: hình + chấm trạng thái), bấm ô xem chi tiết ở khung dưới (ô hình lớn của nền +
     // tên, trạng thái, thanh tiến độ, các dòng); mặc định nhiệm vụ cần làm nhất (về trả trước đang làm)
     const uu = { tra: 0, lam: 1 }, chon = ds.find((m) => m.k === this.nvChon) || [...ds].sort((a, b) => uu[a.trang] - uu[b.trang])[0];
@@ -2796,7 +2798,7 @@ export class GameWindows {
     w.on("BtnKeyboard", () => hinh("keyboardImage")).on("BtnWuxing", () => hinh("wuxingImage"));
     if (h) {
       h.el.classList.add("jw-hinh");
-      const n = document.createElement("div"); n.className = "jw-hinh-nhac"; n.textContent = "Bấm vào hình hoặc Esc để đóng"; h.el.appendChild(n);
+      const n = document.createElement("div"); n.className = "jw-hinh-nhac"; n.textContent = "Bấm vào hình hoặc Esc để đóng."; h.el.appendChild(n);
       h.el.addEventListener("click", () => h.hide());
     }
     w.cb.show = ve;
@@ -2829,7 +2831,7 @@ export class GameWindows {
     const ve = () => {
       const L = api.tin(), k = Math.min(this._tinChon, Math.max(0, L.length - 1)), t = L[k];
       idx.innerHTML = L.length ? L.map((x, i) => `<div data-i="${i}" class="gd-muc tin-muc${i === k ? " on" : ""}"><span class="tin-ngay">${esc(x.ngay)}</span><span class="tin-ten">${esc(x.ten)}</span>${x.id > this._tinXem ? '<b class="tin-moi">Mới</b>' : ""}</div>`).join("")
-        : `<div class="gd-p">Chưa có tin</div>`;
+        : `<div class="gd-p">Chưa có tin nào</div>`;
       msg.innerHTML = t ? `<div class="gd-ten">${esc(t.ten)}</div><div class="tin-ngay2">Ngày ${esc(t.ngay)}</div>${giupHtml(t.noi || [])}` : "";
       for (const x of cuon) x.sync();
     };
@@ -2907,7 +2909,7 @@ export class GameWindows {
   // nv: món của nhân vật khác (Soi đồ — soiDo): yêu cầu / dòng ẩn tính theo nhân vật đó thay vì nhân vật đang chơi
   // món không bán cho cửa hàng được (như may-chu/do.js act ban): món Kỳ Trân Các, ngựa có hạn, món khóa của bảng Kỳ Trân Các (thuốc Hồi Thiên rút từ
   // lễ bao mua bằng Xu — anh 12/11) -> câu báo; bán được -> null
-  _khongBan(b) { const x = ItemDB.item(b.k) || {}; return x.ktc || b.het || (b.kbh && x.tuKtc) ? "Vật phẩm của Kỳ Trân Các không bán cho cửa hàng được" : null; }
+  _khongBan(b) { const x = ItemDB.item(b.k) || {}; return x.ktc || b.het || (b.kbh && x.tuKtc) ? "Vật phẩm của Kỳ Trân Các không bán cho cửa hàng được đâu." : null; }
   _showTip(it, e, hint, slot, price, nv) {
     const P = this.api.P, T = P.skillTip; if (!T || !ItemDB.item(it.k)) return;
     this.tipHint = hint; // dòng gợi ý gốc: điện thoại dọc đọc ra nút việc làm (dienthoai.js hanhDong)

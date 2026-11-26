@@ -110,27 +110,27 @@ function truMon(h, n) {
 }
 
 function lam(tk, h, b) {
-  if (!BAT) loi("Phân thân hiện chưa mở");
+  if (!BAT) loi("Phân thân chưa mở. Quay lại sau.");
   const key = tk.ten + "|" + (b.o | 0), P = ngay(h), viec = String(b.viec || "mo"), t = Date.now(), ad = !!tk.admin;
   boHet(P, t);
   if (viec === "mo") return { pt: trangThai(h, key, true, ad), ds: ungVien(tk, h) };
   if (viec === "thue") {
     const id = String(b.id || ""), gi = b.goi == null ? 0 : b.goi | 0, G = GOI[gi];
-    if (!G || gi < 0) loi("Gói thuê không hợp lệ — bấm Làm mới");
+    if (!G || gi < 0) loi("Gói thuê không đúng. Bấm Làm mới.");
     const [gioG, phiG] = G;
     const r = XH.dsKhoa().find((x) => maCua(x.key) === id);
-    if (!r) loi("Không còn người này trong bảng xếp hạng — bấm Làm mới");
+    if (!r) loi("Không còn người này trong bảng xếp hạng. Bấm Làm mới.");
     const [ten, o] = r.key.split("|");
-    if (ten === tk.ten) loi("Không thuê được phân thân của nhân vật cùng tài khoản");
-    if (r.lvl > (h.lvl | 0) + CF.capHon) loi(`Chỉ thuê được phân thân không quá cấp ${(h.lvl | 0) + CF.capHon}`);
-    if (soMon(h) < phiG) loi(`Cần ${phiG} ${tenMon()} — hành trang chỉ có ${soMon(h)}`);
+    if (ten === tk.ten) loi("Phân thân của nhân vật cùng tài khoản thì thuê làm gì. Không thuê được.");
+    if (r.lvl > (h.lvl | 0) + CF.capHon) loi(`Chỉ thuê phân thân không quá cấp ${(h.lvl | 0) + CF.capHon}.`);
+    if (soMon(h) < phiG) loi(`Cần ${phiG} ${tenMon()}. Hành trang chỉ có ${soMon(h)}.`);
     // đang thuê người này (theo mã, hoặc tên — mã đổi sau khi bật lại máy chủ, soát 05/11) -> gia hạn; chưa thuê thì cần còn chỗ (toiDa)
     const cu = P.ds.find((x) => x.id === id || x.ten === r.n);
-    if (!cu && !ad && CF.thueToiDa > 0 && P.ds.length >= CF.thueToiDa) loi(`Đang thuê đủ ${CF.thueToiDa} phân thân cùng lúc — chờ 1 phân thân hết giờ (thuê lại người đang thuê để gia hạn)`);
+    if (!cu && !ad && CF.thueToiDa > 0 && P.ds.length >= CF.thueToiDa) loi(`Đang thuê đủ ${CF.thueToiDa} phân thân rồi. Chờ 1 phân thân hết giờ — thuê lại người đang thuê để gia hạn.`);
     const tkS = D.docTk(ten), hS = tkS && tkS.nv && tkS.nv[o | 0];
-    if (!hS || hS.name !== r.n) loi("Không còn người này trong bảng xếp hạng — bấm Làm mới");
+    if (!hS || hS.name !== r.n) loi("Không còn người này trong bảng xếp hạng. Bấm Làm mới.");
     // cấp thật lúc thuê (anh 11/11: bảng xếp hạng nay làm mới 5 phút 1 lần — r.lvl có thể cũ, người kia vừa lên cấp vượt mức +30)
-    if ((hS.lvl | 0) > (h.lvl | 0) + CF.capHon) loi(`Chỉ thuê được phân thân không quá cấp ${(h.lvl | 0) + CF.capHon} (${hS.name} nay cấp ${hS.lvl | 0})`);
+    if ((hS.lvl | 0) > (h.lvl | 0) + CF.capHon) loi(`Chỉ thuê phân thân không quá cấp ${(h.lvl | 0) + CF.capHon}. ${hS.name} nay cấp ${hS.lvl | 0} rồi.`);
     // trừ phí người thuê TRƯỚC, ghi file người bị sao chép SAU CÙNG (soát 05/11: lỗi giữa chừng thì không có chuyện họ nhận mà mình không trừ)
     truMon(h, phiG); const cong = Math.floor(phiG * CF.chia), them = gioG * 3600 * 1000;
     if (cu && cu.id !== id) P.ra = P.ra.map((r) => (r === cu.id ? id : r)); // mã ứng viên đổi sau khi bật lại máy chủ: phân thân đang theo giữ nguyên (soát 12/11)
@@ -144,15 +144,15 @@ function lam(tk, h, b) {
     // phí bằng Mật đồ khóa rồi người kia nhận Mật đồ thường = rửa khóa — soát 05/11)
     if (cong > 0) {
       hS.ptCho = (hS.ptCho | 0) + cong;
-      hS.ptTin = [...(Array.isArray(hS.ptTin) ? hS.ptTin : []), `${h.name} vừa thuê phân thân của đại hiệp — nhận ${cong} ${tenMon()} tiền công`].slice(-10);
+      hS.ptTin = [...(Array.isArray(hS.ptTin) ? hS.ptTin : []), `${h.name} vừa thuê phân thân của ngươi — nhận ${cong} ${tenMon()} tiền công`].slice(-10);
       try { D.ghiTk(tkS); } catch (e) { console.error("phân thân: ghi tiền công", ten, e && e.message); }
     }
     const con = Math.round(((cu ? cu.het : t + them) - t) / 60000);
-    return { pt: trangThai(h, key, true, ad), ds: ungVien(tk, h), msg: cu ? `Đã gia hạn phân thân ${hS.name} thêm ${tenGio(gioG)} — còn ${Math.floor(con / 60)} giờ ${con % 60} phút (tính cả lúc thoát game)` : `Đã thuê phân thân ${hS.name} — dùng được ${tenGio(gioG)}, tính cả lúc thoát game. Bấm Gọi ra ở bãi train để phân thân đi theo`, tui: 1 };
+    return { pt: trangThai(h, key, true, ad), ds: ungVien(tk, h), msg: cu ? `Đã gia hạn phân thân ${hS.name} thêm ${tenGio(gioG)}. Còn ${Math.floor(con / 60)} giờ ${con % 60} phút (tính cả lúc thoát game).` : `Đã thuê phân thân ${hS.name}. Dùng được ${tenGio(gioG)}, tính cả lúc thoát game. Bấm Gọi ra ở bãi train để phân thân đi theo.`, tui: 1 };
   }
   if (viec === "goi" || viec === "cat") {
     // chờ goiCach giây tính riêng từng phân thân (anh 18/11 — gọi con thứ 2 ngay sau con đầu được luôn)
-    const cho = (id) => { const c = CF.goiCach * 1000 - (t - ((P.goiL || {})[id] || 0)); if (c > 0) loi(`Phân thân này vừa gọi ra / cất đi — đợi ${Math.ceil(c / 1000)} giây nữa`); };
+    const cho = (id) => { const c = CF.goiCach * 1000 - (t - ((P.goiL || {})[id] || 0)); if (c > 0) loi(`Phân thân này vừa gọi ra / cất đi. Đợi ${Math.ceil(c / 1000)} giây nữa.`); };
     if (viec === "cat") {
       const bo = b.id === "tat" ? P.ra.slice() : P.ra.filter((id) => id === String(b.id || ""));
       if (b.id !== "tat") for (const id of bo) cho(id);
@@ -160,18 +160,18 @@ function lam(tk, h, b) {
       P.ra = P.ra.filter((id) => !bo.includes(id));
       for (const id of bo) P.goiL[id] = t;
       P.v = (P.v | 0) + 1;
-      return { pt: trangThai(h, key, true, ad), msg: "Đã cất phân thân" };
+      return { pt: trangThai(h, key, true, ad), msg: "Đã cất phân thân rồi." };
     }
     const x = P.ds.find((y) => y.id === String(b.id || ""));
-    if (!x) loi("Chưa thuê phân thân này hoặc đã hết giờ thuê");
-    if (P.ra.includes(x.id)) loi("Phân thân này đang theo đại hiệp rồi");
-    if (!ad && P.ra.length >= CF.toiDa) loi(`Đang có ${CF.toiDa} phân thân ra trận — cất bớt 1 phân thân rồi gọi`);
+    if (!x) loi("Chưa thuê phân thân này, hoặc đã hết giờ thuê.");
+    if (P.ra.includes(x.id)) loi("Phân thân này đang theo ngươi rồi.");
+    if (!ad && P.ra.length >= CF.toiDa) loi(`Đang có ${CF.toiDa} phân thân ra trận. Cất bớt 1 phân thân rồi gọi.`);
     cho(x.id);
-    if (!laBai(N.BAI_NAY.get(key))) loi("Không thể gọi phân thân tại đây! Chỉ gọi được ở bãi train.");
+    if (!laBai(N.BAI_NAY.get(key))) loi("Không gọi phân thân ở đây được. Chỉ gọi được ở bãi train.");
     P.ra.push(x.id); P.goiL[x.id] = t; P.v = (P.v | 0) + 1;
-    return { pt: trangThai(h, key, true, ad), msg: `Phân thân ${x.ten} đã ra theo đại hiệp` };
+    return { pt: trangThai(h, key, true, ad), msg: `Phân thân ${x.ten} đã ra theo ngươi.` };
   }
-  loi("Việc phân thân không đúng");
+  loi("Không có việc phân thân nào như vậy.");
 }
 
 // mỗi nhịp đang trong game (api.js nhip): phân thân hết hạn thuê (cả lúc thoát game) thì bỏ, báo 1 lần; tiền công người khác thuê mình
@@ -182,14 +182,14 @@ function nhip(h, key, s, ghiSap) {
   const P = h.pt ? ngay(h) : null, m = DEM.get(key) || {};
   if (P && P.ra.length) m.ra = t; // ủy thác (dangTheo): còn phân thân theo tới lúc này
   DEM.set(key, m);
-  if (P) { const het = boHet(P, t); if (het.length) { out.ghi = true; out.tin.push(`Phân thân ${het.join(", ")} đã hết giờ thuê — thuê lại ở khung Phân Thân.`); } }
+  if (P) { const het = boHet(P, t); if (het.length) { out.ghi = true; out.tin.push(`Phân thân ${het.join(", ")} hết giờ thuê rồi. Thuê lại ở khung Phân Thân.`); } }
   // tiền công: người khác thuê phân thân của mình (phan-than.js lam thue ghi h.ptCho / h.ptTin vào file của mình). ptChoK / ptChoKhoa: tiền công khóa
   // của bản lên VPS 05/11 16:09 (trên thực tế không phát sinh — game không có Mật đồ khóa) -> nhận chung như Mật đồ thường (anh 05/11: không khóa)
   if ("ptChoK" in h || "ptChoKhoa" in h) { h.ptCho = (h.ptCho | 0) + (h.ptChoK | 0); delete h.ptChoK; delete h.ptChoKhoa; out.ghi = true; }
   if ((h.ptCho | 0) > 0) {
     const x = N.BY.get(CF.mon);
     try { if (x) N.themChong(h, x, h.ptCho | 0); delete h.ptCho; delete h.ptDay; out.tui = true; out.ghi = true; }
-    catch { if (!h.ptDay) { h.ptDay = 1; out.ghi = true; out.tin.push(`Hành trang đầy — ${h.ptCho} ${tenMon()} tiền công phân thân đang chờ, dọn túi là tự vào`); } }
+    catch { if (!h.ptDay) { h.ptDay = 1; out.ghi = true; out.tin.push(`Hành trang đầy. ${h.ptCho} ${tenMon()} tiền công phân thân đang chờ — dọn túi là tự vào.`); } }
   }
   if (Array.isArray(h.ptTin) && h.ptTin.length) { out.tin.push(...h.ptTin); delete h.ptTin; out.ghi = true; }
   if (P) out.pt = { v: P.v | 0, ra: P.ra.slice() };

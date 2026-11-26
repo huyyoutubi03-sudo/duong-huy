@@ -37,7 +37,7 @@ export class ZoneLoading {
       this.last = f; this.next = this._pick(); this._preload(this.next); // tải sẵn ảnh lần sau -> lần sau hiện ngay
       this.bg.style.backgroundImage = `url("${BASE}${f}")`;
     }
-    this.name.textContent = text || `Đang vào ${name}…`;
+    this.name.textContent = text || `Vào ${name}… Đứng yên chờ.`;
     this.parts = []; this.k = 0; this.luc = performance.now(); this._draw();
     this.el.classList.remove("out"); this.el.classList.add("on"); this.on = true;
     return this;

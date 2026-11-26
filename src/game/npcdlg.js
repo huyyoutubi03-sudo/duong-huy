@@ -317,7 +317,7 @@ export class NpcDialog {
     else if (a === "SetCamp") api.setCamp(+p[0]);
     else if (a === "SetRank") api.setRank(+p[0]);
     else if (a === "Msg2Player") api.msg(fill(p[0]).replace(/<color(=[^>]*)?>/gi, ""));
-    else if (a === "Sale") { if (!api.sale(+p[0])) api.msg(`${this.cur ? this.cur.npc.name : "Cửa hàng"}: chưa bày hàng`); } // Dược điếm: thuốc (25/10); TẠM thợ rèn, tạp hóa
+    else if (a === "Sale") { if (!api.sale(+p[0])) api.msg(`${this.cur ? this.cur.npc.name : "Cửa hàng"}: chưa bày hàng — quay lại sau, đừng đứng đây chờ.`); } // Dược điếm: thuốc (25/10); TẠM thợ rèn, tạp hóa
     else if (a === "Msg2Faction") api.chat("CH_FACTION", name, fill(this.series(p[0]) >= 0 ? p[1] : p[0]).replace(/<color(=[^>]*)?>/gi, ""));
     // AddNote (sổ nhiệm vụ), SetRevPos (điểm hồi sinh ở phái), learn (add_xx — chiêu tự hiện theo cấp, xem windows.js): chưa cần
   }

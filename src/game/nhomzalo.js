@@ -20,7 +20,7 @@ export class NhomZalo {
   }
   open() {
     const dt = document.body.classList.contains("dt");
-    this.ghi.textContent = dt ? "Bấm Lưu ảnh, mở Zalo, quét mã rồi chọn ảnh vừa lưu" : "Mở Zalo trên điện thoại, quét mã để vào nhóm";
+    this.ghi.textContent = dt ? "Lưu ảnh đi, mở Zalo quét mã, chọn đúng ảnh vừa lưu." : "Mở Zalo trên điện thoại, quét mã là vào nhóm.";
     if (!dt && !this.w.daKeo) { // giữa màn hình; kéo tay rồi thì giữ chỗ
       const r = this.W.root.getBoundingClientRect(), s = r.width / 1024 || 1, M = this.W.M.nhomzalo.sec.Main;
       this.w.el.style.left = Math.round((innerWidth / 2 - r.left) / s - M.w / 2) + "px";
@@ -35,6 +35,6 @@ export class NhomZalo {
     const a = document.createElement("a");
     a.href = QR; a.download = "nhom-zalo.png";
     document.body.appendChild(a); a.click(); a.remove();
-    this.api.msg("Đang lưu ảnh mã QR nhóm Zalo");
+    this.api.msg("Đang lưu ảnh mã QR — chờ đấy, đừng bấm bừa.");
   }
 }

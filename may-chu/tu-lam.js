@@ -30,21 +30,21 @@ function lam(h, b, tk) {
   const viec = String(b.viec || "");
   if (viec === "mo") {
     const k = b.loai === "st" ? "st" : "dt", T = tt(h), g = gia(k);
-    if (T[k]) return { msg: `Hôm nay đã mở khóa ${TEN[k]}`, tl: tomTat(h) };
-    if ((h.xu | 0) < g) loi(`Cần ${g} Xu để mở khóa ${TEN[k]} hôm nay (trên người có ${h.xu | 0} Xu)`);
+    if (T[k]) return { msg: `Hôm nay mở khóa ${TEN[k]} rồi.`, tl: tomTat(h) };
+    if ((h.xu | 0) < g) loi(`Mở khóa ${TEN[k]} hôm nay cần ${g} Xu (trên người có ${h.xu | 0} Xu).`);
     h.xu = (h.xu | 0) - g; T[k] = 1;
     NK.ghi("xu", tk, h.name, `Trợ Thủ: mở khóa ${TEN[k]} hôm nay (${g} Xu)`);
-    return { msg: `Đã mở khóa ${TEN[k]} cả hôm nay — trừ ${g} Xu`, tl: tomTat(h) };
+    return { msg: `Mở khóa ${TEN[k]} cả hôm nay. Trừ ${g} Xu.`, tl: tomTat(h) };
   }
   if (viec === "dt" || viec === "st") {
-    if (!tt(h)[viec]) loi(`Chưa mở khóa ${TEN[viec]} hôm nay (Trợ Thủ → Tiện ích → Nhiệm vụ ngày)`);
+    if (!tt(h)[viec]) loi(`Chưa mở khóa ${TEN[viec]} hôm nay. Vào Trợ Thủ → Tiện ích → Nhiệm vụ ngày mà mở.`);
     const r = viec === "dt"
       ? DTAU.buocTu(h, { thuong: ["kn", "vat", "tien"].includes(b.thuong) ? b.thuong : "kn", giuHuy: Math.max(0, Math.min(10, b.giuHuy | 0)), gian: b.gian ? 1 : 0, huy: b.huy === "lai" ? "lai" : "dung" })
       : SAT.buocTu(h);
     if (r.mua) NK.ghi("cho", tk, h.name, `Trợ Thủ mua ${r.mua.ten} (Dã Tẩu: ${r.mua.yc}) — ${r.mua.noi} — ${N.tien(r.mua.gia)}`);
     return { ...r, tl: tomTat(h) };
   }
-  loi("Việc không rõ");
+  loi("Không có việc này. Đừng bấm nữa.");
 }
 
 module.exports = { lam, tomTat, CF };

@@ -2358,10 +2358,26 @@
       "ms:191": 50,
       "ms:215": 10,
       "ms:216": 10,
-      "ms:217": 10
+      "ms:217": 10,
+      "potion:1": 999,
+      "potion:2": 999,
+      "potion:3": 999,
+      "potion:4": 999,
+      "potion:5": 999,
+      "potion:6": 999,
+      "potion:7": 999,
+      "potion:8": 999,
+      "potion:9": 999,
+      "potion:10": 999,
+      "potion:11": 999,
+      "potion:12": 999,
+      "potion:13": 999,
+      "potion:14": 999,
+      "potion:15": 999,
+      "potion:44": 999
     }
   },
-  "_thuoc": "thuốc (anh chốt 25/10): 1 ô xếp chồng tối đa chongToiDa bình; mỗi lần mua tối đa muaToiDa bình (mọi loại); bán lại cho NPC = giá mua × banLai mỗi bình; mang trong túi tối đa mangToiDa bình TỔNG mọi loại (anh 25/10: vd 30 máu + 30 nội lực) — mua / nhặt / Trợ Thủ mua đều không vượt. Giá mua + tác dụng: assets/data/thuoc.json (giá client). chongRieng: món xếp chồng tới số riêng thay cho chongToiDa (anh 02/11: Mật đồ thần bí ms:196 tối đa 9999; khuya: Sát Thủ lệnh ms:399:* / Sát thủ giản ms:400:* tối đa 9999 — khóa kết thúc * = mọi món có khóa bắt đầu như vậy; anh 06/11 Tống Kim như client: Nhạc Vương Hồn Thạch qk:507, các hoàn Tống Kim, Chiến cổ, Lệnh Bài 50, Càn Khôn Tạo Hóa Đan 10)",
+  "_thuoc": "thuốc (anh chốt 25/10): 1 ô xếp chồng tối đa chongToiDa bình; mỗi lần mua tối đa muaToiDa bình (mọi loại); bán lại cho NPC = giá mua × banLai mỗi bình; mang trong túi tối đa mangToiDa bình TỔNG mọi loại (anh 25/10: vd 30 máu + 30 nội lực) — mua / nhặt / Trợ Thủ mua đều không vượt. Giá mua + tác dụng: assets/data/thuoc.json (giá client). chongRieng: món xếp chồng tới số riêng thay cho chongToiDa (anh 02/11: Mật đồ thần bí ms:196 tối đa 9999; khuya: Sát Thủ lệnh ms:399:* / Sát thủ giản ms:400:* tối đa 9999 — khóa kết thúc * = mọi món có khóa bắt đầu như vậy; anh 06/11 Tống Kim như client: Nhạc Vương Hồn Thạch qk:507, các hoàn Tống Kim, Chiến cổ, Lệnh Bài 50, Càn Khôn Tạo Hóa Đan 10). Bình máu / bình mana (potion:1–15, potion:44): mỗi loại xếp chồng + mang tối đa 999 bình (chủ server 25/11/2026 — thay giới hạn tổng 60 bình mọi loại).",
   "trenDat": {
     "giay": 133,
     "toiDa": 100

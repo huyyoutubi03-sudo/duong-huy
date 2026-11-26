@@ -85,12 +85,12 @@ export class MocNhanPanel {
     this.P = P;
     const el = (this.el = document.createElement("div"));
     el.className = "mn";
-    el.innerHTML = `<div class="mn-head"><b>Mộc nhân luyện công</b><button data-act="khang">Kháng</button><button data-act="reset" title="Xóa số đếm">Đặt lại</button><button data-act="thu" title="Thu gọn">–</button></div>
+    el.innerHTML = `<div class="mn-head"><b>Mộc nhân luyện công</b><button data-act="khang">Kháng</button><button data-act="reset" title="Xóa hết số đếm">Đặt lại</button><button data-act="thu" title="Thu gọn">–</button></div>
       <table class="mn-dps"><thead><tr><th>Hệ</th><th>DPS</th><th>Tổng</th><th>Đòn</th><th>Lớn nhất</th></tr></thead><tbody></tbody></table>
       <div class="mn-khang"><table><thead><tr><th></th>${HE.map((h, i) => `<th style="color:${MAU_HE[i]}">${h}</th>`).join("")}</tr></thead><tbody>${KHANG.map(([k, n]) => `<tr><td>${n}</td>${HE.map((_, i) => `<td><input type="number" data-k="${k}" data-i="${i}" step="5"></td>`).join("")}</tr>`).join("")}</tbody></table>
         <div class="mn-r"><span>Theo quái cấp</span><input type="number" data-in="cap" value="80" min="1" max="200"><button data-act="theo">Lấy kháng</button><button data-act="ve0">Về 0</button></div>
         <div class="mn-note">Kháng % (âm = yếu); quái thật mỗi hệ kháng khác nhau theo script cấp quái của client — "Lấy kháng" điền theo cấp đó.</div></div>
-      <div class="mn-note">Đếm cả độc; nghỉ ${NGHI} giây thì đòn sau tính lượt mới. Không tăng độ luyện kỹ năng (cọc trên đảo Tẩy Tủy thì có).</div>`;
+      <div class="mn-note">Đếm cả độc; nghỉ ${NGHI} giây thì đòn sau tính lượt mới. Không tăng độ luyện kỹ năng — cọc trên đảo Tẩy Tủy thì có, đừng nhầm.</div>`;
     // trên HUD nhưng dưới bảng quản trị + cửa sổ client (cùng z-index 4, đứng trước chúng — anh 29/10: bảng đè mất khung F10); bản trước
     // z-index 6 gắn cuối trang nên đè cả túi đồ / khung hội thoại
     const sau = document.querySelector(".dv.qt") || document.getElementById("jxwin");

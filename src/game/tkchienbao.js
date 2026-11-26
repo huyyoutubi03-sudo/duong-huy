@@ -175,7 +175,7 @@ function htmlCbB(p, ctx, tong) {
     + `<div class="thanh"><u style="width:calc(${qh.pt.toFixed(1)}% - 2px)"></u></div>`
     + `<div class="h">Năm người đứng đầu</div>`
     + (T.length ? r(["", "Tên", "Chức", "PK", "Tích lũy"], "xam") + T.map((x, i) => r([i + 1 + ".", tenP(x[0], x[1]), CHUC[x[5] | 0] || "", so(x[3]), so(x[2])], String(x[0]) === ten ? "toi" : "")).join("")
-      : `<div class="r xam">Chưa có ai lập công</div>`)
+      : `<div class="r xam">Chưa có ai lập công — đánh đi rồi hãy coi.</div>`)
     + (hang >= 1 && hang <= 5 ? "" : `<div class="minh">${r([hang ? hang + "." : "–", tenP(ten, pm), CHUC[m.chuc], so(m.giet), so(m.diem)], "toi")}</div>`);
   return `<div class="tieu">Chiến báo</div>`
     + `<div class="dai">${tenP("Tống " + so(D[0]), 0)} : ${tenP(so(D[1]) + " Kim", 1)} · ${tg} · Nguyên Soái ${soaiChu(p, now, true)}</div>`
@@ -205,8 +205,8 @@ function htmlKqB(ket, ctx, p, dem) {
   const qua = th
     ? `<div class="qua"><div class="oT${th.kn > 0 ? "" : " mat"}"><img src="${KN_HINH}" alt="" draggable="false"></div>${oMon(HT, th.ht, "Hồn<br>Thạch")}${oMon(HC, th.hc, "Huân<br>công")}`
       + `<div class="oT rong"><div><em>+${so(th.diemTk)}</em><span>điểm Tống Kim</span></div></div></div>`
-      + `<div class="dg xam">${[th.ht > 0 ? `${tenMon(HT, "Nhạc Vương Hồn Thạch")} ×${th.ht}` : "", th.hc > 0 ? `Huân công bài ×${th.hc}` : ""].filter(Boolean).join(" · ") || "Không có vật phẩm thưởng"}</div>`
-    : `<div class="dg xam">${me && (+me.diem || 0) < DIEM_MIN ? `Chưa đủ ${DIEM_MIN} điểm trận — không có thưởng` : "Không có thưởng cuối trận"}</div>`;
+      + `<div class="dg xam">${[th.ht > 0 ? `${tenMon(HT, "Nhạc Vương Hồn Thạch")} ×${th.ht}` : "", th.hc > 0 ? `Huân công bài ×${th.hc}` : ""].filter(Boolean).join(" · ") || "Không có vật phẩm thưởng đâu."}</div>`
+    : `<div class="dg xam">${me && (+me.diem || 0) < DIEM_MIN ? `Chưa đủ ${DIEM_MIN} điểm trận — không có thưởng` : "Không có thưởng cuối trận đâu."}</div>`;
   const phai = `<div class="dau ${LOP[thang]}">Phe ${PHE[thang]} thắng</div>`
     + (ket.lyDo ? `<div class="dg xam">${esc(ket.lyDo)}</div>` : "")
     + `<div class="dg">${tenP("Tống " + so(D[0]), 0)} — ${tenP(so(D[1]) + " Kim", 1)}</div>`
@@ -321,9 +321,9 @@ export const ChienBao = {
   baoThuong(ket) {
     const api = TongKim.api; if (!api || typeof api.msg !== "function") return;
     const me = ket.me && typeof ket.me === "object" ? ket.me : null, th = thuongCua(ket);
-    if (me) api.msg(`Chiến báo: bạn hạng ${me.hang | 0} · ${so(me.diem)} điểm trận · ${CHUC[me.chuc | 0] || ""} · hạ ${so(me.giet)} người, ${so(me.binh)} quân · tử vong ${so(me.chet)}`, "#ffd54a");
+    if (me) api.msg(`Chiến báo: ngươi hạng ${me.hang | 0} · ${so(me.diem)} điểm trận · ${CHUC[me.chuc | 0] || ""} · hạ ${so(me.giet)} người, ${so(me.binh)} quân · tử vong ${so(me.chet)}`, "#ffd54a");
     // dòng phần thưởng: máy chủ gửi qua nhịp (h.tkTin — main.js in ra) — không in ở đây cho khỏi lặp (06/11); chỉ báo khi không có thưởng
-    if (!th) api.msg(me && (+me.diem || 0) < DIEM_MIN ? `Chiến báo: chưa đủ ${DIEM_MIN} điểm trận — không có thưởng cuối trận` : "Chiến báo: không có thưởng cuối trận", "#c9b27a");
+    if (!th) api.msg(me && (+me.diem || 0) < DIEM_MIN ? `Chiến báo: chưa đủ ${DIEM_MIN} điểm trận — không có thưởng cuối trận đâu, đánh thêm đi.` : "Chiến báo: không có thưởng cuối trận đâu.", "#c9b27a");
   },
   // ---------- chỗ đặt ----------
   // cbA: chỗ client trong khung 1024 × 768 giữa màn (màn hẹp thu như uiwin.js), đè bảng gọn thì dịch trái (không đủ chỗ thì thu nhỏ); kqA: giữa màn;

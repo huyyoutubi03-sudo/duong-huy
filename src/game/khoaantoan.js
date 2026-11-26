@@ -102,7 +102,7 @@ export class KhoaAnToan {
     }
     const so = wrap.querySelector(".kat-so");
     const ve = () => { so.textContent = "*".repeat(s.length) + "·".repeat(SO - s.length); };
-    const dongY = () => { if (s.length !== SO) return hop.loi(`Nhập đủ ${SO} chữ số`); const v = s; s = ""; ve(); xong(v); };
+    const dongY = () => { if (s.length !== SO) return hop.loi(`Nhập đủ ${SO} chữ số, thiếu thì đừng bấm.`); const v = s; s = ""; ve(); xong(v); };
     const P = {
       them: (c) => { if (s.length >= SO) return; s += c; ve(); hop.loi(""); },
       xoa: () => { s = ""; ve(); }, lui: () => { s = s.slice(0, -1); ve(); }, dongY,
@@ -143,12 +143,12 @@ export class KhoaAnToan {
   // ---------- mở khóa (can-mk2) ----------
   hoiMo(cau) {
     return new Promise((xong) => {
-      const hop = this._hop("KHÓA AN TOÀN", `<div>${esc(cau || "Việc này cần mở khóa an toàn")}</div>` +
-        `<div class="kat-nho">Nhập mật khẩu cấp 2 (6 chữ số). Mở tới khi thoát game hoặc tải lại trang. Quên mật khẩu cấp 2: nhắn GM.</div>`, [], "kat-chiphim");
+      const hop = this._hop("KHÓA AN TOÀN", `<div>${esc(cau || "Việc này cần mở khóa an toàn đã, đừng vội")}</div>` +
+        `<div class="kat-nho">Nhập mật khẩu cấp 2 (6 chữ số). Mở tới khi thoát game hoặc tải lại trang. Quên thì nhắn GM, đừng có đoán.</div>`, [], "kat-chiphim");
       const dong = (v) => { this._dong(hop); xong(v); };
       this._phim(hop, async (so) => {
         hop.ban(true); hop.loi("");
-        try { const r = await Net.baoMat({ viec: "mo", mk: so }); this.capNhat(r); dong(true); if (this.api.msg) this.api.msg("Đã mở khóa an toàn — tới khi thoát game hoặc tải lại trang"); }
+        try { const r = await Net.baoMat({ viec: "mo", mk: so }); this.capNhat(r); dong(true); if (this.api.msg) this.api.msg("Đã mở khóa an toàn — tới khi thoát game hoặc tải lại trang thì thôi."); }
         catch (e) { hop.ban(false); hop.loi(e.message); if (e.ma === "het-phien") dong(false); }
       }, () => dong(false));
       hop.huy = () => dong(false);
@@ -160,8 +160,8 @@ export class KhoaAnToan {
   hoiDat(cau) {
     return new Promise((xong) => {
       const ten = (Net.me && Net.me.ten) || "";
-      const hop = this._hop("ĐẶT MẬT KHẨU CẤP 2", `<div>${esc(cau || "Việc này cần mật khẩu cấp 2")}</div>` +
-        `<div class="kat-nho">Đặt 1 lần cho cả tài khoản: ${SO} chữ số, bấm trên bàn phím số. Cần khi ${VIEC_CAN}. Không trùng mật khẩu đăng nhập.</div>` +
+      const hop = this._hop("ĐẶT MẬT KHẨU CẤP 2", `<div>${esc(cau || "Việc này cần mật khẩu cấp 2 đã")}</div>` +
+        `<div class="kat-nho">Đặt 1 lần cho cả tài khoản: ${SO} chữ số, bấm trên bàn phím số. Cần khi ${VIEC_CAN}. Không được trùng mật khẩu đăng nhập.</div>` +
         `<form class="kat-form" onsubmit="return false"><input type="text" name="username" autocomplete="username" value="${esc(ten)}" hidden>` +
         `<label>Mật khẩu đăng nhập<input type="password" data-o="mk1" autocomplete="current-password" maxlength="64"></label></form>` +
         `<div class="kat-o" data-so="moi" data-tieu="MẬT KHẨU CẤP 2 MỚI" data-cau="${SO} chữ số"><span>Mật khẩu cấp 2</span><b>bấm để nhập</b></div>` +
@@ -172,13 +172,13 @@ export class KhoaAnToan {
       hop.huy = () => dong(false);
       hop.ok = async () => {
         const mk1 = hop.gt("mk1");
-        if (!mk1) return hop.loi("Nhập mật khẩu đăng nhập");
-        if (moi().length !== SO) return hop.loi("Bấm ô Mật khẩu cấp 2 để nhập 6 chữ số");
-        if (moi() !== lai()) return hop.loi("2 lần nhập mật khẩu cấp 2 không giống nhau");
+        if (!mk1) return hop.loi("Nhập mật khẩu đăng nhập vào, đừng để trống.");
+        if (moi().length !== SO) return hop.loi("Bấm ô Mật khẩu cấp 2 mà nhập 6 chữ số, đừng ngồi nhìn.");
+        if (moi() !== lai()) return hop.loi("2 lần nhập mật khẩu cấp 2 khác nhau. Nhập lại cho khớp đi.");
         hop.ban(true); hop.loi("");
         try {
           const r = await Net.baoMat({ viec: "dat", mk1, moi: moi() }); this.capNhat(r);
-          dong(true); if (this.api.msg) this.api.msg("Đã đặt mật khẩu cấp 2 — khóa an toàn đang mở tới khi thoát game hoặc tải lại trang");
+          dong(true); if (this.api.msg) this.api.msg("Đã đặt mật khẩu cấp 2 — khóa an toàn đang mở tới khi thoát game hoặc tải lại trang. Nhớ đấy.");
         } catch (e) { hop.ban(false); hop.loi(e.message); if (e.ma === "het-phien") dong(false); }
       };
       this._mo(hop);
@@ -197,11 +197,11 @@ export class KhoaAnToan {
       const dong = (v) => { this._dong(hop); xong(v); };
       hop.huy = () => dong(false);
       hop.ok = async () => {
-        if (cu().length !== SO) return hop.loi("Bấm ô Mật khẩu cũ để nhập");
-        if (moi().length !== SO) return hop.loi("Bấm ô Mật khẩu mới để nhập 6 chữ số");
-        if (moi() !== lai()) return hop.loi("2 lần nhập mật khẩu mới không giống nhau");
+        if (cu().length !== SO) return hop.loi("Bấm ô Mật khẩu cũ mà nhập, đừng để trống.");
+        if (moi().length !== SO) return hop.loi("Bấm ô Mật khẩu mới mà nhập 6 chữ số.");
+        if (moi() !== lai()) return hop.loi("2 lần nhập mật khẩu mới khác nhau. Nhập lại cho khớp đi.");
         hop.ban(true); hop.loi("");
-        try { const r = await Net.baoMat({ viec: "doi", cu: cu(), moi: moi() }); this.capNhat(r); dong(true); if (this.api.msg) this.api.msg("Đã đổi mật khẩu cấp 2"); }
+        try { const r = await Net.baoMat({ viec: "doi", cu: cu(), moi: moi() }); this.capNhat(r); dong(true); if (this.api.msg) this.api.msg("Đã đổi mật khẩu cấp 2 xong."); }
         catch (e) { hop.ban(false); hop.loi(e.message); if (e.ma === "het-phien") dong(false); }
       };
       this._mo(hop);
@@ -213,7 +213,7 @@ export class KhoaAnToan {
     return new Promise((xong) => {
       const ten = (Net.me && Net.me.ten) || "";
       const hop = this._hop("ĐỔI MẬT KHẨU ĐĂNG NHẬP",
-        `<div class="kat-nho">Mật khẩu mới ít nhất ${MK1_MIN} ký tự, khác tên tài khoản. Đổi xong máy này vẫn chơi tiếp; lần đăng nhập sau dùng mật khẩu mới.</div>` +
+        `<div class="kat-nho">Mật khẩu mới ít nhất ${MK1_MIN} ký tự, khác tên tài khoản. Đổi xong thì máy này vẫn chơi tiếp; lần đăng nhập sau dùng mật khẩu mới, nhớ lấy.</div>` +
         `<form class="kat-form" onsubmit="return false"><input type="text" name="username" autocomplete="username" value="${esc(ten)}" hidden>` +
         `<label>Mật khẩu đang dùng<input type="password" data-o="cu" autocomplete="current-password" maxlength="64"></label>` +
         `<label>Mật khẩu mới<input type="password" data-o="moi" autocomplete="new-password" maxlength="64"></label>` +
@@ -223,16 +223,16 @@ export class KhoaAnToan {
       hop.huy = () => dong(false);
       hop.ok = async () => {
         const cu = hop.gt("cu"), moi = hop.gt("moi"), lai = hop.gt("lai");
-        if (!cu) return hop.loi("Nhập mật khẩu đang dùng");
-        if (moi.length < MK1_MIN) return hop.loi(`Mật khẩu mới ít nhất ${MK1_MIN} ký tự`);
-        if (moi.toLowerCase() === ten.toLowerCase()) return hop.loi("Mật khẩu không được trùng tên tài khoản");
-        if (moi !== lai) return hop.loi("2 lần nhập mật khẩu mới không giống nhau");
+        if (!cu) return hop.loi("Nhập mật khẩu đang dùng vào.");
+        if (moi.length < MK1_MIN) return hop.loi(`Mật khẩu mới ít nhất ${MK1_MIN} ký tự, ngắn hơn thì đừng hòng.`);
+        if (moi.toLowerCase() === ten.toLowerCase()) return hop.loi("Mật khẩu trùng tên tài khoản thì không được. Đổi đi.");
+        if (moi !== lai) return hop.loi("2 lần nhập mật khẩu mới khác nhau. Nhập lại cho khớp đi.");
         hop.ban(true); hop.loi("");
         try {
           const r = await Net.call("POST", "bao-mat", { viec: "doiMk1", cu, moi }); this.capNhat(r);
           for (const i of hop.el.querySelectorAll("input[type=password]")) i.value = "";
-          dong(true); if (this.api.msg) this.api.msg("Đã đổi mật khẩu đăng nhập — lần đăng nhập sau dùng mật khẩu mới");
-        } catch (e) { hop.ban(false); hop.loi(e.boQua ? "Chưa mở khóa an toàn — chưa đổi" : e.message); if (e.ma === "het-phien") dong(false); }
+          dong(true); if (this.api.msg) this.api.msg("Đã đổi mật khẩu đăng nhập — lần đăng nhập sau dùng mật khẩu mới, nhớ lấy.");
+        } catch (e) { hop.ban(false); hop.loi(e.boQua ? "Chưa mở khóa an toàn — chưa đổi được. Mở khóa trước đi." : e.message); if (e.ma === "het-phien") dong(false); }
       };
       this._mo(hop);
     });
@@ -252,9 +252,9 @@ export class KhoaAnToan {
       const { co, mo } = this.tt;
       const tt = !co ? `<b class="kat-chua">Chưa đặt mật khẩu cấp 2</b>` : mo ? `<b class="kat-mo">Đang mở</b> — tới khi thoát game hoặc tải lại trang` : `<b class="kat-khoa">Đang khóa</b>`;
       nd.innerHTML = `<div class="kat-tt"><i class="kat-ic ${co && !mo ? "dong" : "mo"}"></i>${tt}</div>` +
-        `<div class="kat-nho">Mật khẩu cấp 2 hỏi khi ${VIEC_CAN}. Nhập 1 lần dùng tới khi thoát game. Rương chứa đồ vẫn dùng mật mã rương riêng như cũ.</div>` +
-        (khoaNhap > 0 ? `<div class="kat-loi">Đang khóa nhập do nhập sai nhiều lần — còn khoảng ${Math.ceil(khoaNhap / 60000)} phút</div>` : "") +
-        `<div class="kat-nho">Quên mật khẩu cấp 2: nhắn GM để được xác minh và xóa.</div>`;
+        `<div class="kat-nho">Mật khẩu cấp 2 hỏi khi ${VIEC_CAN}. Nhập 1 lần là dùng tới khi thoát game, đừng hỏi lại. Rương chứa đồ vẫn dùng mật mã rương riêng như cũ.</div>` +
+        (khoaNhap > 0 ? `<div class="kat-loi">Nhập sai nhiều lần nên đang khóa nhập — còn khoảng ${Math.ceil(khoaNhap / 60000)} phút</div>` : "") +
+        `<div class="kat-nho">Quên mật khẩu cấp 2 thì nhắn GM để xác minh và xóa, đừng có đoán.</div>`;
       day.innerHTML = [!co ? ["Đặt mật khẩu cấp 2", "dat"] : mo ? ["Khóa lại", "khoa"] : ["Mở khóa", "mo"], co ? ["Đổi mật khẩu cấp 2", "doi2"] : null, ["Đổi mật khẩu đăng nhập", "doi1"], ["Đóng", "huy"]]
         .filter(Boolean).map(([t, k]) => `<span class="kat-nut" data-k="${k}">${t}</span>`).join("");
     };
@@ -264,7 +264,7 @@ export class KhoaAnToan {
       khoaNhap = 0;
       if (k === "mo") await this.hoi("can-mk2");
       else if (k === "dat") await this.hoi("can-dat-mk2", "Đặt mật khẩu cấp 2 cho tài khoản");
-      else if (k === "khoa") { try { this.capNhat(await Net.baoMat({ viec: "khoa" })); if (this.api.msg) this.api.msg("Đã khóa an toàn"); } catch (e) { hop.loi(e.message); } }
+      else if (k === "khoa") { try { this.capNhat(await Net.baoMat({ viec: "khoa" })); if (this.api.msg) this.api.msg("Đã khóa an toàn rồi."); } catch (e) { hop.loi(e.message); } }
       else if (k === "doi2") await this.doiMk2();
       else if (k === "doi1") await this.doiMk1();
       if (this._khung === khung) khung.ve();

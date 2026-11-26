@@ -248,7 +248,7 @@ export class HuongDan {
     if (cu && cu.value !== this.tim) cu.value = this.tim;
     if (!cu || this.trang.dataset.tc !== String(this.tab)) {
       this.trang.dataset.tc = String(this.tab);
-      this.trang.innerHTML = `<div class="hd-ten" style="left:6px;top:9px">${n ? "Phần thưởng" : "Tra cứu"}</div><input class="hd-o-tim" maxlength="40" spellcheck="false" placeholder="Tìm món, rương, hoạt động…" value="${esc(this.tim)}">` +
+      this.trang.innerHTML = `<div class="hd-ten" style="left:6px;top:9px">${n ? "Phần thưởng" : "Tra cứu"}</div><input class="hd-o-tim" maxlength="40" spellcheck="false" placeholder="Gõ tên món, rương, hoạt động…" value="${esc(this.tim)}">` +
         `<div class="hd-ds hd-idx"></div><div class="hd-noi"></div>`;
     }
     this._veIdx();
@@ -262,7 +262,7 @@ export class HuongDan {
     const D = this.dsTc(), k = this.tab === 2 ? 2 : 1, tat = D.flatMap(([, m]) => m);
     if (!tat.find((m) => m.id === this.muc[k])) this.muc[k] = tat[0] ? tat[0].id : null;
     idx.innerHTML = D.length ? D.map(([g, ds]) => `<div class="hd-r n">${esc(g.ten)}</div>` + ds.map((m) => `<div class="hd-r${m.id === this.muc[k] ? " on" : ""}" data-muc="${esc(m.id)}">· ${esc(m.ten)}</div>`).join("")).join("")
-      : `<div class="hd-mo">Không thấy mục nào khớp "${esc(this.tim)}"</div>`;
+      : `<div class="hd-mo">Không tìm ra mục nào khớp "${esc(this.tim)}"</div>`;
     const [, m] = this.timMuc(this.muc[k]);
     noi.innerHTML = m ? this.noiHtml(m) : "";
     noi.scrollTop = 0;
@@ -355,7 +355,7 @@ export class HuongDan {
     if (m && (g.id === "thuong") === (this.tab === 2)) return `<div class="hd-dt-lui" data-dt="lui">‹ ${esc(g.ten)}</div><div class="hd-dt-ct2">${this.noiHtml(m)}</div>`;
     const L = ((this.TC && this.TC.nhom) || []).filter((x) => (this.tab === 2 ? x.id === "thuong" : x.id !== "thuong"));
     if (!this.dtNhom || !L.find((x) => x.id === this.dtNhom)) this.dtNhom = L[0] ? L[0].id : null;
-    return `<div class="hd-dt-tim"><input class="hd-o-tim" maxlength="40" spellcheck="false" placeholder="Tìm: rương, món, hoạt động…" value="${esc(this.tim)}"></div>` +
+    return `<div class="hd-dt-tim"><input class="hd-o-tim" maxlength="40" spellcheck="false" placeholder="Gõ: rương, món, hoạt động…" value="${esc(this.tim)}"></div>` +
       (L.length > 1 ? `<div class="hd-dt-chip">${L.map((x) => `<span data-dt="n${esc(x.id)}"${x.id === this.dtNhom ? ' class="on"' : ""}>${esc(x.ten)}</span>`).join("")}</div>` : "") + `<div class="hd-dt-ds"></div>`;
   }
   _veDsDt() {
@@ -363,7 +363,7 @@ export class HuongDan {
     const L = ((this.TC && this.TC.nhom) || []).filter((x) => (this.tab === 2 ? x.id === "thuong" : x.id !== "thuong"));
     const ds = this.tim.trim() ? L.flatMap((g) => this.loc(g.muc)) : this.loc((L.find((x) => x.id === this.dtNhom) || { muc: [] }).muc);
     k.innerHTML = ds.length ? ds.map((m) => `<div class="hd-dt-m" data-muc="${esc(m.id)}"><div><b>${esc(m.ten)}</b>${m.tom ? `<em>${md(m.tom)}</em>` : ""}</div><i>›</i></div>`).join("")
-      : `<div class="hd-mo">Không thấy mục nào khớp "${esc(this.tim)}"</div>`;
+      : `<div class="hd-mo">Không tìm ra mục nào khớp "${esc(this.tim)}"</div>`;
     const chip = this.dt.querySelector(".hd-dt-chip"); if (chip) chip.style.display = this.tim.trim() ? "none" : "";
   }
   _bamDt(e) {
