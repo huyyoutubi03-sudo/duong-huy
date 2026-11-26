@@ -161,6 +161,17 @@ async function taiKhoThat() {
     if (skillTip) setTextColors(skillTip.colors); // tên màu <color=…> của chữ client = bảng màu engine
     Object.assign(P, { jx, npc, maps, mons: mons.mons, reach: mons.reach, chr, only: (pack && pack.server) || null, factions: skills.factions, skillDb: noiCapChieu(suaVoCong(skills.skills)),skillIcon: skIcons.skills, skillTip, npcDlg, mapNpcs, vatBanDo, trangThai, npcThem, pld: pldData, satThu: satData, vuotAi: vaData, tayTuy: ttData, luyenKy: (lkData && lkData.ky) || {}, tin: (tinData && tinData.tin) || [], ungHo: (tinData && tinData.ungHo) || null, audio, ui, hud, win, mobstats, fx, roi, vc, revive, maplist, settings: loadSettings(), dev: { speed: 1 } });
     datLuyen(P.skillDb, P.factions); // chiêu luyện (sách 90 / 120 có cờ luyện) — rules.js LUYEN
+    // Bản đồ thế giới (hud.js setTheGioi — nút WorldMapBtn): 1 mục / khóa bản đồ — tên, cấp, loại, rect gốc của client, ảnh mini có sẵn.
+    // Không bịa địa danh; bãi trùng khóa (Bến thuyền 1/2/3, Phong Lăng độ 2 bờ, Vượt Ải 2 cấp) lấy 1 mục đầu tiên.
+    {
+      const thay = new Map();
+      for (const z of maps.zones) {
+        const m = maps.maps[z.map], c = m && m.client, info = hud.M.minimap.maps[z.map];
+        if (!c || !c.rect || !info || thay.has(z.map)) continue;
+        thay.set(z.map, { id: z.id, n: z.n, map: z.map, lo: z.lo ?? null, hi: z.hi ?? null, kind: z.kind, rect: c.rect, region: c.region || null, file: info.file, dong: /động|Quật/.test(z.n) || /山洞/.test(c.path || "") });
+      }
+      hud.setTheGioi([...thay.values()]);
+    }
     P.audio.setVolume("music", P.settings.music / 100); P.audio.setVolume("sfx", P.settings.sound / 100); if (P.settings.muted) P.audio.setMuted(true); applyBright();
     // con trỏ chuột của client (assets/ui/hud/cursor) cho cả trang; trên quái đổi sang con trỏ tấn công
     document.documentElement.style.setProperty("--jxcur", P.hud.cursorCss(0));

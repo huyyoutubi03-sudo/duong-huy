@@ -235,7 +235,7 @@ export class DienThoai {
 <div class="dt-auto" data-a="autonhanh">AUTO</div>
 <div class="dt-zalo" data-a="zalo" title="Nhóm Zalo"><i style="background-image:url('${A}ui/hud/btn/zalo.png')"></i></div>
 <div class="dt-mo" data-a="hang"><i></i></div>
-<div class="dt-bdl"><div class="dt-bdl-dau"><span></span><em></em><b data-a="bdl">✕</b></div><div class="dt-bdl-cv"><canvas></canvas></div></div>
+<div class="dt-bdl"><div class="dt-bdl-dau"><span></span><em></em><i data-a="thegioi">Thế giới</i><i data-a="sondong">Sơn động</i><b data-a="bdl">✕</b></div><div class="dt-bdl-cv"><canvas></canvas></div></div>
 <div class="dt-bang">
   <div class="dt-dau"><span class="dt-bien"></span><span class="dt-nutda" data-a="gon"></span></div>
   <div class="dt-luoi">${LUOI.map(([t, k], i) => `<div class="dt-o" data-a="l${i}"><div class="dt-khung">${ic(k, 36)}<b class="dt-so"></b></div><span>${t}</span></div>`).join("")}</div>
@@ -369,6 +369,8 @@ export class DienThoai {
     if (k === "moip") return;
     if (k === "mm") return this._moBdl(true); // chạm bản đồ nhỏ: bản đồ lớn (không chạy tới chỗ chạm nữa — anh 30/10)
     if (k === "bdl") return this._moBdl(false);
+    if (k === "thegioi") { P.audio.ui("click"); return this.H.moTheGioi && this.H.moTheGioi(); } // nút Thế giới ở đầu khung bản đồ lớn: bản đồ thế giới (hud.js — như nút WorldMapBtn ở máy tính)
+    if (k === "sondong") { P.audio.ui("click"); return this.H.moHang && this.H.moHang(); } // nút Sơn động ở đầu khung bản đồ lớn: bản đồ toàn bãi đang đứng (hud.js — như nút CaveMapBtn ở máy tính; "hang" đã là khóa Mở rộng/Thu gọn hàng icon ở trên)
     // chạm chân dung thanh trên: khung chọn chân dung (anh 29/10), chạm lần nữa: đóng
     if (k === "chan") { P.audio.ui("click"); const w = P.win.get("portrait"); if (w.visible) return w.hide(); if (GW) GW.closeAll(); return w.show(); }
     if (k === "gon") {

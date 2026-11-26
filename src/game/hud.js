@@ -85,6 +85,7 @@ export class Hud {
     this.M = meta; this.el = null; this.toggles = {};
     this.msgs = []; this.tab = "Tất cả"; this.channel = "CH_NEARBY"; this.lastSend = {}; this.matToi = null; // matToi: người nhận tin mật (datMat)
     this.mmImg = null; this.mmMap = null; this.mmBig = false;
+    this._tg = null; this._tgImgs = new Map(); this._panel = null; this._sCuoi = null; // bản đồ lớn: thế giới + sơn động (xem _moPanel)
   }
 
   mount(parent, cb = {}) {
@@ -925,8 +926,131 @@ export class Hud {
       set(".jx-katbtn", () => ({ left: R.x - dx - 21 - X0 })); // ổ khóa an toàn: vẫn sát trái bản đồ nhỏ
       return;
     }
-    const tip = { BtnFlag: "Cắm cờ: bấm lên bản đồ nhỏ là chạy tới chỗ đó, đừng bấm lung tung.", WorldMapBtn: "Bản đồ thế giới — chưa có, đừng đòi.", CaveMapBtn: "Bản đồ sơn động — chưa có, đừng đòi." }[k];
-    if (tip) this.msg(tip);
+    if (k === "WorldMapBtn") return this.moTheGioi();
+    if (k === "CaveMapBtn") return this.moHang();
+    if (k === "BtnFlag") this.msg("Cắm cờ: bấm lên bản đồ nhỏ là chạy tới chỗ đó, đừng bấm lung tung.");
+  }
+  // ---------- bản đồ lớn: thế giới + sơn động (toàn bãi đang đứng) ----------
+  // Dữ liệu do main.js đưa 1 lần sau khi tải kho: 1 mục / khóa bản đồ — tên, cấp, loại, rect gốc của client, ảnh mini có sẵn.
+  // Không bịa địa danh, không vẽ lại art mới. Vẽ lại theo nhịp của drawMinimap (throttle trong _vePanel).
+  setTheGioi(ds) {
+    this._tg = ds || [];
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const z of this._tg) { const r = z.rect; x0 = Math.min(x0, r[0]); y0 = Math.min(y0, r[1]); x1 = Math.max(x1, r[2]); y1 = Math.max(y1, r[3]); }
+    this._tgGioi = { x0, y0, x1, y1 };
+  }
+  _tgImg(z) {
+    let im = this._tgImgs.get(z.map);
+    if (!im) { im = new Image(); im.onload = () => { if (this._panel && this._panel.loai === "tg") this._vePanel(this._sCuoi, true); }; im.src = BASE + z.file; this._tgImgs.set(z.map, im); }
+    return im.complete && im.naturalWidth ? im : null;
+  }
+  moTheGioi() {
+    if (this._panel && this._panel.loai === "tg") return this._dongPanel();
+    if (!this._tg || !this._tg.length) return this.msg("Chưa có dữ liệu bản đồ thế giới.");
+    this._moPanel("tg", "Bản đồ thế giới");
+  }
+  moHang() {
+    if (this._panel && this._panel.loai === "hang") return this._dongPanel();
+    this._moPanel("hang", "");
+  }
+  _dongPanel() { if (this._panel) { this._panel.el.remove(); this._panel = null; } }
+  _moPanel(loai, tieuDe) {
+    this._dongPanel();
+    const el = document.createElement("div");
+    el.className = "jx-bdlon";
+    el.innerHTML = `<div class="jx-bdlon-dau"><b></b><span></span><i>✕</i></div><canvas></canvas>`;
+    el.querySelector("i").onclick = () => this._dongPanel();
+    document.body.appendChild(el);
+    const cv = el.querySelector("canvas"), dpr = Math.min(2, devicePixelRatio || 1);
+    let W = 720, H = 280;
+    if (loai === "hang") {
+      const info = this.mmMap && this.M.minimap.maps[this.mmMap.key];
+      W = Math.min(760, el.clientWidth || 760);
+      H = info ? Math.round(W * info.h / info.w) : 360;
+      H = Math.max(200, Math.min(H, 560));
+    }
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    const P = this._panel = { loai, el, cv, dpr, W, H, chon: -1, ve: 0, tieuDe, diem: [] };
+    el.querySelector("b").textContent = tieuDe;
+    if (loai === "tg") {
+      el.querySelector("span").textContent = "Chấm trắng là ngươi. Bấm vào chấm vàng mà xem tên bãi.";
+      cv.onclick = (e) => {
+        const r = cv.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width * W, fy = (e.clientY - r.top) / r.height * H;
+        let best = -1, bd = 144;
+        P.diem.forEach((d, i) => { const dd = (d.x - fx) ** 2 + (d.y - fy) ** 2; if (dd < bd) { bd = dd; best = i; } });
+        if (best >= 0) {
+          P.chon = best; const z = this._tg[best];
+          el.querySelector("span").textContent = `${z.n}${z.lo != null ? ` · cấp ${z.lo}–${z.hi}` : ""}${z.dong ? " · sơn động" : ""}`;
+          this._vePanel(this._sCuoi, true);
+        }
+      };
+    }
+    this._vePanel(this._sCuoi, true);
+  }
+  _vePanel(s, luon) {
+    const P = this._panel; if (!P) return;
+    const t = performance.now(), doi = P.loai === "tg" ? 400 : 90;
+    if (!luon && t - P.ve < doi) return; P.ve = t;
+    const g = P.cv.getContext("2d");
+    g.setTransform(P.dpr, 0, 0, P.dpr, 0, 0);
+    if (P.loai === "tg") this._veTheGioi(g, P, s); else this._veHang(g, P, s);
+  }
+  // bản đồ thế giới: ảnh mini từng bãi đặt đúng rect gốc của client, chấm từng bãi ở điểm region, chấm trắng = người chơi
+  _veTheGioi(g, P, s) {
+    const { W, H } = P, G = this._tgGioi, pad = 8;
+    const k = Math.min((W - pad * 2) / (G.x1 - G.x0), (H - pad * 2) / (G.y1 - G.y0));
+    const ox = (W - (G.x1 - G.x0) * k) / 2 - G.x0 * k, oy = (H - (G.y1 - G.y0) * k) / 2 - G.y0 * k;
+    const X = (x) => ox + x * k, Y = (y) => oy + y * k;
+    g.fillStyle = "#0a0f0b"; g.fillRect(0, 0, W, H);
+    const cur = this.mmMap && this.mmMap.key;
+    for (const z of this._tg) {
+      const [a, b, c, d] = z.rect, x = X(a), y = Y(b), w = (c - a) * k, h = (d - b) * k;
+      const im = this._tgImg(z);
+      if (im) g.drawImage(im, x, y, w, h); else { g.fillStyle = "#16211a"; g.fillRect(x, y, w, h); }
+      g.lineWidth = z.map === cur ? 2 : 1; g.strokeStyle = z.map === cur ? "#ffe48a" : "rgba(255,216,78,.25)"; g.strokeRect(x + .5, y + .5, w - 1, h - 1);
+    }
+    P.diem = [];
+    g.font = `12px "VK Sans Serif 12", "IBM Plex Mono", monospace`; g.textAlign = "center"; g.textBaseline = "bottom";
+    const ten = (x, y, t, mau) => { g.fillStyle = "#000"; for (const [a, b] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) g.fillText(t, x + a, y + b); g.fillStyle = mau; g.fillText(t, x, y); };
+    this._tg.forEach((z, i) => {
+      const rg = z.region || [(z.rect[0] + z.rect[2]) / 2, (z.rect[1] + z.rect[3]) / 2];
+      const x = X(rg[0]), y = Y(rg[1]);
+      P.diem.push({ x, y });
+      g.fillStyle = "#000"; g.fillRect(x - 3, y - 3, 7, 7);
+      g.fillStyle = z.map === cur ? "#ffffff" : z.dong ? "#ff8c42" : "#ffd94e";
+      if (z.dong) g.fillRect(x - 2, y - 2, 5, 5); else { g.beginPath(); g.arc(x, y, 2.5, 0, Math.PI * 2); g.fill(); }
+      if (z.map === cur || P.chon === i || z.kind === "thành" || z.kind === "thôn") ten(x, y - 4, z.n, z.map === cur ? "#ffffff" : "#ffe48a");
+    });
+    if (s && s.player && cur) {
+      const z = this._tg.find((v) => v.map === cur), im = this.mmImg, sc = this.M.minimap.scale;
+      if (z && im) {
+        const fx = Math.max(0, Math.min(1, s.player.x * sc / im.width)), fy = Math.max(0, Math.min(1, s.player.y * sc / im.height));
+        const x = X(z.rect[0] + fx * (z.rect[2] - z.rect[0])), y = Y(z.rect[1] + fy * (z.rect[3] - z.rect[1]));
+        g.fillStyle = "#000"; g.fillRect(x - 4, y - 4, 9, 9); g.fillStyle = "#fff"; g.fillRect(x - 3, y - 3, 7, 7);
+      }
+    }
+  }
+  // bản đồ sơn động = toàn bãi đang đứng: ảnh mini vừa khung + chấm quái / NPC / người chơi, vẽ lại theo nhịp bản đồ nhỏ
+  _veHang(g, P, s) {
+    const { W, H } = P, im = this.mmImg, sc = this.M.minimap.scale;
+    g.fillStyle = "#000"; g.fillRect(0, 0, W, H);
+    const ten = this.mmMap ? this.mmMap.name : "";
+    const z = this._tg && this.mmMap && this._tg.find((v) => v.map === this.mmMap.key);
+    const td = z && z.dong ? `Bản đồ sơn động — ${ten}` : `Bản đồ — ${ten}`;
+    if (P.tieuDe !== td) { P.tieuDe = td; P.el.querySelector("b").textContent = td; }
+    if (!im) { P.el.querySelector("span").textContent = "Đang tải ảnh bản đồ…"; return; }
+    P.el.querySelector("span").textContent = "Chấm trắng là ngươi · đỏ là quái · vàng là NPC · xanh là người chơi khác";
+    const k = Math.min(W / im.width, H / im.height), ox = (W - im.width * k) / 2, oy = (H - im.height * k) / 2;
+    g.imageSmoothingEnabled = true;
+    g.drawImage(im, ox, oy, im.width * k, im.height * k);
+    if (!s || !s.player) return;
+    const X = (x) => ox + x * sc * k, Y = (y) => oy + y * sc * k;
+    if (s.path && s.path.length) { g.strokeStyle = rgb(this.M.minimap.line); g.lineWidth = 1; g.beginPath(); g.moveTo(X(s.player.x), Y(s.player.y)); for (const [x, y] of s.path) g.lineTo(X(x), Y(y)); g.stroke(); }
+    for (const m of s.mobs || []) { if (!m.alive) continue; const r = m.boss || m.sat ? 2 : 1; g.fillStyle = "#000"; g.fillRect(Math.round(X(m.x)) - r - 1, Math.round(Y(m.y)) - r - 1, 2 * r + 3, 2 * r + 3); g.fillStyle = m.boss || m.sat ? "#ffb000" : "#ff3030"; g.fillRect(Math.round(X(m.x)) - r, Math.round(Y(m.y)) - r, 2 * r + 1, 2 * r + 1); }
+    for (const o of s.others || []) { g.fillStyle = "#000"; g.fillRect(Math.round(X(o.x)) - 2, Math.round(Y(o.y)) - 2, 5, 5); g.fillStyle = "#4fc3ff"; g.fillRect(Math.round(X(o.x)) - 1, Math.round(Y(o.y)) - 1, 3, 3); }
+    for (const n of s.npcs || []) { const x = Math.round(X(n.x)), y = Math.round(Y(n.y)); g.fillStyle = "#000"; g.fillRect(x - 2, y - 2, 5, 5); g.fillStyle = "#ffe680"; g.fillRect(x - 1, y - 1, 3, 3); }
+    const hx = Math.round(X(s.player.x)), hy = Math.round(Y(s.player.y));
+    g.fillStyle = "#000"; g.fillRect(hx - 3, hy - 3, 7, 7); g.fillStyle = "#fff"; g.fillRect(hx - 2, hy - 2, 5, 5);
   }
   // vẽ mỗi khung: ảnh bản đồ nhỏ quanh người chơi + chấm quái / người chơi + đường đang đi; tọa độ client ở dưới
   drawMinimap(s) {
@@ -992,6 +1116,8 @@ export class Hud {
     const [X, Y] = this.mmMap.toClient(p.x, p.y), t = `${X}/${Y}`;
     const pos = this.mm.querySelector(".jx-mm-pos");
     if (pos.textContent !== t) pos.textContent = t;
+    this._sCuoi = s;
+    if (this._panel) this._vePanel(s);
   }
 }
 

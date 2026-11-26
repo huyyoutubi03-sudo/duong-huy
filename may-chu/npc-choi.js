@@ -77,6 +77,33 @@ function doTheoPhai(h, eqt) {
 const QC = "Đồ ngon, tới xem"; // lời rao sạp, 15 chữ (giới hạn chợ trời 16)
 const LOOK_KEYS = ["helm", "armor", "weapon", "horse", "mantle"];
 
+// ---------- lọc đồ ngon bày sạp (Huy lệnh 26/11/2026: chỉ bày đồ chỉ số ngon, không bán đồ rác) ----------
+// Thang của game sẵn có, không bịa thang mới:
+//  - số dòng xanh it.d (gieoDong — do.js): đồ rơi thường 0–6 dòng, Bảo rương đồ xanh tối thiểu 3 dòng,
+//    Trợ Thủ "Bán đồ trong túi" cũng lấy số dòng làm mốc giữ / bán (h.locDo, do.js banTuBan).
+//  - chất từng dòng: giá trị dòng / mức cao nhất của thuộc tính đó trong bảng client
+//    (assets/data/dong-xanh.json — cùng bảng gieoDong dùng; chỉ tính dòng có khoảng biến thiên).
+// NGON = từ NGON_DONG dòng trở lên, hoặc đúng 2 dòng mà có 1 dòng đạt >= NGON_CHAT trần thuộc tính đó.
+// Mô phỏng 30.000 món rơi thật ở bãi bot (quái 165–195): ~5,1% món đạt — sạp thưa nhưng toàn đồ ngon.
+// Món rác ở lại túi bot (KHÔNG vứt, KHÔNG bán cho NPC, KHÔNG xóa); chỉ là không bày lên sạp.
+const NGON_DONG = Math.max(1, +process.env.VL_NPC_CHOI_DONG || 3);
+const NGON_CHAT = Math.min(1, Math.max(0, +process.env.VL_NPC_CHOI_CHAT || 0.7));
+const DX_TRAN = (() => { // khóa thuộc tính -> mức cao nhất (chỉ dòng biến thiên: trần > sàn)
+  try {
+    const rows = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets", "data", "dong-xanh.json"), "utf8")).rows || [];
+    const lo = new Map(), hi = new Map();
+    for (const r of rows) { const p = r.p && r.p[0]; if (!p) continue; lo.set(r.k, Math.min(lo.get(r.k) ?? Infinity, p[0])); hi.set(r.k, Math.max(hi.get(r.k) ?? -Infinity, p[1])); }
+    const m = new Map();
+    for (const [k, h] of hi) if (h > (lo.get(k) ?? h)) m.set(k, h);
+    return m;
+  } catch { return new Map(); }
+})();
+function chatLuongMon(it) { // dòng tốt nhất đạt bao nhiêu % trần thuộc tính đó (0 = không có dòng biến thiên)
+  let q = 0;
+  for (const [k, v] of (it.d || [])) { const h = DX_TRAN.get(k); if (h) q = Math.max(q, v / h); }
+  return q;
+}
+
 // ---------- chiến đấu ----------
 const NG_THUOC = { hp: 0.5, mp: 0.3 }; // ngưỡng uống thuốc = Trợ Thủ mặc định (SL 0,5 / NL 0,3)
 const THUOC_HP = "potion:3", THUOC_MP = "potion:8"; // Kim Sáng Dược (đại) / Ngưng Thần đan (đại)
@@ -197,15 +224,29 @@ function laDoFarm(it) {
   const x = BY.get(it.k);
   return !!(x && typeof x.t === "number" && x.t <= 10 && !it.kbh && !it.het && giaCua(it) > 0);
 }
+function laDoNgon(it) { // chỉ bày đồ ngon: đủ dòng, hoặc 2 dòng mà có dòng đạt trần (xem khối lọc đồ ngon ở trên)
+  const d = it.d || [];
+  return laDoFarm(it) && (d.length >= NGON_DONG || (d.length === 2 && chatLuongMon(it) >= NGON_CHAT));
+}
 
 function moSap(bot) {
+  // Dọn món rác còn nằm trên sạp từ trước (bản cũ bày tất cả): thu về túi; túi đầy thì để lại chuyến sau.
+  for (const it of [...((bot.h.sap && bot.h.sap.ds) || [])]) {
+    if (laDoNgon(it)) continue;
+    try { CHO.lam(bot.fakeTk, bot.h, 0, { viec: "thuHoi", u: it.u }); }
+    catch (e) { /* túi đầy / món vướng: để lại, không kẹt */ }
+  }
   let dinh = 0;
   for (const it of [...bot.h.bag]) {
-    if (!laDoFarm(it)) continue;
+    if (!laDoNgon(it)) continue; // đồ rác ở lại túi — không vứt, không bán NPC, không xóa
     try { CHO.lam(bot.fakeTk, bot.h, 0, { viec: "dinhGia", u: it.u, gia: giaCua(it) }); dinh++; }
     catch (e) { /* món không lên sạp được thì để túi */ }
   }
-  if (!dinh && !(bot.h.sap && (bot.h.sap.ds || []).length)) { log(`không có đồ farm để bày (${bot.h.name}) — về train tiếp`); return false; }
+  if (!dinh && !(bot.h.sap && (bot.h.sap.ds || []).length)) {
+    bot.demKhongSap = (bot.demKhongSap || 0) + 1; // toàn đồ rác / chưa có đồ: về train, khỏi spam nhật ký
+    if (bot.demKhongSap % 10 === 1) log(`không có đồ ngon để bày (${bot.h.name}) — về train tiếp`);
+    return false;
+  }
   try { CHO.lam(bot.fakeTk, bot.h, 0, { viec: "loiRao", qc: QC }); } catch (e) { log(`đặt lời rao lỗi (${bot.h.name}):`, e.message); return false; }
   for (const [sx, sy] of bot.cfg.stalls) {
     bot.x = sx; bot.y = sy; hienDien(bot); // chỗ mở sạp = chỗ đang đứng (nhịp gần nhất của máy chủ)
@@ -966,6 +1007,8 @@ module.exports = {
     vongDanh: () => { const b = B0(); if (b) vongDanh(b); },
     quaiTanCong: () => { const b = B0(); if (b) quaiTanCong(b); },
     chetBot: (m) => { const b = B0(); if (b) chetBot(b, m); },
+    laDoNgon: (it) => laDoNgon(it),
+    chatLuongMon: (it) => chatLuongMon(it),
     uongThat: (k) => { const b = B0(); return b ? uongThat(b, k) : false; },
     hoiTheoNhip: () => { const b = B0(); if (b) hoiTheoNhip(b); },
     hoiDay: () => { const b = B0(); if (b) hoiDay(b); },
