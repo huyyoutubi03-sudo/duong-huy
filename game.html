@@ -21,20 +21,20 @@
   <div class="vl-tieude" translate="no"><span class="vl-chien">Chiến</span><span class="vl-rest">- Võ Lâm Xưa</span></div>
   <form class="box login" id="lg-form">
     <h1>Võ Lâm Truyền Kỳ I</h1>
-    <p class="lg-gioithieu">Bản Võ Lâm Truyền Kỳ I làm lại — Ba Lăng, 10 môn phái, luyện chiêu, Mộc nhân, Tống Kim. Mở link là chơi, không cần tải.</p>
+    <p class="lg-gioithieu">Bản Võ Lâm Truyền Kỳ I làm lại — Ba Lăng, 10 môn phái, luyện chiêu, Mộc nhân, Tống Kim. Mở link là chơi, khỏi tải.</p>
     <div class="lg-sv" id="lg-sv"></div>
     <label class="lg-tk">Tài khoản<input id="lg-name" name="username" autocomplete="username" maxlength="20" autocapitalize="off" spellcheck="false"></label>
     <label class="lg-mk">Mật khẩu<span class="lg-passwrap"><input id="lg-pass" name="password" type="password" autocomplete="current-password" maxlength="64"><button type="button" class="lg-eye" id="lg-eye" aria-label="Hiện mật khẩu" title="Hiện mật khẩu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line class="lg-slash" x1="3" y1="21" x2="21" y2="3"/></svg></button></span></label>
     <div class="lg-err" id="lg-err"></div>
     <div class="row end"><button class="main" type="submit" id="lg-ok">Đăng nhập</button></div>
     <button type="button" class="lg-dk" id="lg-dk">Đăng Ký</button>
-    <p class="lg-note">Chưa có tài khoản? Bấm Đăng ký tài khoản để tạo bằng Gmail — mã xác minh gửi về hộp thư của bạn.</p>
+    <p class="lg-note">Chưa có tài khoản? Bấm Đăng ký. Tạo bằng Gmail — mã xác minh gửi về hộp thư, lấy mã mà vào.</p>
     <div class="lg-lienhe">
       <!-- chủ server thêm link Fanpage vào href khi muốn dùng; mã QR Telegram thay bằng ảnh QR thật khi có link -->
       <a class="lg-fanpage" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#1877f2"/><text x="12" y="17.5" text-anchor="middle" font-size="15" font-weight="700" fill="#fff" font-family="Arial, sans-serif">f</text></svg>Fanpage</a>
       <span class="lg-qr" title="Mã QR Telegram — thêm link sau"><svg viewBox="0 0 29 29" aria-hidden="true"><rect width="29" height="29" fill="#fff"/><g fill="#000"><rect x="1" y="1" width="7" height="7" fill="none" stroke="#000"/><rect x="3" y="3" width="3" height="3"/><rect x="21" y="1" width="7" height="7" fill="none" stroke="#000"/><rect x="23" y="3" width="3" height="3"/><rect x="1" y="21" width="7" height="7" fill="none" stroke="#000"/><rect x="3" y="23" width="3" height="3"/><rect x="11" y="2" width="2" height="2"/><rect x="16" y="3" width="3" height="2"/><rect x="10" y="7" width="2" height="2"/><rect x="18" y="8" width="3" height="3"/><rect x="9" y="12" width="2" height="3"/><rect x="20" y="12" width="2" height="2"/><rect x="11" y="17" width="3" height="2"/><rect x="18" y="18" width="2" height="3"/><rect x="23" y="14" width="3" height="2"/><rect x="9" y="24" width="2" height="2"/><rect x="14" y="25" width="3" height="2"/><rect x="20" y="24" width="2" height="2"/><rect x="25" y="9" width="2" height="2"/><rect x="12" y="10" width="2" height="2"/></g><circle cx="14.5" cy="14.5" r="6" fill="#fff" stroke="#229ED9"/><polygon points="11.5,15.5 18.5,11.5 15.5,17.5 14.3,15 12.5,16.3" fill="#229ED9"/></svg><em>Telegram</em></span>
     </div>
-    <div class="lg-chiase">Nếu bạn yêu thích bản game của mình thì hãy chung tay chia sẻ cho anh em khác trong group để ai cũng có thể trải nghiệm. Cảm ơn anh chị em group Hội Quán rất nhiều!</div>
+    <div class="lg-chiase">Chơi thấy hay thì rủ anh em trong group vào chơi cùng. Hội Quán càng đông, giang hồ càng vui!</div>
   </form>
 </section>
 
@@ -44,14 +44,14 @@
     <h2 id="dk-h">Đăng ký tài khoản</h2>
     <form id="dk-form" novalidate>
       <div class="dk-buoc1">
-        <p class="dk-note">Mã xác minh 6 số gửi về Gmail của bạn, hiệu lực 10 phút. Tên tài khoản dùng để đăng nhập.</p>
+        <p class="dk-note">Mã xác minh 6 số gửi về Gmail, hiệu lực 10 phút. Tên tài khoản là tên đăng nhập — đặt cho cẩn thận.</p>
         <label>Tên tài khoản<input id="dk-ten" autocomplete="username" maxlength="20" autocapitalize="off" spellcheck="false"></label>
         <label>Gmail<input id="dk-gmail" type="email" autocomplete="email" maxlength="254" placeholder="vidu@gmail.com"></label>
         <label>Mật khẩu<input id="dk-mk" type="password" autocomplete="new-password" maxlength="64"></label>
         <label>Nhập lại mật khẩu<input id="dk-mk2" type="password" autocomplete="new-password" maxlength="64"></label>
       </div>
       <div class="dk-buoc2" hidden>
-        <p class="dk-note">Mã xác minh đã gửi tới <b id="dk-gmail-hien"></b>. Kiểm tra hộp thư (cả mục Spam), mã hiệu lực 10 phút.</p>
+        <p class="dk-note">Mã xác minh đã gửi tới <b id="dk-gmail-hien"></b>. Mở hộp thư mà lấy (coi cả mục Spam). Mã chỉ sống 10 phút.</p>
         <label>Mã xác minh (6 số)<input id="dk-ma" inputmode="numeric" autocomplete="one-time-code" maxlength="6"></label>
       </div>
       <div class="lg-err" id="dk-err"></div>
@@ -61,7 +61,7 @@
         <button class="main" type="submit" id="dk-ok">Gửi mã xác minh</button>
       </div>
     </form>
-    <p class="dk-xong" id="dk-xong" hidden>Tài khoản <b id="dk-ten-xong"></b> đã tạo xong. <button type="button" class="dk-link" id="dk-vao">Đăng nhập ngay</button></p>
+    <p class="dk-xong" id="dk-xong" hidden>Tài khoản <b id="dk-ten-xong"></b> đã tạo xong. Vào mà chơi. <button type="button" class="dk-link" id="dk-vao">Đăng nhập ngay</button></p>
   </div>
 </section>
 
@@ -71,7 +71,7 @@
     <h1>Đổi mật khẩu</h1>
     <div class="lg-sv">Tài khoản <b id="dm-tk"></b></div>
     <input id="dm-ten" name="username" autocomplete="username" hidden>
-    <p class="lg-note dm-note">Tài khoản đang dùng mật khẩu do quản trị cấp. Hãy đặt mật khẩu riêng của bạn trước khi vào game: ít nhất 6 ký tự, khác tên tài khoản. Không chia sẻ mật khẩu cho người khác.</p>
+    <p class="lg-note dm-note">Tài khoản này đang dùng mật khẩu quản trị cấp. Đặt mật khẩu riêng trước khi vào game: ít nhất 6 ký tự, khác tên tài khoản. Mật khẩu của mình thì giữ cho kỹ, đừng đưa ai.</p>
     <label>Mật khẩu quản trị cấp<input id="dm-cu" type="password" autocomplete="current-password" maxlength="64"></label>
     <label>Mật khẩu mới<input id="dm-moi" type="password" autocomplete="new-password" maxlength="64"></label>
     <label>Nhập lại mật khẩu mới<input id="dm-lai" type="password" autocomplete="new-password" maxlength="64"></label>
@@ -83,7 +83,7 @@
 <!-- chọn nhân vật (mô phỏng màn chọn nhân vật của bản 2, js/csel.js) -->
 <section id="s-select" class="screen csel">
   <div class="cs-top"><h1>Chọn Nhân Vật</h1><div class="cs-sub">Hùng Bá Thiên Hạ · Sơn Hà Xã Tắc</div>
-    <div class="cs-chiase">Nếu bạn yêu thích bản game của mình thì hãy chung tay chia sẻ cho anh em khác trong group để ai cũng có thể trải nghiệm. Cảm ơn anh chị em group Hội Quán rất nhiều!</div></div>
+    <div class="cs-chiase">Chơi thấy hay thì rủ anh em trong group vào chơi cùng. Hội Quán càng đông, giang hồ càng vui!</div></div>
   <div class="cs-row" id="cs-row"></div>
   <div class="cs-panel" id="cs-panel"></div>
 </section>

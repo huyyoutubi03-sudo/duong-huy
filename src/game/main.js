@@ -24,6 +24,7 @@ import { Net } from "./net.js";
 import { fmtMoney } from "./money.js";
 import { chuanAuto, oTrong, coCho, hopLoc } from "./auto.js";
 import { TroThu } from "./trothu.js";
+import { AutoNhanh } from "./auto-nhanh.js"; // bảng Auto nhanh: 6 công tắc to đọc / ghi cài đặt Trợ Thủ (anh 25/11)
 import { HuongDan } from "./huongdan.js"; // Hướng dẫn hoạt động: lịch, giờ, yêu cầu, tra cứu (anh 05/11)
 import { TanThu } from "./tanthu.js"; // chỉ đường tân thủ từng bước trong bảng Nhiệm vụ (anh 10/11)
 import { NhomZalo } from "./nhomzalo.js"; // khung mã QR nhóm Zalo (anh 09/11)
@@ -105,23 +106,23 @@ async function boot() {
   P.only = (pack && pack.server) || null;
   Net.onLost = kicked;
   let ok;
-  try { ok = await Net.check(); } catch (e) { return loginScreen("Không vào được máy chủ: " + e.message); }
+  try { ok = await Net.check(); } catch (e) { return loginScreen("Không vào được máy chủ. Máy chủ không trả lời: " + e.message); }
   if (ok) vaoSauDangNhap(); else loginScreen();
 }
 // tải kho 1 lần mỗi trang (đăng xuất / đăng nhập lại không tải lại) rồi màn đổi mật khẩu / chọn nhân vật
 let khoTai = null;
 const taiKho = () => khoTai || (khoTai = taiKhoThat().catch((e) => { khoTai = null; throw e; }));
 async function vaoSauDangNhap() {
-  try { await taiKho(); } catch (e) { return fail(new Error("Lỗi tải kho: " + e.message)); }
+  try { await taiKho(); } catch (e) { return fail(new Error("Tải kho hỏng: " + e.message)); }
   sauDangNhap();
 }
 async function taiKhoThat() {
   const msg = (s) => ($("#load-msg").textContent = s);
   const j = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
   // tải kho hình: cùng màn chờ với đổi bản đồ (anh 27/10 "đồng bộ") — thanh tải theo số kho đã tải xong
-  const L = LOADING.start(null, "Đang tải kho hình…");
+  const L = LOADING.start(null, "Đang tải kho hình… Đứng yên đấy!");
   try {
-    msg("Đang tải kho hình…");
+    msg("Đang tải kho hình… Đứng yên đấy!");
     const [jx, npc, maps, mons, chr, skills, audio, ui, hud, win, mobstats, fx, revive, maplist, full, npcDlg, skIcons, mapNpcs, skillTip, pack, , roi, vc, vatBanDo, trangThai, npcThem, pldData, satData, vaData, ttData, lkData, tinData, bcData, btgData, phData] = await Promise.all([
       JxChar.load("assets/web/jxchar/"), NpcPack.load("assets/web/npc/"), j("assets/web/map/map.json"),
       j("assets/data/monsters.json"), j("assets/data/char.json"), j("assets/web/skill/skills.json"), GameAudio.load(), j("assets/ui/ui.json"), Hud.load(), UiWins.load(),
@@ -238,7 +239,7 @@ async function taiKhoThat() {
   Net.wsNghe("dnt", (m) => DuaNgua.tin(m.text));
   Net.wsNghe("lichHd", () => { if (HD) HD.taiLich(); }); // GM đổi lịch hoạt động ở F10 (may-chu/lich-hd.js) — Tra cứu tự tải lại khi phiên bản đổi
   Net.wsNghe("bcua", () => { if (BC) BC.nhanWs(); }); // Bầu Cua: vừa mở ván / lắc xong (may-chu/bau-cua.js) — bàn cược đang mở thì tải lại
-  Net.wsNghe("bcuaKq", (m) => P.hud.msg(`Bầu Cua ván ${m.k | 0}: ra ${m.kq} — không trúng, mất ${Number(m.dat) || 0} vạn`)); // người đặt mà thua (đặt ở ngoài sòng không thấy tin kết quả của bãi)
+  Net.wsNghe("bcuaKq", (m) => P.hud.msg(`Bầu Cua ván ${m.k | 0}: ra ${m.kq} — không trúng, mất ${Number(m.dat) || 0} vạn. Đặt cho khôn vào.`)); // người đặt mà thua (đặt ở ngoài sòng không thấy tin kết quả của bãi)
   PhongHoa.api = { msg: (t, mau) => P.hud.msg(t, typeof mau === "string" && mau[0] === "#" ? [1, 3, 5].map((i) => parseInt(mau.slice(i, i + 2), 16)) : undefined), veThanh: () => phVeThanh(),
     // đáy khối bản đồ nhỏ (bản đồ, tọa độ, nút Tự đánh… — phóng to thì dài ra): khung trạng thái máy tính đặt ngay dưới
     duoiMM: () => { const mm = P.hud && P.hud.mm; let b = 0; if (mm) for (const e of mm.querySelectorAll("*")) { if (!e.offsetParent) continue; const r = e.getBoundingClientRect(); if (r.height && r.bottom > b) b = r.bottom; } return b; } };
@@ -248,7 +249,7 @@ async function taiKhoThat() {
     veBienKinh: (cau) => tkVeBienKinh(cau), // trận thật: hết trận / không có tên trong trận / rời chiến trường -> Biện Kinh
     // nút Rời trận trên bảng điểm (anh 13/11 lượt 86): hỏi lại (khung của game) rồi về Biện Kinh như Quân y "Rời chiến trường"
     roiTran: () => { if (!GW || !world || !laTk(world.zone)) return; P.audio.ui("click");
-      GW.hoi("Rời chiến trường về <color=yellow>Biện Kinh<color>?<enter>Vẫn giữ phe, điểm và chức — muốn quay lại thì nhờ Xa phu đưa đến Điểm báo danh Tống Kim (không phải nộp phí lần nữa). Thưởng cuối trận chỉ dành cho người còn trong chiến trường lúc hết trận.", "Về Biện Kinh", "Ở lại")
+      GW.hoi("Rời chiến trường về <color=yellow>Biện Kinh<color>?<enter>Vẫn giữ phe, điểm và chức — muốn quay lại thì nhờ Xa phu đưa đến Điểm báo danh Tống Kim (không phải nộp phí lần nữa). Thưởng cuối trận chỉ dành cho kẻ còn trong chiến trường lúc hết trận.", "Về Biện Kinh", "Ở lại")
         .then((ok) => { if (ok && world && laTk(world.zone)) tkVeBienKinh(); }); } };
   // Lôi đài (anh 15/11 — loidai.js): tin (chuỗi | [[chữ, màu]]; màu "#rrggbb" | [r, g, b]), khung hỏi của game, áp kết quả máy chủ, về chỗ máy chủ đưa (ldVe), bảng kết quả
   LoiDai.api = { msg: (t, mau) => P.hud.msg(t, Array.isArray(mau) ? mau : typeof mau === "string" && mau[0] === "#" ? [1, 3, 5].map((i) => parseInt(mau.slice(i, i + 2), 16)) : undefined),
@@ -300,8 +301,8 @@ function doiMkScreen() {
   $("#dm-form").onsubmit = async (e) => {
     e.preventDefault();
     const cu = $("#dm-cu").value, moi = $("#dm-moi").value, lai = $("#dm-lai").value, ten = (Net.me && Net.me.ten) || "";
-    const loi = !cu ? "Nhập mật khẩu quản trị cấp (mật khẩu vừa dùng để đăng nhập)" : moi.length < 6 ? "Mật khẩu mới ít nhất 6 ký tự" : moi.trim() !== moi ? "Mật khẩu không được có khoảng trắng ở đầu hoặc cuối"
-      : moi.toLowerCase() === ten.toLowerCase() ? "Mật khẩu không được trùng tên tài khoản" : moi === cu ? "Mật khẩu mới phải khác mật khẩu quản trị cấp" : moi !== lai ? "2 lần nhập mật khẩu mới không giống nhau" : "";
+    const loi = !cu ? "Gõ mật khẩu quản trị cấp — chính mật khẩu vừa dùng để đăng nhập đấy" : moi.length < 6 ? "Mật khẩu mới ít nhất 6 ký tự. Ngắn hơn thì đừng hòng." : moi.trim() !== moi ? "Mật khẩu không được thừa khoảng trắng ở đầu hay cuối. Gõ cho sạch vào."
+      : moi.toLowerCase() === ten.toLowerCase() ? "Mật khẩu không được trùng tên tài khoản. Đặt cái khác đi." : moi === cu ? "Mật khẩu mới phải khác mật khẩu quản trị cấp. Đừng có lấy lại cái cũ." : moi !== lai ? "Gõ 2 lần mà không giống nhau. Gõ lại cho khớp." : "";
     if (loi) { $("#dm-err").textContent = loi; return; }
     $("#dm-ok").disabled = true; $("#dm-err").textContent = "";
     try { await Net.baoMat({ viec: "doiMk1", cu, moi }); }
@@ -324,7 +325,7 @@ function loginScreen(err = "") {
     if (j && j.sv) { tenMay(j.sv); $("#lg-sv").textContent = (SERVERS.find((s) => s.id === P.only) || {}).n || ""; } // tên máy chủ của máy này (S1 / S2)
     if (!j || $("#lg-err").textContent) return;
     if (j.baoTri) $("#lg-err").textContent = j.baoTri.cau;
-    else if (j.duyet) $("#lg-err").textContent = "Máy chủ đang giới hạn người chơi — chỉ tài khoản được quản trị duyệt mới vào được.";
+    else if (j.duyet) $("#lg-err").textContent = "Máy chủ đang giới hạn người chơi — chỉ tài khoản quản trị duyệt mới vào được. Chưa duyệt thì đứng ngoài mà chờ.";
   }).catch(() => {});
   $("#lg-sv").textContent = (SERVERS.find((s) => s.id === P.only) || {}).n || "";
   if ($("#lg-ungho")) $("#lg-ungho").remove(); // trang chủ: Ủng hộ duy trì máy chủ (anh 13/11)
@@ -332,7 +333,7 @@ function loginScreen(err = "") {
   $("#lg-form").onsubmit = async (e) => {
     e.preventDefault();
     const ten = $("#lg-name").value.trim(), mk = $("#lg-pass").value;
-    if (!ten || !mk) { $("#lg-err").textContent = "Nhập tên tài khoản và mật khẩu"; return; }
+    if (!ten || !mk) { $("#lg-err").textContent = "Gõ tên tài khoản và mật khẩu vào. Thiếu một cái cũng không vào được."; return; }
     $("#lg-ok").disabled = true; $("#lg-err").textContent = "";
     try { await Net.login(ten, mk); $("#lg-pass").value = ""; if (P.audio) P.audio.ui("click"); vaoSauDangNhap(); } // chưa tải kho (lượt 61): tải rồi mới vào
     catch (er) { $("#lg-err").textContent = er.message; }
@@ -403,14 +404,14 @@ function csPanel() {
         <span class="k">Lần chơi cuối</span><span>${h.last ? new Date(h.last).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" }) : "-"}</span>
         <span class="k">Máy chủ</span><span class="wide">${sv ? esc(sv.n) : "-"}</span>
       </div>`
-    : `<div class="cs-empty">Vị trí ${CS.sel + 1} đang trống. Hãy tạo nhân vật để bước vào giang hồ.</div>`;
+    : `<div class="cs-empty">Vị trí ${CS.sel + 1} đang trống. Tạo nhân vật đi, đứng nhìn mãi làm gì.</div>`;
   // vừa bấm ủy thác (Esc → Ủy thác — anh 11/11, utRoi): dòng nhắc dưới bảng thông tin
   const ut = h && f ? utDang(CS.sel, h) : null;
-  const utChu = ut ? `<div class="cs-ut">Đang ủy thác ở <b>${esc(ut.bai)}</b> từ ${new Date(ut.luc).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })} — có thể đóng trang.<br>Vào lại nhân vật này để dừng và xem bảng tổng kết (vắng dưới ${(luat().uyThac || {}).vangGiay || 90} giây thì không tính).</div>` : "";
+  const utChu = ut ? `<div class="cs-ut">Đang ủy thác ở <b>${esc(ut.bai)}</b> từ ${new Date(ut.luc).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })} — đóng trang cũng được.<br>Vào lại nhân vật này để dừng và xem bảng tổng kết (vắng dưới ${(luat().uyThac || {}).vangGiay || 90} giây thì không tính).</div>` : "";
   $("#cs-panel").innerHTML = info + utChu +
-    (del ? `<div class="cs-warn">Xác nhận xóa vĩnh viễn <b>${esc(h.name)}</b> (cấp ${h.lvl | 0 || 1})? Không thể khôi phục!</div>` : "") +
+    (del ? `<div class="cs-warn">Xóa vĩnh viễn <b>${esc(h.name)}</b> (cấp ${h.lvl | 0 || 1})? Xóa rồi thì đừng có đòi lại — không khôi phục được đâu!</div>` : "") +
     `<div class="cs-btns">${h && f
-      ? del ? '<button class="red" id="cs-dely">Đồng Ý Xóa</button><button id="cs-deln">Hủy Bỏ</button>'
+      ? del ? '<button class="red" id="cs-dely">Xóa Luôn</button><button id="cs-deln">Hủy Bỏ</button>'
             : '<button class="go" id="cs-go">Vào Trò Chơi</button><button class="red" id="cs-del">Xóa Nhân Vật</button>'
       : '<button class="go" id="cs-new">Tạo Nhân Vật</button>'}<button id="cs-out" title="Tài khoản ${esc(Net.me.ten)}">Đăng Xuất</button></div>`;
   const on = (id, fn) => { const b = $(id); if (b) b.onclick = () => { P.audio.ui("click"); fn(); }; };
@@ -466,11 +467,11 @@ const CAMP = { shaolin: "Chính phái", tianwang: "Trung lập", tangmen: "Trung
 // Câu tả hệ: lấy nguyên của bản 2 (FAC_DETAIL), phần danh sách môn phái sinh từ dữ liệu (10 phái — anh chốt 24/10 bỏ Hoa Sơn, Võ Hồn,
 // Tiêu Dao: nam hệ Thủy không có phái nhận -> khóa nút OK, báo như bản 2)
 const SERIES_FLAVOR = [
-  "Ngoại công cương mãnh, cận chiến dũng mãnh vô song.",
-  "Thân pháp phi phàm, ám khí cơ quan và độc sát trí mạng.",
-  "Kiếm pháp băng sát làm chậm và trị liệu cứu nhân độ thế.",
-  "Chưởng pháp và đao pháp bạo liệt, hỏa thiêu liên hoàn cuồng bạo.",
-  "Kiếm khí lôi đình, nội lực hộ thể huyền diệu, quyền pháp vô song.",
+  "Ngoại công cương mãnh, cận chiến không thằng nào địch nổi.",
+  "Thân pháp quỷ mị, ám khí cơ quan, độc sát một phát là chết.",
+  "Kiếm pháp băng sát làm chậm địch, trị liệu cứu người — muốn làm gì thì làm.",
+  "Chưởng pháp, đao pháp bạo liệt, lửa thiêu liên hoàn không dứt.",
+  "Kiếm khí lôi đình, nội lực hộ thể, quyền pháp không đối thủ.",
 ];
 const facAllowed = (f, sex) => !SEX_ONLY[f.key] || SEX_ONLY[f.key] === sex;
 const GAME_VER = "2.0.0";
@@ -500,7 +501,7 @@ function createScreen(server, slot) {
     });
     const join = list.length > 1 ? list.slice(0, -1).join(", ") + " hoặc " + list[list.length - 1] : list[0];
     $("#cc-detail").innerHTML = `Hệ ${SERIES[st.s]}: Có thể gia nhập ${join}. ${SERIES_FLAVOR[st.s]}`;
-    $("#cc-warn").textContent = ok ? "" : `Hệ ${SERIES[st.s]} không có môn phái nhận đệ tử ${st.sex === "f" ? "nữ" : "nam"}. Hãy chọn lại giới tính hoặc hệ khác!`;
+    $("#cc-warn").textContent = ok ? "" : `Hệ ${SERIES[st.s]} không có môn phái nào nhận đệ tử ${st.sex === "f" ? "nữ" : "nam"}. Chọn lại giới tính hoặc hệ khác đi!`;
     $("#cc-ok").disabled = !ok;
   };
   $$("#s-create .cc-char").forEach((el) => (el.onclick = () => { st.sex = el.dataset.sx; P.audio.ui("click"); sync(); }));
@@ -509,7 +510,7 @@ function createScreen(server, slot) {
   const ok = async () => {
     if ($("#cc-ok").disabled) return;
     const name = $("#cc-name").value.trim().replace(/\s+/g, " ").slice(0, 14);
-    if (name.length < 2) { $("#cc-err").textContent = "Tên nhân vật cần ít nhất 2 ký tự"; $("#cc-name").focus(); return; }
+    if (name.length < 2) { $("#cc-err").textContent = "Tên nhân vật ít nhất 2 ký tự. Đặt tên cho ra hồn vào."; $("#cc-name").focus(); return; }
     const start = P.chr.start.find((s) => s.series === st.s && s.sex === (st.sex === "f" ? 1 : 0));
     // attr = điểm tiềm năng đã cộng, pts / skPts = điểm tiềm năng / kỹ năng chưa dùng (M2). Máy chủ kiểm tên (không trùng cả máy chủ)
     // rồi đặt ô, server, cấp 1, ngày tạo.
@@ -537,7 +538,7 @@ const devZones = () => P.maps.zones.filter((z) => DEV_KIND.includes(z.kind) && !
 // trong luat; máy chủ cũng không tính quái giết ở bãi chưa đủ cấp — may-chu/do.js capVao). Thành / thôn vào lúc nào cũng được.
 const capVao = (z) => (FARM_KINDS.has(z.kind) ? Math.max(1, (z.lo | 0) - (luat().thieuCap | 0)) : 1);
 const moBai = (z) => (hero.lvl || 1) >= capVao(z);
-const chuaMo = (z) => `Cần đạt cấp ${capVao(z)} mới vào được ${z.n}`;
+const chuaMo = (z) => `Chưa đủ cấp ${capVao(z)} thì đừng mơ vào ${z.n}`;
 // vào game đứng ở bãi + chỗ lúc thoát (anh 26/10 — bỏ "luôn đứng ở Ba Lăng" của 24/10: về thành nay phải có Thổ Địa Phù), tắt tự đánh;
 // chưa lưu chỗ / bãi không còn / chưa đủ cấp thì Ba Lăng huyện (START_ZONE — cũng là thành để về, có Xa phu)
 const START_ZONE = 53;
@@ -545,11 +546,11 @@ const START_ZONE = 53;
 // màn chờ (ảnh + thanh tải) phủ từ lúc bấm vào game tới khi giao diện dựng xong — tải bãi đầu tiên dùng tiếp màn đó (LOADING.giu).
 // Lần đầu vào game (hoặc gói tài nguyên vừa đổi): tải trước giao diện / icon / võ công của phái trên cùng màn chờ (src/game/tai-truoc.js)
 async function enterGame() {
-  LOADING.start(null, "Đang vào game…"); LOADING.giu = true;
-  try { await taiTruoc(LOADING, P, hero).catch(() => {}); LOADING.start(null, "Đang vào game…"); await vaoGame(); } finally { LOADING.giu = false; LOADING.end(); }
+  LOADING.start(null, "Đang vào game… Đứng yên đấy!"); LOADING.giu = true;
+  try { await taiTruoc(LOADING, P, hero).catch(() => {}); LOADING.start(null, "Đang vào game… Đứng yên đấy!"); await vaoGame(); } finally { LOADING.giu = false; LOADING.end(); }
 }
 async function vaoGame() {
-  show("s-load"); $("#load-msg").textContent = "Đang vào game…";
+  show("s-load"); $("#load-msg").textContent = "Đang vào game… Đứng yên đấy!";
   syncRanged(hero); pending.kills.length = 0; pending.at.length = 0; pending.nhat.length = 0; pending.deaths = 0; pending.uong.clear();
   ptTheo = null; if (PT) PT.datLai(); // Phân Thân của nhân vật trước: bỏ (nhịp đầu của nhân vật này tải lại — phanthan.js nhip)
   if (BC) BC.datLai(); // bàn cược Bầu Cua của nhân vật trước: đóng
@@ -589,7 +590,7 @@ async function vaoGame() {
   P.hud.msg(TIN_VAO, [255, 196, 120]); dungTrongGame(P.hud); // ấn ký bản gốc (anh 11/11 — an-ky.js): soát chữ ký ô góc trái
   for (const t of khuTinCho.splice(0)) P.hud.msg(t, MAU_TIN.tien); // khu vực bang (đợt 4 — khuDangNhap): lý do không vào khu / khu đã đổi
   // tin cập nhật chưa xem (anh 29/10): 1 dòng nhắc + chữ "Mới" ở nút Tin cập nhật của bảng Esc / chấm đỏ ở nút Tùy chỉnh thanh dưới
-  { const moi = tinChuaXem(); GW.datTinMoi(moi.length > 0); if (moi.length) P.hud.msg(`Có ${moi.length} tin cập nhật mới — mới nhất: ${moi[0].ten} (${moi[0].ngay}). Bấm Esc → Tin cập nhật để xem.`, [255, 217, 78]); }
+  { const moi = tinChuaXem(); GW.datTinMoi(moi.length > 0); if (moi.length) P.hud.msg(`Có ${moi.length} tin cập nhật mới — mới nhất: ${moi[0].ten} (${moi[0].ngay}). Bấm Esc → Tin cập nhật mà xem.`, [255, 217, 78]); }
   // poster sự kiện (anh 17/11 — src/game/poster.js): lần đầu vào thế giới của trang này, sự kiện Báo Đáp Ân Sư đang mở (tu ≤ hôm nay < moHet, giờ Việt Nam — ngày máy
   // chủ gửi ở LUAT) và hôm nay chưa tích "Không hiển thị lại hôm nay". Quản trị xem trước khi sự kiện mở: thêm ?poster=1 vào địa chỉ trang. Anh 17/11 "event ngày mai có thể
   // cho hiển thị poster từ hnay, tối 00:00 reset là có thể tham gia": hiện từ 1 ngày TRƯỚC ngày mở (truoc1(tu)) — giới thiệu trước, 0 giờ hôm sau mới tham gia được
@@ -604,14 +605,14 @@ async function vaoGame() {
   if (KAT) { if (P.hud.setKhoaAnToan) P.hud.setKhoaAnToan(KAT.tt); if (DT) DT.setKhoaAnToan(KAT.tt); }
   if (Net.me && Net.me.truoc && Net.me.truoc.luc && !Net.me.daBaoTruoc) {
     Net.me.daBaoTruoc = 1;
-    P.hud.msg(`Lần đăng nhập trước: ${gioNgay(Net.me.truoc.luc)} · IP ${Net.me.truoc.ip || "?"} — không phải bạn thì đổi mật khẩu ngay (bấm ổ khóa an toàn)`, [180, 200, 255]);
+    P.hud.msg(`Lần đăng nhập trước: ${gioNgay(Net.me.truoc.luc)} · IP ${Net.me.truoc.ip || "?"} — không phải ngươi thì đổi mật khẩu ngay (bấm ổ khóa an toàn)`, [180, 200, 255]);
   }
   // đã đăng ký xóa mật mã rương (Lễ quan — moPassRuong): nhắc ngày xác nhận như client (ResetBox:AnnounceResetBoxDate lúc vào game)
   if (hero.xoaMk) {
     const s = String(hero.xoaMk), so = (t) => +new Date(t).toISOString().slice(0, 10).replace(/-/g, "");
     const xoa = so(Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8)) + 7 * 864e5), nay = so(Date.now() + 7 * 3600e3);
-    if (nay === xoa) P.hud.msg("Hôm nay là ngày xác nhận xóa pass rương — đến Lễ quan (Ba Lăng huyện) để xác nhận, qua hôm nay đăng ký sẽ bị hủy");
-    else if (nay < xoa) P.hud.msg(`Pass rương sẽ được xóa vào ngày ${ngayXoaMk(xoa)} — đúng ngày đó đến Lễ quan xác nhận, nếu không đăng ký xoá pass rương sẽ bị hủy bỏ`);
+    if (nay === xoa) P.hud.msg("Hôm nay là ngày xác nhận xóa pass rương — tới Lễ quan (Ba Lăng huyện) mà xác nhận. Qua hôm nay, đăng ký hủy luôn, đừng trách.");
+    else if (nay < xoa) P.hud.msg(`Pass rương sẽ bị xóa vào ngày ${ngayXoaMk(xoa)} — đúng ngày đó tới Lễ quan xác nhận. Không tới thì đăng ký hủy, ráng chịu.`);
   }
   saveCleanup();
   if (!looping) { looping = true; requestAnimationFrame(loop); }
@@ -654,7 +655,7 @@ function tlXet(tl) {
   if (!tl) return;
   if (!tlGoc) { tlGoc = { v: tl.v | 0, b: tl.b || "" }; return; }
   if ((tl.v | 0) > tlGoc.v && !tlDem) { tlDem = true; batTaiLai(Math.max(5, tl.g | 0 || 30) + Math.floor(Math.random() * 16)); return; }
-  if (tl.b && tlGoc.b && tl.b !== tlGoc.b && !tlNhac && !tlDem) { tlNhac = true; thanhTl("Đã có bản cập nhật mới của game — tải lại trang (F5) để dùng bản mới.", false); }
+  if (tl.b && tlGoc.b && tl.b !== tlGoc.b && !tlNhac && !tlDem) { tlNhac = true; thanhTl("Có bản cập nhật mới — tải lại trang (F5) ngay để dùng bản mới.", false); }
 }
 function thanhTl(text, dem) {
   let el = document.querySelector(".tl-bao");
@@ -672,7 +673,7 @@ function taiLaiNgay() {
   setTimeout(() => location.reload(), 150);
 }
 function batTaiLai(giay) {
-  let con = giay; const chu = () => `Máy chủ yêu cầu tải lại trang để cập nhật — tự tải lại sau ${con} giây (vào lại đúng nhân vật).`;
+  let con = giay; const chu = () => `Máy chủ bắt tải lại trang để cập nhật — tự tải lại sau ${con} giây (vào lại đúng nhân vật).`;
   if (P.hud) P.hud.msg(chu(), [255, 217, 78]); thanhTl(chu(), true);
   const t = setInterval(() => { con--; thanhTl(chu(), true); if (con <= 0) { clearInterval(t); taiLaiNgay(); } }, 1000);
 }
@@ -693,7 +694,7 @@ const DUNG_YEN = 10000; // thanh tải đứng yên chừng này (ms) thì thôi
 const coHanP = (p, ms, ten, L) => {
   if (L) L.luc = performance.now();
   let xong = false;
-  const bao = (t) => () => { if (!xong) console.warn(`Tải ${ten}: ${t} — vào bãi trước, tải tiếp sau`); };
+  const bao = (t) => () => { if (!xong) console.warn(`Tải ${ten}: ${t} — vào bãi trước đã, tải tiếp sau`); };
   return Promise.race([Promise.resolve(p).catch((e) => console.warn("Tải " + ten + " lỗi:", e)), new Promise((r) => setTimeout(r, ms)).then(bao(`quá ${ms / 1000} giây`)),
     ...(L ? [L.dungYen(DUNG_YEN).then(bao(`thanh tải đứng yên ${DUNG_YEN / 1000} giây`))] : [])]).finally(() => { xong = true; });
 };
@@ -702,7 +703,7 @@ function gotoZone(zone, opt = {}) {
   const L = LOADING.start(zone.n);
   zoneToi = zone.id; chungToi = !!opt.chung && laQc(zone);
   zoneLoad = loadZone(zone, opt, L)
-    .catch((e) => { console.warn("Đổi bản đồ lỗi — thử lại:", e); return new Promise((r) => setTimeout(r, 1500)).then(() => loadZone(zone, opt, LOADING.start(zone.n))); })
+    .catch((e) => { console.warn("Đổi bản đồ lỗi — thử lại đi:", e); return new Promise((r) => setTimeout(r, 1500)).then(() => loadZone(zone, opt, LOADING.start(zone.n))); })
     .finally(() => { zoneLoad = null; zoneToi = null; chungToi = false; L.end(); });
   return zoneLoad;
 }
@@ -755,7 +756,7 @@ async function loadZone(zone, opt, L) {
     const dau = LoiDai.autoTruoc == null; // vừa từ ngoài vào sân (World mới trong sân thì không báo lại)
     if (dau) LoiDai.autoTruoc = !!w.auto;
     // báo 1 câu lúc vào khi Trợ Thủ đang bật hoặc có dòng tự uống thuốc đang bật (soát 16/11: trong sân cả tự uống cũng tắt — người đánh tay chỉ bật thuốc trước không được báo)
-    if (hudMounted && (w.auto || (dau && hero.auto.thuoc.some((t) => t.on)))) P.hud.canh("Lôi đài: Trợ Thủ không hoạt động trong sân — đánh tay");
+    if (hudMounted && (w.auto || (dau && hero.auto.thuoc.some((t) => t.on)))) P.hud.canh("Lôi đài: Trợ Thủ không hoạt động trong sân — đánh tay đi.");
     // anh 17/11: trong sân không dùng thuốc / hoàn; hoàn đang có tạm mất tác dụng (world.js bonus — giờ dừng, rời sân có tác dụng lại) — báo 1 lần lúc vào nếu đang có
     if (hudMounted && dau) { const co = Object.keys(hero.buff || {}).filter((k) => hero.buff[k] > 0 && ItemDB.buffDef(k)).map((k) => String(ItemDB.buffDef(k).n || "").trim()).filter(Boolean);
       P.hud.msg(`Sân Công Bình Tử: không dùng được thuốc, hoàn${co.length ? ` — ${co.join(", ")} tạm mất tác dụng (dừng giờ), rời sân có tác dụng lại` : ""}`, "#ffd54a"); }
@@ -767,7 +768,7 @@ async function loadZone(zone, opt, L) {
   // đường đua (anh 16/11 — client racegame cấm võ công, Trợ Thủ không có việc gì): vào đường đua tắt tự đánh (nhớ lúc vào — DuaNgua.autoTruoc), ra khỏi thì World mới nhận lại
   if (laDn(zone)) {
     if (DuaNgua.autoTruoc == null) DuaNgua.autoTruoc = !!w.auto;
-    if (hudMounted && w.auto) P.hud.canh("Đường đua: Trợ Thủ không hoạt động — tự chạy bằng chuột / bản đồ nhỏ");
+    if (hudMounted && w.auto) P.hud.canh("Đường đua: Trợ Thủ không hoạt động — tự chạy bằng chuột / bản đồ nhỏ.");
     w.auto = false; if (hudMounted) P.hud.setAuto(false);
   } else if (DuaNgua.autoTruoc != null) {
     const bat = DuaNgua.autoTruoc && !!world && !w.auto; DuaNgua.autoTruoc = null;
@@ -779,11 +780,11 @@ async function loadZone(zone, opt, L) {
     P.audio.ui("levelup"); P.hud.msg(`Lên cấp ${lvl}! +${n * 5} điểm tiềm năng, +${n} điểm kỹ năng${mo.length ? " · Đã mở bãi " + mo.join(", ") : ""}`); save();
     // vừa qua mốc thưởng thăng cấp (may-chu/thuong-cap.js — anh 02/11)
     const moc = (luat().thuongCap || []).filter((c) => c > lvl - n && c <= lvl);
-    if (moc.length) P.hud.msg(`Đạt mốc thưởng thăng cấp ${moc.join(", ")} — mở Nhận thưởng → Thưởng thăng cấp để nhận quà`, MAU_TIN.tien);
+    if (moc.length) P.hud.msg(`Đạt mốc thưởng thăng cấp ${moc.join(", ")} — mở Nhận thưởng → Thưởng thăng cấp mà nhận quà`, MAU_TIN.tien);
   };
   // qua cổng thôn / thành (khu an toàn — World map.an, anh 02/11): báo trạng thái như client đổi khi qua trap cổng
   // Tống Kim trận thật: không báo ở đây — đổi pha báo danh / xong làm cả bản đồ "an toàn"; vào / ra hậu doanh đã báo lúc qua bẫy (tongkim.js dichChuyen)
-  w.onAnToan = (an) => TongKim.laTran() || laTk(zone) || laLd(zone) || laDn(zone) ? null : TongKim.laTo() ? P.hud.msg(an ? "Vào doanh trại phe mình — khu an toàn, không đánh nhau được" : "Rời doanh trại — vào trận") : P.hud.msg(an ? `Vào khu vực an toàn của ${zone.n} — trạng thái phi chiến đấu, không thể đánh nhau` : `Rời khu vực an toàn — trạng thái chiến đấu`);
+  w.onAnToan = (an) => TongKim.laTran() || laTk(zone) || laLd(zone) || laDn(zone) ? null : TongKim.laTo() ? P.hud.msg(an ? "Vào doanh trại phe mình — khu an toàn, cấm đánh nhau." : "Rời doanh trại — vào trận.") : P.hud.msg(an ? `Vào khu vực an toàn của ${zone.n} — phi chiến đấu, cấm đánh nhau` : `Rời khu vực an toàn — vào trạng thái chiến đấu`);
   // Rương chứa đồ (vật bản đồ — script client OpenBox()): mở khung rương + cửa sổ Đồ dùng
   w.onTalk = (n) => {
     if (n.viec === "ruong") return GW && GW.openStore();
@@ -815,7 +816,11 @@ async function loadZone(zone, opt, L) {
   w.onTkChet = () => (LoiDai.laTo() ? LoiDai.chet() : TongKim.chet()); // Tống Kim: báo người kết liễu, 8 giây sau đứng dậy ở doanh (tongkim.js); lôi đài: báo bị hạ, thành người xem (loidai.js)
   w.onPick = (d) => pending.nhat.push(d.g); // nhặt vật trên đất: báo máy chủ kèm nhịp
   w.onSkMsg = (t) => P.hud.canh(t); // võ công: thiếu nội lực, chưa hồi chiêu, sai vũ khí, đang cưỡi ngựa… -> ô tin dưới khung chat
-  w.potFull = () => potTotal() >= (luat().mang || 60); // mang đủ 60 bình thuốc: tự nhặt bỏ qua thuốc
+  w.potFull = (k) => { // loại thuốc này đã mang đủ chongMax của nó (bình máu / mana 999 — 25/11/2026): tự nhặt bỏ qua đúng loại đó
+    if (!k) return false;
+    const L = luat(), mx = (L.chongRieng && +L.chongRieng[k]) || L.chong || 60;
+    return (hero.bag || []).reduce((t, b) => t + (b.k === k && isPotion(b) ? b.n || 0 : 0), 0) >= mx;
+  };
   w.laQt = !!(Net.me && Net.me.admin); // tài khoản quản trị: tên vàng kim + vòng sáng Quán quân liên đấu (world.js QT_MAU / QT_VONG)
   datXemNguon(w.laQt); // ô xem món: dòng Nguồn gốc chỉ quản trị thấy (itemtip.js — anh 18/11 tối)
   w.bhMinh = bhVe; // dòng bang trên đầu mình (anh 14/11 — bhMinhApply; world.js drawHeroLabel)
@@ -876,7 +881,7 @@ async function loadZone(zone, opt, L) {
   TongKim.ganWorld(w); // Tống Kim bãi thử: phòng đang mở ở bãi này thì vào trận
   LoiDai.ganWorld(w); // sân lôi đài: gắn World.tk của sân (sau Tống Kim — tongkim.js roi chỉ dọn World.tk của nó)
   DuaNgua.ganWorld(w); // đường đua: cấm võ công, không quái / phân thân, hộp / bẫy (duangua.js)
-  if (chung && hudMounted) P.hud.msg(`${zone.n} — bản quái chung: cùng đánh một bầy quái với người chơi khác, thêm ${qcPct()}% kinh nghiệm và ngân lượng`, MAU_TIN.kn);
+  if (chung && hudMounted) P.hud.msg(`${zone.n} — bản quái chung: đánh chung một bầy quái với người chơi khác, thêm ${qcPct()}% kinh nghiệm và ngân lượng`, MAU_TIN.kn);
   if (w.auto) w.neo = [w.player.x, w.player.y]; // Trợ Thủ "quanh chỗ bật tự đánh": vào bãi mới thì lấy chỗ đứng đầu tiên
   // vào thành / thôn lúc tự đánh đang bật (Thổ Địa Phù, trọng thương, Trợ Thủ về làm việc…): tạm dừng tự đánh — không lao vào đánh mộc nhân
   // (anh 31/10 khuya); ra bãi thì World mới tự đánh tiếp, bấm bật lại (Space 2 lần) thì đánh mộc nhân như thường. Trợ Thủ đang về làm việc ở
@@ -955,7 +960,7 @@ function skillPick(side, anchor) {
   // điện thoại, ô kỹ năng đang khóa (dienthoai.js datOKhoa — chỉ dùng): chạm ô T / P = ra chiêu tay đó (handUse); mở khóa mới mở bảng chọn chiêu
   if (DT && DT.on && DT.oKhoa) return handUse(side);
   const old = document.querySelector(".jx-skpick"); if (old) { old.remove(); if (old.dataset.side === side) return; }
-  if (!hero || hero.fac == null) return P.hud.msg("Chưa nhập môn phái — gặp đệ tử tiếp dẫn ở Ba Lăng huyện (cấp 10)");
+  if (!hero || hero.fac == null) return P.hud.msg("Chưa nhập môn phái — tới gặp đệ tử tiếp dẫn ở Ba Lăng huyện (cấp 10).");
   if (!P.vc) return P.hud.msg("Võ công: thiếu gói assets/web/vocong (node cong-cu/dung-vo-cong.mjs)");
   const O = (hero.oChieu = hero.oChieu || {}), cur = side === "left" ? O.trai : O.phai;
   const list = [...skillsUsable().filter((x) => side === "right" || ((x.kind === "attack" || x.kind === "curse") && (P.vc.sk(x.id) || {}).lr !== 2)), ...(side === "right" ? kcChon() : [])];
@@ -1044,7 +1049,7 @@ function tkChetBox() {
   { const B = hero.buff || {}, bo = Object.keys(B).filter(laHoan); if (bo.length) { for (const k of bo) delete B[k]; if (world) world.refreshStats(false); } }
   const w = P.win.get("info2"), hs = TongKim.giayHoiSinh();
   w.sticky = true;
-  w.set("Info", `Bạn đã bị trọng thương! Hiệu quả các loại hoàn đã mất — ra trận nhớ dùng lại. Về doanh trại phe mình hồi sinh — ${hs} giây sau mới ra khỏi hậu doanh được.`).set("OK", "Về doanh trại");
+  w.set("Info", `Ngươi bị trọng thương rồi! Hiệu quả các loại hoàn mất hết — ra trận nhớ dùng lại. Về doanh trại phe mình mà hồi sinh — ${hs} giây sau mới ra khỏi hậu doanh được.`).set("OK", "Về doanh trại");
   const go = () => { clearTimeout(w._t); w.hide(); if (!world || world.player.hp > 0) return; P.audio.ui("click"); TongKim.hoiSinhNgay(); };
   w.on("OK", go); w.show();
   clearTimeout(w._t);
@@ -1056,7 +1061,7 @@ function ldChetBox() {
   if (NPCD) NPCD.close();
   const w = P.win.get("info2");
   w.sticky = true;
-  w.set("Info", "Bạn đã bị hạ — không mất gì. Ở lại sân xem tiếp (tuyển thủ không thấy bạn); muốn đi thì bấm Rời sân.").set("OK", "Xem tiếp");
+  w.set("Info", "Ngươi bị hạ rồi — không mất gì. Ở lại sân xem tiếp (tuyển thủ không thấy ngươi); muốn đi thì bấm Rời sân.").set("OK", "Xem tiếp");
   const go = () => { clearTimeout(w._t); w.hide(); if (!world || world.player.hp > 0) return; P.audio.ui("click"); LoiDai.thanhNguoiXem(); };
   w.on("OK", go); w.show();
   clearTimeout(w._t);
@@ -1067,9 +1072,9 @@ function deathBox(town) {
   if (NPCD) NPCD.close(); // đang nói chuyện với NPC thì đóng (khung info2 dùng chung)
   const w = P.win.get("info2"), S = P.win.strings;
   w.sticky = true;
-  w.set("Info", (S.G_MSG_RENASCENCE || "Bạn đã bị trọng thương!").trim()).set("OK", (S.G_MSG_BACK_TO_TOWN || "Về thành dưỡng sức").trim());
+  w.set("Info", (S.G_MSG_RENASCENCE || "Ngươi bị trọng thương rồi!").trim()).set("OK", (S.G_MSG_BACK_TO_TOWN || "Về thành dưỡng sức").trim());
   // Viêm Đế Bảo Tàng (player_death.lua): có Hình nhân -> nút Hồi sinh ở nơi xuất phát, không có -> về Biện Kinh
-  if (world && laVd(world.zone) && (hero.vd && hero.vd.hn) > 0) w.set("Info", "Trên hành trang đại hiệp có Hình nhân, có thể hồi sinh được 1 lần. Tại nơi xuất phát của bảo tàng bấm hồi sinh.").set("OK", "Hồi sinh");
+  if (world && laVd(world.zone) && (hero.vd && hero.vd.hn) > 0) w.set("Info", "Trên hành trang ngươi có Hình nhân, hồi sinh được 1 lần. Tới nơi xuất phát của bảo tàng mà bấm hồi sinh.").set("OK", "Hồi sinh");
   const go = () => {
     clearTimeout(w._t); w.hide();
     if (!world || world.player.hp > 0) return;
@@ -1114,8 +1119,8 @@ function revivePoints(zone, map) {
 // -> đã về Vô Môn Phái lúc nạp (fixLooks), ở đây báo 1 lần; chiêu không còn -> đã bỏ, trả điểm. Món không còn trong kho đồ + kiểu dáng
 // theo đồ mặc: máy chủ sửa lúc nạp (may-chu/do.js chuan, 25/10).
 function saveCleanup() {
-  if (hero.lostFac) { P.hud.msg(`Phái ${hero.lostFac} đã bỏ (game còn 10 phái) — ${hero.name} về Vô Môn Phái, điểm kỹ năng đã trả lại`); delete hero.lostFac; save(); }
-  if (hero.lostSkills) { P.hud.msg(`Bỏ ${hero.lostSkills} chiêu không còn trong game (kỹ năng 180…) — điểm kỹ năng đã trả lại`); delete hero.lostSkills; save(); }
+  if (hero.lostFac) { P.hud.msg(`Phái ${hero.lostFac} đã bỏ (game còn 10 phái) — ${hero.name} về Vô Môn Phái, điểm kỹ năng trả lại hết`); delete hero.lostFac; save(); }
+  if (hero.lostSkills) { P.hud.msg(`Bỏ ${hero.lostSkills} chiêu không còn trong game (kỹ năng 180…) — điểm kỹ năng trả lại hết`); delete hero.lostSkills; save(); }
   haChieu();
 }
 // chiêu cao hơn mức cấp nhân vật cho (anh 29/10 — cộng điểm như client, rules.js capChieu: nhân vật cộng trước 29/10, công cụ thử hạ cấp) ->
@@ -1202,7 +1207,7 @@ function mountHud() {
       if (GW.toggle(k)) return; // Nhân vật, Đồ dùng, Túi hành trang, Võ công, Nhiệm vụ, Tùy chỉnh (bảng hệ thống)
       if (k === "Horse") return toggleHorse(on);
       if (k === "Sit") {
-        if (on && world.riding()) { P.hud.setToggle("Sit", false); return P.hud.canh("Lúc cỡi ngựa không thể thiền tọa!"); } // G_CORESHELL_1 — chữ đỏ ô tin như câu cảnh báo client
+        if (on && world.riding()) { P.hud.setToggle("Sit", false); return P.hud.canh("Đang cưỡi ngựa không ngồi thiền được. Xuống ngựa ngay!"); } // G_CORESHELL_1 — chữ đỏ ô tin như câu cảnh báo client
         if (!world.sit(on)) P.hud.setToggle("Sit", false);
         return;
       }
@@ -1260,6 +1265,15 @@ function mountHud() {
     traCuu: () => (HD ? HD.TC : null), layTraCuu: () => HD && HD.layTc(), moTraCuu: (muc, q) => { if (!HD) return; HD.tim = q || ""; HD.open(1, muc); },
     lichHd: () => (HD ? HD.L : null), // lịch sống (giờ Boss Hoàng Kim GM đổi ở F10)
     moTl: moKhoaTuLam, tlNut: (loai) => { TuLam.nut(loai); if (TT) TT.render(); }, tlChay: (loai) => TuLam.chay(loai), tlBatDau: () => { TuLam.batDau(); if (TT) TT.render(); }, tlDang: () => TuLam.dang || (TuLam.s.dtDung ? "Đã thôi Dã Tẩu: " + TuLam.s.dtDung : TuLam.s.stDung ? "Đã thôi Sát thủ: " + TuLam.s.stDung : "") });
+  // bảng Auto nhanh (auto-nhanh.js): 6 công tắc to — cùng cài đặt hero.auto với Trợ Thủ đầy đủ, đổi bên nào bên kia cũng thấy
+  QA = new AutoNhanh({ P, hero: () => hero, world: () => world, save, msg: (t) => P.hud.msg(t), toggleAuto,
+    batAuto: () => { if (world && !world.auto) toggleAuto(true); },
+    openTroThu: (tab) => { if (TT) TT.open(tab); },
+    refreshTroThu: () => { if (TT && TT.w.visible) TT.render(); },
+    troThuMo: () => !!(TT && TT.w.visible),
+    tl: () => hero && TuLam.tl(hero) && { ...TuLam.tl(hero), gia: (hero.tl && hero.tl.gia) || { dt: 10, st: 5 } },
+    tlNut: (loai) => { TuLam.nut(loai); if (TT) TT.render(); }, tlChay: (loai) => TuLam.chay(loai),
+    mmBox: () => P.hud.mm });
   HD = new HuongDan(P.win, { P, net: Net, hero: () => hero, nguHanh: (h, lai) => TT.nguHanhDom(h, lai), openTin: () => GW.openTin(), dangMo: (on) => P.hud.setHuongDan(on), chamDo: (co) => P.hud.chamHuongDan(co),
     tcXong: () => { if (TT && TT.w.visible) TT.render(); } });
   // Phân Thân (anh 05/11): khung thuê; phân thân đang theo đổi -> dựng / bỏ nhân vật máy ở bãi (phanThanTheo)
@@ -1277,6 +1291,7 @@ function mountHud() {
   const dtChe = DienThoai.cheDo();
   TD = new TanThu({ P, hero: () => hero, world: () => world, save: () => save(), msg: (t) => P.hud.msg(t), GW: () => GW, DT: () => DT, laBai: (z) => FARM_KINDS.has(z.kind), laThanh: (z) => TOWN_KINDS.has(z.kind), xaPhu: (w) => xaPhuNpc(w), baiTreo: () => baiTreo(), zones: () => P.maps.zones, luat: () => luat(), toggleAuto: () => toggleAuto(), phu: () => phuTrongTui(), dungPhu: (b) => dungPhu(b), thuongCap: () => thuongCap({ viec: "mo" }), troThu: () => TT && TT.open(), bam: (k) => bamNhiemVu(k) });
   if (dtChe) DT = new DienThoai({ P, cv, hero: () => hero, world: () => world, GW: () => GW, TT: () => TT, toggleAuto, facOf, tinMoi: tinChuaXem, thuongCho: () => thuongCho, help: showHelp, joy: joyMove, vut: () => throwHeld(true),
+    moAutoNhanh: () => QA && QA.toggle(), // nút AUTO trên điện thoại (dienthoai.js data-a="autonhanh")
     fps: () => fpsLast, ping: () => Net.ping, online: () => Net.online, mt: dtChe === "mt" });
   chamGiu(() => GW, () => !!(DT && DT.on), P.win); // máy tính bảng: đè giữ món / chiêu để xem + nút việc làm (anh 09/11)
 }
@@ -1297,6 +1312,7 @@ function ccKiem() {
 // các trạng thái vật phẩm đang cộng chỉ số (Bách Quả Lộ — World.bonus): bật / hết hạn thì tính lại chỉ số
 const buffChiSo = (b) => Object.keys(b || {}).filter((k) => { const T = b[k] > 0 && ItemDB.buffDef(k); return !!(T && (T.khang || T.attrs)); }).sort().join(); // + bùa Phong Hỏa (ItemDB.buffDef)
 let TT = null; // khung Trợ Thủ (src/game/trothu.js)
+let QA = null; // bảng Auto nhanh (src/game/auto-nhanh.js) — 6 công tắc to của Trợ Thủ, cả web lẫn điện thoại
 let HD = null; // khung Hướng dẫn hoạt động (src/game/huongdan.js — anh 05/11)
 let PT = null; // khung Phân Thân (src/game/phanthan.js — anh 05/11)
 let BC = null; // bàn cược Bầu Cua (src/game/baucua.js — anh 10/11)
@@ -1311,14 +1327,14 @@ function phanThanTheo(tt) { ptTheo = tt; if (world && world.datPhanThan) world.d
 // CH_TONG: kênh Bang hội (anh 14/11 — Bang hội đợt 1, may-chu/the-gioi.js KENH): chỉ người cùng bang nhận; chưa có bang thì chặn ngay ở đây như kênh đội ngũ
 const NET_CH = new Set(["CH_WORLD", "CH_NEARBY", "CH_CITY", "CH_TEAM", "CH_TONG", "PRIVATE"]); // PRIVATE: nhắn tin mật (anh 13/11 — hud.datMat)
 function sendChat(ch, t) {
-  if (ch === "CH_TEAM" && !doiTt) return P.hud.canh("Bạn chưa có đội ngũ — lập nhóm / vào nhóm rồi mới nói được ở Tần số đội ngũ");
-  if (ch === "CH_TONG" && !bhMinhCur) return P.hud.canh("Bạn hiện giờ không thuộc bang hội nào!"); // tongleavepower.lua :28
+  if (ch === "CH_TEAM" && !doiTt) return P.hud.canh("Chưa có đội ngũ thì nói ở tần số đội ngũ làm gì — lập nhóm hay vào nhóm trước đã.");
+  if (ch === "CH_TONG" && !bhMinhCur) return P.hud.canh("Ngươi chưa thuộc bang hội nào cả!"); // tongleavepower.lua :28
   // khoe đồ (khoeDo): chữ còn <tên đồ> đã chèn -> gửi kèm mã món, máy chủ lấy món thật (may-chu/the-gioi.js monKhoe)
   const kd = P.hud.khoeDo, u = kd && t.includes(`<${kd.ten}>`) ? kd.u : null;
   P.hud.khoeDo = null;
-  if (!NET_CH.has(ch)) { P.hud.chat(ch, hero.name, t, true); return P.hud.msg("Kênh này chưa có trên máy chủ — tin chỉ hiện ở máy mình. Nói với mọi người: kênh Phụ cận / Thành thị / Thế giới"); }
+  if (!NET_CH.has(ch)) { P.hud.chat(ch, hero.name, t, true); return P.hud.msg("Kênh này máy chủ chưa có — tin chỉ hiện ở máy ngươi. Muốn nói với mọi người thì dùng kênh Phụ cận / Thành thị / Thế giới."); }
   const toi = ch === "PRIVATE" ? P.hud.matToi : null; // nhắn tin mật (anh 13/11): người nhận = tên đã chọn (Ctrl + bấm tên ở khung chat / menu người chơi)
-  if (ch === "PRIVATE" && !toi) return P.hud.canh("Chưa chọn người nhận tin mật — Ctrl + bấm tên người đó ở khung chat, hoặc Ctrl + chuột phải vào người chơi → Nhắn tin mật");
+  if (ch === "PRIVATE" && !toi) return P.hud.canh("Chưa chọn người nhận tin mật — Ctrl + bấm tên người đó ở khung chat, hoặc Ctrl + chuột phải vào người chơi → Nhắn tin mật. Chọn đi rồi hãy gửi.");
   Net.chat(hero.slot | 0, ch, t, u, toi).then((j) => P.hud.chat(ch, hero.name, (j && j.text) || t, true, { ...(j && j.it ? khoeThem(j.it) : {}), ...(toi ? { toi } : {}) }))
     .catch((e) => { if (e.ma !== "het-phien") P.hud.msg("Chưa gửi được: " + e.message); });
 }
@@ -1329,7 +1345,7 @@ function khoeDo(it) {
   const x = it && ItemDB.item(it.k); if (!x || !P.hud) return;
   const ten = String(x.n).replace(/\s+/g, " ").trim();
   if (DT && DT.on) { if (GW) GW.closeAll(); DT.chat = true; DT.tick(); } // điện thoại: đóng túi, mở khung Chat (ô gõ ở đó)
-  if (!P.hud.chenKhoe(ten)) return P.hud.canh("Ô chat đầy chữ — xóa bớt rồi khoe đồ");
+  if (!P.hud.chenKhoe(ten)) return P.hud.canh("Ô chat đầy chữ rồi — xóa bớt đi rồi hãy khoe đồ.");
   P.hud.khoeDo = { u: it.u, ten };
 }
 const khoeThem = (it) => ({ it, itMau: mauMon({ d: (it.d || []).length }) }); // màu chữ <tên đồ> như dòng nhặt đồ (xanh: món có dòng)
@@ -1426,9 +1442,11 @@ function takePending(bai) {
   const hz = world && world.hao, hao = hz && (hz[0] || hz[1] || hz[2]) ? hz.splice(0, 3, 0, 0, 0) : null;
   // luyen = số lần trúng quái của từng chiêu luyện từ nhịp trước (vocong.js misHit — máy chủ cộng độ luyện, anh 29/10)
   const lk = world && world.luyenDem && world.luyenDem.size ? [...world.luyenDem] : null;
-  if (!pending.kills.length && !pending.deaths && !pending.uong.size && !pending.nhat.length && bai == null && !hao && !lk) return undefined;
+  // npcHit = đòn của mình trúng NPC nhân vật mẫu từ nhịp trước (world.js npcHit — chỉ sự kiện, KHÔNG số sát thương; máy chủ tự tính sau khi kiểm tra chống giả)
+  const nh = world && world.npcHitQ && world.npcHitQ.length ? world.npcHitQ.splice(0, 12) : null;
+  if (!pending.kills.length && !pending.deaths && !pending.uong.size && !pending.nhat.length && bai == null && !hao && !lk && !nh) return undefined;
   if (lk) world.luyenDem.clear();
-  const r = { k: pending.kills.splice(0, 200), chet: pending.deaths, uong: [...pending.uong], nhat: pending.nhat.splice(0), ...(bai != null ? { bai } : {}), ...(hao ? { hao } : {}), ...(lk ? { luyen: lk } : {}) };
+  const r = { k: pending.kills.splice(0, 200), chet: pending.deaths, uong: [...pending.uong], nhat: pending.nhat.splice(0), ...(bai != null ? { bai } : {}), ...(hao ? { hao } : {}), ...(lk ? { luyen: lk } : {}), ...(nh ? { npcHit: nh } : {}) };
   pending.deaths = 0; pending.uong.clear();
   Object.defineProperty(r, "at", { value: pending.at.splice(0, r.k.length) }); // không đếm được -> không vào JSON gửi đi
   return r;
@@ -1467,8 +1485,23 @@ const fmtSo = (n) => Math.round(n).toLocaleString("vi-VN");
 // Bản ở máy (Net.me.nv) cập nhật luôn — không gọi save(): máy chủ không nhận các trường này từ trình duyệt.
 // at = chỗ các con quái của lần báo giết này: món + tiền rơi xuống đất ở chỗ con đó (còn ở bãi đó); nhặt =
 // kết quả nhặt vật trên đất; vut = món vừa vứt ra đất
+// Đòn đánh trả của NPC nhân vật mẫu tới mình (may-chu/npc-choi.js layDanhCho — máy chủ đã kiểm tra đòn của
+// mình trước khi cho bot đánh trả, số sát thương do máy chủ tính). Nguồn đòn phải là entity bot đang thấy
+// trong world.others (không thấy thì bỏ — tên giả trong nhịp không tự tạo nguồn được); tái dùng đúng đường
+// World.hit lên người chơi (Lưỡng Nghi Chân Khí, nội lực hộ thân, hao đồ, trọng thương) — không tự trừ máu.
+function npcDanhNhan(ds) {
+  if (!world || !world.player || world.player.hp <= 0 || !Array.isArray(ds)) return;
+  const bot = world._npcChoi;
+  if (!bot || !world.others.has(bot.name)) return;
+  for (const d of ds) {
+    if (!d || !(d.st > 0) || world.player.hp <= 0) continue;
+    const src = { kind: "other", name: d.ten || bot.name, x: bot.x, y: bot.y, hp: 100, mp: 100, tkRef: null };
+    world.hit(src, world.player, { v: Math.max(1, Math.floor(d.st)), crit: !!d.crit, cold: d.cold || 0 });
+  }
+}
 function applyServer(j, at) {
   if (!j || !hero) return;
+  if (j.npcDanh) npcDanhNhan(j.npcDanh); // đòn đánh trả của NPC nhân vật mẫu (may-chu/npc-choi.js layDanhCho — số sát thương máy chủ đã tính, chỉ nhắm đúng người bị đánh)
   // boss thế giới (bosstg.js — anh 31/10): trạng thái kèm nhịp (kênh tức thời chưa mở / dự phòng) + thưởng theo % sát thương
   if ("btgDs" in j) BossTG.capNhat(j.btgDs); else if ("btg" in j) BossTG.capNhat(j.btg); // btgDs: mọi boss (lượt 86)
   if (j.ntc) capNhatThuong(j.ntc); // phần thưởng đang chờ nhận (số đỏ trên nút Nhận thưởng)
@@ -1483,7 +1516,7 @@ function applyServer(j, at) {
   if ("vaPhong" in j) VaDoi.capNhat(j.vaPhong);
   if (j.vaKq) {
     const r = j.vaKq;
-    if (r.kn > 0) P.hud.msg(`Bạn nhận được ${fmtSo(r.kn)} điểm kinh nghiệm.`, MAU_TIN.kn, true);
+    if (r.kn > 0) P.hud.msg(`Nhận được ${fmtSo(r.kn)} điểm kinh nghiệm.`, MAU_TIN.kn, true);
     for (const t of r.tin || []) P.hud.msg(t);
     // anh 17/11: thưởng thêm mỗi ải Vượt Ải — dòng vàng ở kênh Khác (nhan: chỉ thẻ Khác, như dòng nhận kinh nghiệm) cho người đang trong ải
     for (const t of r.tinVa || []) P.hud.msg(String(t), [255, 213, 74], true);
@@ -1498,7 +1531,7 @@ function applyServer(j, at) {
   // món / tiền rơi ở chỗ con chết (riêng người nhận trọn)
   if (j.qcKq) {
     const r = j.qcKq;
-    if (r.kn > 0) P.hud.msg(`Bạn nhận được ${fmtSo(r.kn)} điểm kinh nghiệm.`, MAU_TIN.kn, true);
+    if (r.kn > 0) P.hud.msg(`Nhận được ${fmtSo(r.kn)} điểm kinh nghiệm.`, MAU_TIN.kn, true);
     for (const t of r.tin || []) P.hud.msg(t);
     if (world) for (const m of r.nhan || []) if (world.zone.id === m.z) world.drop(m.x, m.y, { g: m.g, item: m });
     if (world) for (const o of r.roi || []) if (world.zone.id === o.z) world.drop(o.x, o.y, { g: o.g, gold: o.tien });
@@ -1506,7 +1539,7 @@ function applyServer(j, at) {
   // Phong Hỏa Liên Thành (may-chu/phong-hoa.js nhanThuong): kinh nghiệm giết quái + thưởng thắng trận (câu riêng)
   if (j.phKq) {
     const r = j.phKq, kk = r.kn - (r.thang | 0);
-    if (kk > 0) P.hud.msg(`Bạn nhận được ${fmtSo(kk)} điểm kinh nghiệm.`, MAU_TIN.kn, true);
+    if (kk > 0) P.hud.msg(`Nhận được ${fmtSo(kk)} điểm kinh nghiệm.`, MAU_TIN.kn, true);
     for (const t of r.tin || []) P.hud.msg(t, r.thang ? MAU_TIN.kn : undefined);
     if (world) for (const m of r.nhan || []) if (world.zone.id === m.z) world.drop(m.x, m.y, { g: m.g, item: m }); // rơi thêm (anh 04/11): nằm đất chỗ con chết
   }
@@ -1529,9 +1562,9 @@ function applyServer(j, at) {
     ccKiem(); // anh 16/11 — Báo Đáp Ân Sư: Nhất Kỷ / Càn khôn (nv.ccKn) vừa thêm / hết -> tính lại chỉ số, bảng Võ công
   }
   const kq = j.kq;
-  if (kq && kq.kn > 0) P.hud.msg(`Bạn nhận được ${fmtSo(kq.kn)} điểm kinh nghiệm.`, MAU_TIN.kn, true); // câu client MSG_GET_EXP (gộp các con của 1 nhịp)
+  if (kq && kq.kn > 0) P.hud.msg(`Nhận được ${fmtSo(kq.kn)} điểm kinh nghiệm.`, MAU_TIN.kn, true); // câu client MSG_GET_EXP (gộp các con của 1 nhịp)
   // tổ đội (may-chu/do.js chiaDoi): phần đồng đội giết chia cho + lên cấp thống soái
-  if (j.chia && j.chia.kn > 0) P.hud.msg(`Bạn nhận được ${fmtSo(j.chia.kn)} điểm kinh nghiệm (tổ đội).`, MAU_TIN.kn, true);
+  if (j.chia && j.chia.kn > 0) P.hud.msg(`Nhận được ${fmtSo(j.chia.kn)} điểm kinh nghiệm (tổ đội).`, MAU_TIN.kn, true);
   for (const t of (j.chia && j.chia.tin) || []) P.hud.msg(t);
   for (const t of j.mcTin || []) P.hud.msg(t); // nhiệm vụ Võ Lâm Minh Chủ: con quái nhiệm vụ đồng đội hạ giúp
   if (kq && kq.tin) for (const t of kq.tin) P.hud.msg(t); // Boss Sát thủ: xong nhiệm vụ, nhận Sát Thủ lệnh
@@ -1546,20 +1579,20 @@ function applyServer(j, at) {
     if (world) for (const m of n.nhan) if (m.hoi) world.hoiNgay(m.hoi); // bùa Phong Hỏa hồi ngay (may-chu/do.js nhatBua)
     for (const m of n.nhan) { if (m.tin) P.hud.msg(m.tin, MAU_TIN.do); else P.hud.msg([["Nhặt được "], [m.sl ? `${m.sl} ${m.n}` : m.n, mauMon(m)], [m.sl ? (m.con ? ` (còn ${m.con} bình trên đất)` : "") : m.d ? ` (${m.d} dòng)` : " (đồ trắng)"]]); if (world && !m.con) world.dropGone(m.g); }
     if (world) for (const g of n.du || []) world.dropBack(g);
-    if ((n.du || []).length) P.hud.msg(`Đã mang đủ ${luat().mang || 60} bình thuốc (mọi loại) — thuốc còn lại vẫn nằm trên đất`);
+    if ((n.du || []).length) P.hud.msg(`Mang đủ giới hạn loại thuốc đó rồi — thuốc còn lại cứ nằm trên đất đấy`);
     if (world) { for (const g of n.mat) world.dropGone(g); for (const g of n.day) world.dropBack(g); }
-    if (n.day.length) P.hud.msg("Hành trang đã đầy — đồ vẫn nằm trên đất, dọn túi rồi bấm vào đồ để nhặt", MAU_TIN.do);
+    if (n.day.length) P.hud.msg("Hành trang đầy rồi — đồ vẫn nằm trên đất. Dọn túi đi rồi bấm vào đồ mà nhặt.", MAU_TIN.do);
     if (world) for (const g of n.vang) world.dropGone(g);
     if (n.tien && world) world.text(world.player, `+${n.tien} lượng`, "#ffe680");
-    if (n.tien) P.hud.msg(`Bạn nhận được ${fmtSo(n.tien)} lượng bạc!`, MAU_TIN.tien, true); // câu client MSG_EARN_MONEY
+    if (n.tien) P.hud.msg(`Nhận được ${fmtSo(n.tien)} lượng bạc!`, MAU_TIN.tien, true); // câu client MSG_EARN_MONEY
   }
   if (j.vut && world) world.drop(j.vut.x, j.vut.y, { g: j.vut.g, chung: 1, item: j.vut }); // món vứt ra: chung cả bãi (người khác nhặt thì nhịp bỏ đi)
   // độ bền: câu client — về 0: G_STR_ITEM_ABRADETOZERO (bản VNG: món tổn hại, không dùng được tới khi sửa); còn ≤ 5: MSG_ITEM_NEARLY_DAMAGED
   if (j.hao) {
-    for (const n of j.hao.hong) P.hud.msg(`${n} đã tổn hại, không thể tiếp tục sử dụng — sửa ở cửa hàng (nút Sửa)`);
-    for (const n of j.hao.sap) P.hud.msg(`Những thứ bạn trang bị ${n} đã sắp bị hao mòn, xin kịp thời xử lý`);
+    for (const n of j.hao.hong) P.hud.msg(`${n} hỏng rồi, không dùng tiếp được — mang ra cửa hàng mà sửa (nút Sửa)`);
+    for (const n of j.hao.sap) P.hud.msg(`Đồ ngươi đang mặc ${n} sắp hao mòn hết — liệu mà sửa ngay`);
   }
-  if (j.phat) P.hud.msg(`Bạn đã trọng thương: mất ${fmtN(j.phat.exp)} kinh nghiệm${j.phat.gold ? `, ${fmtMoney(j.phat.gold)}` : ""}`);
+  if (j.phat) P.hud.msg(`Ngươi bị trọng thương: mất ${fmtN(j.phat.exp)} kinh nghiệm${j.phat.gold ? `, ${fmtMoney(j.phat.gold)}` : ""}`);
   if (j.uyThac) baoUyThac(j.uyThac);
   if (j.hang !== undefined) hangCap = j.hang;
   // sách / điểm từ vật phẩm Kỳ Trân Các (máy chủ giữ): nâng chiêu tới cấp tối thiểu, tính lại điểm chưa dùng
@@ -1579,12 +1612,12 @@ function applyServer(j, at) {
   const quaQt = (j.qua || []).filter((q) => !q.he), quaHe = (j.qua || []).filter((q) => q.he);
   if (quaQt.length) {
     for (const q of quaQt) P.hud.msg(`Quản trị gửi quà: ${q.ds.join(", ")}${q.loi ? ` — "${q.loi}"` : ""}`, MAU_TIN.tien);
-    if (GW) GW.bao(`<color=yellow>Bạn nhận được quà từ quản trị<color>${quaQt.map((q) => `<enter>${q.ds.join(", ")}${q.loi ? `<enter>"${q.loi}"` : ""}`).join("")}`);
+    if (GW) GW.bao(`<color=yellow>Ngươi nhận được quà từ quản trị<color>${quaQt.map((q) => `<enter>${q.ds.join(", ")}${q.loi ? `<enter>"${q.loi}"` : ""}`).join("")}`);
   }
   for (const q of quaHe) P.hud.msg(`Nhận phần thưởng còn chờ: ${q.ds.join(", ")}${q.loi ? ` — ${q.loi}` : ""}`, MAU_TIN.tien);
   // quản trị vừa đổi nhân vật (may-chu/quan-tri.js — anh 04/11): câu báo (cấp mới đã nhận ở j.nv); giải kẹt: về Ba Lăng ngay
   for (const t of j.qtTin || []) P.hud.msg(t, MAU_TIN.tien);
-  if (j.qtDi) { P.hud.msg(j.qtDi.tin || "Quản trị đã đưa bạn về Ba Lăng", MAU_TIN.tien); diPld({ z: j.qtDi.z }); }
+  if (j.qtDi) { P.hud.msg(j.qtDi.tin || "Quản trị đã đưa ngươi về Ba Lăng", MAU_TIN.tien); diPld({ z: j.qtDi.z }); }
   // khu vực bang (đợt 4 — máy chủ khu-bang.js nhip): không còn được ở khu (rời / bị đuổi / bang giải tán / đổi lãnh địa / khu đóng) -> đi; đang tải sang bãi không phải bãi bang
   // (hoặc đang tải đúng bãi phải tới) thì bỏ qua. Đang tải VÀO bãi bang (nhịp lúc tải báo bãi đang tới — máy chủ đã xét): tải xong rồi đi (diPld chờ zoneLoad), không đợi lần gửi lại
   if (j.kbDi) {
@@ -1601,7 +1634,7 @@ function applyServer(j, at) {
   // tin riêng của GM (anh 10/11 "gửi tn trực tiếp qua bảng GM" — may-chu/quan-tri.js xu-ly nhan): dòng kênh Mật + khung báo giữa màn hình
   // có người nhập sai mật khẩu (cấp 2 / đăng nhập lúc đổi) ở phiên trước (may-chu/bao-mat.js baoSai — anh 10/11): báo chủ tài khoản ở lần vào sau
   if (j.mk2Bao) {
-    const b = j.mk2Bao, t = `Có người nhập sai mật khẩu ${b.n | 0} lần, gần nhất lúc ${gioNgay(b.luc)} · IP ${b.ip || "?"}. Không phải bạn thì đổi mật khẩu đăng nhập ngay (bấm ổ khóa an toàn).`;
+    const b = j.mk2Bao, t = `Có người nhập sai mật khẩu ${b.n | 0} lần, gần nhất lúc ${gioNgay(b.luc)} · IP ${b.ip || "?"}. Không phải ngươi thì đổi mật khẩu đăng nhập ngay (bấm ổ khóa an toàn).`;
     P.hud.canh(t); if (GW) GW.bao(`<color=red>Cảnh báo bảo mật<color>: ${t}`);
   }
   if (Array.isArray(j.gmTin) && j.gmTin.length) {
@@ -1625,10 +1658,10 @@ function applyServer(j, at) {
   // giây nếu còn); câu báo riêng (hoàn phí… — tiền mới đã ở j.nv). Chỗ về đã biết của sân này trước (LoiDai.veCho — soát 16/11: máy chủ vừa khởi động lại trả mặc định Ba Lăng)
   if ("ttMoi" in j) ttMoiVe(j.ttMoi); // tỉ thí (anh 17/11): chiến thư đang chờ mình trả lời (nhịp — dự phòng kênh tức thời)
   if (j.ttVao) ttVaoSan(j.ttVao); // sân tỉ thí mình (người thách) chưa vào
-  if (j.ldDi && world && laLd(world.zone) && !zoneLoad) ldVe(LoiDai.veCho || j.ldDi, "Lôi đài: bạn không còn tên ở sân này — mời về.");
+  if (j.ldDi && world && laLd(world.zone) && !zoneLoad) ldVe(LoiDai.veCho || j.ldDi, "Lôi đài: ngươi không còn tên ở sân này — về đi.");
   for (const t of Array.isArray(j.ldTin) ? j.ldTin : []) P.hud.msg(String(t).replace(/<color=?\w*>/g, ""), MAU_TIN.tien);
   // đua ngựa (anh 16/11 — may-chu/dua-ngua.js nhip): đứng ở đường đua mà không còn lượt của mình -> về Ba Lăng (đang tải bản đồ thì thôi — máy chủ gửi lại sau 5 giây)
-  if (j.dnDi && world && laDn(world.zone) && !zoneLoad) dnVe(j.dnDi, "Đường đua: bạn không còn tên trong lượt đua nào — mời về Ba Lăng huyện.");
+  if (j.dnDi && world && laDn(world.zone) && !zoneLoad) dnVe(j.dnDi, "Đường đua: ngươi không còn tên trong lượt đua nào — về Ba Lăng huyện đi.");
 }
 // Nhận thưởng (nút cột icon phải / bảng Giang hồ điện thoại — anh 30/10 "gom các loại thưởng vào đây"): khung Say chọn Đăng nhập nhận thưởng
 // hoặc Online nhận thưởng (anh 31/10 khuya — tích lũy online mốc 1 / 2 / 3 giờ). Khung Đăng nhập đang mở thì bấm lại = đóng như trước
@@ -1636,7 +1669,7 @@ function nhanThuong() {
   if (!hero || !NPCD) return;
   if (GW && GW.W.get("loginprize") && GW.W.get("loginprize").visible) return GW.openLoginPrize();
   const co = (k) => TEN_THUONG[k] + (thuongCho.includes(k) ? " <color=green>(có thể nhận)<color>" : ""); // mục còn quà chờ nhận (capNhatThuong)
-  NPCD.choose("msgsel", "InfoText", richText("Đại hiệp, xin hãy chọn phần thưởng:", hero.name),
+  NPCD.choose("msgsel", "InfoText", richText("Chọn phần thưởng đi. Đừng lề mề.", hero.name),
     [[co("dn"), () => GW.openLoginPrize()], [co("cap"), () => thuongCap({ viec: "mo" })], [co("onl"), () => thuongOnline({ viec: "mo" })], [co("pd"), () => phucDuyen({ viec: "mo" })], ["Kết thúc", null]]);
 }
 // Phúc duyên (anh 31/10 khuya lần 2 — may-chu/phuc-duyen.js, lời Võ Lâm Minh Truyền Nhân của client): say / talk / tin như Online nhận thưởng;
@@ -1692,7 +1725,7 @@ function haiCay(n) {
     if (!p) { haiDang = null; return; }
     const x0 = p.x, y0 = p.y, hp0 = p.hp, t0 = performance.now(), ms = (j.haiGiay || 3) * 1000;
     let tm = 0;
-    const het = (ok) => { clearInterval(tm); haiDang = null; GW.tienDo(null); if (!ok) P.hud.msg("Thu thập bị gián đoạn"); };
+    const het = (ok) => { clearInterval(tm); haiDang = null; GW.tienDo(null); if (!ok) P.hud.msg("Thu thập bị gián đoạn rồi. Làm lại đi."); };
     GW.tienDo("Đang thu thập", 0);
     tm = setInterval(() => {
       const q = world && world.player;
@@ -1741,7 +1774,7 @@ const gioPhut = (s) => { const g = Math.floor(s / 3600), p = Math.floor((s % 360
 function baoUyThac(k) {
   const Y = (t) => `<color=Yellow>${t}<color>`, L = [], tien = fmtMoney(k.tien + k.banTien);
   L.push(`Trợ Thủ ủy thác ${Y(gioPhut(k.giay))} ở ${Y(k.bai)}${k.vang - k.giay >= 60 ? ` (vắng ${gioPhut(k.vang)})` : ""}.`);
-  if (!k.giay) L.push(k.thieuBch ? "Không còn giờ Bạch Câu Hoàn — ủy thác cần Bạch Câu Hoàn (Kỳ Trân Các: Bạch Câu Hoàn Đặc Biệt, 8 giờ mỗi viên)." : `Hôm nay đã dùng hết ${luat().uyThac ? luat().uyThac.gioNgay : 12} giờ ủy thác — 0 giờ ngày mai tính lại.`);
+  if (!k.giay) L.push(k.thieuBch ? "Hết giờ Bạch Câu Hoàn rồi — ủy thác cần Bạch Câu Hoàn (Kỳ Trân Các: Bạch Câu Hoàn Đặc Biệt, 8 giờ mỗi viên). Mua đi rồi hãy ủy thác." : `Hôm nay dùng hết ${luat().uyThac ? luat().uyThac.gioNgay : 12} giờ ủy thác rồi — 0 giờ ngày mai tính lại.`);
   else {
     const dacBiet = [k.ta ? `${fmtN(k.ta)} tinh anh` : "", k.trum ? `${fmtN(k.trum)} thủ lĩnh` : ""].filter(Boolean).join(", ");
     L.push(`Giết ${Y(fmtN(k.quai))} quái${dacBiet ? ` (${dacBiet})` : ""} · ${fmtN(k.toc)}/giờ × ${Math.round(k.tiLe * 100)} %`);
@@ -1789,45 +1822,45 @@ function moUyThac(daTai) {
   const toi = HD && HD.L && HD.L.toi ? HD.L.toi.uyThac : null, con = Array.isArray(toi) ? Math.max(0, toi[1] - toi[0]) : null; // giờ ủy thác còn hôm nay (lịch hoạt động)
   const oBai = FARM_KINDS.has(w.zone.kind) && !zoneLoad, b = oBai ? null : baiTreo(), z = b && P.maps.zones.find((x) => x.id === b.z), O = [];
   // gọn trong 6 dòng của ô lời khung Say (~53 ký tự / dòng — như baoUyThac): dài hơn thì client chia trang ("Trang kế"), nút lựa chọn bị đẩy sang trang sau
-  const L = ["Ủy thác: rời game — máy chủ đánh quái thay bạn.", `Tốc độ ${Y(Math.round((U.tiLe || 0.7) * 100) + " %")} lúc tự đánh · tối đa ${U.gioNgay || 12} giờ / ngày.`,
+  const L = ["Ủy thác: rời game — máy chủ đánh quái thay ngươi.", `Tốc độ ${Y(Math.round((U.tiLe || 0.7) * 100) + " %")} lúc tự đánh · tối đa ${U.gioNgay || 12} giờ / ngày.`,
     `Bạch Câu Hoàn còn ${Y(bch ? gioPhut(bch) : "0 giờ")}${con != null ? ` · hôm nay còn ${Y(con + " giờ")}` : ""}.`];
   if (!bch) { L.push("Cần Bạch Câu Hoàn Đặc Biệt: 8 giờ ủy thác mỗi viên."); O.push(["Mở Kỳ Trân Các", () => { if (GW && !GW.W.get("market").visible) GW.toggle("Market"); }]); }
-  else if (con === 0) L.push("Hôm nay đã hết giờ ủy thác — 0 giờ đêm nay tính lại.");
+  else if (con === 0) L.push("Hôm nay hết giờ ủy thác rồi — 0 giờ đêm nay tính lại.");
   else if (oBai) { L.push(`Bãi ${Y(w.zone.n + (w.chung ? " (quái chung)" : ""))} — vào lại để xem bảng tổng kết.`); O.push(["Ủy thác ngay (rời game)", uyThacNgay]); }
-  else if (TOWN_KINDS.has(w.zone.kind) && z) { L.push(`Trợ Thủ đưa bạn ra ${Y(z.n)} rồi tự ủy thác.`); O.push(["Ra bãi rồi tự ủy thác", utRaBai]); }
-  else L.push("Phải ra bãi luyện công mới ủy thác được.");
-  if (utCho) O.unshift(["Thôi tự ủy thác", () => { utCho = null; P.hud.msg("Ủy thác: đã thôi — vẫn tự đánh như thường"); }]);
+  else if (TOWN_KINDS.has(w.zone.kind) && z) { L.push(`Trợ Thủ đưa ngươi ra ${Y(z.n)} rồi tự ủy thác.`); O.push(["Ra bãi rồi tự ủy thác", utRaBai]); }
+  else L.push("Ra bãi luyện công mới ủy thác được. Đứng đây thì không.");
+  if (utCho) O.unshift(["Thôi tự ủy thác", () => { utCho = null; P.hud.msg("Ủy thác: đã thôi — vẫn tự đánh như thường."); }]);
   O.push(["Để sau", null]);
   NPCD.choose("msgsel", "InfoText", richText(L.join("<enter>"), hero.name), O);
 }
 function uyThacNgay() {
   const w = world;
-  if (!w || !hero || !FARM_KINDS.has(w.zone.kind) || zoneLoad) return P.hud.canh("Ủy thác: phải đứng ở bãi luyện công");
+  if (!w || !hero || !FARM_KINDS.has(w.zone.kind) || zoneLoad) return P.hud.canh("Ủy thác: phải đứng ở bãi luyện công. Về bãi đi.");
   if (!w.auto) toggleAuto(true); // đứng ở bãi rồi: chỉ bật, không đi đâu
   utCho = null; const d = (utDi = { moc: nhipXong, w });
   P.hud.msg(`Ủy thác ở ${w.zone.n}: đang báo máy chủ…`);
-  setTimeout(() => { if (utDi === d) { utDi = null; P.hud.canh("Ủy thác: chưa báo được máy chủ (mạng chậm?) — thử lại Esc → Ủy thác"); } }, 8000);
+  setTimeout(() => { if (utDi === d) { utDi = null; P.hud.canh("Ủy thác: chưa báo được máy chủ (mạng chậm?) — thử lại Esc → Ủy thác."); } }, 8000);
 }
 function utRaBai() {
   const w = world; if (!w || !hero) return;
   utCho = { t0: performance.now(), toi: null };
   if (!w.auto) toggleAuto(true); // bật tự đánh, chưa đi — đi ở dưới
   if (!thanh && !diXe) tuVeBai(true); // ở thôn / thành: Trợ Thủ đi Xa phu ra bãi treo máy — đứng cạnh mộc nhân Ba Lăng cũng đi (bấm ủy thác là muốn ra bãi)
-  P.hud.msg("Ủy thác: Trợ Thủ đưa ra bãi luyện công, tới nơi tự ủy thác — tắt tự đánh để thôi");
+  P.hud.msg("Ủy thác: Trợ Thủ đưa ra bãi luyện công, tới nơi tự ủy thác — tắt tự đánh để thôi.");
 }
 // sau mỗi nhịp thành công: đang chờ báo máy chủ (utDi) / đang chờ ra tới bãi (utCho)
 function utSauNhip() {
   const w = world;
   if (utDi) {
     const d = utDi;
-    if (w !== d.w || !hero || zoneLoad) { utDi = null; return P.hud.canh("Ủy thác: đã rời bãi — chưa ủy thác"); }
-    if (!w.auto) { utDi = null; return P.hud.canh("Ủy thác: đã tắt tự đánh — chưa ủy thác"); }
+    if (w !== d.w || !hero || zoneLoad) { utDi = null; return P.hud.canh("Ủy thác: đã rời bãi — chưa ủy thác."); }
+    if (!w.auto) { utDi = null; return P.hud.canh("Ủy thác: đã tắt tự đánh — chưa ủy thác."); }
     if (nhipXong >= d.moc + 2) { utDi = null; setTimeout(() => utRoi(w), 0); }
     return;
   }
   if (!utCho) return;
   if (!w || !hero) { utCho = null; return; }
-  if (!w.auto || performance.now() - utCho.t0 > UT_CHO) { utCho = null; return P.hud.msg("Ủy thác: thôi chờ ra bãi (đã tắt tự đánh hoặc quá 10 phút)"); }
+  if (!w.auto || performance.now() - utCho.t0 > UT_CHO) { utCho = null; return P.hud.msg("Ủy thác: thôi chờ ra bãi (đã tắt tự đánh hoặc quá 10 phút)."); }
   if (!FARM_KINDS.has(w.zone.kind) || zoneLoad) { utCho.toi = null; return; }
   if (utCho.toi == null) { utCho.toi = nhipXong; P.hud.msg(`Đã tới ${w.zone.n} — ủy thác (rời game)…`); }
   else if (nhipXong >= utCho.toi + 2) { utCho = null; setTimeout(() => utRoi(w), 0); }
@@ -1896,7 +1929,7 @@ function xuLyPld(j) {
 function diPld(di) {
   const z = P.maps.zones.find((x) => x.id === di.z);
   // trình duyệt còn bản danh sách bãi cũ (chưa có bãi máy chủ vừa thêm — vd đảo Tẩy Tủy): báo, không đứng im (anh 28/10)
-  if (!z) { P.hud.canh("Trình duyệt chưa có bản đồ này — tải lại trang (F5) rồi nói chuyện lại với NPC"); return; }
+  if (!z) { P.hud.canh("Bản đồ này trình duyệt chưa có — tải lại trang (F5) rồi hãy nói chuyện lại với NPC"); return; }
   if (NPCD) NPCD.close();
   const at = Array.isArray(di.at) ? di.at : null, di1 = () => gotoZone(z, di.hoiSinh ? { revive: true, at } : { ...(at ? { at } : {}), ...(di.chung ? { chung: true } : {}) }).catch(fail); // chung: bản quái chung (Boss Sát thủ — công cụ thử)
   if (zoneLoad) zoneLoad.catch(() => {}).finally(di1); else di1();
@@ -1914,19 +1947,19 @@ function pldTick() {
     keDl != null ? `Đầu lĩnh ${ra + 1}/${L.dauLinh.length} sau ${mmss(keDl - t)}` : `Đầu lĩnh đã ra đủ ${L.dauLinh.length}`,
     keDot != null ? `Thủy tặc đợt ${dot.length - dot.filter((m) => m > t).length + 1}/${dot.length} sau ${mmss(keDot - t)}` : `Thủy tặc đã ra đủ ${dot.length} đợt`].join("  ·  "));
   if (t < L.baoDanh) { if (phut > 0 && phut % 3 === 0) bao("r" + phut, `còn ${L.baoDanh - phut} phút rời bến`); return; } // báo danh: chưa đánh nhau
-  if (!S.chay) { S.chay = true; S.dot = 0; P.hud.msg("Thuyền đi rồi! 30 phút sau sẽ đến bờ Bắc Phong Lăng Độ."); }
+  if (!S.chay) { S.chay = true; S.dot = 0; P.hud.msg("Thuyền đi rồi! 30 phút nữa mới tới bờ Bắc Phong Lăng Độ."); }
   // Thủy tặc theo đợt (cau-hinh.json phongLangDo.dotThuyTac — client 1 đợt 30 con lúc thuyền chạy): mỗi đợt thuyTac con, sống tối đa songToiDa
   const dotDen = dot.filter((m) => t >= m).length;
   while ((S.dot | 0) < dotDen) {
     S.dot = (S.dot | 0) + 1;
     const song = w.mobs.filter((m) => m.alive && !m.boss).length, con = Math.max(0, Math.min(L.thuyTac, (L.songToiDa || 45) - song));
     for (let i = 0; i < con; i++) w.spawnMob(false, 150);
-    if (S.dot > 1) P.hud.msg(`Thủy tặc lại kéo lên thuyền (đợt ${S.dot}/${dot.length})!`);
+    if (S.dot > 1) P.hud.msg(`Thủy tặc lại kéo lên thuyền (đợt ${S.dot}/${dot.length})! Cầm vũ khí lên!`);
   }
-  if (keDl != null && keDl - t <= 1) bao("dl" + keDl, "Thủy tặc đầu lĩnh sắp xuất hiện (1 phút nữa)!");
+  if (keDl != null && keDl - t <= 1) bao("dl" + keDl, "Thủy tặc đầu lĩnh sắp ra (1 phút nữa)! Coi chừng đấy.");
   if (phut < L.capBo && (phut % 5 === 0 || phut === L.capBo - 1)) bao("c" + phut, `còn ${L.capBo - phut} phút sẽ đến bờ Bắc Phong Lăng Độ`);
   const daHa = (hero.pld && hero.pld.dl) | 0;
-  while (S.ra < ra) { S.ra++; if (S.ra > daHa && w.spawnMob(true, 150)) P.hud.msg("Thủy tặc đầu lĩnh đã xuất hiện."); }
+  while (S.ra < ra) { S.ra++; if (S.ra > daHa && w.spawnMob(true, 150)) P.hud.msg("Thủy tặc đầu lĩnh ra rồi đấy!"); }
   if (t >= L.capBo && performance.now() - S.cap > 5000) { S.cap = performance.now(); pld({ viec: "cap" }); } // máy chủ chưa tới giờ thì 5 giây hỏi lại
 }
 // ---------- Phong Hỏa Liên Thành (anh 04/11 — src/game/phonghoa.js, may-chu/phong-hoa.js, assets/data/phong-hoa.json — cong-cu/dung-phong-hoa.mjs) ----------
@@ -1952,10 +1985,10 @@ function phVeThanh() {
 }
 function phNpc(n) {
   if (!NPCD) return;
-  if (n.ph === "qn") return NPCD.choose("msgsel", "InfoText", richText("Quân nhu quan thủ thành: Chỗ ta có nhiều loại dược phẩm quý, những vật phẩm sử dụng chiến trường. Ngươi muốn mua thứ gì?", hero.name, n.name),
+  if (n.ph === "qn") return NPCD.choose("msgsel", "InfoText", richText("Quân nhu quan thủ thành: Chỗ ta toàn dược phẩm quý, đồ dùng chiến trường. Muốn mua thứ gì, nói mau.", hero.name, n.name),
     [["Mua dược phẩm", () => GW && GW.openShop(39)], ["Hủy bỏ", null]]);
-  if (n.ph === "xp") return NPCD.choose("msgsel", "InfoText", richText("Xa phu: Chiến tranh đang kịch liệt! Sớm biết ta đã báo danh đi tiền phương rồi! Đúng rồi! Ngươi có chuyện gì vậy?", hero.name, n.name),
-    [["Ta có chuyện quan trọng báo với Tướng quân! Xin mời ông ta về hậu doanh!", () => { P.audio.ui("click"); phVeThanh(); }], ["Không có chi! Ta chỉ đến đây chơi.", null]]);
+  if (n.ph === "xp") return NPCD.choose("msgsel", "InfoText", richText("Xa phu: Chiến tranh đang kịch liệt! Biết thế ta đã báo danh ra tiền phương rồi! Ngươi tới đây có chuyện gì? Nói mau.", hero.name, n.name),
+    [["Ta có chuyện quan trọng báo Tướng quân! Mời ông ta về hậu doanh!", () => { P.audio.ui("click"); phVeThanh(); }], ["Không có gì. Ta chỉ tới đây chơi thôi.", null]]);
 }
 function phongHoaVe(n) {
   if (!hero) return;
@@ -1969,15 +2002,15 @@ function phongHoaVe(n) {
 }
 function phMuonDi(ten, j) {
   const l = j.l || {}, con = Math.max(1, Math.round(((l.het || 0) - (l.kc || 0)) / 60000)), gio = con % 60 ? `${con} phút` : `${con / 60} tiếng`;
-  if ((hero.lvl | 0) < (l.cap | 0)) return NPCD.talk([richText(`${ten}: á? Ngươi cũng muốn tham gia chiến dịch thủ thành àh? Đẳng cấp chưa đủ ${l.cap} cấp đâu, tài nghệ như ngươi đây giúp không được gì đâu, có thể mất mạng như chơi nữa, thôi ở lại thành này đi!`, hero.name, ten)], 0, null);
+  if ((hero.lvl | 0) < (l.cap | 0)) return NPCD.talk([richText(`${ten}: Hả? Ngươi cũng đòi tham gia thủ thành à? Cấp chưa đủ ${l.cap}, tài nghệ như ngươi thì giúp được gì — có khi còn mất mạng. Ở yên trong thành này đi!`, hero.name, ten)], 0, null);
   if (j.daNop) return phVao();
-  NPCD.choose("msgsel", "InfoText", richText(`${ten}: Ngươi muốn đi giữ thành àh? Muốn lắm àh? úi! Ngươi vĩ đại thật đó! Nhưng nghe đâu tình huống cấp bách lắm thì phải! Trong thành chỉ còn thủ được ${gio} nữa thôi, nếu không kích lui được quân địch thì thất thủ rồi! Còn muốn tham gia chỉ có tướng quân mới quyết định được, ta có thể dẫn ngươi qua đó.`, hero.name, ten),
-    [["Ta biết rồi! Mau dẫn ta qua đó đi!", () => phTuongQuan(j)], ["Để ta chuẩn bị đã!", null]]);
+  NPCD.choose("msgsel", "InfoText", richText(`${ten}: Ngươi muốn đi giữ thành? Gan cũng to đấy! Tình hình đang cấp bách lắm — trong thành chỉ còn thủ được ${gio} nữa thôi, không đẩy lui được quân địch là thất thủ. Muốn tham gia thì chỉ tướng quân mới quyết được, ta dẫn ngươi qua đó.`, hero.name, ten),
+    [["Biết rồi! Dẫn ta qua đó mau!", () => phTuongQuan(j)], ["Để ta chuẩn bị đã!", null]]);
 }
 function phTuongQuan(j) {
   const ten = "Tướng quân thủ thành";
-  NPCD.choose("msgsel", "InfoText", richText(`${ten}: à! Ngươi muốn giúp chúng ta chống lại kẻ địch? ái chà! Mấy tên này không giống binh sĩ tầm thường, bọn chúng võ nghệ cao cường, cưỡi ngựa rất tài, lại còn biết phóng ám khí.`, hero.name, ten),
-    [["Tướng quân! Ông không sao chứ?", () => NPCD.choose("msgsel", "InfoText", richText(`${ten}: Được rồi! Không cần nói nhiều, nói chung ta cảm thấy lai lịch của bọn họ rất khả nghi. Số người tham gia thủ thành là <color=yellow>${j.soNguoi | 0}<color> người. Trước tiên phải nộp ${j.phiTxt || "lệ phí"} lệ phí báo danh, chuẩn bị sẵn sàng chưa?`, hero.name, ten),
+  NPCD.choose("msgsel", "InfoText", richText(`${ten}: Ngươi muốn giúp chống địch? Mấy tên này không phải binh sĩ tầm thường đâu — võ nghệ cao cường, cưỡi ngựa rất tài, lại còn biết phóng ám khí. Liệu mà đánh.`, hero.name, ten),
+    [["Tướng quân! Ông không sao chứ?", () => NPCD.choose("msgsel", "InfoText", richText(`${ten}: Thôi, nói ít thôi. Lai lịch bọn chúng rất khả nghi. Số người tham gia thủ thành là <color=yellow>${j.soNguoi | 0}<color> người. Trước tiên nộp ${j.phiTxt || "lệ phí"} lệ phí báo danh. Chuẩn bị xong chưa?`, hero.name, ten),
       [["Đúng vậy!", phVao], ["Để ta chuẩn bị đã!", null]])]]);
 }
 function phVao() {
@@ -2007,7 +2040,7 @@ function tongKimNpc(b, n) {
       if (Number.isFinite(+j.shop.diem)) hero.diemTk = +j.shop.diem;
       ItemDB.shops[98] = (j.shop.hang || []).filter((r) => Array.isArray(r) && r[0]).map(([k, gia]) => ({ k, gia: +gia || 0 }));
       if (NPCD) NPCD.close();
-      if (!GW.openShop(98, "tk")) P.hud.msg("Quân Nhu quan: cửa hàng chưa có hàng (trình duyệt chưa có vật phẩm Tống Kim — tải lại trang F5)");
+      if (!GW.openShop(98, "tk")) P.hud.msg("Quân Nhu quan: cửa hàng chưa có hàng (trình duyệt chưa có vật phẩm Tống Kim — tải lại trang F5 đi).");
       else P.hud.msg(`Quân Nhu quan: điểm Tống Kim hiện có ${fmtSo(hero.diemTk | 0)}`, MAU_TIN.tien);
     }
     if (j.vao) tkVaoTran(j.vao);
@@ -2016,7 +2049,7 @@ function tongKimNpc(b, n) {
 // vào chiến trường (máy chủ đã nhận báo danh / cho vào lại): đang tải dở bản đồ khác thì tải xong rồi đi (như diPld)
 function tkVaoTran(vao) {
   const z = P.maps.zones.find((x) => x.id === vao.zone);
-  if (!z) { P.hud.canh("Trình duyệt chưa có bản đồ chiến trường Tống Kim — tải lại trang (F5) rồi nói chuyện lại với Mộ binh quan"); return; }
+  if (!z) { P.hud.canh("Bản đồ chiến trường Tống Kim trình duyệt chưa có — tải lại trang (F5) rồi hãy nói chuyện lại với Mộ binh quan."); return; }
   if (NPCD) NPCD.close();
   thanh = null; diXe = null;
   const di = () => gotoZone(z, Array.isArray(vao.at) ? { at: vao.at } : {}).catch(fail);
@@ -2059,7 +2092,7 @@ function tkNpcs() {
 // Kinh (vào lại ở Mộ binh quan: giữ phe, điểm, chức, không thu phí lần nữa)
 function tkQuanY(n) {
   if (!NPCD || !hero) return;
-  NPCD.choose("msgsel", "InfoText", richText("Quân y: Hậu doanh do ta phụ trách! Ngươi có cần giúp đỡ gì không?", hero.name, n.name),
+  NPCD.choose("msgsel", "InfoText", richText("Quân y: Hậu doanh này do ta phụ trách! Cần gì thì nói, đừng đứng ì ra đấy.", hero.name, n.name),
     // thuốc Tống Kim đồng giá 1 lượng (lượt 86), rời trận tự mất (anh 12/11 — may-chu/do.js CAU_TK); trận đã xong (pha "xong" — 30 giây trước khi về Biện Kinh) máy chủ bán giá thường
     // thuốc thường -> cửa hàng thường (soát 12/11)
     [["Mua dược phẩm", () => GW && GW.openShop(39, null, TongKim.st && TongKim.st.pha === "xong" ? null : { tk: 1 })],
@@ -2077,7 +2110,7 @@ const CBT = "<link=image[0,14]:\\spr\\npcres\\passerby\\passerby094\\passerby094
 // thì tải xong rồi đi. Nhớ thành vừa đi (chỗ về dự phòng)
 function ldVaoTran(vao) {
   const z = vao && P.maps.zones.find((x) => x.id === vao.zone && laLd(x));
-  if (!z) { P.hud.canh("Trình duyệt chưa có bản đồ lôi đài — tải lại trang (F5) rồi nói chuyện lại với Công Bình Tử"); return; }
+  if (!z) { P.hud.canh("Bản đồ lôi đài trình duyệt chưa có — tải lại trang (F5) rồi hãy nói chuyện lại với Công Bình Tử."); return; }
   if (NPCD) NPCD.close();
   thanh = null; diXe = null;
   if (world && !laLd(world.zone)) LoiDai.tuZ = world.zone.id;
@@ -2129,7 +2162,7 @@ const phanMauDn = (t) => { const p = phanMau(t); return Array.isArray(p) ? p : S
 // vào đường đua (báo danh / trở lại / lượt thử): như ldVaoTran — dừng việc Trợ Thủ đang làm ở thành; trình duyệt thiếu bãi 863 (map.json cũ) -> F5
 function dnVao(vao) {
   const z = vao && P.maps.zones.find((x) => x.id === vao.zone && laDn(x));
-  if (!z) { P.hud.canh("Trình duyệt chưa có bản đồ đường đua — tải lại trang (F5) rồi nói chuyện lại với Truy Phong Sứ Giả"); return; }
+  if (!z) { P.hud.canh("Bản đồ đường đua trình duyệt chưa có — tải lại trang (F5) rồi hãy nói chuyện lại với Truy Phong Sứ Giả."); return; }
   if (NPCD) NPCD.close();
   thanh = null; diXe = null;
   if (world && !laDn(world.zone)) DuaNgua.tuZ = world.zone.id;
@@ -2169,7 +2202,7 @@ function loiDaiFn(id) {
   if (!hero || !GW) return { close: true };
   const [, viec = "mo"] = id.split(":");
   const lai = [["Rời khỏi", null]];
-  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : { desc: 1, text: CBT + String((e && e.message) || "Lát nữa hãy quay lại."), opts: lai });
+  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : { desc: 1, text: CBT + String((e && e.message) || "Lát nữa quay lại."), opts: lai });
   return Net.loiDai(hero.slot | 0, { viec }).then((j) => {
     if (!j) return { close: true };
     if (j.say) return { desc: 1, text: CBT + String(j.say.text || ""), opts: (j.say.opts || []).map(([nhan, v]) => [nhan, v ? `LoiDai:${v}` : null]) };
@@ -2184,7 +2217,7 @@ function duaNguaFn(id) {
   if (!hero || !GW) return { close: true };
   const [, viec = "mo"] = id.split(":");
   const lai = [["Rời khỏi", null]];
-  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : { desc: 1, text: TPS + String((e && e.message) || "Lát nữa hãy quay lại."), opts: lai });
+  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : { desc: 1, text: TPS + String((e && e.message) || "Lát nữa quay lại."), opts: lai });
   return Net.duaNgua(hero.slot | 0, { viec }).then((j) => {
     if (!j) return { close: true };
     if (j.say) return { desc: 1, text: TPS + String(j.say.text || ""), opts: (j.say.opts || []).map(([nhan, v]) => [nhan, v ? `DuaNgua:${v}` : null]) };
@@ -2239,7 +2272,7 @@ function bdApply(j) {
   if (j.bdas) bdTtCu = bdChuan(j.bdas);
   const msg = typeof j.msg === "string" ? j.msg : "";
   if (msg) P.hud.msg(/<color/i.test(msg) ? phanMauDn(msg) : msg);
-  if (+kn > 0 && !/kinh nghiệm/i.test(msg)) P.hud.msg(`Bạn nhận được ${fmtSo(+kn)} điểm kinh nghiệm.`, MAU_TIN.kn, true);
+  if (+kn > 0 && !/kinh nghiệm/i.test(msg)) P.hud.msg(`Nhận được ${fmtSo(+kn)} điểm kinh nghiệm.`, MAU_TIN.kn, true);
   for (const t of Array.isArray(j.tin) ? j.tin : []) P.hud.msg(phanMauDn(t));
   return j;
 }
@@ -2257,7 +2290,7 @@ const bdKetQua = (j, mac = "") => {
 // sự kiện không mở: chưa tới ngày / đã kết thúc (+ hạn mở hương bao)
 function bdHet(S) {
   const nay = ngayVN();
-  if (S.tu && nay < S.tu) return `Hoạt động báo đáp ân sư chưa bắt đầu — từ <color=yellow>${bdNgay(S.tu)}<color> đến hết <color=yellow>${bdNgay(S.den, 1)}<color>.`;
+  if (S.tu && nay < S.tu) return `Hoạt động báo đáp ân sư chưa bắt đầu — từ <color=yellow>${bdNgay(S.tu)}<color> đến hết <color=yellow>${bdNgay(S.den, 1)}<color>. Nhớ giờ mà tới, tới sớm cũng vô ích.`;
   return `Hoạt động báo đáp ân sư đã kết thúc.${S.moHb && S.moHet ? `<enter>Hương bao vẫn mở được tới hết <color=yellow>${bdNgay(S.moHet, 1)}<color>.` : ""}`;
 }
 // Giới thiệu (client: "Vào thời gian từ 18/11/2010 đến 13/12/2010 là thời gian hoạt động báo đáp ân sư. Các hạ có thể xem cách tham gia ở trang chủ.") — ngày + cách tham gia của S1
@@ -2266,11 +2299,11 @@ function bdMoChu(S) {
   const M = S.soMo || {}, B = S.bao || {}, tenK = (k) => String((ItemDB.item(k) || {}).n || k).trim(), L = [["tt", "Tơ Tằm"], ["ns", "Ngũ Sắc"], ["td", "Trung Dược"]].filter(([l]) => Array.isArray(M[l]) && M[l][1] > 0);
   if (!L.length) return "";
   const moc = [["ns", "Ngũ Sắc"], ["td", "Trung Dược"]].filter(([l]) => Array.isArray(M[l]) && M[l][1] > 0 && (B[l] || []).length).map(([l, n]) => `cái thứ ${fmtSo(M[l][1])} ${n} chắc chắn ra <color=yellow>${B[l].map(tenK).join(" hoặc ")}<color> (món chưa có trước)`);
-  return `. Mỗi nhân vật mở tối đa ${L.map(([l, n]) => `${fmtSo(M[l][1])} ${n}`).join(", ")} cả sự kiện — các hạ đã mở ${L.map(([l, n]) => `${n} ${fmtSo(M[l][0])}/${fmtSo(M[l][1])}`).join(", ")}${moc.length ? `; ${moc.join("; ")}` : ""}`;
+  return `. Mỗi nhân vật mở tối đa ${L.map(([l, n]) => `${fmtSo(M[l][1])} ${n}`).join(", ")} cả sự kiện — ngươi đã mở ${L.map(([l, n]) => `${n} ${fmtSo(M[l][0])}/${fmtSo(M[l][1])}`).join(", ")}${moc.length ? `; ${moc.join("; ")}` : ""}`;
 }
 function bdGioiThieu(S) {
   const R = S.ruou, D = S.dangHb, K = S.knHb;
-  return [`Vào thời gian từ <color=yellow>${bdNgay(S.tu)}<color> đến hết <color=yellow>${bdNgay(S.den, 1)}<color> là thời gian hoạt động báo đáp ân sư.`,
+  return [`Từ <color=yellow>${bdNgay(S.tu)}<color> đến hết <color=yellow>${bdNgay(S.den, 1)}<color> là thời gian hoạt động báo đáp ân sư. Nhớ giờ mà làm.`,
     `• ${BD_NGUON[BD_MON.ruou]}`,
     `• Mời Võ Sư (Ba Lăng huyện) dùng Đỗ Khang Tửu: mỗi bình được kinh nghiệm và 3 hoặc 6 Tây Hồ Long Tĩnh Trà${R && R.tran ? ` (kinh nghiệm từ rượu tối đa ${fmtSo(R.tran)} mỗi ngày — hết vẫn nhận trà)` : ""}.`,
     `• Chưởng Đăng Cung Nữ (Ba Lăng huyện): 1 trà + 1 Tơ Tằm / Sợi chỉ màu / Trung Dược đổi 1 Tơ Tằm / Ngũ Sắc / Trung Dược Hương Bao. Tơ Tằm mua ở Cung Nữ (${fmtMoney(S.giaTo)}); Sợi chỉ màu, Trung Dược ở Kỳ Trân Các.`,
@@ -2283,7 +2316,7 @@ function bdasFn(id, npc) {
   if (cn) return cungNuFn(viec, loai, id, npc);
   const vs = (text, opts) => ({ desc: 1, text: VO_SU + text, opts });
   const lai = [["Trở lại", "BaoDapAnSu"], ["Rời khỏi", null]];
-  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : vs(String((e && e.message) || "Lát nữa hãy quay lại."), lai));
+  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : vs(String((e && e.message) || "Lát nữa quay lại."), lai));
   const ve = () => bdasFn("BaoDapAnSu", npc); // Hủy ở khung số -> trang chính
   if (viec === "gioiThieu") return bdTt().then((S) => vs(bdGioiThieu(S), lai), loi);
   // anh 18/11 — Nhiệm vụ ngày lễ (máy chủ may-chu/nguon-su-kien.js nvLam — sườn dùng lại): xem / nhận / trả, mỗi ngày làm lại
@@ -2293,7 +2326,7 @@ function bdasFn(id, npc) {
   }, loi);
   if (viec === "ruou") {
     const co = bdDem(BD_MON.ruou);
-    if (!co) return vs(`Hành trang không có Đỗ Khang Tửu.<enter>${BD_NGUON[BD_MON.ruou]}`, lai);
+    if (!co) return vs(`Hành trang không có Đỗ Khang Tửu. Đi kiếm đi rồi hãy quay lại.<enter>${BD_NGUON[BD_MON.ruou]}`, lai);
     const max = Math.min(co, 100); // máy chủ: tối đa 100 bình mỗi lần
     return GW.chonSo({ tieuDe: "Mời võ sư dùng Đỗ Khang Tửu", ten: `${bdTen(BD_MON.ruou)} (có ${co})`, toiDa: max, toiThieu: 1, san: max, thongTin: (n) => `Mời ${n} bình${co > 100 ? " — mỗi lần tối đa 100 bình" : ""}` })
       .then((n) => (n ? bdGoi({ viec: "moiRuou", n }).then((j) => vs(`${bdKetQua(j)}`,
@@ -2301,9 +2334,9 @@ function bdasFn(id, npc) {
   }
   if (viec === "dang") return bdTt().then((S) => {
     const co = bdDem(BD_MON.hbNs), D = S.dangHb, con = D && D.toiDa ? Math.max(0, (D.toiDa | 0) - (D.da | 0)) : co;
-    if (!co) return vs(`Hành trang không có ${bdTen(BD_MON.hbNs)}.<enter>Ngũ Sắc Hương Bao do Chưởng Đăng Cung Nữ (Ba Lăng huyện) làm từ 1 Tây Hồ Long Tĩnh Trà + 1 Sợi chỉ màu.`, lai);
+    if (!co) return vs(`Hành trang không có ${bdTen(BD_MON.hbNs)}.<enter>Ngũ Sắc Hương Bao do Chưởng Đăng Cung Nữ (Ba Lăng huyện) làm từ 1 Tây Hồ Long Tĩnh Trà + 1 Sợi chỉ màu — đi làm đi rồi hãy quay lại.`, lai);
     if (!S.mo) return vs(bdHet(S), lai);
-    if (con <= 0) return vs(`Mỗi ngày chỉ có thể tặng ${D.toiDa} Ngũ Sắc Hương Bao !`, lai); // câu client (config.lua [23])
+    if (con <= 0) return vs(`Mỗi ngày chỉ tặng được ${D.toiDa} Ngũ Sắc Hương Bao!`, lai); // câu client (config.lua [23])
     const max = Math.min(co, con);
     return GW.chonSo({ tieuDe: "Dâng tặng Ngũ Sắc Hương Bao", ten: `${bdTen(BD_MON.hbNs)} (có ${co})`, toiDa: max, toiThieu: 1, san: max, thongTin: (n) => (D && D.toiDa ? `Dâng ${n} — hôm nay còn ${con} lần` : `Dâng ${n}`) })
       .then((n) => (n ? bdGoi({ viec: "dang", n }).then((j) => vs(bdKetQua(j, `Đã dâng tặng ${n} ${bdTen(BD_MON.hbNs)}.`), [...(bdDem(BD_MON.hbNs) > 0 ? [["Dâng tặng thêm", "BaoDapAnSu:dang"]] : []), ...lai]), loi) : ve()));
@@ -2321,7 +2354,7 @@ function bdasFn(id, npc) {
 function cungNuFn(viec, loai, id, npc) {
   const cn = (text, opts) => ({ desc: 1, text: CUNG_NU + text, opts });
   const lai = [["Trở lại", "ChuongDang"], ["Rời khỏi", null]];
-  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : cn(String((e && e.message) || "Lát nữa hãy quay lại."), lai));
+  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : cn(String((e && e.message) || "Lát nữa quay lại."), lai));
   const ve = () => cungNuFn("", "", "ChuongDang", npc);
   if (viec === "gioiThieu") return bdTt().then((S) => cn(bdGioiThieu(S), lai), loi);
   if (viec === "doi") {
@@ -2335,7 +2368,7 @@ function cungNuFn(viec, loai, id, npc) {
   }
   if (viec === "muaTo") {
     const gia = (bdTtCu && bdTtCu.giaTo) || 30000, vang = hero.gold || 0, max = Math.min(Math.floor(vang / gia), 999);
-    if (max < 1) return cn(`Mỗi ${bdTen(BD_MON.to)} giá <color=yellow>${fmtMoney(gia)}<color> — ngân lượng mang theo không đủ (có ${fmtMoney(vang)}).`, lai);
+    if (max < 1) return cn(`Mỗi ${bdTen(BD_MON.to)} giá <color=yellow>${fmtMoney(gia)}<color> — ngân lượng mang theo không đủ (có ${fmtMoney(vang)}). Mang thêm tiền rồi hãy mua.`, lai);
     return GW.chonSo({ tieuDe: "Mua Tơ Tằm", ten: `${bdTen(BD_MON.to)} — ${fmtMoney(gia)} mỗi cái`, toiDa: max, toiThieu: 1, san: 1, thongTin: (n) => `Cần ${fmtMoney(n * gia)}` })
       .then((n) => (n ? bdGoi({ viec: "muaTo", n }).then((j) => cn(bdKetQua(j, `Ngươi đã mua ${n} ${bdTen(BD_MON.to)}.`), [["Mua thêm", "ChuongDang:muaTo"], ...lai]), loi) : ve()));
   }
@@ -2343,7 +2376,7 @@ function cungNuFn(viec, loai, id, npc) {
   return bdTt().then((S) => {
     if (!S.mo) return cn(bdHet(S), [["Giới thiệu hoạt động báo đáp ân sư", "ChuongDang:gioiThieu"], ["Rời khỏi", null]]);
     const co = [[BD_MON.tra, "trà"], [BD_MON.to, "Tơ Tằm"], [BD_MON.chi, "Sợi chỉ màu"], [BD_MON.duoc, "Trung Dược"]].map(([k, t]) => `${bdDem(k)} ${t}`).join(" · ");
-    return cn(`Gần đây ta cần 1 ít Tây Hồ long tĩnh trà, tơ lụa, sợi chỉ màu, trung dược , ta rất cần gấp những thứ này, nếu như ngươi tặng ta những thứ trên, ta sẽ tặng cho ngươi phần thưởng<enter>Trong hành trang: ${co}`,
+    return cn(`Gần đây ta cần gấp Tây Hồ Long Tĩnh trà, tơ lụa, sợi chỉ màu, trung dược. Mang mấy thứ đó tới đây, ta thưởng cho ngươi.<enter>Trong hành trang: ${co}`,
       [["Giới thiệu hoạt động báo đáp ân sư", "ChuongDang:gioiThieu"], ["Đổi tơ tằm hương bao (1 trà + 1 Tơ Tằm)", "ChuongDang:doi:tt"], ["Đổi ngũ sắc hương bao (1 trà + 1 Sợi chỉ màu)", "ChuongDang:doi:ns"], ["Đổi trung dược hương bao (1 trà + 1 Trung Dược)", "ChuongDang:doi:td"], // anh 17/11 "chỗ đổi quà chưa rõ ràng, k biết cần gì và gì": nhãn ghi nguyên liệu
         [`Mua Tơ Tằm (${fmtMoney(S.giaTo)})`, "ChuongDang:muaTo"], ["Rời khỏi", null]]);
   }, loi);
@@ -2357,7 +2390,7 @@ function bauCuaFn(id) {
   const [, tro = ""] = id.split(":");
   const lai = [["Rời khỏi", null]];
   if (tro && TRO[tro]) return { desc: 1, text: `${TRO[tro]} chưa có trong bản Chien - Vo Lam Xua.`, opts: lai };
-  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : { desc: 1, text: String((e && e.message) || "Lát nữa hãy quay lại."), opts: lai });
+  const loi = (e) => (e && (e.ma === "het-phien" || e.boQua) ? { close: true } : { desc: 1, text: String((e && e.message) || "Lát nữa quay lại."), opts: lai });
   return Net.bauCua(hero.slot | 0, { viec: "mo" }).then((j) => {
     if (!j) return { close: true };
     if (j.say) return { desc: 1, text: String(j.say.text || ""), opts: (j.say.opts || []).map(([nhan, v]) => [nhan, v ? `BauCua:${v}` : null]) };
@@ -2408,19 +2441,19 @@ function hoanMo(loai) {
   GW.giaoDo({ tieuDe: hh ? "Hoán hình vũ khí" : "Hoán tính trang bị", loi }).then((ds) => {
     if (!ds || !hero) return;
     const bag = hero.bag || [], L2 = ds.map((u) => bag.find((b) => b.u === u)).filter(Boolean), da = L2.find((b) => b.k === D.k), mon = L2.filter((b) => b.k !== D.k);
-    if (!da) return P.hud.canh(`Chưa đặt ${tenDa} vào khung`);
-    if (mon.length !== 1) return P.hud.canh(mon.length ? "Mỗi lần chỉ đổi 1 món" : (hh ? "Chưa đặt vũ khí vào khung" : "Chưa đặt trang bị vào khung"));
+    if (!da) return P.hud.canh(`Chưa đặt ${tenDa} vào khung. Đặt vào đi rồi hãy bấm.`);
+    if (mon.length !== 1) return P.hud.canh(mon.length ? "Mỗi lần chỉ đổi 1 món. Đừng tham." : (hh ? "Chưa đặt vũ khí vào khung. Đặt vào đi." : "Chưa đặt trang bị vào khung. Đặt vào đi."));
     const it = mon[0], x = ItemDB.item(it.k) || {}, vk = x.t === 0 || x.t === 1;
-    if (x.gr !== "xanh" || !ItemDB.base(it.k).cl) return P.hud.canh("Chỉ đổi được trang bị đồ xanh");
-    if (it.het) return P.hud.canh("Trang bị có hạn sử dụng không đổi được");
+    if (x.gr !== "xanh" || !ItemDB.base(it.k).cl) return P.hud.canh("Chỉ đổi được trang bị đồ xanh. Món khác thì mang đi chỗ khác.");
+    if (it.het) return P.hud.canh("Trang bị có hạn sử dụng thì không đổi được.");
     const lam = (b, cau) => GW.hoi(cau, hh ? "Hoán hình" : "Hoán tính", "Thôi").then((ok) => { if (ok) { P.audio.ui("click"); khamGoi(b).catch((e) => P.hud.canh(String((e && e.message) || e))); } });
     if (hh) {
-      if (!vk) return P.hud.canh(`${tenDa} chỉ dùng cho vũ khí — áo, mũ… đổi nam / nữ bằng Hoán Tính Lệnh`);
+      if (!vk) return P.hud.canh(`${tenDa} chỉ dùng cho vũ khí — áo, mũ… đổi nam / nữ thì dùng Hoán Tính Lệnh`);
       const cl = ItemDB.base(it.k).cl, ds2 = hoanXanh().filter((y) => (y.t === 0 || y.t === 1) && y.k !== it.k && ItemDB.base(y.k).cl === cl);
-      if (!ds2.length) return P.hud.canh("Không có vũ khí nào khác cùng đẳng cấp");
+      if (!ds2.length) return P.hud.canh("Không có vũ khí nào khác cùng đẳng cấp. Khỏi đổi.");
       const chon = (k) => lam({ viec: "hoanHinh", u: it.u, da: da.u, k }, `Hoán hình <color=yellow>${tenM(it.k)}<color> thành <color=yellow>${tenM(k)}<color> (${ItemDB.type(ItemDB.item(k)).toLowerCase()}), giữ ngũ hành và các dòng?<enter>Thành công ${tl}%, phí ${phi}. Trượt mất 1 ${tenDa} và phí, vũ khí giữ nguyên.`);
-      NPCD.choose("msgsel", "InfoText", richText(`Thợ rèn: ${tenM(it.k)} (đẳng cấp ${cl}) có thể đổi sang các vũ khí sau. Đại hiệp chọn dáng nào?`, hero.name),
-        [...ds2.map((y) => [`${tenM(y.k)} — ${ItemDB.type(y).toLowerCase()}`, () => chon(y.k)]), ["Để ta suy nghĩ lại", null]]);
+      NPCD.choose("msgsel", "InfoText", richText(`Thợ rèn: ${tenM(it.k)} (đẳng cấp ${cl}) đổi được sang các vũ khí sau. Chọn dáng nào, nói một câu thôi!`, hero.name),
+        [...ds2.map((y) => [`${tenM(y.k)} — ${ItemDB.type(y).toLowerCase()}`, () => chon(y.k)]), ["Để ta nghĩ đã", null]]);
       return;
     }
     if (vk) return P.hud.canh(`Vũ khí dùng chung nam nữ — đổi loại vũ khí bằng Hoán Hình Phù`);
@@ -2439,11 +2472,11 @@ function khamNamFn(id) {
   if (id === "KhamNam:hoanHh") { hoanMo("hh"); return { close: true }; }
   if (id === "KhamNam:hoanHt") { hoanMo("ht"); return { close: true }; }
   if (id === "KhamNam:hoan") {
-    return { desc: 1, text: "Thợ rèn: Hoán hình đổi dáng vũ khí, Hoán tính đổi bản nam / nữ của trang bị — cần 1 phù / lệnh tương ứng, giữ ngũ hành và các dòng.",
+    return { desc: 1, text: "Thợ rèn: Hoán hình đổi dáng vũ khí, Hoán tính đổi bản nam / nữ của trang bị — cần 1 phù / lệnh tương ứng, giữ ngũ hành và các dòng. Mang đủ đồ rồi hãy tới.",
       opts: [["Hoán hình vũ khí", "KhamNam:hoanHh"], ["Hoán tính trang bị", "KhamNam:hoanHt"], ["Rời khỏi", null]] };
   }
   // KhamNamHelp
-  return { desc: 1, text: "Thợ rèn: đặt trang bị vào ô giữa, đặt thủy tinh vào các ô xung quanh rồi bấm Khảm.<enter>Ô Đẳng cấp: Tử Thủy Tinh — nâng cấp đồ. Ô Linh lực: Lục Thủy Tinh — quay lại các dòng. Ô ngũ hành: Lam Thủy Tinh (đổi hệ ngẫu nhiên) hoặc Hoán Linh Thạch (đổi sang hệ đã chọn).<enter>Bấm Khảm sẽ hỏi lại phí và tỉ lệ trước khi làm.",
+  return { desc: 1, text: "Thợ rèn: đặt trang bị vào ô giữa, đặt thủy tinh vào các ô xung quanh rồi bấm Khảm.<enter>Ô Đẳng cấp: Tử Thủy Tinh — nâng cấp đồ. Ô Linh lực: Lục Thủy Tinh — quay lại các dòng. Ô ngũ hành: Lam Thủy Tinh (đổi hệ ngẫu nhiên) hoặc Hoán Linh Thạch (đổi sang hệ đã chọn).<enter>Bấm Khảm thì ta hỏi lại phí và tỉ lệ trước — đừng có bấm bừa.",
     opts: [["Hoán hình · Hoán tính", "KhamNam:hoan"], ["Rời khỏi", null]] };
 }
 // Trợ Thủ "ở lại trận": sắp hết thuốc (mức Treo máy) -> chạy về Quân Nhu quan gần nhất mua theo danh sách mua của Treo máy (không bán / cất); 60 giây
@@ -2456,7 +2489,7 @@ function phMuaTick() {
     const can = (T.thuocOn && hpPotions() <= T.thuoc) || (T.nlOn && mpPotions() <= T.nl);
     if (!can || !T.mua.some((m) => m.on) || performance.now() < phMuaLuc) return;
     const n = w.npcs.filter((x) => x.ph === "qn").sort((a, b) => ldist(p.x, p.y, a.x, a.y) - ldist(p.x, p.y, b.x, b.y))[0]; if (!n) return;
-    phMua = { n, t0: performance.now() }; P.hud.msg("Trợ Thủ: sắp hết thuốc — về Quân Nhu quan mua");
+    phMua = { n, t0: performance.now() }; P.hud.msg("Trợ Thủ: sắp hết thuốc — về Quân Nhu quan mà mua.");
   }
   w.holdMove = true; if (p.target) { p.target = null; p.path = null; }
   if (ldist(p.x, p.y, phMua.n.x, phMua.n.y) > 80 && performance.now() - phMua.t0 < 25000) { if (!p.goal) w.walkTo(phMua.n.x, phMua.n.y); return; }
@@ -2467,7 +2500,7 @@ function phMuaTick() {
     for (const m of T.mua) if (m.on && potCount(m.k)) quickAdd(m.k);
     // không mua thêm được bình nào (thiếu tiền / túi đầy): 5 phút sau mới thử lại — không chạy đi chạy lại bỏ đánh
     const duoc = hpPotions() + mpPotions() > truoc;
-    if (!duoc) P.hud.canh("Trợ Thủ: không mua được thuốc ở Quân Nhu quan (thiếu tiền hoặc hành trang đầy) — đánh tiếp, 5 phút sau thử lại");
+    if (!duoc) P.hud.canh("Trợ Thủ: không mua được thuốc ở Quân Nhu quan (thiếu tiền hoặc hành trang đầy) — đánh tiếp đi, 5 phút sau thử lại.");
     phMua = null; phMuaLuc = performance.now() + (duoc ? 60000 : 300000); if (world) world.holdMove = false;
   });
 }
@@ -2541,9 +2574,9 @@ function themLeQuan(D) {
     if (!/路人_礼官\.lua$/.test(k)) continue;
     const m = s.nodes && s.nodes.main; if (!m) continue;
     m.t = "desc";
-    m.text = [LE_QUAN + "Chào mừng bạn đến với <color=yellow>Võ Lâm Truyền Kỳ<color>!<enter>Ta lo việc ban thưởng của võ lâm: đại hiệp có <color=yellow>mã kích hoạt<color> thì nhập ở chỗ ta để nhận quà; quên mật mã rương chứa đồ thì tìm ta để mở pass rương; vật phẩm không cần nữa, kể cả vật phẩm <color=green>khóa bảo hiểm<color>, thì đưa ta hủy."];
+    m.text = [LE_QUAN + "Tới <color=yellow>Chiến - Võ Lâm Xưa<color> rồi thì nghe cho kỹ.<enter>Ta lo việc ban thưởng của võ lâm: có <color=yellow>mã kích hoạt<color> thì đưa đây mà nhận quà; quên mật mã rương chứa đồ thì tìm ta mở pass rương; vật phẩm không cần nữa, kể cả vật phẩm <color=green>khóa bảo hiểm<color>, thì đưa ta hủy. Ở đây không mất tiền, AI quản, ta nói sao thì nghe vậy — cãi thì khỏi chơi."];
     // anh 05/11: thêm "Hủy vật phẩm" (huyVatPham) trước "Kết thúc đối thoại"
-    m.opts = [["Nhập mã kích hoạt", "NhapMaKichHoat"], ...(m.opts || []).filter((x) => x[1] !== "NhapMaKichHoat" && x[1] !== "HuyVatPham" && x[1] != null).map(([t, f]) => [t, t === "Mở Pass Rương" ? "MoPassRuong" : f]),
+    m.opts = [["Đưa mã đây", "NhapMaKichHoat"], ...(m.opts || []).filter((x) => x[1] !== "NhapMaKichHoat" && x[1] !== "HuyVatPham" && x[1] != null).map(([t, f]) => [t, t === "Mở Pass Rương" ? "MoPassRuong" : f]),
       ["Hủy vật phẩm", "HuyVatPham"], ["Kết thúc đối thoại", null]]; // anh 12/11: tâm thư (Esc → Ủng hộ tác giả)
   }
 }
@@ -2595,9 +2628,9 @@ function themThuyenPhu(D) {
     const nodes = s.nodes || {};
     if (nodes.main && nodes.main.t !== "act") continue;
     s.nodes = {
-      main: { t: "say", text: ["Cả đời ta đều sống với sông nước! Khách quan muốn đi đâu?"], opts: [["Đi thuyền", "yes"], ["Không ngồi", "no"]] },
-      yes: { t: "say", text: ["Nếu khách quan muốn đi xin cho thêm ít tiền!"], opts: [["Được.", "ok2"]] },
-      ok2: { t: "say", text: ["Đưa ngươi đi công không vậy gia đình ta chết đói à?"], opts: [] },
+      main: { t: "say", text: ["Ta chèo đò Động Đình mấy chục năm, chỗ nào ta cũng thuộc. Đi đâu nói mau, đừng đứng ì ra đấy chắn đường."], opts: [["Đi thuyền", "yes"], ["Ta chỉ ngắm cảnh", "no"]] },
+      yes: { t: "say", text: ["Thiên Vương đảo sóng to gió lớn, toàn phường bất lương. Muốn đi thì trả thêm tiền, không có tiền thì ở yên đây."], opts: [["Được, đi đi.", "ok2"]] },
+      ok2: { t: "say", text: ["Chèo không công thì nhà ta chết đói à? Tiền đâu, đưa đây rồi ta mới nhổ sào."], opts: [] },
     };
   }
 }
@@ -2609,7 +2642,7 @@ function themThuyenPhu(D) {
 function huyVatPham() {
   if (!hero || !GW) return;
   const ten = (o) => { const x = ItemDB.item(o.k) || {}, d = (o.d || []).length; return `${o.n > 1 ? o.n + " " : ""}${String(x.n || o.k).trim()}${d ? ` (${d} dòng)` : ""}`; };
-  GW.giaoDo({ tieuDe: "Hủy vật phẩm", loi: "Đại hiệp hãy cẩn trọng trong việc hủy vật phẩm, vật phẩm đã hủy không thể lấy lại được!" }).then((ds) => {
+  GW.giaoDo({ tieuDe: "Hủy vật phẩm", loi: "Hủy vật phẩm thì cẩn trọng vào — hủy rồi không lấy lại được đâu!" }).then((ds) => {
     if (!ds || !ds.length || !hero) return;
     // khung hỏi ~50 chữ / dòng, ngắt cả giữa từ -> 3 dòng ngắn: tên mọi món nếu vừa 1 dòng, không thì ≤ ~36 chữ + "và N món khác"
     const mon = ds.map((u) => (hero.bag || []).find((o) => o.u === u)).filter(Boolean), tat = mon.map(ten);
@@ -2617,13 +2650,13 @@ function huyVatPham() {
     const chot = mon.map((o) => ({ u: o.u, k: o.k, n: o.n || 1 }));
     let ke = tat.join(", ");
     if (ke.length > 50) { const L = []; for (const t of tat) { if (L.length && [...L, t].join(", ").length > 36) break; L.push(t); } ke = L.join(", ") + ` và ${tat.length - L.length} món khác`; }
-    return GW.hoi(`Hủy <color=yellow>${mon.length}<color> vật phẩm đã đặt vào khung:<enter><color=yellow>${ke}<color><enter>Vật phẩm đã hủy không thể lấy lại được!`, "Hủy vật phẩm", "Hủy bỏ").then((ok) => {
+    return GW.hoi(`Hủy <color=yellow>${mon.length}<color> vật phẩm đã đặt vào khung:<enter><color=yellow>${ke}<color><enter>Vật phẩm đã hủy không lấy lại được đâu — chắc chưa?`, "Hủy vật phẩm", "Hủy bỏ").then((ok) => {
       if (!ok || !hero) return;
       return Net.doItem(hero.slot | 0, { act: "huy", ds: chot }).then((j) => {
         applyServer(j);
-        P.hud.msg(j.msg || "Thao tác hủy vật phẩm thành công");
+        P.hud.msg(j.msg || "Hủy vật phẩm xong rồi.");
         P.audio.ui("click");
-        GW.bao("Lễ quan: Thao tác thành công, kiểm tra lại!");
+        GW.bao("Lễ quan: Xong rồi, tự kiểm tra lại đi!");
       });
     });
   }).catch((e) => { if (e.ma !== "het-phien" && !e.boQua) GW.bao(`Lễ quan: ${e.message}`); });
@@ -2633,7 +2666,7 @@ function huyVatPham() {
 // hiện ở khung Describe có chân dung như các lời khác của Lễ quan. id: "MoPassRuong" (menu) | "MoPassRuong:dangKy" | ":xacNhan" | ":huy" |
 // ":thoiGian" -> Promise trang kế cho NpcDialog (npcdlg.js show)
 const ngayXoaMk = (so) => { const s = String(so); return `${+s.slice(6, 8)}-${+s.slice(4, 6)}-${s.slice(0, 4)}`; };
-const henXoaMk = (so) => `Pass rương sẽ được xóa vào ngày <color=yellow>${ngayXoaMk(so)}<color><enter>Nếu sau 24h ngày <color=yellow>${ngayXoaMk(so)} <color>đại hiệp không xác nhận thì đăng ký xoá pass rương sẽ bị hủy bỏ!`;
+const henXoaMk = (so) => `Pass rương sẽ bị xóa vào ngày <color=yellow>${ngayXoaMk(so)}<color><enter>Sau 24h ngày <color=yellow>${ngayXoaMk(so)} <color>mà ngươi không xác nhận thì đăng ký xóa pass rương hủy luôn!`;
 function moPassRuong(id) {
   const viec = id.split(":")[1] || "xem", lai = [["Trở lại", "MoPassRuong"], ["Kết thúc đối thoại", null]];
   return Net.doItem(hero.slot | 0, { act: "xoaMk", viec: viec === "thoiGian" ? "xem" : viec }).then((j) => {
@@ -2645,8 +2678,8 @@ function moPassRuong(id) {
     if (x.dk && (viec === "dangKy" || viec === "thoiGian")) return { desc: 1, text: LE_QUAN + henXoaMk(x.xoa), opts: lai };
     const opts = x.dk ? [...(x.xacNhan ? [["Xác nhận xóa pass rương", "MoPassRuong:xacNhan"]] : []), ["Xem thời gian hoàn thành xóa pass rương", "MoPassRuong:thoiGian"], ["Hủy xóa pass rương", "MoPassRuong:huy"]]
       : [["Đăng ký xóa pass rương", "MoPassRuong:dangKy"]];
-    const them = x.dk ? `<enter>${henXoaMk(x.xoa)}` : `<enter>Quên mật mã rương chứa đồ: đăng ký xóa pass rương, đúng ngày thứ 7 sau ngày đăng ký đến gặp ta xác nhận thì mật mã được xóa.${x.coMk ? "" : "<enter><color=yellow>Rương chứa đồ của đại hiệp hiện chưa có mật mã.<color>"}`;
-    return { desc: 1, text: LE_QUAN + "Đại hiệp tìm ta có việc gì?" + them, opts: [...opts, ["Thoát", null]] };
+    const them = x.dk ? `<enter>${henXoaMk(x.xoa)}` : `<enter>Quên mật mã rương chứa đồ: đăng ký xóa pass rương, đúng ngày thứ 7 sau ngày đăng ký tới gặp ta xác nhận thì mật mã mới bị xóa.${x.coMk ? "" : "<enter><color=yellow>Rương chứa đồ của ngươi hiện chưa có mật mã.<color>"}`;
+    return { desc: 1, text: LE_QUAN + "Tìm ta có việc gì? Nói mau." + them, opts: [...opts, ["Thoát", null]] };
   }, (e) => (e.ma === "het-phien" ? { close: true } : { desc: 1, text: LE_QUAN + e.message, opts: lai }));
 }
 // khung nhập chữ của client -> máy chủ kiểm mã (may-chu/ma-qua.js) -> túi mới + khung báo quà như quà của quản trị
@@ -2656,7 +2689,7 @@ function baoMaKichHoat(j) {
   P.audio.ui("levelup");
   P.hud.msg(`Kích hoạt mã thành công — nhận được: ${j.ds.join(", ")}`, MAU_TIN.kn);
   // mã khóa (anh 11/11 — may-chu/ma-qua.js j.khoa: có món thật sự khóa; j.khoaTru: món luôn không khóa có trong quà — Mật đồ thần bí)
-  GW.bao(`Lễ quan: Kích hoạt mã thành công!<enter>Bạn nhận được: <color=yellow>${j.ds.join(", ")}<color>${j.khoa ? `<enter>Vật phẩm nhận được đã khóa bảo hiểm vĩnh viễn${j.khoaTru ? ` (trừ ${j.khoaTru})` : ""} — không giao dịch, bày bán được` : ""}${j.loi ? `<enter>${j.loi}` : ""}`);
+  GW.bao(`Lễ quan: Kích hoạt mã thành công!<enter>Ngươi nhận được: <color=yellow>${j.ds.join(", ")}<color>${j.khoa ? `<enter>Vật phẩm nhận được đã khóa bảo hiểm vĩnh viễn${j.khoaTru ? ` (trừ ${j.khoaTru})` : ""} — không giao dịch, bày bán được` : ""}${j.loi ? `<enter>${j.loi}` : ""}`);
 }
 function nhapMaKichHoat() {
   if (!hero || !GW) return;
@@ -2664,9 +2697,9 @@ function nhapMaKichHoat() {
     if (!ma || !hero) return;
     return Net.maQua(hero.slot | 0, ma).then((j) => {
       if (j.chonHe && j.chonHe.length) {
-        if (!NPCD) { GW.bao("Lễ quan: mã này cần chọn hệ — hãy nói chuyện lại với ta rồi nhập mã."); return; }
+        if (!NPCD) { GW.bao("Lễ quan: mã này cần chọn hệ — nói chuyện lại với ta rồi nhập mã."); return; }
         const opts = j.chonHe.map((c) => [c.ten, () => Net.maQua(hero.slot | 0, ma, c.eqt).then(baoMaKichHoat).catch((e) => { if (e.ma !== "het-phien" && !e.boQua) GW.bao(`Lễ quan: ${e.message}`); })]);
-        NPCD.choose("msgsel", "InfoText", "Mã chung nhận đồ theo môn phái. Đại hiệp theo hệ nào?", [...opts, ["Để sau", null]]);
+        NPCD.choose("msgsel", "InfoText", "Mã này phát đồ theo phái. Luyện đường nào? Nói một câu thôi!", [...opts, ["Để sau", null]]);
         return;
       }
       baoMaKichHoat(j);
@@ -2786,7 +2819,7 @@ function vaTick() {
   const S = w._va || (w._va = { dot: 0, sinh: 0, ra: -1e9, phut: -1, ket: 0 });
   if (S.vaObj !== V) { S.vaObj = V; S.lech = V ? V.gio - Date.now() : 0; } // giờ máy chủ − giờ máy (lúc nhận)
   const hoiRa = () => { if (bay - S.ra > 5000 && !pending.kills.length && !pulsing) { S.ra = bay; vuotAi({ viec: "ra" }); } };
-  if (!D || !B || D.cap !== w.zone.cap) { P.hud.setThuyen("Thách thức thời gian đã kết thúc"); return hoiRa(); }
+  if (!D || !B || D.cap !== w.zone.cap) { P.hud.setThuyen("Thách thức thời gian kết thúc rồi."); return hoiRa(); }
   const now = Date.now() + S.lech, con = D.han - (now - D.bd) / 1000, song = w.mobs.filter((m) => m.va && m.alive).length;
   const ten = `Thách thức thời gian ${B.cap === 2 ? "cao cấp" : "sơ cấp"}`;
   if (D.ket) {
@@ -2797,7 +2830,7 @@ function vaTick() {
     return;
   }
   if (now < D.bd) return P.hud.setThuyen(`${ten}  ·  Chuẩn bị — quái xuất hiện sau ${giayMs((D.bd - now) / 1000)}`); // chưa tính 30 phút
-  if (con <= 0) { P.hud.setThuyen("Hết giờ — khiêu chiến thất bại"); return hoiRa(); }
+  if (con <= 0) { P.hud.setThuyen("Hết giờ — khiêu chiến thất bại. Luyện thêm đi rồi hãy quay lại."); return hoiRa(); }
   if (S.dot !== D.dot) { // đám mới (máy chủ đã chuyển): lần đầu / vào lại giữa chừng ra ngay, hết đám thì nghỉ VA_NGHI giây
     if (S.dot && !S.choDen) S.choDen = bay + VA_NGHI * 1000;
     if (S.choDen && bay < S.choDen) return P.hud.setThuyen(`${ten}  ·  Đã hạ đám ${S.dot} — đám ${D.dot} xuất hiện sau ${Math.ceil((S.choDen - bay) / 1000)} giây  ·  ${giayMs(con)}`);
@@ -2805,10 +2838,10 @@ function vaTick() {
     for (const m of w.mobs) if (m.va && m.alive) { m.alive = false; if (w.player.target === m) w.player.target = null; } // quái đám cũ còn sống (công cụ thử nhảy đám)
     w.mobs = w.mobs.filter((m) => !m.va || m.hp <= 0);
     S.dot = D.dot; S.sinh = bay;
-    const n = sinhDot(w, D); if (n) P.hud.msg(`Xuất hiện ${n} con quái!`);
+    const n = sinhDot(w, D); if (n) P.hud.msg(`Xuất hiện ${n} con quái! Đánh đi!`);
   } else if (!song && bay - S.sinh > 4000 && !pending.kills.length && !pulsing) { S.sinh = bay; sinhDot(w, D); } // đã hạ hết mà máy chủ chưa nhận đủ: sinh lại phần thiếu
   const phut = Math.floor((D.han - con) / 60);
-  if (phut > S.phut) { if (S.phut >= 0) P.hud.msg(`Nhiệm vụ 'Thách thức Thời gian' đã bắt đầu rồi ${phut} phút, bây giờ là đám quái thứ ${D.dot}, còn dư ${song} con quái.`); S.phut = phut; }
+  if (phut > S.phut) { if (S.phut >= 0) P.hud.msg(`Nhiệm vụ 'Thách thức Thời gian' bắt đầu được ${phut} phút rồi, bây giờ là đám quái thứ ${D.dot}, còn dư ${song} con quái.`); S.phut = phut; }
   P.hud.setThuyen(`${ten}  ·  Đám ${D.dot}/${D.tong}  ·  còn ${song} con  ·  ${giayMs(con)}`);
 }
 // Vượt Ải tổ đội (anh 31/10 — vadoi.js, may-chu/vuot-ai.js phòng): quái theo máy chủ (VaDoi.tick — sinh / máu / mục tiêu / vị trí), dòng giữa
@@ -2819,7 +2852,7 @@ function vaTickDoi(w, D) {
   VaDoi.tick();
   const p = VaDoi.p && VaDoi.p.id === D.phong && VaDoi.p.bai === w.zone.id ? VaDoi.p : null;
   if (!p) {
-    if (D.ket || VaDoi.het) { P.hud.setThuyen("Thách thức thời gian đã kết thúc"); return hoiRa(); } // het: máy chủ báo phòng không còn (tắt máy chủ / đã bị đưa ra)
+    if (D.ket || VaDoi.het) { P.hud.setThuyen("Thách thức thời gian kết thúc rồi."); return hoiRa(); } // het: máy chủ báo phòng không còn (tắt máy chủ / đã bị đưa ra)
     VaDoi.xin();
     return P.hud.setThuyen("Thách thức thời gian (tổ đội) — đang nối máy chủ…");
   }
@@ -2832,12 +2865,12 @@ function vaTickDoi(w, D) {
     if (sau <= 0) hoiRa();
     return;
   }
-  if (p.ket || con <= 0) { P.hud.setThuyen("Hết giờ — khiêu chiến thất bại"); return hoiRa(); }
+  if (p.ket || con <= 0) { P.hud.setThuyen("Hết giờ — khiêu chiến thất bại. Luyện thêm đi rồi hãy quay lại."); return hoiRa(); }
   if (now < p.bd) return P.hud.setThuyen(`${ten}  ·  Chuẩn bị — quái xuất hiện sau ${giayMs((p.bd - now) / 1000)}`); // chưa tính 30 phút
   if (now < p.sinh) return P.hud.setThuyen(`${ten}  ·  Đã hạ đám ${p.dot - 1} — đám ${p.dot} xuất hiện sau ${Math.ceil((p.sinh - now) / 1000)} giây  ·  ${giayMs(con)}`);
-  if (S.dot !== p.dot) { S.dot = p.dot; P.hud.msg(`Xuất hiện ${song} con quái!`); }
+  if (S.dot !== p.dot) { S.dot = p.dot; P.hud.msg(`Xuất hiện ${song} con quái! Đánh đi!`); }
   const phut = Math.floor((p.han - con) / 60);
-  if (phut > S.phut) { if (S.phut >= 0) P.hud.msg(`Nhiệm vụ 'Thách thức Thời gian' đã bắt đầu rồi ${phut} phút, bây giờ là đám quái thứ ${p.dot}, còn dư ${song} con quái.`); S.phut = phut; }
+  if (phut > S.phut) { if (S.phut >= 0) P.hud.msg(`Nhiệm vụ 'Thách thức Thời gian' bắt đầu được ${phut} phút rồi, bây giờ là đám quái thứ ${p.dot}, còn dư ${song} con quái.`); S.phut = phut; }
   P.hud.setThuyen(`${ten}  ·  Đám ${p.dot}/${p.tong}  ·  còn ${song} con  ·  ${giayMs(con)}`);
 }
 // Máy chủ trả: say { text, opts: [[nhãn, việc, tham số]] } (khung Say của client) | talk [câu] (khung Talk, xong quay lại hỏi chuyện) | giao
@@ -2856,7 +2889,7 @@ function xuLyDaTau(j, w0 = world) {
   if (j.talk && NPCD) NPCD.talk(j.talk.map((t) => richText(t, hero.name, "Dã Tẩu")), 0, () => daTau({ viec: "mo" }));
   // khung Giao vật phẩm / Chọn thưởng chỉ khi còn ở bản đồ lúc hỏi (như xuLySatThu — soát 13/11)
   const roi = world !== w0;
-  if ((j.giao || j.thuong) && GW && roi) P.hud.canh("Đã rời chỗ Dã Tẩu — nói chuyện lại với Dã Tẩu");
+  if ((j.giao || j.thuong) && GW && roi) P.hud.canh("Đã rời chỗ Dã Tẩu — nói chuyện lại với Dã Tẩu đi.");
   if (j.giao && GW && !roi) GW.giaoDo(j.giao).then((ds) => { if (ds && world === w0) daTau({ viec: "xong", u: ds }); });
   if (j.thuong && GW && !roi) GW.chonThuong(j.thuong).then((i) => { if (i != null && world === w0) daTau({ viec: "chon", i }); });
   return j;
@@ -2869,7 +2902,7 @@ function xuLyDaTau(j, w0 = world) {
 function denDaTau(xe, phu) {
   const xong = xe ? { close: true } : null, bao = (t) => { if (xe) return { text: t, opts: [] }; P.hud.canh(t); return null; };
   if (!hero || !world) return Promise.resolve(xong);
-  const chan = zoneLoad ? "Đang chuyển bản đồ — tải xong rồi bấm lại" : world.player.hp <= 0 ? "Đang trọng thương — không đi được"
+  const chan = zoneLoad ? "Đang chuyển bản đồ — tải xong rồi bấm lại." : world.player.hp <= 0 ? "Đang trọng thương — không đi được đâu. Nằm yên đấy."
     : TuLam.chiem && TuLam.loai === "dt" ? `Trợ Thủ đang tự làm nhiệm vụ Dã Tẩu — tắt Tự đánh${DT && DT.on ? "" : " (Space)"} rồi bấm lại` : null; // Trợ Thủ cũng đang đưa đi: không kéo nhau
   if (chan) return Promise.resolve(bao(chan));
   const z0 = world.zone.id; // chỗ đứng lúc bấm (máy chủ xét theo chỗ này) — diDaTau: chờ trả lời mà đã bị đưa sang ải / đảo… thì thôi
@@ -2894,12 +2927,12 @@ function diDaTau(di, z0) {
   const z = P.maps.zones.find((x) => x.id === di.z);
   // thôi đi mà máy chủ đã trừ Thổ Địa Phù (di.phu): xin hoàn 1 tấm (may-chu/da-tau.js hoanPhu — soát 11/11)
   const hoan = () => { if (di.phu && hero) Net.daTau(hero.slot | 0, { viec: "hoanPhu" }).then((j) => { applyServer(j); if (GW) GW.refresh(true); for (const t of j.tin || []) P.hud.msg(t); }).catch((e) => { if (e.ma !== "het-phien" && !e.boQua) P.hud.msg(e.message); }); };
-  if (!z) { hoan(); return P.hud.canh("Trình duyệt chưa có bản đồ này — tải lại trang (F5) rồi bấm lại"); }
+  if (!z) { hoan(); return P.hud.canh("Bản đồ này trình duyệt chưa có — tải lại trang (F5) rồi bấm lại."); }
   if (NPCD) NPCD.close();
   if (di.phu && world && FARM_KINDS.has(world.zone.kind)) { const p = world.player; hero.diemCu = { z: world.zone.id, x: Math.round(p.x), y: Math.round(p.y), ...(world.chung ? { c: 1 } : {}) }; hero.farmZone = world.zone.id; hero.farmChung = world.chung ? 1 : 0; save(); }
   const toiNpc = () => {
     const w = world, p = w.player, n = w.npcs.filter((v) => npcBan(v, di.ban)).sort((a, b) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y))[0]; // Biện Kinh có 2 Thợ rèn: gần nhất
-    if (!n) return P.hud.msg(`Không thấy NPC bán món này ở ${w.zone.n}`);
+    if (!n) return P.hud.msg(`Không thấy NPC bán món này ở ${w.zone.n}. Tìm chỗ khác đi.`);
     w.clickNpc(n); P.hud.msg(`Tìm đường tới ${n.name}`);
   };
   const di1 = () => {
@@ -2991,14 +3024,14 @@ async function dungVat(b, them = {}) {
     const G = { m: "nam", f: "nữ" }, g = j.doiGioi, ten = ((ItemDB.item(b.k) || {}).n || "").trim();
     NPCD.choose("msgsel", "InfoText", richText([`Dùng <color=yellow>${ten}<color> đổi giới tính từ ${G[g.tu]} sang <color=yellow>${G[g.sang]}<color>?`,
       ...(g.mon && g.mon.length ? [`Các món chỉ ${G[g.tu]} mặc được sẽ cất vào hành trang: ${g.mon.join(", ")}.`] : []),
-      "Đổi xong sẽ về màn chọn nhân vật — vào lại game là diện mạo mới."].join("<enter>"), hero.name), [["Đồng ý", () => dungVat(b, { chon: 1 })], ["Hủy bỏ", null]]);
+      "Đổi xong thì về màn chọn nhân vật — vào lại game là diện mạo mới."].join("<enter>"), hero.name), [["Đồng ý", () => dungVat(b, { chon: 1 })], ["Hủy bỏ", null]]);
   }
   // trang giữ nhân vật trong bộ nhớ (màn chọn nhân vật vào lại bằng chính đối tượng này — csEnter): áp giới / chỉ số gốc / dpV mới trước khi lưu + rời game
   // (thử 16/11: không áp thì vào lại vẫn là giới cũ dù máy chủ đã đổi)
   if (j.gioiXong && j.gioiMoi && hero) { hero.sex = j.gioiMoi.sex === "f" ? "f" : "m"; if (j.gioiMoi.start) hero.start = { ...j.gioiMoi.start }; hero.dpV = j.gioiMoi.dpV | 0; }
   // soát 16/11: chỉ rời game khi vẫn đang ở đúng lượt chơi đó (#hud bật, cùng world) — tự thoát / vào lại / đăng xuất trong 1,5 giây thì không gọi
   if (j.gioiXong) { const w0 = world; setTimeout(() => { if (hero && world && world === w0 && $("#hud").classList.contains("on")) leaveGame(); }, 1500); }
-  if (j.chon && NPCD) NPCD.choose("msgsel", "InfoText", richText("Chọn kỹ năng cần nâng cấp:", hero.name),[...j.chon.map(([id, n, lv]) => [`Nâng cấp ${n} (đang cấp ${lv})`, () => dungVat(b, { chon: id })]), ["Kết thúc đối thoại", null]]);
+  if (j.chon && NPCD) NPCD.choose("msgsel", "InfoText", richText("Chọn kỹ năng cần nâng cấp. Chọn cho đúng, đừng bấm bừa.", hero.name),[...j.chon.map(([id, n, lv]) => [`Nâng cấp ${n} (đang cấp ${lv})`, () => dungVat(b, { chon: id })]), ["Kết thúc đối thoại", null]]);
   // Phú quý cẩm hạp (anh 03/11 — may-chu/phu-quy.js): máy chủ đã kiểm điều kiện -> khung nhập số như g_AskClientNumberEx(10, 99, "Nhập số 10-99")
   // Pháo Hoa / Hoa hồng (anh 03/11): vẽ hiệu ứng quanh mình + gửi người cùng bãi (kênh tức thời "chieu" — vocong.js chieuAo nhận ra mã vật phẩm)
   if (j.hieuUng && world) { const p = world.player; world.hieuUng(j.hieuUng, p); if (world.onChieu) world.onChieu(j.hieuUng, 1, p.x, p.y, [p.x, p.y]); }
@@ -3014,9 +3047,9 @@ function thuongDN(b = {}) {
     if (j.msg) P.hud.msg(j.msg);
     if (j.hoi && NPCD) {
       const phi = (luat().dangNhap || {}).phiTiep ?? 5;
-      NPCD.choose("msgsel", "InfoText", richText(`Bạn đã đăng nhập liên tục trên 42 ngày, duy trì đăng nhập sẽ liên tục nhận được phần thưởng thứ 42, nhưng mỗi lần nhận phải trả ${phi} tiền đồng. Nếu như từ bỏ sẽ bắt đầu nhận lại từ ngày thứ 1`, hero.name),
+      NPCD.choose("msgsel", "InfoText", richText(`Ngươi đã đăng nhập liên tục trên 42 ngày, duy trì đăng nhập thì cứ nhận phần thưởng thứ 42, nhưng mỗi lần nhận phải trả ${phi} tiền đồng. Bỏ thì nhận lại từ ngày thứ 1`, hero.name),
         [[`Đồng ý trả ${phi} tiền đồng`, () => thuongDN({ ...b, chon: "tra" }).then((k) => k && k.tt && GW.loginPrizeFill(k.tt))],
-         ["Tôi muốn bắt đầu nhận lại từ đầu", () => thuongDN({ ...b, chon: "lai" }).then((k) => k && k.tt && GW.loginPrizeFill(k.tt))], ["Hủy bỏ", null]]);
+         ["Ta muốn nhận lại từ đầu", () => thuongDN({ ...b, chon: "lai" }).then((k) => k && k.tt && GW.loginPrizeFill(k.tt))], ["Hủy bỏ", null]]);
     }
     return j;
   }).catch((e) => { if (e.ma !== "het-phien") P.hud.msg(e.message); return null; });
@@ -3123,7 +3156,7 @@ function trangThaiHud() {
   { const p = world.player;
     for (const [sid, het] of Object.entries(p.trigCd || {})) {
       const con = het - world.time, s = P.skillDb[sid], ic = P.skillIcon && P.skillIcon[sid]; if (!(con > 0) || !s || !ic || co.has("cd:" + sid)) continue;
-      co.add("cd:" + sid); L.push({ img: "../web/icon/" + ic, t: con, n: `${String(s.n || "").trim()} — đang hồi`, d: `Chiêu tự phát, còn ${Math.ceil(con)} giây mới phát lại được`, xau: 0, hoi: 1 });
+      co.add("cd:" + sid); L.push({ img: "../web/icon/" + ic, t: con, n: `${String(s.n || "").trim()} — đang hồi`, d: `Chiêu tự phát, còn ${Math.ceil(con)} giây nữa mới phát lại được`, xau: 0, hoi: 1 });
     }
   }
   // đường đua (anh 16/11 — duangua.js hieuUng): tăng tốc (hình Gia Tốc hoàn), chậm / choáng do tù và / bẫy (hình trạng thái client Hàn Băng / Lôi Kích như quái võ công)
@@ -3270,16 +3303,16 @@ function bamNhiemVu(k) {
 function throwHeld(hoiLuon) {
   const H = GW.hand; if (!H || !world) return Promise.resolve(false);
   if (KAT && KAT.dangHoi()) return Promise.resolve(false); // đang hỏi mật khẩu cấp 2 cho lần vứt trước: không gửi thêm
-  if (H.from !== "bag" && H.from !== "giao") { P.hud.msg("Tháo món này vào túi trước rồi mới vứt ra đất được"); return Promise.resolve(false); } // giao: món từ lưới khung Giao (vẫn ở túi)
+  if (H.from !== "bag" && H.from !== "giao") { P.hud.msg("Tháo món này vào túi trước rồi mới vứt ra đất được."); return Promise.resolve(false); } // giao: món từ lưới khung Giao (vẫn ở túi)
   // khóa bảo hiểm (anh 05/11 — thưởng thăng cấp / online): không vứt được như engine ServerThrowAwayItem (máy chủ cũng chặn — do.js CAU_KBH)
   if (H.it.kbh) {
-    P.hud.msg("Nhằm bảo vệ tài sản cho bạn! Vật phẩm khóa bảo hiểm không được tùy ý vứt ra ngoài — không cần nữa thì đến Lễ quan (Ba Lăng) hủy vật phẩm.");
+    P.hud.msg("Để bảo vệ tài sản của ngươi! Vật phẩm khóa bảo hiểm không được tùy ý vứt ra ngoài — không cần nữa thì tới Lễ quan (Ba Lăng) mà hủy.");
     if (hoiLuon && GW.hand === H) GW.drop();
     return Promise.resolve(false);
   }
   // khu vực bang (đợt 4): vật vứt theo mã bãi — chung mọi bản bang (máy chủ cũng chặn — do.js vut)
-  if (world.zone.bang) { P.hud.msg("Khu vực bang hội không vứt vật phẩm ra đất được"); if (hoiLuon && GW.hand === H) GW.drop(); return Promise.resolve(false); }
-  if (laLd(world.zone)) { P.hud.msg("Trong lôi đài không vứt vật phẩm ra đất được"); if (hoiLuon && GW.hand === H) GW.drop(); return Promise.resolve(false); } // lôi đài (anh 15/11 — máy chủ cũng chặn: do.js vut)
+  if (world.zone.bang) { P.hud.msg("Khu vực bang hội cấm vứt vật phẩm ra đất."); if (hoiLuon && GW.hand === H) GW.drop(); return Promise.resolve(false); }
+  if (laLd(world.zone)) { P.hud.msg("Trong lôi đài cấm vứt vật phẩm ra đất."); if (hoiLuon && GW.hand === H) GW.drop(); return Promise.resolve(false); } // lôi đài (anh 15/11 — máy chủ cũng chặn: do.js vut)
   const x = ItemDB.item(H.it.k), n = (H.it.d || []).length;
   const vut = () => {
     if (!world || GW.hand !== H) return;
@@ -3289,8 +3322,8 @@ function throwHeld(hoiLuon) {
   const quy = n >= 4 && hero.auto && hero.auto.baoVe; // Trợ Thủ → Khác → Bảo vệ trang bị tắt: vứt luôn
   if (!quy && !hoiLuon) { vut(); return Promise.resolve(true); }
   // khung hỏi 2 nút của game (提示.ini — windows.js hoi); câu đầu là chữ client G_STR_FORBIT_THROWITEM
-  const S = P.win.strings, cam = (S.G_STR_FORBIT_THROWITEM || "Nhằm bảo vệ tài sản cho bạn! Vật phẩm quý không được tùy ý vứt ra ngoài!").trim();
-  return GW.hoi(quy ? `${cam}<enter>Vẫn vứt <color=yellow>${x.n} (${n} dòng)<color> ra đất?` : `Vứt <color=yellow>${x.n}<color> ra đất?<enter>Ai cùng bản đồ cũng nhặt được, khoảng 2 phút thì mất.`, "Vứt ra đất", "Hủy bỏ")
+  const S = P.win.strings, cam = (S.G_STR_FORBIT_THROWITEM || "Để bảo vệ tài sản của ngươi! Vật phẩm quý không được tùy ý vứt ra ngoài!").trim();
+  return GW.hoi(quy ? `${cam}<enter>Vẫn vứt <color=yellow>${x.n} (${n} dòng)<color> ra đất?` : `Vứt <color=yellow>${x.n}<color> ra đất?<enter>Ai cùng bản đồ cũng nhặt được, khoảng 2 phút thì mất. Chắc chưa?`, "Vứt ra đất", "Hủy bỏ")
     .then((ok) => { if (ok) vut(); else if (hoiLuon && GW.hand === H) GW.drop(); return ok; });
 }
 // số bình mỗi chồng / mỗi lần mua, giá bán lại cho NPC: máy chủ gửi lúc đăng nhập (cau-hinh.json — may-chu/api.js SV.luat)
@@ -3317,7 +3350,7 @@ const ldCamMon = (k) => { const D = (ItemDB.item(k) || {}).dung; return !!(D && 
 let ldCamLuc = 0;
 function ldCamDung() {
   const t = performance.now(); if (t - ldCamLuc < 1500) return; ldCamLuc = t;
-  P.hud.canh("Trong sân Công Bình Tử không dùng được thuốc, hoàn — rời sân rồi dùng");
+  P.hud.canh("Trong sân Công Bình Tử cấm dùng thuốc, hoàn — rời sân rồi hãy dùng.");
 }
 // ---------- thuốc (25/10): uống ở máy (World.drink hồi sinh lực / nội lực), báo máy chủ trừ bình kèm nhịp ----------
 // it = chồng thuốc trong túi. Trả true nếu đã uống.
@@ -3343,7 +3376,7 @@ function drink(it) {
 // (bùa lợi: lên mình, vòng sáng: bật / tắt ở ô tay phải, chiêu đánh: bấm phím — theo con trỏ chuột, bấm ô — con đang nhắm hoặc gần nhất). Gắn / gỡ tùy ý: kéo ô sang ô khác
 // = đổi chỗ, kéo ra ngoài thanh hoặc chuột phải = gỡ khỏi ô (ô trống: chuột phải mở Trợ Thủ).
 const quick = () => (hero.nhanh = Array.isArray(hero.nhanh) && hero.nhanh.length === 9 ? hero.nhanh : Array(9).fill(null));
-const potTotal = () => (hero.bag || []).reduce((t, b) => t + (isPotion(b) ? b.n || 0 : 0), 0); // tổng bình thuốc (mang ≤ luat().mang)
+const potTotal = () => (hero.bag || []).reduce((t, b) => t + (isPotion(b) ? b.n || 0 : 0), 0); // tổng bình thuốc mọi loại (chỉ tham khảo — giới hạn mang theo từng loại, xem potFull)
 const potCount = (k) => (hero.bag || []).reduce((t, b) => t + (b.k === k ? b.n || 0 : 0), 0);
 const potHp = (k, hp) => { const x = ItemDB.item(k); return !!(x && x.thuoc && (hp ? x.hp : x.mp && !x.hp)); }; // thuốc sinh lực / chỉ nội lực
 const laPhu = (k) => !!(ItemDB.item(k) || {}).phu; // Thổ Địa Phù
@@ -3362,13 +3395,13 @@ function quickUse(i, auto, byKey) {
   if (laDungNhanh(q.k)) { // vật phẩm dùng được (lượt 86): như chuột phải trong túi; chồng khóa bảo hiểm / ít nhất trước
     if (auto) return false;
     const b = (hero.bag || []).filter((o) => o.k === q.k).sort((a, c) => !a.kbh - !c.kbh || (a.n || 1) - (c.n || 1))[0];
-    if (!b) { P.hud.msg(`Hết ${ItemDB.item(q.k).n}`); return false; }
+    if (!b) { P.hud.msg(`Hết ${ItemDB.item(q.k).n} rồi`); return false; }
     dungVat(b); return true;
   }
   if (laPhu(q.k)) {
     if (auto) return false;
     const b = chongIt(q.k);
-    if (!b) { P.hud.msg(`Hết ${ItemDB.item(q.k).n}`); return false; }
+    if (!b) { P.hud.msg(`Hết ${ItemDB.item(q.k).n} rồi`); return false; }
     dungPhu(b); return true;
   }
   const st = chongIt(q.k);
@@ -3392,23 +3425,23 @@ function quickSkill(id, byKey) {
   if (!world || !P.vc) return false;
   const s = P.skillDb[id], k = kindOf(s, P.skillDb), p = world.player, O = (hero.oChieu = hero.oChieu || {});
   if (!s) return false;
-  if (!(world.skLv(id) > 0)) { P.hud.msg(`Chưa học ${s.n}`); return false; }
+  if (!(world.skLv(id) > 0)) { P.hud.msg(`Chưa học ${s.n} — học đi rồi hãy gắn.`); return false; }
   if (k === "aura") { const on = O.phai !== id; setSkill("right", on ? id : 0); P.hud.msg(`${s.n}: ${on ? "bật" : "tắt"}`); return true; }
   if (k === "buff") return world.castSelf(id);
-  if (byKey && mouseC) { const x = mouseC[0] / zoom + cam.x, y = mouseC[1] / zoom + cam.y; return world.castAt(id, world.mobAt(x, y), x, y); }
+  if (byKey && mouseC) { const x = mouseC[0] / zoom + cam.x, y = mouseC[1] / zoom + cam.y; return world.castAt(id, world.mobAt(x, y) || world.npcChoiAt(x, y), x, y); }
   if (k === "jump") { const [x, y] = truocMat(world.skRange(id, 1)); return world.castAt(id, null, x, y); } // bấm ô bằng chuột / chạm ô: nhảy thẳng về phía trước
   const c = world.skCan(id); if (!c.ok) { P.hud.msg(c.why); return false; }
   // điện thoại: con gần trong tầm (mucGan) — không có thì chiêu đánh ra thẳng trước mặt, bùa hại báo; không chạy đi tìm con ở xa (handUse)
   if (DT && DT.on) {
     const R = world.skRange(id, world.skLv(id)), g = mucGan(R);
     if (g) return world.castAt(id, g, g.x, g.y);
-    if (k === "curse") { P.hud.msg("Không có mục tiêu gần"); return false; }
+    if (k === "curse") { P.hud.msg("Không có mục tiêu gần. Lại gần rồi hãy bấm."); return false; }
     const [x, y] = truocMat(R); return world.castAt(id, null, x, y);
   }
   // PC bấm ô bằng chuột: chỉ nhắm con gần trong tầm chiêu + MUC_GAN như điện thoại (mucGan) — không chạy đi tìm con ở xa (nearestMob không giới hạn tầm)
   const R = world.skRange(id, world.skLv(id)), m = mucGan(R);
   if (m) return world.castAt(id, m, m.x, m.y);
-  if (k === "curse") { P.hud.msg("Không có mục tiêu gần"); return false; }
+  if (k === "curse") { P.hud.msg("Không có mục tiêu gần. Lại gần rồi hãy bấm."); return false; }
   const [x, y] = truocMat(R); return world.castAt(id, null, x, y);
 }
 // điện thoại, ô kỹ năng đang khóa (dienthoai.js datOKhoa — anh 31/10 lần 2): chạm ô T / P = ra chiêu tay đó vào con đang nhắm / gần nhất như chạm
@@ -3416,12 +3449,12 @@ function quickSkill(id, byKey) {
 function handUse(side) {
   if (!world || !hero) return false;
   const O = hero.oChieu || {}, id = side === "left" ? O.trai : O.phai, s = id && P.skillDb[id], k = s && kindOf(s, P.skillDb), p = world.player;
-  if (side === "right" && !s) { P.hud.msg("Ô tay phải chưa có chiêu — mở khóa ô kỹ năng (nút khóa cạnh ô) rồi chạm ô P để chọn"); return false; }
+  if (side === "right" && !s) { P.hud.msg("Ô tay phải chưa có chiêu — mở khóa ô kỹ năng (nút khóa cạnh ô) rồi chạm ô P mà chọn."); return false; }
   if (k === "aura" || k === "buff") return world.useRight(null, p.x, p.y);
   if (k === "jump") { const [jx0, jy0] = truocMat(world.skRange(id, 1)); return world.useRight(null, jx0, jy0); } // chạm ô: nhảy thẳng về phía trước; kéo ô để ngắm chỗ nhảy (dienthoai.js _ngam)
   const R = s ? world.skRange(id, world.skLv(id)) : DON_THUONG_R, m = mucGan(R);
   if (m) return side === "left" ? world.useLeft(m, m.x, m.y) : world.useRight(m, m.x, m.y);
-  if (k === "curse") { P.hud.msg("Không có mục tiêu gần"); return false; }
+  if (k === "curse") { P.hud.msg("Không có mục tiêu gần. Lại gần rồi hãy bấm."); return false; }
   const [x, y] = truocMat(R);
   return side === "left" ? world.useLeft(null, x, y) : world.useRight(null, x, y);
 }
@@ -3431,9 +3464,12 @@ function handUse(side) {
 const MUC_GAN = 150, DON_THUONG_R = 80;
 function mucGan(R) {
   const p = world.player, xa = (m) => ldist(p.x, p.y, m.x, m.y) - (m.radius || 0);
-  if (p.target && p.target.alive && world.mobs.includes(p.target) && xa(p.target) <= R + MUC_GAN) return p.target;
+  if (p.target && p.target.alive && (world.mobs.includes(p.target) || p.target.npc) && xa(p.target) <= R + MUC_GAN) return p.target;
   let best = null, bd = R + MUC_GAN;
   for (const m of world.mobs) { if (!m.alive) continue; const d = xa(m); if (d < bd) { bd = d; best = m; } }
+  // NPC nhân vật mẫu (may-chu/npc-choi.js): cũng là mục tiêu gần được — chỉ khi đang sống và trong tầm
+  const b = world._npcChoi;
+  if (b && b.alive) { const d = xa(b); if (d < bd) { bd = d; best = b; } }
   return best;
 }
 // chỗ trước mặt nhân vật cách R (hướng đang nhìn — src/dir.js: 0 xuống, 2 trái, 4 lên, 6 phải; trục dọc bản đồ = nửa trục màn hình như World)
@@ -3476,7 +3512,7 @@ addEventListener("pointerup", (e) => {
     const i = +slot.dataset.slot;
     if (d.from != null) { [L[i], L[d.from]] = [L[d.from], L[i]]; }
     else {
-      if (d.s && kindOf(P.skillDb[d.s], P.skillDb) === "passive") return P.hud.msg(`${what}: chiêu bị động — tự có tác dụng, không cần đặt vào ô`);
+      if (d.s && kindOf(P.skillDb[d.s], P.skillDb) === "passive") return P.hud.msg(`${what}: chiêu bị động — tự có tác dụng, khỏi đặt vào ô`);
       const was = L.findIndex((q) => q && (d.s ? q.s === d.s : q.k === d.k)); if (was >= 0) L[was] = null;
       L[i] = d.s ? { s: d.s } : { k: d.k };
       P.hud.msg(`Đặt ${what} vào ô ${i + 1} (phím ${d.s ? "QWEASDZXC"[i] : i + 1})`);
@@ -3504,7 +3540,7 @@ function quickClick(i, e) {
   }
   if (!it && !quick()[i]) return quickPick(i, e && e.target && e.target.closest(".jx-slot")); // ô trống: bảng chọn chiêu / thuốc
   if (!it) return quickUse(i);
-  if (!isPotion(it) && !laPhu(it.k) && !laDungNhanh(it.k)) return P.hud.msg("Ô phím tắt chỉ đặt được chiêu, thuốc, Thổ Địa Phù và vật phẩm dùng được (chuột phải = Dùng)");
+  if (!isPotion(it) && !laPhu(it.k) && !laDungNhanh(it.k)) return P.hud.msg("Ô phím tắt chỉ đặt được chiêu, thuốc, Thổ Địa Phù và vật phẩm dùng được (chuột phải = Dùng).");
   const L = quick(), was = L.findIndex((q) => q && q.k === it.k);
   if (was >= 0) L[was] = null;
   L[i] = { k: it.k };
@@ -3534,7 +3570,7 @@ function quickTip(i, e) {
   const n = potCount(q.k), pct = quickPct(i);
   if (x.phu) return GW._showTip({ k: q.k, n }, e, [`Còn ${n} tấm`, `Phím ${i + 1} / bấm: dùng (về thành) · chuột phải: gỡ khỏi ô · kéo: đổi ô`]);
   if (laDungNhanh(q.k)) return GW._showTip({ k: q.k, n }, e, [`Còn ${n}`, `Phím ${i + 1} / bấm: dùng · chuột phải: gỡ khỏi ô · kéo: đổi ô`]);
-  GW._showTip({ k: q.k, n }, e, GW._potHint(x, n, [`Phím ${i + 1} / bấm: uống · chuột phải: gỡ khỏi ô · kéo: đổi ô`, world && laLd(world.zone) ? "Trong sân Công Bình Tử không dùng được thuốc" : `Tự uống: ${pct ? `khi dưới ${pct}%` : "tắt"} (Trợ Thủ → Thuốc)`]));
+  GW._showTip({ k: q.k, n }, e, GW._potHint(x, n, [`Phím ${i + 1} / bấm: uống · chuột phải: gỡ khỏi ô · kéo: đổi ô`, world && laLd(world.zone) ? "Trong sân Công Bình Tử cấm dùng thuốc" : `Tự uống: ${pct ? `khi dưới ${pct}%` : "tắt"} (Trợ Thủ → Thuốc)`]));
 }
 function quickHud() {
   P.hud.setQuick(quick().map((q, i) => {
@@ -3598,7 +3634,7 @@ function veThanh(why, tz) {
   const town = (tz && P.maps.zones.find((z) => z.id === tz)) || shopTown(); if (!town || thanh || zoneLoad) return false;
   if (camPhu()) { if (world && !world._phuBao) { world._phuBao = true; P.hud.msg(`Trợ Thủ: ${why} nhưng ở đây không dùng được Thổ Địa Phù (Phong Lăng Độ — về bờ Nam bằng Thuyền phu)`); } return false; }
   const b = phuTrongTui();
-  if (!b) { if (!treoNghi.phu) P.hud.msg(`Trợ Thủ: ${why} nhưng hết Thổ Địa Phù — không về thành được (Tạp hóa Ba Lăng bán)`); treoNghi.phu = true; return false; }
+  if (!b) { if (!treoNghi.phu) P.hud.msg(`Trợ Thủ: ${why} nhưng hết Thổ Địa Phù — không về thành được (Tạp hóa Ba Lăng bán, đi mua đi)`); treoNghi.phu = true; return false; }
   thanh = { buoc: "di", t0: performance.now(), why };
   P.hud.msg(`Trợ Thủ: ${why} — dùng Thổ Địa Phù về ${town.n}`);
   dungPhu(b, { rest: true, thanh: town }).then((ok) => { if (!ok) thanh = null; });
@@ -3609,8 +3645,8 @@ const phuTrongTui = () => (hero.bag || []).find((b) => b.n > 0 && isPhu(b)) || n
 // khác — tự làm nhiệm vụ), nhớ chỗ dùng: Xa phu "Trở lại địa điểm cũ" đưa về đúng chỗ đó (client ReturnFromPortal). Máy chủ trừ 1 tấm (act "phu")
 function dungPhu(b, opt = {}) {
   if (!world || !b || zoneLoad) return Promise.resolve(false);
-  if (camPhu()) { P.hud.canh("Không thể sử dụng Thổ Địa Phù ở đây"); return Promise.resolve(false); } // thuyền / bờ Bắc Phong Lăng Độ (client G_ItemList_0)
-  if (!FARM_KINDS.has(world.zone.kind)) { P.hud.msg("Đang ở thành — Thổ Địa Phù dùng ở bãi luyện công"); return Promise.resolve(false); }
+  if (camPhu()) { P.hud.canh("Ở đây không dùng được Thổ Địa Phù."); return Promise.resolve(false); } // thuyền / bờ Bắc Phong Lăng Độ (client G_ItemList_0)
+  if (!FARM_KINDS.has(world.zone.kind)) { P.hud.msg("Đang ở thành rồi — Thổ Địa Phù dùng ở bãi luyện công cơ."); return Promise.resolve(false); }
   const { thanh: tz, ...o } = opt, town = tz || shopTown() || townZone(), p = world.player, cu = { z: world.zone.id, x: Math.round(p.x), y: Math.round(p.y), ...(world.chung ? { c: 1 } : {}) };
   if (!town) return Promise.resolve(false);
   return doItem({ act: "phu", u: b.u }).then((ok) => {
@@ -3626,7 +3662,7 @@ function dungPhu(b, opt = {}) {
 // client: thành có đường xe từ thành này (settings\stationprice.txt: Ba Lăng chỉ nối Tương Dương, Giang Tân Thôn, Nam Nhạc trấn); game (anh
 // 02/11 — Biện Kinh dựng nguyên): mọi thôn / thành đã có bản đồ, trừ chỗ đang đứng, miễn phí như Những nơi đã đi qua; chưa có thì câu "chưa đi
 // đâu cả" của client. "Trở lại địa điểm cũ" (TownPortalFun) — chỗ đã dùng Thổ Địa Phù, miễn phí như script
-const XE_KHONG = "Xin lỗi!  Ta chỉ có thể đưa ngươi đến những nơi đã đi qua nhưng ngươi chưa đi đâu cả! ";
+const XE_KHONG = "Ta chỉ đưa ngươi tới những nơi đã đi qua — mà ngươi chưa đi đâu cả! Đi bộ đi.";
 // Boss Sát thủ đang nhận (hero.satThu — may-chu/sat-thu.js tomTat): { b (assets/data/sat-thu.json), z (bãi) } | null
 const satNv = () => { const S = hero && hero.satThu, b = S && S.nv && P.satThu ? P.satThu.boss[S.nv] : null, z = b && P.maps.zones.find((x) => x.id === b.bai); return z ? { b, z } : null; };
 // Xa phu "Đưa ta đến bản đồ nhiệm vụ sát thủ" (anh 03/11 "khi nhận nv sát thủ xong, ở xa phu thêm 1 nút là đưa ta đến bản đồ làm nv sát thủ"):
@@ -3644,15 +3680,15 @@ function xaPhuFn(id) {
   // Khu vực bang hội (đợt 4 — Xa phu các thành, chỉ thành viên): máy chủ xét (khu của bang, chỗ đang đứng) rồi trả di; không được thì câu máy chủ trong khung Xa phu
   if (id === "KhuBangHoi") return khuLam({ viec: "vao" }, true).then((j) => {
     if (!j || j.boQua || j.ma === "het-phien") return { close: true };
-    if (j.loi) return { text: j.loi, opts: [["Đâu cũng không muốn đi!", null]] };
+    if (j.loi) return { text: j.loi, opts: [["Đâu cũng không đi!", null]] };
     for (const t of j.tin || []) P.hud.msg(t);
     if (j.di) diPld(j.di);
     return { close: true };
   });
-  if (id === "TkBaoDanh") return { text: "Xin lựa chọn: ", opts: [["Vào điểm báo danh phe Vàng (T)", "TkBd0"], ["Vào điểm báo danh phe Tím (K)", "TkBd1"], ["Không đi đâu cả ", null]] };
+  if (id === "TkBaoDanh") return { text: "Chọn đi: ", opts: [["Vào điểm báo danh phe Vàng (T)", "TkBd0"], ["Vào điểm báo danh phe Tím (K)", "TkBd1"], ["Không đi đâu cả ", null]] };
   if (id === "TkBd0" || id === "TkBd1") {
     const z = P.maps.zones.find((x) => x.id === TK_BD.z);
-    if (!z) return { text: "Trình duyệt chưa có bản đồ Điểm báo danh — tải lại trang (F5) rồi nói chuyện lại.", opts: [] };
+    if (!z) return { text: "Bản đồ Điểm báo danh trình duyệt chưa có — tải lại trang (F5) rồi nói chuyện lại.", opts: [] };
     if (zoneLoad) return { close: true };
     P.hud.msg(`Ngồi yên chưa? Chúng ta đi ${z.n}`);
     gotoZone(z, { at: TK_BD.at[id === "TkBd1" ? 1 : 0] }).catch(fail);
@@ -3660,7 +3696,7 @@ function xaPhuFn(id) {
   }
   if (id === "BanDoSatThu") {
     const v = satNv();
-    if (!v) return { text: "Ngươi chưa nhận nhiệm vụ sát thủ — hãy gặp Nhiếp Thí Trần ở Ba Lăng huyện.", opts: [] };
+    if (!v) return { text: "Ngươi chưa nhận nhiệm vụ sát thủ — tới gặp Nhiếp Thí Trần ở Ba Lăng huyện đi.", opts: [] };
     if (!moBai(v.z)) return { text: chuaMo(v.z), opts: [] };
     xeSat(v);
     return { close: true };
@@ -3669,7 +3705,7 @@ function xaPhuFn(id) {
   if (id === "WayPointFun") {
     const zs = P.maps.zones.filter((z) => FARM_KINDS.has(z.kind) && !z.chiThuyen && moBai(z)).sort((a, b) => b.lo - a.lo || (a.kind === "chính" ? -1 : 1));
     if (!zs.length) return { text: XE_KHONG, opts: [] };
-    return { text: "Xin lựa chọn: ", opts: [...zs.map((z) => [`${z.n} (cấp ${z.lo}–${z.hi})`, xeChon(z)]), ["Không đi đâu cả ", null]] };
+    return { text: "Chọn đi: ", opts: [...zs.map((z) => [`${z.n} (cấp ${z.lo}–${z.hi})`, xeChon(z)]), ["Không đi đâu cả ", null]] };
   }
   // bãi có 2 bản (anh 03/11 — luat().quaiChung.bai): quái riêng như mọi bãi / quái chung cùng người khác, thêm % kinh nghiệm + ngân lượng
   if (/^BanBai:\d+$/.test(id)) {
@@ -3690,17 +3726,17 @@ function xaPhuFn(id) {
       return { text: "Khu vực luyện công — xin chọn cấp: ", opts: [...[...nhom].reverse().map(([lo, g]) => [`Cấp ${lo} – ${Math.max(...g.map((z) => z.hi))} (${g.length} bãi)`, "KhuLuyenCong:" + lo]), ["Không đi đâu cả ", null]] };
     }
     const g = nhom.get(+id.split(":")[1]) || [];
-    return { text: "Xin lựa chọn: ", opts: [...g.map((z) => [`${z.n} (cấp ${z.lo}–${z.hi})`, xeChon(z)]), ["Chọn cấp khác", "KhuLuyenCong"], ["Không đi đâu cả ", null]] };
+    return { text: "Chọn đi: ", opts: [...g.map((z) => [`${z.n} (cấp ${z.lo}–${z.hi})`, xeChon(z)]), ["Chọn cấp khác", "KhuLuyenCong"], ["Không đi đâu cả ", null]] };
   }
   if (id === "StationFun") {
     const zs = P.maps.zones.filter((z) => TOWN_KINDS.has(z.kind) && !z.tkBd && !z.bang && (!world || z.id !== world.zone.id)); // tkBd: Điểm báo danh Tống Kim chọn phe riêng (TkBaoDanh); bang: khu vực bang (đợt 4 — KhuBangHoi)
     if (!zs.length) return { text: XE_KHONG, opts: [] };
-    return { text: "Xin lựa chọn: ", opts: [...zs.map((z) => [z.n, () => xeThanh(z)]), ["Không đi đâu cả ", null]] };
+    return { text: "Chọn đi: ", opts: [...zs.map((z) => [z.n, () => xeThanh(z)]), ["Không đi đâu cả ", null]] };
   }
   if (id === "GotoClearSkillMap") { tayTuy({ viec: "xaPhu" }); return { close: true }; } // đảo Tẩy Tủy (may-chu/tay-tuy.js)
   if (id === "TownPortalFun") {
     const d = hero.diemCu, z = d && P.maps.zones.find((x) => x.id === d.z);
-    if (!z) return { text: "Ngươi chưa dùng Thổ Địa Phù — không có địa điểm cũ để trở lại.", opts: [] };
+    if (!z) return { text: "Ngươi chưa dùng Thổ Địa Phù — không có địa điểm cũ để trở lại đâu.", opts: [] };
     xeToi(z, [d.x, d.y], !!d.c); // c: dùng phù ở bản quái chung
     return { close: true };
   }
@@ -3720,9 +3756,9 @@ function chucNangFn(id, npc) {
   if (/^MoPassRuong(:|$)/.test(id)) return moPassRuong(id); // Lễ quan: xóa mật mã rương (anh 29/10 lần 3)
   if (id === "buy_addibox") {
     const gia = (L.ruong || {}).moRong || [], n = hero.ruongMo | 0;
-    if (n >= gia.length) return { text: `Thẩm Cửu: Ngươi đã có đủ ${gia.length} rương mở rộng rồi, ta không còn chiếc nào nữa.`, opts: [["Đa tạ", null]] };
-    return { text: `Thẩm Cửu: Đây là chiếc rương được làm từ đá san hô xanh, có thể cho ngươi bỏ thêm vật phẩm, còn có thể khóa lại một cách an toàn.<enter>Rương mở rộng thứ <color=yellow>${n + 1}<color>: <color=yellow>${gia[n]} Xu<color> (trên người có ${hero.xu | 0} Xu).`,
-      opts: [[`Dùng ${gia[n]} Xu để mua.`, () => doItem({ act: "moRuong" })], ["Đắt quá! Lần sau sẽ mua! ", null]] };
+    if (n >= gia.length) return { text: `Thẩm Cửu: Ngươi đã có đủ ${gia.length} rương mở rộng rồi, ta không còn chiếc nào nữa đâu.`, opts: [["Đa tạ", null]] };
+    return { text: `Thẩm Cửu: Đây là chiếc rương làm từ đá san hô xanh, bỏ thêm được vật phẩm, khóa lại được an toàn.<enter>Rương mở rộng thứ <color=yellow>${n + 1}<color>: <color=yellow>${gia[n]} Xu<color> (trên người có ${hero.xu | 0} Xu).`,
+      opts: [[`Dùng ${gia[n]} Xu để mua.`, () => doItem({ act: "moRuong" })], ["Đắt quá! Lần sau mua!", null]] };
   }
   if (id === "box_help") {
     const gia = (L.ruong || {}).moRong || [];
@@ -3734,14 +3770,14 @@ function chucNangFn(id, npc) {
     // cách bày bán: từng trang ngắn trong khung lời NPC (anh 02/11 — bản đầu dồn cả đoạn vào khung báo nên tràn chữ); không viết hoa chữ có dấu (phông
     // khung lời của client thiếu chữ hoa có dấu — "RAO BÁN" hiện "RAO BeN")
     const huongDan = [
-      "Bày bán: mở <color=yellow>Hành trang<color>, bấm <color=yellow>Định giá<color> rồi bấm món muốn bán, nhập giá niêm yết. Món sẽ lên sạp.",
-      "Bấm <color=yellow>Lời rao<color> để viết chữ trên bảng hiệu (1 – 16 chữ).",
-      `Đứng trong thôn hoặc thành (khu vực an toàn), bấm ô <color=yellow>Rao bán<color>: nhân vật ngồi xuống bày bán. Từ cấp <color=yellow>${cap}<color> mới được bày bán.`,
-      "Đi luyện công hay thoát game, sạp vẫn mở — một người bán hàng đứng trông sạp thay. Bán được thì tiền vào thẳng hành trang, có dòng báo.",
+      "Bày bán: mở <color=yellow>Hành trang<color>, bấm <color=yellow>Định giá<color> rồi bấm món muốn bán, nhập giá niêm yết. Món lên sạp ngay.",
+      "Bấm <color=yellow>Lời rao<color> mà viết chữ lên bảng hiệu (1 – 16 chữ).",
+      `Đứng trong thôn hoặc thành (khu vực an toàn), bấm ô <color=yellow>Rao bán<color>: nhân vật ngồi xuống bày bán. Từ cấp <color=yellow>${cap}<color> mới được bày bán — chưa đủ cấp thì đừng mơ.`,
+      "Đi luyện công hay thoát game, sạp vẫn mở — có người bán hàng đứng trông sạp thay. Bán được thì tiền vào thẳng hành trang, có dòng báo.",
       `Thuế <color=yellow>${thue}%<color> chia 2 bên: người mua trả giá niêm yết cộng <color=yellow>${tMua}%<color>${tBan ? `, người bán nhận giá niêm yết trừ <color=yellow>${tBan}%<color>` : ""}. Xem hàng: bấm vào người đang bày bán, hoặc mở bảng Chợ Trời bằng nút hộp vàng ở thanh dưới (điện thoại: bảng Giang hồ).`,
-      "Trên sạp của mình: bấm món để định giá lại, chuột phải để không bán nữa (món về hành trang).",
+      "Trên sạp của mình: bấm món để định giá lại, chuột phải để thôi bán (món về hành trang).",
     ];
-    return { text: `Hàng của các sạp trong thôn, trong thành ta đều ghi vào sổ — cần món gì cứ xem, mua ngay tại đây cũng được. Quan phủ thu thuế <color=yellow>${thue}%<color> trên mỗi món bán được.`,
+    return { text: `Hàng của các sạp trong thôn, trong thành ta đều ghi vào sổ — cần món gì cứ xem, mua ngay tại đây cũng được. Quan phủ thu thuế <color=yellow>${thue}%<color> trên mỗi món bán được, đừng có kêu.`,
       opts: [["Xem Chợ Trời", () => GW.cho.moBang()], ["Cách bày bán", () => NPCD.talk(huongDan.map((t) => richText(t, hero.name)), 0, null)], ["Không có gì", null]] };
   }
   if (id === "tienTrang") {
@@ -3815,7 +3851,8 @@ function treoTick() {
   if (treoNghi.phu && phuTrongTui()) treoNghi.phu = false;
   if (FARM_KINDS.has(w.zone.kind) && !thanh) {
     if (T.boss && w.bossGan(false)) return; // anh 31/10: đang đánh boss thế giới (đứng gần nó) — không tự về thành, vẫn tự uống thuốc
-    if (A.veThanh.on && p.hp * 100 < p.hpMax * A.veThanh.pct) return veThanh("sinh lực thấp");
+    const ve = T.veOn !== 0; // công tắc "Tự về thành" của bảng Auto nhanh (treo.veOn, mặc định bật): tắt thì không tự về vì bất cứ lý do nào dưới đây
+    if (ve && A.veThanh.on && p.hp * 100 < p.hpMax * A.veThanh.pct) return veThanh("sinh lực thấp");
     // kieu (thẻ Nhặt đồ — anh 08/11): Nhặt rác / Train lọc đồ luôn về khi đầy túi; Train lọc đồ "cắm map là chính" — chỉ về khi đầy túi, hết thuốc sinh lực, sinh lực thấp
     const conCho = conChoMon(T), kieu = A.nhat.kieu, camMap = kieu === "train", pots = hpPotions(), mpots = mpPotions();
     if (treoNghi.tui && conCho) treoNghi.tui = false;
@@ -3824,10 +3861,10 @@ function treoTick() {
     if (treoNghi.sua && !doSap(T.sua.pct)) treoNghi.sua = false;
     // Kim Tê trong túi (anh 31/10 "có kim tê trong túi thì không cần tới thợ rèn sửa"): sửa tại chỗ, không về thành (mỗi 10 giây thử 1 lần)
     if (T.sua.on && doSap(T.sua.pct)) { const kt = kimTeTui(); if (kt) { if (performance.now() - kimTeLuc > 10000) { kimTeLuc = performance.now(); dungVat(kt); } return; } }
-    if (!camMap && T.sua.on && !treoNghi.sua && doSap(T.sua.pct)) return veThanh("trang bị sắp hỏng");
-    if ((T.tuiOn || kieu !== "tu") && !treoNghi.tui && !conCho) return veThanh("hành trang sắp đầy");
-    if (T.thuocOn && !treoNghi.thuoc && pots <= T.thuoc && T.mua.some((m) => m.on)) return veThanh("sắp hết thuốc");
-    if (!camMap && T.nlOn && !treoNghi.nl && mpots <= T.nl && T.mua.some((m) => m.on)) return veThanh("sắp hết thuốc nội lực");
+    if (ve && !camMap && T.sua.on && !treoNghi.sua && doSap(T.sua.pct)) return veThanh("trang bị sắp hỏng");
+    if (ve && (T.tuiOn || kieu !== "tu") && !treoNghi.tui && !conCho) return veThanh("hành trang sắp đầy");
+    if (ve && T.thuocOn && !treoNghi.thuoc && pots <= T.thuoc && T.mua.some((m) => m.on)) return veThanh("sắp hết thuốc");
+    if (ve && !camMap && T.nlOn && !treoNghi.nl && mpots <= T.nl && T.mua.some((m) => m.on)) return veThanh("sắp hết thuốc nội lực");
     return;
   }
   if (!thanh || !TOWN_KINDS.has(w.zone.kind)) return;
@@ -3874,7 +3911,7 @@ function veBai(w = world, treo = true, dau = "Đã hồi phục") {
   if (back && !moBai(back)) { P.hud.msg(`${dau} — ${chuaMo(back)}`); oLai(); }
   // anh 31/10 khuya ("lên map mà không mang theo thổ địa phù"): bật mua Thổ Địa Phù mà trong túi vẫn không có (túi đầy / thiếu tiền) thì ở
   // lại thành — ra bãi rồi không tự về thành được
-  else if (back && world.auto && T.phu && T.phu.on && !phuTrongTui()) { P.hud.canh(`Trợ Thủ: không mua được Thổ Địa Phù (túi đầy hoặc thiếu tiền) — ở lại ${world.zone.n}, chưa ra ${tenB}`); oLai(); }
+  else if (back && world.auto && T.phu && T.phu.on && !phuTrongTui()) { P.hud.canh(`Trợ Thủ: không mua được Thổ Địa Phù (túi đầy hoặc thiếu tiền) — ở lại ${world.zone.n}, chưa ra ${tenB} được.`); oLai(); }
   else if (back && world.auto) { P.hud.msg(`${dau} — đi Xa phu về ${tenB}`); diXe = { z: back.id, t0: 0, c: bc }; }
   else { P.hud.msg(`${dau}${back ? ` — nói chuyện với Xa phu để về ${tenB}` : ""}`); oLai(); }
 }
@@ -3947,7 +3984,7 @@ function bossTick() {
   if (b && w.bossGan(false)) bossTheo = b.u;
   if (!b) { // boss chết / hết giờ: Trợ Thủ đã đưa đi -> việc ở thành rồi về bãi treo máy
     bossTheo = 0; bossDi = null;
-    if (bossVe && B.veBai && TOWN_KINDS.has(w.zone.kind) && !thanh && !diXe && !zoneLoad) { bossVe = 0; P.hud.msg("Trợ Thủ: boss thế giới đã hết — bán / mua rồi về bãi treo máy"); thanh = { buoc: "di", t0: performance.now(), why: "boss thế giới đã hết" }; }
+    if (bossVe && B.veBai && TOWN_KINDS.has(w.zone.kind) && !thanh && !diXe && !zoneLoad) { bossVe = 0; P.hud.msg("Trợ Thủ: boss thế giới hết rồi — bán / mua rồi về bãi treo máy."); thanh = { buoc: "di", t0: performance.now(), why: "boss thế giới đã hết" }; }
     else if (bossVe && !TOWN_KINDS.has(w.zone.kind)) bossVe = 0;
     return;
   }
@@ -3982,8 +4019,8 @@ function bossTick() {
 }
 // nút "Bắt đầu treo máy": bật tự đánh, tới bãi treo máy
 function treoStart() {
-  if (world && laDn(world.zone)) return P.hud.canh("Đường đua: Trợ Thủ không hoạt động — tự chạy bằng chuột / bản đồ nhỏ"); // đua ngựa (anh 16/11)
-  if (world && laLd(world.zone)) return P.hud.canh("Lôi đài: Trợ Thủ không hoạt động trong sân — đánh tay"); // anh 15/11 D9: không bật tự đánh, không dùng phù / đi Xa phu từ sân
+  if (world && laDn(world.zone)) return P.hud.canh("Đường đua: Trợ Thủ không hoạt động — tự chạy bằng chuột / bản đồ nhỏ."); // đua ngựa (anh 16/11)
+  if (world && laLd(world.zone)) return P.hud.canh("Lôi đài: Trợ Thủ không hoạt động trong sân — đánh tay đi."); // anh 15/11 D9: không bật tự đánh, không dùng phù / đi Xa phu từ sân
   const T = hero.auto.treo, z = P.maps.zones.find((x) => x.id === T.bai), tc = !!z && laQc(z) && !!T.chung; // tc: treo ở bản quái chung (anh 03/11)
   if (z && !moBai(z)) return P.hud.msg("Trợ Thủ: " + chuaMo(z));
   if (!world.auto) toggleAuto(true);
@@ -3995,7 +4032,7 @@ function treoStart() {
   // sửa, mua thuốc + Thổ Địa Phù, cất tiền / đồ — dưỡng sức xong mới đi Xa phu (onRested)
   if (TOWN_KINDS.has(world.zone.kind)) { thanh = { buoc: "di", t0: performance.now(), why: "chuẩn bị treo máy" }; return P.hud.msg(`Trợ Thủ: bán / mua ở ${world.zone.n} rồi đi Xa phu tới ${ten}`); }
   const b = phuTrongTui();
-  if (!b) return P.hud.msg("Trợ Thủ: hết Thổ Địa Phù — không về thành đổi bãi được (Tạp hóa Ba Lăng bán)");
+  if (!b) return P.hud.msg("Trợ Thủ: hết Thổ Địa Phù — không về thành đổi bãi được (Tạp hóa Ba Lăng bán, đi mua đi).");
   thanh = { buoc: "di", t0: performance.now(), why: "đổi bãi treo máy" }; // về thành cũng bán / mua lại phù như trên rồi mới đi Xa phu
   dungPhu(b).then((ok) => { if (!ok) thanh = null; else P.hud.msg(`Trợ Thủ: về thành bán / mua rồi đi Xa phu tới ${ten}`); });
 }
@@ -4015,12 +4052,12 @@ addEventListener("pagehide", () => { if (world && hero) { save(); Net.leave(hero
 // Lên / xuống ngựa (nút bật / tắt của client): chỉ khi đang mặc ngựa. Cách lần đổi trước ít nhất 3 giây (World.doiNgua — anh 28/10): chưa đủ
 // thì báo câu client MSG_CANT_SWITCH_HORSE, chữ đỏ ở ô tin dưới khung chat như client
 function toggleHorse(on) {
-  if (!(hero.looks && hero.looks.horse)) { P.hud.setToggle("Horse", false); return P.hud.msg("Chưa có ngựa — mặc ngựa ở trang Trang bị"); }
+  if (!(hero.looks && hero.looks.horse)) { P.hud.setToggle("Horse", false); return P.hud.msg("Chưa có ngựa — mặc ngựa ở trang Trang bị đi."); }
   // như client: đang ngồi thì không lên ngựa được (stringtable_core MSG_CANT_SWITCH_HORSE_WHEN_SIT)
-  if (on && world.player.sit) { P.hud.setToggle("Horse", false); return P.hud.canh("Bạn ngồi xuống rồi, không thể lên ngựa."); }
+  if (on && world.player.sit) { P.hud.setToggle("Horse", false); return P.hud.canh("Ngươi ngồi xuống rồi, không lên ngựa được đâu. Đứng dậy đi."); }
   // đường đua (anh 16/11 — thiết kế: tốc cố định, không lên / xuống ngựa): giữ nguyên như lúc vào
-  if (laDn(world.zone)) { P.hud.setToggle("Horse", world.riding()); return P.hud.canh("Đường đua: không lên / xuống ngựa được — mọi người cùng một tốc độ"); }
-  if (!world.doiNgua(on)) { P.hud.setToggle("Horse", world.riding()); return P.hud.canh("Bạn quá mệt rồi không thể tiếp tục lên hoặc xuống ngựa."); }
+  if (laDn(world.zone)) { P.hud.setToggle("Horse", world.riding()); return P.hud.canh("Đường đua: không lên / xuống ngựa được — mọi người cùng một tốc độ."); }
+  if (!world.doiNgua(on)) { P.hud.setToggle("Horse", world.riding()); return P.hud.canh("Ngươi mệt quá rồi, không lên hay xuống ngựa được nữa đâu."); }
   save();
   P.hud.msg(on ? "Lên ngựa" : "Xuống ngựa");
 }
@@ -4048,8 +4085,8 @@ function nguaBoss() {
 }
 // ---------- Trợ Thủ tự dùng (thẻ Thuốc — anh 28/10 lần 4 "tự dùng tiên thảo lộ, bách quả lộ, thiên sơn bảo lộ" + "tự mở lễ bao hồi thiên tái tạo đơn") ----------
 // Đang tự đánh: trạng thái của món hết (hero.buff — máy chủ đếm) mà trong túi còn thì dùng 1 bình; hết Hồi Thiên Tái Tạo Đơn mà có Hồi thiên
-// tái tạo lễ bao thì rút dung.leBao.n viên (máy chủ do.js dungVat leBao — mang tối đa 60 bình thuốc). Mỗi lần 1 món; máy chủ không cho (đã có
-// hiệu quả, đủ 60 bình…) thì món đó 5 phút sau mới thử lại
+// tái tạo lễ bao thì rút dung.leBao.n viên (máy chủ do.js dungVat leBao — mỗi loại thuốc mang tối đa chongMax của nó). Mỗi lần 1 món; máy chủ không cho (đã có
+// hiệu quả, đủ giới hạn loại đó…) thì món đó 5 phút sau mới thử lại
 const HTD = "potion:44", LE_BAO_HTD = "ms:2527";
 const tuDungLuc = new Map();
 let tuDungDang = false;
@@ -4098,7 +4135,7 @@ function doiApply(d) {
       // Trợ Thủ "Tự vào đội" chỉ lúc đang tự đánh (anh 31/10 lần 3: "người khác pt cái là vào luôn mà không có thông báo hay hộp thoại hay icon — làm
       // theo client, để người chơi bấm vào hoặc có hội thoại để họ chọn"); tự chơi: luôn hỏi
       if (D.tuVao && !D.truong && world && world.auto && !(world.pk && world.pk()) && (!doiTt || doiTt.tv.length < 2)) { moiTuVao.add(m.id); doiLam({ viec: "nhan", id: m.id }); continue; } // thẻ PK (trận Tống Kim): không tự vào đội (anh 06/11)
-      if (document.body.classList.contains("dt") && !(doiTt && doiTt.tv.length > 1)) P.hud.msg(`${m.tu} mời bạn gia nhập nhóm của họ`); // điện thoại: không có ô tin hệ thống; đang ở đội: chỉ biểu tượng
+      if (document.body.classList.contains("dt") && !(doiTt && doiTt.tv.length > 1)) P.hud.msg(`${m.tu} mời ngươi gia nhập nhóm của họ`); // điện thoại: không có ô tin hệ thống; đang ở đội: chỉ biểu tượng
     }
     if (!moiTuVao.has(m.id)) cho.push(m);
   }
@@ -4115,7 +4152,7 @@ function veMoi() { if (hero) P.hud.moiDoi([...moiDoiCho, ...moiBhCho], !!(doiTt 
 // hết điều kiện đội mới trước, không đủ thì giữ đội cũ — to-doi.js nhan). Lời mời đã trả lời / hết hạn -> không gửi lại
 function moiTraLoi(m, v) { P.audio.ui("click"); if (m && v) moiGui(m, v); }
 function moiGui(m, v) {
-  if (!P.hud.moiCon(m.id)) { if (v !== "an") P.hud.msg("Lời mời đã hết hạn"); return; }
+  if (!P.hud.moiCon(m.id)) { if (v !== "an") P.hud.msg("Lời mời hết hạn rồi. Mời lại đi."); return; }
   P.hud.boMoi(m.id);
   if (v === "an") return;
   // lời mời vào bang (anh 14/11): trả lời bằng viec nhanMoi — giữ mục trong moiBhCho tới khi nhịp báo hết (đã bỏ ở máy này — boMoi), không thì nhịp tới trước khi máy chủ xử lý
@@ -4127,8 +4164,8 @@ function moiGui(m, v) {
 function doiLam(b, im) {
   if (!hero) return Promise.resolve(null);
   // lôi đài (anh 15/11): trong sân không lập / mời / vào / mở tổ đội (máy chủ cũng chặn — to-doi.js); rời đội, từ chối lời mời vẫn được
-  if (world && laLd(world.zone) && b && ["lap", "moi", "nhan", "mo"].includes(b.viec)) { if (!im) P.hud.canh("Trong lôi đài không được lập / vào tổ đội"); return Promise.resolve(null); }
-  if (world && laDn(world.zone) && b && ["lap", "moi", "nhan", "mo"].includes(b.viec)) { if (!im) P.hud.canh("Trên đường đua không được lập / vào tổ đội"); return Promise.resolve(null); } // đua ngựa (anh 16/11 — client SetCreateTeam(0))
+  if (world && laLd(world.zone) && b && ["lap", "moi", "nhan", "mo"].includes(b.viec)) { if (!im) P.hud.canh("Trong lôi đài cấm lập / vào tổ đội."); return Promise.resolve(null); }
+  if (world && laDn(world.zone) && b && ["lap", "moi", "nhan", "mo"].includes(b.viec)) { if (!im) P.hud.canh("Trên đường đua cấm lập / vào tổ đội."); return Promise.resolve(null); } // đua ngựa (anh 16/11 — client SetCreateTeam(0))
   return Net.doi(hero.slot | 0, b).then((j) => { doiApply(j.doi); if (j.msg && !im) P.hud.msg(j.msg); return j; })
     .catch((e) => { if (e.ma !== "het-phien" && !im) P.hud.msg(e.message); return null; });
 }
@@ -4149,14 +4186,14 @@ function gdApply(g) {
     if (gdDaHoi.has(x.id) || !GW) continue;
     gdDaHoi.add(x.id);
     if (world && laLd(world.zone)) { gdLam({ viec: "tuChoi", id: x.id }); continue; } // lôi đài (anh 15/11): không giao dịch trong sân — lời xin tự từ chối, không hỏi
-    GW.hoi(`<color=yellow>${x.tu}<color> hy vọng cùng với bạn giao dịch`, "Đồng ý", "Từ chối").then((ok) => gdLam({ viec: ok ? "nhan" : "tuChoi", id: x.id }));
+    GW.hoi(`<color=yellow>${x.tu}<color> muốn giao dịch với ngươi`, "Đồng ý", "Từ chối").then((ok) => gdLam({ viec: ok ? "nhan" : "tuChoi", id: x.id }));
   }
   if (GW) GW.giaoDichVe(g && g.p);
 }
 function gdLam(b) {
   if (!hero) return Promise.resolve(null);
   // lôi đài (anh 15/11): trong sân không mở giao dịch / xin / nhận (máy chủ cũng chặn — giao-dich.js); đóng giao dịch, từ chối vẫn được
-  if (world && laLd(world.zone) && b && (b.viec === "xin" || b.viec === "nhan" || (b.viec === "mo" && b.on))) { P.hud.canh("Trong lôi đài không được giao dịch"); if (b.viec === "mo") P.hud.setToggle("Exchange", false); return Promise.resolve(null); }
+  if (world && laLd(world.zone) && b && (b.viec === "xin" || b.viec === "nhan" || (b.viec === "mo" && b.on))) { P.hud.canh("Trong lôi đài cấm giao dịch."); if (b.viec === "mo") P.hud.setToggle("Exchange", false); return Promise.resolve(null); }
   return Net.giaoDich(hero.slot | 0, b).then((j) => { if (j.tui || j.nv) applyServer(j); gdApply(j.gd); if (j.msg) P.hud.msg(j.msg); return j; })
     .catch((e) => { if (e.ma !== "het-phien" && !e.boQua) P.hud.msg(e.message); return null; });
 }
@@ -4272,7 +4309,7 @@ function menuBot(o, v) {
   if (v === "xem") return GW && GW.soiDo({ name: o.name, lvl: o.lvl | 0 || H.lvl || 1, sex: H.sex === "f" ? "f" : "m", series: H.series | 0, fac: H.fac ?? null, start: H.start || {}, attr: H.attr || {},
     equip: Object.fromEntries(Object.entries(H.equip || {}).filter(([, it]) => it && it.k).map(([s, it]) => [s, { ...it }])) });
   if (v === "gd") return P.hud.msg(`${o.name} chưa mở giao dịch.`);
-  if (v === "doi") { P.hud.msg(`Đã gửi lời mời tới ${o.name}`); setTimeout(() => P.hud.msg(`${o.name} cự tuyệt lời mời của nhóm Bạn!`), 1500 + Math.random() * 2500); }
+  if (v === "doi") { P.hud.msg(`Đã gửi lời mời tới ${o.name}`); setTimeout(() => P.hud.msg(`${o.name} từ chối lời mời vào nhóm!`), 1500 + Math.random() * 2500); }
   if (v === "bang") bhLam({ viec: "moi", ten: o.name, bot: 1 }); // máy chủ trả lời y hệt người thật cự tuyệt — cùng câu, kênh, màu, độ trễ (soát 14/11: câu tự làm ở đây khác màu / dấu, lộ bot)
 }
 // ---------- Bang hội đợt 1 (anh 14/11 — THIET-KE-BANG-HOI.md; máy chủ may-chu/bang-hoi.js POST /api/bang-hoi, khung windows.js _faction) ----------
@@ -4287,7 +4324,7 @@ const BH_TAI_MS = 20000, BH_CV_TEN = { chu: "Bang chủ", lao: "Trưởng Lão",
 function bhLam(b, o = {}) {
   if (!hero) return Promise.resolve(null);
   return Net.bangHoi(hero.slot | 0, b).then((j) => { bhNhan(j); return j; })
-    .catch((e) => { if (e.ma !== "het-phien" && !e.boQua && !o.im) P.hud.msg(e.message); return { loi: e.message || "Không làm được", ma: e.ma, boQua: !!e.boQua }; });
+    .catch((e) => { if (e.ma !== "het-phien" && !e.boQua && !o.im) P.hud.msg(e.message); return { loi: e.message || "Không làm được đâu.", ma: e.ma, boQua: !!e.boQua }; });
 }
 function bhNhan(j) {
   if (!j) return;
@@ -4339,7 +4376,7 @@ function bhMoiApply(m) {
   const k = m.id + "|" + (m.nguoi || "");
   if (k !== bhMoiKhoa) {
     bhMoiKhoa = k; bhMoiSo = -(Math.abs(bhMoiSo) + 1);
-    if (document.body.classList.contains("dt")) P.hud.msg(`${m.nguoi || "?"} mời bạn gia nhập bang hội ${m.ten || ""}`); // điện thoại: không có ô tin hệ thống
+    if (document.body.classList.contains("dt")) P.hud.msg(`${m.nguoi || "?"} mời ngươi gia nhập bang hội ${m.ten || ""}`); // điện thoại: không có ô tin hệ thống
   }
   moiBhCho = [{ id: bhMoiSo, tu: m.nguoi || "?", bh: m.ten || "", bhId: m.id }];
   veMoi();
@@ -4377,7 +4414,7 @@ function bhLuat() {
 function bangHoiNpc(n) {
   if (!NPCD || !hero) return;
   const noi = (t) => richText(t, hero.name, n.name);
-  NPCD.choose("msgsel", "InfoText", noi("Vị thiếu hiệp này có muốn gia nhập bang hội không?"), [
+  NPCD.choose("msgsel", "InfoText", noi("Muốn gia nhập bang hội không? Nói một câu thôi."), [
     ["Xem tin tức hỗ trợ bang hội", () => bhTroGiup(n, 32)],
     ["Mở giao diện chiêu mộ bang hội", () => GW && GW.moBangPhai(bhMinhCur ? "zhaomu" : "otherzhaomu")],
     ...(bhMinhCur ? [["Tế Đàn bang hội", () => teDanMo()], ["Tổng quản Lễ phẩm phường", () => leVatMo()]] : []), // đợt 2 (Q20 — chưa có khu vực bang): thành viên
@@ -4392,12 +4429,12 @@ const bhTenNpc = (s) => String(s ?? "").replace(/[<>]/g, ""); // tên người c
 let bhXemLuc = -1e9; // lúc nhận BangXem gần nhất (bhNhan) — khung lời dùng lại nếu mới hơn 15 giây, cũ hơn thì tải lại (điểm danh / hồng bao còn lại thay đổi theo người khác)
 function bhCanXem(f) {
   if (!hero || !NPCD) return;
-  if (!bhMinhCur) return NPCD.talk(["Bạn hiện giờ không thuộc bang hội nào!"], 0, null);
+  if (!bhMinhCur) return NPCD.talk(["Ngươi chưa thuộc bang hội nào cả!"], 0, null);
   if (bhXem && String(bhXem.id) === String(bhMinhCur.id) && performance.now() - bhXemLuc < 15000) return f(bhXem);
   bhLam({ viec: "xem" }, { im: true }).then((j) => {
     if (j && j.bh) f(j.bh);
-    else if (j && "bh" in j) NPCD.talk(["Bạn hiện giờ không thuộc bang hội nào!"], 0, null); // vừa rời / bị đuổi (nhịp chưa kịp báo)
-    else if (j && !j.boQua) NPCD.talk([j.loi || "Không tải được thông tin bang hội — thử lại sau"], 0, null);
+    else if (j && "bh" in j) NPCD.talk(["Ngươi chưa thuộc bang hội nào cả!"], 0, null); // vừa rời / bị đuổi (nhịp chưa kịp báo)
+    else if (j && !j.boQua) NPCD.talk([j.loi || "Không tải được thông tin bang hội — thử lại sau đi."], 0, null);
   });
 }
 // việc của khung lời: lỗi / câu máy chủ (tin, msg) -> lời NPC (ten: tên người nói) -> lai() (mở lại khung)
@@ -4416,7 +4453,7 @@ function teDanMo() {
     const t = B.toi || {}, quan = t.cv === "chu" || (t.cv === "lao" && !!(B.quyen || {})["2005"]), lam = (b) => bhViecNpc(b, ten, lai);
     const HB = { so: 3, cong: 200, congMin: 1000, ngay: 7, ...(L.hoBang || {}) }, RB = { ngay: 7, hetNgay: 14, cong: 300, congMoi: 300, kt: 200, congCan: 300, ...(L.ruBan || {}) };
     const xem = (s) => NPCD.talk([noi(`${ten}: ${s}`)], 0, lai);
-    const doKho = () => NPCD.choose("msgsel", "InfoText", noi(`${ten}: Mức độ khó mục tiêu tuần của bang hội là cấp <color=yellow>${T.doKhoSau || 1}<color>, Thiết lập độ khó mục tiêu tuần hiện tại sẽ có tác dụng vào tuần sau, muốn thiết lập lại độ khó của mục tiêu tuần không?`),
+    const doKho = () => NPCD.choose("msgsel", "InfoText", noi(`${ten}: Mức độ khó mục tiêu tuần của bang hội là cấp <color=yellow>${T.doKhoSau || 1}<color>, Thiết lập độ khó mục tiêu tuần bây giờ thì có tác dụng từ tuần sau. Muốn đổi thì nói, không thì lui.`),
       [["Độ khó cấp 1", () => lam({ viec: "mtDoKho", doKho: 1 })], ["Độ khó cấp 2", () => lam({ viec: "mtDoKho", doKho: 2 })], ["Không cần đâu", lai]]);
     const hoBang = () => xem(Array.isArray(T.hoBang) && T.hoBang.length ? `Hộ Bang tuần trước của bổn bang: ${T.hoBang.map((x) => `<color=yellow>${bhTenNpc(x.ten)}<color> (${fmtSo(x.ct || 0)} điểm)`).join(", ")} — mỗi người nhận ${fmtSo(HB.cong)} điểm cống hiến và danh hiệu (Hộ Bang) ${HB.ngay} ngày.`
       : `Tuần trước bổn bang chưa có Hộ Bang. Mỗi thứ Hai, ${HB.so} thành viên có điểm cống hiến từ hoạt động trong tuần cao nhất (ít nhất ${fmtSo(HB.congMin)} điểm) được chọn: nhận ${fmtSo(HB.cong)} điểm cống hiến và danh hiệu (Hộ Bang) ${HB.ngay} ngày.`);
@@ -4424,7 +4461,7 @@ function teDanMo() {
       (Array.isArray(T.ruBan) && T.ruBan.length ? `Đang chờ: ${T.ruBan.map((x) => `<color=yellow>${bhTenNpc(x.ten)}<color> (còn ${x.con | 0} ngày)`).join(", ")}` : "Hiện chưa có người mới nào đang chờ."));
     const duaCap = () => { const d = T.duaCap || {}, ds = (c) => (Array.isArray(d[c]) && d[c].length ? d[c].map((x) => `<color=yellow>${bhTenNpc(x)}<color>`).join(", ") : "chưa có"); return xem(`Ba bang hội đầu tiên lên đẳng cấp kiến thiết 2 và 4 được ghi danh (phần thưởng lệnh gọi Boss mở ở đợt sau).<enter>Cấp 2: ${ds("2")}<enter>Cấp 4: ${ds("4")}`); };
     const dd = T.dd ? "<color=green>Hôm nay đã nhận thưởng điểm danh.<color>" : T.ly ? `<color=red>${bhTenNpc(T.ly)}<color>` : `Hôm nay chưa nhận thưởng: <color=yellow>${fmtSo(T.cong)}<color> điểm cống hiến.`;
-    NPCD.choose("msgsel", "InfoText", noi(`${ten}: Ngươi tìm ta có việc gì?<enter>${dd}<enter>Cống hiến cá nhân: <color=yellow>${fmtSo(t.cong || 0)}<color>`), [
+    NPCD.choose("msgsel", "InfoText", noi(`${ten}: Tìm ta có việc gì? Nói mau.<enter>${dd}<enter>Cống hiến cá nhân: <color=yellow>${fmtSo(t.cong || 0)}<color>`), [
       ["Nhận phần thưởng điểm cống hiến mỗi ngày", () => lam({ viec: "diemDanh" })],
       ["Phần thưởng mục tiêu tuần cá nhân", () => lam({ viec: "mtLinh" })],
       ...(quan ? [["Thiết lập độ khó mục tiêu tuần", doKho], ["Phần thưởng mục tiêu tuần bang hội", () => lam({ viec: "mtBang" })]] : []),
@@ -4438,13 +4475,13 @@ function leVatMo() {
   bhCanXem((B) => {
     const ten = "Tổng quản Lễ phẩm phường", noi = (t) => richText(t, hero.name, ten), lai = () => leVatMo(), LV = B.leVat, x = (B.tp || {}).leVat;
     if (!B.tp) return NPCD.talk([noi(`${ten}: Đợt sau mới mở`)], 0, null); // máy chủ đợt 1
-    if (!LV || !x) return NPCD.talk([noi(`${ten}: Bổn bang chưa thành lập Khu Lễ vật`)], 0, null);
-    if (!x.mo) return NPCD.talk([noi(`${ten}: Bang hội ta chưa xây dựng tác phường này, muốn sử dụng phải đi tìm bang chủ hoặc trưởng lão khai mở.`)], 0, null); // ws SVR_CheckUse (đang đóng cửa)
+    if (!LV || !x) return NPCD.talk([noi(`${ten}: Bổn bang chưa lập Khu Lễ vật`)], 0, null);
+    if (!x.mo) return NPCD.talk([noi(`${ten}: Bang hội chưa xây tác phường này — muốn dùng thì tìm bang chủ hoặc trưởng lão mà khai mở.`)], 0, null); // ws SVR_CheckUse (đang đóng cửa)
     if (B.phi && B.phi.dung) return NPCD.talk([noi(`${ten}: Tác Phường đang tạm ngừng hoạt động.`)], 0, null);
     const hb = LV.hb || {}, lam = (b) => bhViecNpc(b, ten, lai);
     const nhan = () => {
-      if ((hb.con | 0) <= 0) return NPCD.talk([noi(`${ten}: Thật đáng tiếc, hôm nay lễ phẩm đã phát xong, ngày mai hãy đến vậy!`)], 0, lai);
-      NPCD.choose("msgsel", "InfoText", noi(`${ten}: Cần sử dụng <color=yellow>${fmtSo(hb.gia || 0)}<color> điểm cống hiến để đổi lấy 1 hồng bao`), [["Được.", () => lam({ viec: "hongBao" })], ["Không muốn", lai]]);
+      if ((hb.con | 0) <= 0) return NPCD.talk([noi(`${ten}: Hôm nay lễ phẩm phát xong rồi. Mai hãy tới.`)], 0, lai);
+      NPCD.choose("msgsel", "InfoText", noi(`${ten}: Đổi 1 hồng bao tốn <color=yellow>${fmtSo(hb.gia || 0)}<color> điểm cống hiến. Đổi không?`), [["Được.", () => lam({ viec: "hongBao" })], ["Không muốn", lai]]);
     };
     const MOI = 6;
     const tang = (trang = 0) => {
@@ -4482,14 +4519,14 @@ function khuLam(b, im) {
     if (j.nv || j.tui) applyServer(j);
     if ("khu" in j) khuDl = j.khu || null; // thành viên: KhuXem; không phải thành viên: null
     return j;
-  }).catch((e) => { if (e.ma !== "het-phien" && !e.boQua && !im) P.hud.msg(e.message); return { loi: e.message || "Không làm được", ma: e.ma, boQua: !!e.boQua }; });
+  }).catch((e) => { if (e.ma !== "het-phien" && !e.boQua && !im) P.hud.msg(e.message); return { loi: e.message || "Không làm được đâu.", ma: e.ma, boQua: !!e.boQua }; });
 }
 // "Vào bang này" (khung Bang phái) / Trợ Thủ về "nhà" là bãi bang (xeToi): máy chủ xét (thành viên, bang có khu, chỗ đang đứng — HOP-DONG-DOT-4 2.1) rồi trả di
 function khuVao() {
   if (!hero || !world) return;
-  if (zoneLoad) return P.hud.msg("Đang chuyển bản đồ — tải xong rồi bấm lại");
-  if (world.player.hp <= 0) return P.hud.msg("Đang trọng thương — không đi được");
-  if (world.zone.bang) return P.hud.msg("Đang ở khu vực bang hội — muốn rời hãy nói chuyện với Xa phu");
+  if (zoneLoad) return P.hud.msg("Đang chuyển bản đồ — tải xong rồi bấm lại.");
+  if (world.player.hp <= 0) return P.hud.msg("Đang trọng thương — không đi được đâu. Nằm yên đấy.");
+  if (world.zone.bang) return P.hud.msg("Đang ở khu vực bang hội — muốn rời thì nói chuyện với Xa phu");
   return khuLam({ viec: "vao" }).then((j) => {
     if (!j || j.loi) return;
     for (const t of j.tin || []) P.hud.msg(t);
@@ -4528,8 +4565,8 @@ function khuNpc(n) {
   const loai = v.startsWith("tongQuan:") ? v.slice(9) : v.startsWith("nha:") ? v.slice(4) : null; // nhà = Tổng quản cùng loại (client building[] dùng script zongguan)
   if (loai === "lePham") return leVatMo(); // Khu Lễ vật -> Tổng quản Lễ phẩm phường (đợt 2)
   if (loai) return NPCD.talk([noi(KHU_TQ[loai] || n.name, "Tác phường này đợt sau mới mở")], 0, null); // đợt 3 gắn 6 tác phường còn lại
-  if (v === "cot") return NPCD.talk([noi("Cột biểu tượng bang", "Kỹ năng bang hội chưa mở, không thể sử dụng Cột biểu tượng, hãy báo cho cấp lãnh đạo bang khai mở kỹ năng")], 0, null); // đợt 3: đặc kỹ
-  if (v === "cot:thanh") return NPCD.talk([noi("Cột biểu tượng thành thị", "Bang hội quí bang chưa mở kỹ năng thành thị, không thể sử dụng Cột biểu tượng. Hãy thông báo đến cấp lãnh đạo bang, tại trang chức năng có thể khai mở kỹ năng thành thị.")], 0, null);
+  if (v === "cot") return NPCD.talk([noi("Cột biểu tượng bang", "Kỹ năng bang hội chưa mở, không dùng được Cột biểu tượng. Báo cho cấp lãnh đạo bang mà khai mở kỹ năng.")], 0, null); // đợt 3: đặc kỹ
+  if (v === "cot:thanh") return NPCD.talk([noi("Cột biểu tượng thành thị", "Bang hội quí bang chưa mở kỹ năng thành thị, không dùng được Cột biểu tượng. Báo cho cấp lãnh đạo bang, tại trang chức năng khai mở kỹ năng thành thị.")], 0, null);
   NPCD.talk([noi(n.name, "Đợt sau mới mở")], 0, null);
 }
 // Xa phu khu (client tong_chefu.lua): "Những nơi đã đi qua" = bãi luyện công (miễn phí như Xa phu thành — xaPhuFn WayPointFun); "Những thành thị đã đi qua" = Ba Lăng huyện /
@@ -4538,11 +4575,11 @@ function khuXaPhuMo(n) {
   if (!NPCD || !hero) return;
   const noi = (t) => richText(t, hero.name, n.name), X = (khuDl && khuDl.xaPhu) || (luat().khuBang || {}).xaPhu || { gia: 800, den: [] }, gia = X.gia ?? 800;
   const den = (X.den || []).map((d) => (typeof d === "number" ? { z: d, n: (P.maps.zones.find((z) => z.id === d) || {}).n || "" } : d)).filter((d) => d && d.n);
-  NPCD.choose("msgsel", "InfoText", noi("Xa phu: Đại hiệp muốn đi đâu?"), [
+  NPCD.choose("msgsel", "InfoText", noi("Xa phu: Ngươi muốn đi đâu? Nói mau."), [
     ["Những nơi đã đi qua", () => xeHien(xaPhuFn("WayPointFun"), n)],
-    ["Những thành thị đã đi qua", () => NPCD.choose("msgsel", "InfoText", noi("Đại hiệp muốn đi đâu: "),
-      [...den.map((d) => [gia > 0 ? `${d.n} [${fmtMoney(gia)}]` : d.n, () => khuXaPhu(d.z)]), ["Đâu cũng không muốn đi!", null]])],
-    ["Đâu cũng không muốn đi!", null]]);
+    ["Những thành thị đã đi qua", () => NPCD.choose("msgsel", "InfoText", noi("Ngươi muốn đi đâu: "),
+      [...den.map((d) => [gia > 0 ? `${d.n} [${fmtMoney(gia)}]` : d.n, () => khuXaPhu(d.z)]), ["Đâu cũng không đi!", null]])],
+    ["Đâu cũng không đi!", null]]);
 }
 // hiện kết quả xaPhuFn ({ text, opts } | { close } | Promise) ở khung tự dựng (Xa phu khu): lựa chọn dạng chuỗi (vd "BanBai:225") đổi thành hàm — NPCD.show cần NPC đang mở
 function xeHien(r, n) {
@@ -4573,7 +4610,7 @@ function khuChonMau() {
   khuLam({ viec: "xem" }).then((j) => {
     if (!j || j.loi) return;
     const K = j.khu;
-    if (!K) return P.hud.msg(j.ly || "Bạn hiện giờ không thuộc bang hội nào!");
+    if (!K) return P.hud.msg(j.ly || "Ngươi chưa thuộc bang hội nào cả!");
     if (!K.chonDuoc) return GW.bao(K.lyChon || "Chưa chọn được lãnh địa");
     // khung hỏi ngắt dòng giữa chữ (như client) -> tự xuống dòng, mỗi dòng ≤ ~50 ký tự
     const chon = (m) => GW.hoi(`Ngươi xác định muốn chọn <color=yellow>${bhTenNpc(m.ten || m.n)}<color><enter>làm khu vực bang hội của bổn bang?<enter>Chỉ chọn được 1 lần — muốn đổi phải nhờ quản trị.`, "Xác nhận", "Hủy bỏ").then((ok) => {
@@ -4584,7 +4621,7 @@ function khuChonMau() {
         for (const t of x.tin || []) P.hud.msg(t);
       });
     });
-    NPCD.choose("msgsel", "InfoText", richText("Hãy lựa chọn khu vực muốn xây dựng", hero.name), [...(K.mau || []).map((m) => [bhTenNpc(m.ten || m.n), () => chon(m)]), ["Hủy bỏ", null]]);
+    NPCD.choose("msgsel", "InfoText", richText("Chọn khu vực muốn xây dựng", hero.name), [...(K.mau || []).map((m) => [bhTenNpc(m.ten || m.n), () => chon(m)]), ["Hủy bỏ", null]]);
   });
 }
 // "Thiết lập khu vực" (Chức năng → trang 2): xem khu vực của bổn bang — máy chủ này không mở cấm địa / tham quan (chỉ thành viên vào)
@@ -4593,7 +4630,7 @@ function khuThietLap() {
   khuLam({ viec: "xem" }).then((j) => {
     if (!j || j.loi) return;
     const K = j.khu;
-    if (!K) return GW.bao(j.ly || "Bạn hiện giờ không thuộc bang hội nào!");
+    if (!K) return GW.bao(j.ly || "Ngươi chưa thuộc bang hội nào cả!");
     const L = K.lanhDia, Y = (t) => `<color=yellow>${bhTenNpc(t)}<color>`;
     // khung báo ngắt dòng giữa chữ (như client) -> mỗi dòng ≤ ~50 ký tự
     GW.bao([`Khu vực của bổn bang: ${K.z ? Y(K.tenKhu || K.z) : `<color=red>chưa có<color><enter>${bhTenNpc(K.ly || "")}`}`,
@@ -4627,7 +4664,7 @@ function bhTroGiup(n, i) {
       loai: { vuotAi: { ten: "Vượt Ải", can: [1500, 2500], thuong: [400, 720] }, tongKim: { ten: "Tống Kim", can: [300, 500], thuong: [425, 765] }, satThu: { ten: "Sát thủ", can: [150, 250], thuong: [375, 675] }, ...((B0.mucTieu || {}).loai || {}) } } };
   const khao = `${L.khaoNgay} ngày phải có ${L.khaoNguoi ? `ít nhất <color=yellow>${L.khaoNguoi}<color>` : "đủ số"} người chơi khác nhau gia nhập (khác chủ tài khoản${L.khaoIp ? ", khác mạng" : ""} — nhiều nhân vật của một người chỉ tính một)`; // khaoIp 0: máy chủ không gộp theo IP
   const TRANG = {
-    33: "Sau khi hội đủ các điều kiện bên dưới, ngươi có thể đến gặp ta (ở Ba Lăng huyện hoặc Biện Kinh) để thành lập bang hội." + [`Không thuộc bang hội nào (rời bang phải chờ đủ ${L.cho} giờ)`,
+    33: "Đủ các điều kiện bên dưới thì tới gặp ta (ở Ba Lăng huyện hoặc Biện Kinh) mà lập bang hội." + [`Không thuộc bang hội nào (rời bang phải chờ đủ ${L.cho} giờ)`,
       `Đẳng cấp <color=yellow>${L.capLap}<color> trở lên`,
       L.tsLap ? `Lực thống soái <color=yellow>${L.tsLap}<color> trở lên (lên khi làm đội trưởng dẫn đội có người chơi khác cùng đánh quái)` : L.tsLap === 0 ? "" : "Lực thống soái đạt yêu cầu của máy chủ (nếu có)",
       "Tín vật bang chủ — chiến lợi phẩm Tống Kim: Nhạc Vương Kiếm (100 Nhạc Vương Hồn Thạch đổi được 1 thanh ở Quân Nhu quan Tống Kim; hoặc mua Nhạc Vương Kiếm lễ bao ở Kỳ Trân Các mở ra để nhận)",
@@ -4641,12 +4678,12 @@ function bhTroGiup(n, i) {
       `<enter>4. <color=yellow>Cống hiến dự trữ<color>: ${Math.round(D2.chia.duTru * 100)}% giá trị hoạt động của thành viên; bang chủ / trưởng lão được giao quyền phát cho thành viên (mỗi người tối đa ${fmtSo(D2.phatDu.nguoiTuan)} điểm mỗi tuần).`,
     37: `Ngươi có thể thông qua phương thức tiền thưởng để phân chia quỹ cho các thành viên bang hội: bang chủ (hoặc trưởng lão được giao quyền Ngân quỹ) phát ngân quỹ cho 3 cấp bậc trưởng lão, đội trưởng và bang chúng — mỗi người mỗi lần tối đa ${fmtSo(D2.phatQuy.moiNguoi)} vạn, mỗi người nhận tối đa ${fmtSo(D2.phatQuy.nguoiTuan)} vạn mỗi tuần, cả bang phát tối đa ${fmtSo(D2.phatQuy.tuan)} vạn mỗi tuần. Người nhận phải vào bang đủ ${D2.phatQuy.vaoNgay} ngày và là người khác với người phát. Cần mật khẩu cấp 2.` +
       `<enter>Cống hiến dự trữ cũng phát được cho thành viên đang trên mạng theo chức vụ, hoặc cho từng người (mỗi lần tối đa ${fmtSo(D2.phatDu.toiDaLan)} điểm, không phát cho chính mình).`,
-    38: "Ngươi cũng có thể liên kết với các bang hội khác lập thành liên minh bang hội, trong mỗi liên minh cần phải có một bang hội minh chủ, có ít nhất một bang hội thành viên, và không vượt quá 7 bang hội thành viên." + sau,
+    38: "Muốn liên minh thì liên kết với các bang hội khác mà lập liên minh: mỗi liên minh cần một bang hội minh chủ, ít nhất một bang hội thành viên, không vượt quá 7 bang hội thành viên." + sau,
     39: `Mục tiêu bang hội hàng tuần: mỗi thứ Hai, bang hội đã qua khảo nghiệm nhận 1 mục tiêu ngẫu nhiên. Điểm cống hiến thành viên kiếm từ đúng hoạt động đó được cộng vào mục tiêu; cả bang đạt khi tổng ≥ ${Math.round(D2.mucTieu.phanBang * 100)}% × số người × mức mỗi người. Tuần sau tới Tế Đàn lĩnh thưởng: mỗi người đủ phần mình (vào bang trước tuần đó) nhận điểm cống hiến + kinh nghiệm; bang chủ / trưởng lão được giao quyền lĩnh ngân sách chiến bị cho bang. Độ khó cấp 1 / 2 đặt ở Tế Đàn, có tác dụng từ tuần sau.` +
       D2.mucTieu.ds.map((k) => { const x = D2.mucTieu.loai[k]; return x ? `<enter>${x.ten}: mỗi người ${(x.can || []).map(fmtSo).join(" / ")} điểm — thưởng ${(x.thuong || []).map(fmtSo).join(" / ")} điểm cống hiến` : ""; }).join(""),
-    40: !L.coKhao ? "Máy chủ này không có kỳ khảo nghiệm — lập xong là bang hội chính thức. Bang chủ chỉ tự giải tán được khi bang chỉ còn mình bang chủ (không trả Nhạc Vương Kiếm, tiền lập bang không trả); giải tán xong 30 phút sau mới lập / vào bang khác." : `Bang hội mới lập sẽ vào kỳ khảo nghiệm: trong ${khao}. Hết hạn mà chưa đủ thì bang hội giải tán, Nhạc Vương Kiếm trả lại cho người lập (tiền lập bang không trả lại). Hãy tạo tình đoàn kết giữa các anh em trong bang.`,
+    40: !L.coKhao ? "Máy chủ này không có kỳ khảo nghiệm — lập xong là bang hội chính thức. Bang chủ chỉ tự giải tán được khi bang chỉ còn mình bang chủ (không trả Nhạc Vương Kiếm, tiền lập bang không trả); giải tán xong 30 phút sau mới lập / vào bang khác." : `Bang hội mới lập sẽ vào kỳ khảo nghiệm: trong ${khao}. Hết hạn mà chưa đủ thì bang hội giải tán, Nhạc Vương Kiếm trả lại cho người lập (tiền lập bang không trả lại). Anh em trong bang phải đoàn kết với nhau.`,
   };
-  if (i === 32) return NPCD.choose("msgsel", "InfoText", noi("Đã trải qua biết bao nhiêu ân oán giang hồ, ngươi có phải là đã có một đám huynh đệ tỷ muội đồng cam cộng khổ? Ngươi có muốn lãnh đạo họ, cùng nhau tạo ra một môn võ công Vạn Thế Bất Diệt, cướp đoạt quyền sở hữu bảy thành trì, để cho họ có thể cùng nhau hưởng vinh hoa phú quý. Vậy thì hãy lập ra bang hội riêng cho mình, viết vào đó các ân oán tình thù, nhi nữ tình trường, cướp thuyền, đoạt thành, cướp boss~"),
+  if (i === 32) return NPCD.choose("msgsel", "InfoText", noi("Ân oán giang hồ ngươi trải qua cũng nhiều rồi. Có một đám huynh đệ tỷ muội đồng cam cộng khổ chưa? Muốn lãnh đạo họ, lập môn phái Vạn Thế Bất Diệt, đoạt bảy thành trì, cùng nhau hưởng vinh hoa phú quý không? Vậy thì lập bang hội riêng đi, viết ân oán tình thù của ngươi vào đó."),
     [["Thành lập bang hội", 33], ["Khu vực bang hội", 34], ["kết cấu tổ chức", 35], ["quỹ của bang hội", 36], ["lợi nhuận của bang hội", 37], ["Liên minh bang hội", 38], ["Mục tiêu bang hội hàng tuần", 39], ["bang hội giải tán", 40]]
       .map(([t, k]) => [t, () => bhTroGiup(n, k)]).concat([["Kết thúc đối thoại", null]]));
   NPCD.choose("msgsel", "InfoText", noi(TRANG[i] || ""), [["Trở về", () => bhTroGiup(n, 32)], ["Kết thúc đối thoại", null]]);
@@ -4657,7 +4694,7 @@ function bhTroGiup(n, i) {
 // kiểm lại: bang-hoi.js lap); thuong = đi đường của người chơi
 function bhLapNpc(n, thuong) {
   const noi = (t) => richText(t, hero.name, n.name), L = bhLuat();
-  if (bhMinhCur) return NPCD.talk([noi("Thành viên bang hội không thể lập thêm một bang hội khác! Muốn lập bang mới thì phải rời bang trước (bang chủ phải chuyển vị trước).")], 0, null);
+  if (bhMinhCur) return NPCD.talk([noi("Đã ở bang hội rồi thì đừng hòng lập thêm bang khác! Muốn lập bang mới thì rời bang trước (bang chủ phải chuyển vị trước).")], 0, null);
   if (!thuong && Net.me && Net.me.admin) return NPCD.choose("msgsel", "InfoText", noi("Quản trị có thể lập bang hội <color=yellow>không cần điều kiện<color>: không cần cấp, thống soái, Nhạc Vương Kiếm, tiền — không nộp gì; bang chính thức thành lập ngay, không có thời kỳ khảo nghiệm."), [
     ["Lập bang hội (quản trị)", () => (KAT ? KAT.dam("Lập bang hội không cần điều kiện cần mở khóa an toàn") : Promise.resolve(true)).then((ok) => { if (ok && GW) GW.moTaoBang((j) => bhChucMung(n, j), 1); })],
     ["Lập như người chơi", () => bhLapNpc(n, 1)],
@@ -4666,30 +4703,30 @@ function bhLapNpc(n, thuong) {
     : `trong ${L.khaoNgay} ngày phải tìm ${L.khaoNguoi ? `ít nhất ${L.khaoNguoi}` : "đủ"} người cùng chí hướng gia nhập, nếu không cũng chẳng có cách nào. ${L.khaoNgay} ngày đó có thể gọi là 'Thời kỳ khảo nghiệm'.`;
   const duNguoi = !L.coKhao ? "" : `Sau khi bang hội của ngươi được ${L.khaoNguoi ? `ít nhất ${L.khaoNguoi}` : "đủ"} người chơi khác nhau, trên giang hồ sẽ thừa nhận bang hội này. Nếu sau ${L.khaoNgay} ngày vẫn chưa đủ thì bang hội sẽ giải tán, Nhạc Vương kiếm trả lại cho ngươi.`;
   if (!(hero.bag || []).some((x) => x && x.k === "qk:195")) {
-    const veLap = () => NPCD.talk(["Ngươi hỏi lập bang hội cần có những điều kiện gì? Để từ từ ta giải thích cho nghe!",
+    const veLap = () => NPCD.talk(["Hỏi lập bang hội cần điều kiện gì à? Nghe cho kỹ đây!",
       `Phải là người không ở trong bất cứ bang hội nào, đẳng cấp ${L.capLap} trở lên${L.tsLap ? `, lực thống soái thấp nhất ${L.tsLap} điểm` : ""}!`,
-      "Sau khi hội đủ những yêu cầu trên, ngươi có thể tham gia chiến trường Tống Kim lấy được cây Nhạc Vương kiếm (100 Nhạc Vương Hồn Thạch đổi ở Quân Nhu quan, hoặc mở Nhạc Vương Kiếm lễ bao mua ở Kỳ Trân Các) để làm tín vật bang chủ, sau đó đến gặp ta để lập bang hội",
+      "Đủ yêu cầu rồi thì ra chiến trường Tống Kim mà lấy Nhạc Vương kiếm (100 Nhạc Vương Hồn Thạch đổi ở Quân Nhu quan, hoặc mở Nhạc Vương Kiếm lễ bao mua ở Kỳ Trân Các) làm tín vật bang chủ, rồi tới gặp ta mà lập bang.",
       "Trước tiên ngươi phải có năng lực, " + khao, duNguoi,
-      `Cuối cùng! Để lập được bang phái thì cần phải có số vốn lớn — ${L.tien} vạn lượng. Hãy nỗ lực đạt được mục tiêu nhé!`].filter(Boolean).map(noi), 0, null);
-    return NPCD.choose("msgsel", "InfoText", noi("Ngươi có chuyện gì không vậy?"), [["Hỏi về việc thành lập bang hội", veLap], ["Không có việc gì", null]]);
+      `Cuối cùng: lập bang phái cần số vốn lớn — ${L.tien} vạn lượng. Không đủ tiền thì đừng tới.`].filter(Boolean).map(noi), 0, null);
+    return NPCD.choose("msgsel", "InfoText", noi("Có chuyện gì? Nói mau."), [["Hỏi về việc thành lập bang hội", veLap], ["Không có việc gì", null]]);
   }
   NPCD.talk(["Cho hỏi ta làm sao có thể giống như ngài, lập bang phái và làm bang chủ?", "Trước tiên ngươi phải có năng lực, " + khao, duNguoi,
     "Sau khi ngươi có đủ năng lực lãnh đạo và uy tín giang hồ, thì tìm một vật phẩm đặc biệt để làm tín vật của chưởng môn. Ví dụ như tham gia Tống Kim lấy được Nhạc Vương kiếm",
-    "Nhạc Vương kiếm? Ngài nói là cây kiếm này phải không?", "Hoá ra ngươi đã có nó! Không sai! Quả là tuổi trẻ tài cao!"].filter(Boolean).map(noi), 0, () => {
+    "Nhạc Vương kiếm? Ngài nói là cây kiếm này phải không?", "Có nó thật à! Không sai! Tuổi trẻ mà khá đấy!"].filter(Boolean).map(noi), 0, () => {
     NPCD.choose("msgsel", "InfoText", noi(`Bây giờ chỉ cần ngươi có thêm số vốn lớn là được, có thể là ${L.tien} vạn lượng`), [
       [`Không thành vấn đề, ta đã có đủ ${L.tien} vạn lượng rồi.`, () => {
-        if (L.coTien && (hero.gold || 0) < L.tien * 10000) return NPCD.talk([noi("Dường như ngươi không có đủ tiền, như thế không ổn, đợi khi ngươi có đủ tiền thì đến tìm ta.")], 0, null);
+        if (L.coTien && (hero.gold || 0) < L.tien * 10000) return NPCD.talk([noi("Tiền còn chưa đủ mà đòi lập bang? Đủ tiền rồi hãy tới tìm ta.")], 0, null);
         if (GW) GW.moTaoBang((j) => bhChucMung(n, j));
       }],
-      ["Sao nhiều thế? ít lại một chút được không?", () => NPCD.talk([noi("Để duy trì bang hội hoạt động bình thường thì mất rất nhiều tiền, nếu ngươi còn ở đây trả giá thì ta e bang hội sẽ khó thành lập")], 0, null)]]);
+      ["Sao nhiều thế? ít lại một chút được không?", () => NPCD.talk([noi("Duy trì bang hội tốn nhiều tiền lắm. Còn đứng đây trả giá thì đừng hòng lập được bang.")], 0, null)]]);
   });
 }
 // lập xong (after_tong.lua — 3 câu chúc mừng; số người khảo nghiệm lấy ở bang vừa lập)
 function bhChucMung(n, j) {
   if (!NPCD || !hero) return;
   const L = bhLuat(), k = j && j.bh && j.bh.khao, can = (k && k.can) || L.khaoNguoi, noi = (t) => richText(t, hero.name, n.name);
-  NPCD.talk(["Chúc mừng hiệp khách thành lập bang hội, hãy thực hiện hoài bão của bản thân đi!",
-    !k ? "Bổn bang đã được giang hồ thừa nhận — hãy mau chiêu mộ huynh đệ cùng chí hướng!" : `Nhưng cũng cần nhắc thêm một chút: Ngươi phải có năng lực lãnh đạo và uy tín giang hồ. Trong vòng ${L.khaoNgay} ngày phải tìm được ${can ? can + " người" : "đủ người"} cùng chí hướng giúp đỡ. Nếu không trên giang hồ sẽ không thừa nhận bang hội của ngươi. Thời hạn ${L.khaoNgay} ngày có thể xem là 'Thời kỳ khảo nghiệm'`,
+  NPCD.talk(["Lập bang hội xong rồi. Hoài bão của ngươi thì tự mà thực hiện đi!",
+    !k ? "Bổn bang đã được giang hồ thừa nhận — mau chiêu mộ huynh đệ cùng chí hướng đi!" : `Nhưng cũng cần nhắc thêm một chút: Ngươi phải có năng lực lãnh đạo và uy tín giang hồ. Trong vòng ${L.khaoNgay} ngày phải tìm được ${can ? can + " người" : "đủ người"} cùng chí hướng giúp đỡ. Nếu không trên giang hồ sẽ không thừa nhận bang hội của ngươi. Thời hạn ${L.khaoNgay} ngày có thể xem là 'Thời kỳ khảo nghiệm'`,
     "Mở khung Bang phái (nút Bang phái ở thanh dưới) để viết tin chiêu mộ, duyệt đơn xin gia nhập; mời người vào bang: Ctrl + chuột phải vào người chơi (điện thoại: giữ lâu) → Mời vào bang."].map(noi), 0, null);
 }
 // xem trang bị người chơi ở gần (anh 03/11 "thêm tính năng xem trang bị người ở gần" — may-chu/api.js xemDo: cùng bãi + cùng bản): khung Trang bị
@@ -4722,11 +4759,11 @@ function choLam(b) {
 // nút Rao bán (ô đánh dấu của Hành trang): mở sạp ở chỗ đang đứng rồi ngồi xuống / đóng sạp. Như client: đang cưỡi ngựa không bày bán được
 function moSap(on) {
   const w = world; if (!w || !hero) return Promise.resolve(null);
-  if (on && w.riding()) { P.hud.msg("Trong lúc cỡi ngựa hoặc đang giao dịch với tổ đội không thể sắp đặt!"); return Promise.resolve(null); }
-  if (on && w.zone.bang) { P.hud.msg("Khu vực bang hội không được bày bán — hãy tới thôn / thành"); return Promise.resolve(null); } // đợt 4: sạp theo mã bãi — chung mọi bản bang
-  if (on && laLd(w.zone)) { P.hud.msg("Trong lôi đài không được bày bán — hãy tới thôn / thành"); return Promise.resolve(null); } // lôi đài (anh 15/11)
+  if (on && w.riding()) { P.hud.msg("Đang cưỡi ngựa hoặc đang giao dịch với tổ đội thì đừng bày bán!"); return Promise.resolve(null); }
+  if (on && w.zone.bang) { P.hud.msg("Khu vực bang hội cấm bày bán — tới thôn / thành mà bán."); return Promise.resolve(null); } // đợt 4: sạp theo mã bãi — chung mọi bản bang
+  if (on && laLd(w.zone)) { P.hud.msg("Trong lôi đài cấm bày bán — tới thôn / thành mà bán."); return Promise.resolve(null); } // lôi đài (anh 15/11)
   const p = w.player;
-  if (on && npcSat(w, p.x, p.y, SAP_CACH).length) { P.hud.msg("Chỗ này sát NPC — dời ra xa một chút rồi bày bán"); return Promise.resolve(null); }
+  if (on && npcSat(w, p.x, p.y, SAP_CACH).length) { P.hud.msg("Chỗ này sát NPC quá — dời ra xa một chút rồi bày bán."); return Promise.resolve(null); }
   return choLam({ viec: "mo", on: on ? 1 : 0, bai: w.zone.id, x: Math.round(p.x), y: Math.round(p.y) }).then((j) => {
     if (j && on && world === w) { p.path = null; p.goal = null; w.sit(true); }
     if (j) { choV.v = 0; sapLuc = 0; } // danh sách sạp của bãi: hỏi lại ở nhịp kế tiếp
@@ -4833,7 +4870,7 @@ const dev = new DevTool({
   // đổi phái thử võ công: danh sách chiêu đang hiện + làm mới / mở bảng Võ công (cửa sổ dựng khi vào game)
   skillList: () => (GW ? GW._skillList(hero) : []), refreshWin: () => GW && GW.refresh(true), openSkills: () => GW && (P.win.get("skills").show(), GW.refresh(true)),
   // ủy thác (thẻ Ủy thác): b = { gio, bai, boCap } -> máy chủ cày thay ngay (bảng tổng kết như lúc vào lại game); { xem: 1 } = trạng thái
-  uyThac: (b) => Net.devUyThac(hero.slot | 0, b).then((j) => { applyServer(j); if (j.uyThac) baoUyThac(j.uyThac); else if (!b.xem) P.hud.msg("Không ủy thác được (bãi không còn / chưa đủ cấp / hết giờ trong ngày)"); return j.trangThai; }),
+  uyThac: (b) => Net.devUyThac(hero.slot | 0, b).then((j) => { applyServer(j); if (j.uyThac) baoUyThac(j.uyThac); else if (!b.xem) P.hud.msg("Không ủy thác được (bãi không còn / chưa đủ cấp / hết giờ trong ngày)."); return j.trangThai; }),
   farmZones: () => P.maps.zones.filter((z) => FARM_KINDS.has(z.kind) && !z.chiThuyen),
   // thẻ Phong Lăng Độ / Dã Tẩu (anh 27/10): hd "pld" | "dt" -> máy chủ (tài khoản quản trị) rồi xử lý như hội thoại NPC; trả trạng thái (dev)
   hoatDong: (hd, b) => Net.devHoatDong(hero.slot | 0, { hd, ...b }).then((j) => (hd === "dt" ? xuLyDaTau(j) : hd === "st" ? xuLySatThu(j) : hd === "va" ? xuLyVa(j) : hd === "vd" ? (ViemDe.xuLy(j), j)
@@ -4937,8 +4974,8 @@ const keyAct = {
 // khongDi === true: bật từ mã (Trợ Thủ, tự làm nhiệm vụ) đã tự lo đường đi; người chơi bấm Space / nút Tự đánh: trong thành thì tự về bãi (tuVeBai)
 function toggleAuto(khongDi) {
   // lôi đài (anh 15/11 D9 "Trợ Thủ mất tác dụng trong sân: đánh tay 100%"): không bật được (Space, nút Tự đánh, Ủy thác, Trợ Thủ…); đang bật thì vẫn cho tắt
-  if (world && laLd(world.zone) && !world.auto) { P.hud.setAuto(false); return P.hud.canh("Lôi đài: Trợ Thủ không hoạt động trong sân — đánh tay"); }
-  if (world && laDn(world.zone) && !world.auto) { P.hud.setAuto(false); return P.hud.canh("Đường đua: Trợ Thủ không hoạt động — tự chạy bằng chuột / bản đồ nhỏ"); } // đua ngựa (anh 16/11)
+  if (world && laLd(world.zone) && !world.auto) { P.hud.setAuto(false); return P.hud.canh("Lôi đài: Trợ Thủ không hoạt động trong sân — đánh tay đi."); }
+  if (world && laDn(world.zone) && !world.auto) { P.hud.setAuto(false); return P.hud.canh("Đường đua: Trợ Thủ không hoạt động — tự chạy bằng chuột / bản đồ nhỏ."); } // đua ngựa (anh 16/11)
   world.auto = !world.auto;
   if (world.auto) { world.neo = [world.player.x, world.player.y]; world.tamDung = false; }
   P.hud.setAuto(world.auto); P.hud.msg("Tự đánh: " + (world.auto ? "Bật" : "Tắt")); P.audio.ui("click");
@@ -4952,7 +4989,7 @@ const MOC_GAN = 220;
 function tuVeBai(boMoc) { // boMoc: đi luôn dù đứng cạnh mộc nhân (Ủy thác → Ra bãi rồi tự ủy thác — utRaBai)
   const w = world, p = w.player;
   if (!TOWN_KINDS.has(w.zone.kind) || w.zone.id === TK_BD.z || !xaPhuNpc(w) || zoneLoad || p.hp <= 0 || thanh || diXe || bossDi || TuLam.dang || w.bossGan(false) || w.nhimGan(false)) return; // điểm báo danh Tống Kim: không kéo người đang chờ trận đi
-  if (!boMoc && w.mobs.some((m) => m.dummy && !m.coc && Math.hypot(m.x - p.x, m.y - p.y) < MOC_GAN)) return P.hud.msg("Đang đứng cạnh mộc nhân: đánh mộc nhân để thử chiêu, không có kinh nghiệm");
+  if (!boMoc && w.mobs.some((m) => m.dummy && !m.coc && Math.hypot(m.x - p.x, m.y - p.y) < MOC_GAN)) return P.hud.msg("Đang đứng cạnh mộc nhân: đánh mộc nhân để thử chiêu, không có kinh nghiệm đâu.");
   const T = hero.auto.treo, zt = T.on && T.bai != null && P.maps.zones.find((x) => x.id === T.bai);
   if (zt && moBai(zt)) return treoStart();
   const b = baiTreo(), z = b && P.maps.zones.find((x) => x.id === b.z);
@@ -5051,7 +5088,7 @@ function mouseAct(e) {
     const [sx, sy] = mouseAt(e), s = sapDuoi(sx, sy);
     if (s) { if (s.npc) world.clickNpc(s.npc); else GW.cho.xemSap(s.k); return; }
   }
-  const [x, y] = mouseAt(e), n = chamDt ? null : world.npcAt(x, y, false), m = n ? null : world.mobAt(x, y), d = n || m || chamDt ? null : world.dropAt(x, y);
+  const [x, y] = mouseAt(e), n = chamDt ? null : world.npcAt(x, y, false), m = n ? null : (world.mobAt(x, y) || world.npcChoiAt(x, y)), d = n || m || chamDt ? null : world.dropAt(x, y);
   // chạm giữ người chơi / bot Tống Kim -> menu người chơi (anh 06/11: bot xem được như người); bot phe kia là "quái" (m): chạm nhanh vẫn đánh (chamNguoiXong)
   const tay = DT && DT.on && e.pointerType === "touch" && e.button === 0 && !d && /^Mouse_Action/.test(cmd);
   // anh 12/11 ("iOS đè vô người chơi xem thông tin không được"): ở bãi người chơi đứng lẫn trong quái — trước có quái dưới ngón là bỏ qua người chơi (chạm
@@ -5314,9 +5351,9 @@ function boCuc(viec) {
   if (!hero || !hero.auto) return;
   if (viec === "bat") H.keoBang(true);
   else if (viec === "tat") return H.boCucDoi() ? GW.hoi("Lưu bố cục các bảng vừa kéo?", "Lưu", "Không lưu").then((ok) => boCuc(ok ? "luu" : "huy")) : boCuc("huy");
-  else if (viec === "luu") { hero.auto.boCuc = H.boCucNay(); save(); H.datBoCuc(hero.auto.boCuc); H.keoBang(false); H.msg("Đã lưu bố cục màn hình — lần sau vào lại nhân vật này vẫn giữ"); }
+  else if (viec === "luu") { hero.auto.boCuc = H.boCucNay(); save(); H.datBoCuc(hero.auto.boCuc); H.keoBang(false); H.msg("Đã lưu bố cục màn hình — lần sau vào lại nhân vật này vẫn giữ nguyên."); }
   else if (viec === "huy") { H.datBoCuc(hero.auto.boCuc); H.keoBang(false); }
-  else if (viec === "macDinh") { H.boCucMacDinh(); if (!H.dangKeo) { hero.auto.boCuc = {}; save(); H.datBoCuc({}); H.msg("Đã trả bố cục màn hình về mặc định"); } }
+  else if (viec === "macDinh") { H.boCucMacDinh(); if (!H.dangKeo) { hero.auto.boCuc = {}; save(); H.datBoCuc({}); H.msg("Đã trả bố cục màn hình về mặc định."); } }
   if (TT && TT.w.visible) TT.render();
 }
 // lưu kèm chỗ đứng (vào game lại đứng đúng bãi + chỗ đó — enterGame)
@@ -5347,7 +5384,7 @@ function fixLooks(h) {
 
 // trang kiểm / trình duyệt điều khiển đọc trạng thái khi chạy ở máy dev
 DoCongCu.batDau(); // dò công cụ tự động bên ngoài (anh 13/11 — chỉ báo về máy chủ)
-if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) window.VL = { P, bdas: { fn: (id) => bdasFn(id, null), get tt() { return bdTtCu; }, cc: () => ccCong(hero) }, baoUyThac: (k) => baoUyThac(k), tkChetBox: () => tkChetBox(), get world() { return world; }, get hero() { return hero; }, get cam() { return cam; }, get zoom() { return zoom; }, get npcd() { return NPCD; }, get gw() { return GW; }, get dev() { return dev; }, get dt() { return DT; }, get tt() { return TT; }, get bc() { return BC; }, get pt() { return PT; }, get uh() { return UH; }, get va() { return VaDoi; }, get vdd() { return VdDoi; }, get vde() { return ViemDe; }, get sn() { return SanNhim; }, get net() { return Net; }, get tl() { return TuLam; }, get bt() { return BossTG; }, get bd() { return { bossDi, bossTheo, bossVe, bossDaDi, thanh, diXe }; }, satThu: (b) => satThu(b), tayTuy: (b) => tayTuy(b), doi: (b) => doiLam(b), get ph() { return PhongHoa; }, get tk() { return TongKim; }, get ld() { return LoiDai; }, get dn() { return DuaNgua; }, ldChetBox: () => ldChetBox(), ldVe: (ve) => ldVe(ve), phVao: () => phVao(), phongHoaVe: (n) => phongHoaVe(n), phVeThanh: () => phVeThanh(), diBai: (id, at, chung) => gotoZone(P.maps.zones.find((z) => z.id === id), { at, ...(chung ? { chung: true } : {}) }),
+if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) window.VL = { P, bdas: { fn: (id) => bdasFn(id, null), get tt() { return bdTtCu; }, cc: () => ccCong(hero) }, baoUyThac: (k) => baoUyThac(k), tkChetBox: () => tkChetBox(), get world() { return world; }, get hero() { return hero; }, get cam() { return cam; }, get zoom() { return zoom; }, get npcd() { return NPCD; }, get gw() { return GW; }, get dev() { return dev; }, get dt() { return DT; }, get tt() { return TT; }, get qa() { return QA; }, get bc() { return BC; }, get pt() { return PT; }, get uh() { return UH; }, get va() { return VaDoi; }, get vdd() { return VdDoi; }, get vde() { return ViemDe; }, get sn() { return SanNhim; }, get net() { return Net; }, get tl() { return TuLam; }, get bt() { return BossTG; }, get bd() { return { bossDi, bossTheo, bossVe, bossDaDi, thanh, diXe }; }, satThu: (b) => satThu(b), tayTuy: (b) => tayTuy(b), doi: (b) => doiLam(b), get ph() { return PhongHoa; }, get tk() { return TongKim; }, get ld() { return LoiDai; }, get dn() { return DuaNgua; }, ldChetBox: () => ldChetBox(), ldVe: (ve) => ldVe(ve), phVao: () => phVao(), phongHoaVe: (n) => phongHoaVe(n), phVeThanh: () => phVeThanh(), diBai: (id, at, chung) => gotoZone(P.maps.zones.find((z) => z.id === id), { at, ...(chung ? { chung: true } : {}) }),
   // khu vực bang (đợt 4 — bài thử máy thử): KhuXem đang có, vào khu, hội thoại NPC khu, Xa phu khu, việc /api/khu-bang
   kb: { get dl() { return khuDl; }, vao: () => khuVao(), npc: (n) => khuNpc(n), xaPhu: (z) => khuXaPhu(z), lam: (b, im) => khuLam(b, im), chon: () => khuChonMau(), thietLap: () => khuThietLap() },
   // bang hội (anh 14/11 — công cụ thử / bài thử máy thử): áp tin nhịp giả, hội thoại NPC, gọi việc bang

@@ -35,28 +35,28 @@ export class TanThu {
     const ds = [
       ["Ra bãi luyện công", oBai || h.farmZone != null || lv >= 10, () => (auto && oThanh
         ? { dong: [[["Đang chạy tới "], nutXp, [` để ra ${tenBai}`]]], mui: xp }
-        : { dong: [[["Trong thành không có quái, phải ra bãi mới lên cấp."]], [["Bấm "], nutA, [` để tự chạy ra ${tenBai}`]], [["hoặc tới "], nutXp, [" → Khu vực luyện công"]]], dt: [["Bấm "], nutA, [` để tự chạy ra ${tenBai}`]], mui: xp })],
+        : { dong: [[["Trong thành không có quái — ra bãi mới lên cấp."]], [["Bấm "], nutA, [` mà tự chạy ra ${tenBai}`]], [["hoặc tới "], nutXp, [" → Khu vực luyện công"]]], dt: [["Bấm "], nutA, [` mà tự chạy ra ${tenBai}`]], mui: xp })],
       ["Luyện tới cấp 10", lv >= 10, () => (!oBai
-        ? { dong: [[["Bấm "], nutA, [` để quay lại ${tenBai}`]]], mui: xp }
-        : auto ? { dong: [[["Đang tự đánh, cần lên cấp 10 (đang "], [String(lv), VANG], [")"]], [["Đồ rơi dưới đất: bấm vào để nhặt."]]] }
-          : { dong: [[["Bấm "], nutA, [" (phím Space) để tự đánh quái"]]], dt: [["Bấm "], nutA, [" để tự đánh quái"]] })],
+        ? { dong: [[["Bấm "], nutA, [` mà quay lại ${tenBai}`]]], mui: xp }
+        : auto ? { dong: [[["Đang tự đánh, cần lên cấp 10 (đang "], [String(lv), VANG], [")"]], [["Đồ rơi dưới đất: bấm vào mà nhặt."]]] }
+          : { dong: [[["Bấm "], nutA, [" (phím Space) mà tự đánh quái"]]], dt: [["Bấm "], nutA, [" mà tự đánh quái"]] })],
       ["Nhận quà cấp 10", (Array.isArray(h.thuongCap) && h.thuongCap.includes(10)) || h.fac != null, () => ({ dong: [[["Bấm "], ["Nhận quà cấp 10", XANH, "tt:thuong"], [": tiền, thuốc, Thổ Địa Phù"]]] })],
       ["Về Ba Lăng nhập phái", h.fac != null, () => {
-        if (!oThanh) return { dong: A.phu() ? [[["Dùng "], ["Thổ Địa Phù", XANH, "tt:phu"], [" để về Ba Lăng huyện"]]] : [[["Cần Thổ Địa Phù để về thành (Tạp hóa bán)."]]] };
+        if (!oThanh) return { dong: A.phu() ? [[["Dùng "], ["Thổ Địa Phù", XANH, "tt:phu"], [" mà về Ba Lăng huyện"]]] : [[["Muốn về thành thì cần Thổ Địa Phù (Tạp hóa bán)."]]] };
         if (z.id !== BA_LANG) return { dong: [[["Tới "], nutXp, [" → Những thành thị đã đi qua → Ba Lăng huyện"]]], mui: xp };
         const L = (this.tiepDan = this._dsTiepDan(h, w)), dong = [["Gặp "]];
         L.slice(0, 2).forEach((n, i) => { if (i) dong.push([" hoặc "]); dong.push([n.name, XANH, "tt:n:" + i]); });
-        return { dong: [dong, [["để gia nhập môn phái."]]], mui: L[0] || null };
+        return { dong: [dong, [["mà gia nhập môn phái."]]], mui: L[0] || null };
       }],
       ["Cộng điểm, chọn chiêu", Object.values(h.skills || {}).some((v) => v > 0) && !!(h.oChieu || {}).trai, () => ({
-        dong: [[["Mở "], ["Võ công", XANH, "tt:vc"], [" (F5) cộng điểm vào chiêu"]], [["Bấm ô T ở thanh dưới để chọn chiêu đánh"]], [["Mở "], ["Nhân vật", XANH, "tt:nv"], [" (F3) cộng điểm tiềm năng"]]],
-        dt: [["Mở "], ["Võ công", XANH, "tt:vc"], [" cộng điểm, rồi mở khóa ô T để chọn chiêu"]] })],
-      ["Cài Trợ Thủ", !!C.tt, () => ({ dong: [[["Mở "], ["Trợ Thủ", XANH, "tt:tt"], [" (phím K) để cài tự uống thuốc,"]], [["tự nhặt đồ, tự về thành bán đồ mua thuốc."]]], dt: [["Mở "], ["Trợ Thủ", XANH, "tt:tt"], [" để cài tự uống thuốc, tự nhặt đồ"]] })],
+        dong: [[["Mở "], ["Võ công", XANH, "tt:vc"], [" (F5) mà cộng điểm vào chiêu"]], [["Bấm ô T ở thanh dưới mà chọn chiêu đánh"]], [["Mở "], ["Nhân vật", XANH, "tt:nv"], [" (F3) mà cộng điểm tiềm năng"]]],
+        dt: [["Mở "], ["Võ công", XANH, "tt:vc"], [" cộng điểm, rồi mở khóa ô T mà chọn chiêu"]] })],
+      ["Cài Trợ Thủ", !!C.tt, () => ({ dong: [[["Mở "], ["Trợ Thủ", XANH, "tt:tt"], [" (phím K) mà cài tự uống thuốc,"]], [["tự nhặt đồ, tự về thành bán đồ mua thuốc."]]], dt: [["Mở "], ["Trợ Thủ", XANH, "tt:tt"], [" mà cài tự uống thuốc, tự nhặt đồ"]] })],
       ["Ủy thác khi tắt game", !!C.ut, () => ({ dong: [[["Đang tự đánh ở bãi mà thoát game: máy chủ"]], [["cày thay "], [`${Math.round((U.tiLe || 0.7) * 100)}% tốc độ`, VANG], [`, tối đa ${U.gioNgay || 12} giờ mỗi ngày.`]], [["Cần giờ Bạch Câu Hoàn."]], nutDoc(2, "ut")], dt: [["Thoát game lúc đang tự đánh: máy chủ cày thay. "], ...nutDoc(2, "ut")] })],
-      ["Kiếm đồ", !!C.kd, () => ({ dong: [[["Quái ở bãi đúng cấp rơi đồ xuống đất, phải"]], [["nhặt hoặc để Trợ Thủ nhặt. Đồ xanh có 1–6 dòng."]], nutDoc(3, "kd")], dt: [["Quái rơi đồ xuống đất, phải nhặt hoặc để Trợ Thủ nhặt. "], ...nutDoc(3, "kd")] })],
+      ["Kiếm đồ", !!C.kd, () => ({ dong: [[["Quái ở bãi đúng cấp rơi đồ xuống đất — phải"]], [["nhặt hoặc để Trợ Thủ nhặt. Đồ xanh có 1–6 dòng."]], nutDoc(3, "kd")], dt: [["Quái rơi đồ xuống đất, phải nhặt hoặc để Trợ Thủ nhặt. "], ...nutDoc(3, "kd")] })],
     ];
     const i = ds.findIndex((d) => !d[1]);
-    if (i < 0) { C.xong = 1; A.save(); A.msg("Đã xong chỉ dẫn tân thủ — cần xem lại: F1 → Bắt đầu chơi"); return null; }
+    if (i < 0) { C.xong = 1; A.save(); A.msg("Xong chỉ dẫn tân thủ. Muốn xem lại: F1 → Bắt đầu chơi"); return null; }
     return { so: i + 1, tong: ds.length, ten: ds[i][0], ...ds[i][2]() };
   }
 
@@ -92,6 +92,6 @@ export class TanThu {
     if (a === "tt") { C.tt = 1; A.save(); return D && D.on ? void mo("TroThu") : A.troThu(); }
     if (a === "st") return GW && GW.openGiupDo(+x);
     if (a === "ok") { C[x] = 1; return A.save(); }
-    if (a === "tat") { C.tat = 1; A.save(); return A.msg("Đã tắt chỉ dẫn tân thủ — cần xem lại: F1 → Bắt đầu chơi"); }
+    if (a === "tat") { C.tat = 1; A.save(); return A.msg("Đã tắt chỉ dẫn tân thủ. Muốn xem lại: F1 → Bắt đầu chơi"); }
   }
 }

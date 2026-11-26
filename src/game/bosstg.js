@@ -208,7 +208,7 @@ export const BossTG = {
     p.skBua = { until: w.time + Math.max(1, +U.giay || 10), giamHoi: Math.max(0, Math.min(100, +U.giamHoi || 0)), attrs: { allres_p: [-Math.max(0, +U.khang || 0)], poisontimereduce_p: [-Math.max(0, +U.doc || 0)] } };
     w.refreshStats(false);
     w.text(p, "Túy Hồ Chú", "#c78bff");
-    if (this.api) this.api.msg(`${b.ten} thi triển bùa hại: toàn kháng −${+U.khang || 0}, hồi sinh lực −${+U.giamHoi || 0}%, thời gian trúng độc +${+U.doc || 0}% trong ${+U.giay || 10} giây`, "canh");
+    if (this.api) this.api.msg(`${b.ten} thi triển bùa hại lên ngươi: toàn kháng −${+U.khang || 0}, hồi sinh lực −${+U.giamHoi || 0}%, thời gian trúng độc +${+U.doc || 0}% trong ${+U.giay || 10} giây`, "canh");
   },
   hetBuaSk() { const w = this.w, p = w && w.player; if (p && p.skBua && p.skBua.until <= w.time) { p.skBua = null; w.refreshStats(false); } },
 
@@ -220,9 +220,9 @@ export const BossTG = {
     for (const r of ds) {
       const K = r.kich, monK = (K && K.mon) || [];
       if (r.sk && !r.lai && !r.chiXem) { // siêu boss (anh 18/11): kinh nghiệm chia đều, quà theo hạng + quà tham gia (hết giờ chưa hạ: ½)
-        A.msg(`Siêu boss ${r.ten}${r.nua ? " (hết giờ chưa hạ — nhận một nửa)" : ""}: hạng ${r.hang}/${r.so} (${String(r.pct).replace(".", ",")}% sát thương) — nhận ${A.fmt(r.kn)} điểm kinh nghiệm (chia đều).`, "kn");
+        A.msg(`Siêu boss ${r.ten}${r.nua ? " (hết giờ chưa hạ — nhận một nửa)" : ""}: hạng ${r.hang}/${r.so} (${String(r.pct).replace(".", ",")}% sát thương) — nhận ${A.fmt(r.kn)} điểm kinh nghiệm (chia đều, đừng tranh).`, "kn");
         if (r.mon && r.mon.length) A.msg(`Siêu boss ${r.ten}: nhận ${mon(r.mon)}.`, "tien");
-        if (r.day) A.msg(`Siêu boss ${r.ten}: hành trang đầy — dọn chỗ để nhận phần đồ (giữ 30 phút).`, "canh");
+        if (r.day) A.msg(`Siêu boss ${r.ten}: hành trang đầy — dọn chỗ mà nhận phần đồ (giữ 30 phút, quá giờ thì mất).`, "canh");
         continue;
       }
       if (r.lai) { if (r.mon.length || monK.length) A.msg(`Boss thế giới ${r.ten}: đã nhận phần đồ còn chờ ${mon([...r.mon, ...monK])}.`, "tien"); continue; }
@@ -230,11 +230,11 @@ export const BossTG = {
       if (r.mon && r.mon.length) A.msg(`Boss thế giới ${r.ten}: quà xếp hạng ${mon(r.mon)}.`, "tien");
       if (K && K.kn) A.msg(`Boss thế giới ${r.ten}: đòn kết liễu — thêm ${A.fmt(K.kn)} điểm kinh nghiệm.`, "kn");
       if (monK.length) A.msg(`Boss thế giới ${r.ten}: quà kích sát ${mon(monK)}.`, "tien");
-      if (r.khongDu) A.msg(`Boss thế giới ${r.ten}: bạn chưa đủ ${r.khongDu}% sát thương — không có quà xếp hạng.`);
+      if (r.khongDu) A.msg(`Boss thế giới ${r.ten}: bạn chưa đủ ${r.khongDu}% sát thương — không có quà xếp hạng đâu, đánh thêm đi.`);
       // quà tham gia (anh 11/11, 13/11 lên 2 rương — may-chu/boss-tg.js r.tg): Bảo rương đồ xanh vào túi ở nhịp (hàng chờ — túi đầy thì dọn túi là vào)
       if (r.tg) A.msg(`Boss thế giới ${r.ten}: quà tham gia ${r.tg} ${A.tenMon("ms:1884")}.`, "tien");
       if (r.xu) A.msg(`Boss thế giới ${r.ten}: may mắn nhận được ${r.xu} Xu!`, "tien"); // lượt 86: mỗi người tham gia xuTl % được 1 Xu
-      if (r.day) A.msg(`Boss thế giới ${r.ten}: hành trang đầy — dọn chỗ để nhận phần đồ (giữ 30 phút).`, "canh");
+      if (r.day) A.msg(`Boss thế giới ${r.ten}: hành trang đầy — dọn chỗ mà nhận phần đồ (giữ 30 phút, quá giờ thì mất).`, "canh");
     }
     const kq = ds.filter((r) => !r.lai);
     if (kq.length && A.ketQua) A.ketQua(kq);
@@ -284,7 +284,7 @@ export const BossTG = {
     const cua = (b.cua || 0) + this.doan(b), tl = b.mauMax ? (cua * 100) / b.mauMax : 0, ten = this.w && this.w.hero ? this.w.hero.name : "";
     const top = Array.isArray(b.top) ? b.top : [], o = top.findIndex(([t]) => t === ten), hg = b.hg || (o >= 0 ? o + 1 : 0);
     return this.bangC({ ten: b.ten, lv: b.lv, he: b.he, tag: b.sk ? "SIÊU BOSS" : "BOSS", goc: con.replace(/^còn/, "Còn"), mau, mauMax: b.mauMax, pct, tt, kh,
-      trai: `Sát thương của bạn: <b class="xanh">${so(cua)}</b><br>Tỉ lệ: <b class="xanh">${p1(tl)}%</b>${hg ? ` · hạng <b class="vang">${hg}</b>` : ""}<br>Người đánh: <b class="vang">${b.so || 0}</b>`
+      trai: `Sát thương của ngươi: <b class="xanh">${so(cua)}</b><br>Tỉ lệ: <b class="xanh">${p1(tl)}%</b>${hg ? ` · hạng <b class="vang">${hg}</b>` : ""}<br>Người đánh: <b class="vang">${b.so || 0}</b>`
         + `${b.stK ? `<br>Boss +${b.stK}% sát thương` : ""}<br><span class="lam">${esc(b.tenBai)}${b.noi ? ` ${esc(b.noi)}` : ""} (${b.X}/${b.Y})</span>`,
       phai: `<ol class="btg-top">${top.map(([t, p], i) => `<li${t === ten ? ' class="minh"' : ""}><em>${i + 1}.</em><b>${esc(t)}</b>${p1(p)}%</li>`).join("")}`
         + `${o < 0 && hg ? `<li class="minh"><em>${hg}.</em><b>${esc(ten)}</b>${p1(tl)}%</li>` : ""}${!top.length && !hg ? `<li class="trong">Chưa ai đánh</li>` : ""}</ol>` });
@@ -338,11 +338,11 @@ export const BossTG = {
     this.elSat.dataset.loai = cuoi ? "cuoi" : "sat";
     const p1 = (x) => (+x).toFixed(1).replace(".", ","), cho = `${esc((w.zone && w.zone.n) || "")}${xy ? ` (${xy[0]}/${xy[1]})` : ""}`;
     this.elSat.innerHTML = cuoi ? this.bangC({ ten: String(m.name || ""), lv: m.lvl, he: m.series, tag: "BOSS", goc: "Ải cuối", mau, mauMax, pct, tt, kh,
-      trai: `Sát thương của bạn: <b class="xanh">${so(cua)}</b><br>Tỉ lệ: <b class="xanh">${p1((cua * 100) / mauMax)}%</b>${nguoi ? `<br>Người trong ải: <b class="vang">${nguoi}</b>` : ""}<br><span class="lam">${cho}</span>`,
+      trai: `Sát thương của ngươi: <b class="xanh">${so(cua)}</b><br>Tỉ lệ: <b class="xanh">${p1((cua * 100) / mauMax)}%</b>${nguoi ? `<br>Người trong ải: <b class="vang">${nguoi}</b>` : ""}<br><span class="lam">${cho}</span>`,
       phai: `<div class="btg-l">Boss cuối ${m.vd ? "Bảo tàng Viêm Đế" : "Vượt Ải"} — máu chung cả đội</div>` })
       : this.bangC({ ten: String(m.name || "").replace(/^BOSS Sát thủ - /, ""), lv: m.lvl, he: m.series, tag: "Sát thủ", goc: xy ? `${xy[0]}/${xy[1]}` : "", mau, mauMax, pct, tt, kh,
-      trai: `Sát thương của bạn: <b class="xanh">${so(cua)}</b><br>Tỉ lệ: <b class="xanh">${p1((cua * 100) / mauMax)}%</b><br><span class="lam">${cho}</span>`,
-      phai: `<div class="btg-l">${m.qc ? "Boss chung của bản quái chung — mọi người cùng đánh, máu chung" : "Boss riêng của nhiệm vụ của bạn"}<br><span class="mo">Phân thân không gây sát thương lên Boss Sát thủ</span></div>` });
+      trai: `Sát thương của ngươi: <b class="xanh">${so(cua)}</b><br>Tỉ lệ: <b class="xanh">${p1((cua * 100) / mauMax)}%</b><br><span class="lam">${cho}</span>`,
+      phai: `<div class="btg-l">${m.qc ? "Boss chung của bản quái chung — mọi người cùng đánh, máu chung" : "Boss riêng của nhiệm vụ của ngươi"}<br><span class="mo">Phân thân không gây sát thương lên Boss Sát thủ</span></div>` });
     const o = this.elSat.querySelector(".btg-anh"); if (o) o.appendChild(this.anhCua(k, m));
     this._day();
   },

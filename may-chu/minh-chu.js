@@ -69,7 +69,7 @@ function tt(h) {
   return P;
 }
 const duCap = (h) => (h.lvl || 1) >= CF.cap;
-const chuaDuCap = () => talk(`Những đại hiệp cấp ${CF.cap} trở lên mới có thể nhận nhiệm vụ Võ Lâm Minh Chủ.`);
+const chuaDuCap = () => talk(`Cấp ${CF.cap} trở lên mới nhận được nhiệm vụ Võ Lâm Minh Chủ. Luyện thêm đi!`);
 
 // ---------- giết quái ----------
 // bãi train vào được, cấp thấp nhất trong [cấp − duoi, cấp] (anh 03/11); không có thì bãi vào được cấp cao nhất
@@ -79,25 +79,25 @@ function chonBai(h) {
   const L = hop.length ? hop : ds.sort((a, b) => b.lo - a.lo).slice(0, 1);
   return L.length ? L[Math.floor(Math.random() * L.length)] : null;
 }
-const nhacGiet = (h, G0) => `Vị này ${xung(h)}, ít nhất ngươi cũng giúp ta đuổi cái lũ người đó đi ${G(G0.can)} cái ${Y(thuong(G0.ten))} mới hoàn thành nhiệm vụ, ngươi nhanh chóng đi ${R(thuong(G0.tenBai))} tiếp tục đánh bại họ đi. (đã đánh đuổi ${G0.n}/${G0.can})`;
+const nhacGiet = (h, G0) => `Còn ${G(G0.can - G0.n)} cái ${Y(thuong(G0.ten))} nữa mới xong. Đi ${R(thuong(G0.tenBai))} đánh tiếp đi, đừng lề mề! (đã đánh ${G0.n}/${G0.can})`;
 function nhanGiet(h) {
   if (!duCap(h)) return chuaDuCap();
   const P = tt(h);
-  if (P.xong.giet) return talk(`Cái đám người xấu đó hôm nay sẽ không dám đến nữa đâu, ngày mai tiếp tục nhờ ${xung(h)} ngươi giúp đỡ nhé.`);
+  if (P.xong.giet) return talk(`Lũ người xấu hôm nay không dám bén mảng tới nữa. Mai quay lại!`);
   if (P.giet) return talk(nhacGiet(h, P.giet));
-  const Z = chonBai(h); if (!Z) loi("Chưa có bãi luyện công hợp cấp");
+  const Z = chonBai(h); if (!Z) loi("Chưa có bãi luyện công hợp cấp. Quay lại sau.");
   const quai = Z.m[Math.floor(Math.random() * Z.m.length)], ten = String((MONS[quai] || {}).n || `quái ${quai}`).trim();
   P.giet = { bai: Z.id, tenBai: Z.n, quai, ten, n: 0, can: CF.giet.can };
-  return { ...talk(`Nghe Thúc Thúc và Thẩm Thẩm nói rằng ${R(thuong(ten))} ở ${Y(thuong(Z.n))} rất hung dữ, vị này ${xung(h)}, ngươi có thể giúp ta đánh đuổi cái đám người xấu đó ${G(CF.giet.can)} cái ${R(thuong(ten))} được không?`),
-    tin: [`Nhận nhiệm vụ Sát quái: hạ ${CF.giet.can} ${ten} ở ${Z.n} (đồng đội cùng bãi hạ cũng tính)`] };
+  return { ...talk(`Nghe nói ${R(thuong(ten))} ở ${Y(thuong(Z.n))} hung dữ lắm. Ngươi đi đánh đuổi ${G(CF.giet.can)} cái ${R(thuong(ten))} giúp ta!`),
+    tin: [`Nhận nhiệm vụ Sát quái: hạ ${CF.giet.can} ${ten} ở ${Z.n}. Đồng đội cùng bãi hạ cũng tính.`] };
 }
 // cộng n con vào nhiệm vụ giết quái -> câu báo (con đầu, mỗi bao con, lúc đủ) | null
 function cong(G0, n) {
   if (!G0 || G0.n >= G0.can) return null;
   const truoc = G0.n; G0.n = Math.min(G0.can, G0.n + n);
-  if (G0.n >= G0.can) return `Nhiệm vụ Sát quái: ${G0.ten} ${G0.n}/${G0.can} — đã đủ, về gặp Hắc Bạch Sứ Giả nhận thưởng`;
+  if (G0.n >= G0.can) return `Nhiệm vụ Sát quái: ${G0.ten} ${G0.n}/${G0.can} — đủ rồi, về gặp Hắc Bạch Sứ Giả nhận thưởng.`;
   const b = Math.max(1, CF.giet.bao | 0);
-  return truoc === 0 || Math.floor(G0.n / b) > Math.floor(truoc / b) ? `Nhiệm vụ Sát quái: ${G0.ten} ${G0.n}/${G0.can}` : null;
+  return truoc === 0 || Math.floor(G0.n / b) > Math.floor(truoc / b) ? `Nhiệm vụ Sát quái: ${G0.ten} ${G0.n}/${G0.can} — đánh tiếp đi!` : null;
 }
 // do.js gietQuai: 1 con id hạ ở bãi Z (đã nhận) -> câu báo cho người giết | null; đồng đội cùng bãi / bản trong tầm -> xếp hàng chờ (nhanDoi)
 const CHO = new Map(); // tài khoản đồng đội -> [{ z, q, n, luc }]
@@ -151,34 +151,34 @@ function suaThu(h, P) {
   P.thu = { ai: m.ten, noi: m.noi, da: 0 };
   return cu;
 }
-const doiThu = (h, P, cu) => talk(`${Y(cu)} ở nơi ${xung(h)} ngươi chưa đủ sức tới. Ngươi hãy mang thư này cho ${Y(P.thu.ai)} ở ${R(P.thu.noi)} thay ta, bức thư này rất gấp.`);
+const doiThu = (h, P, cu) => talk(`${Y(cu)} ở nơi ngươi chưa đủ sức tới. Mang thư này cho ${Y(P.thu.ai)} ở ${R(P.thu.noi)} thay ta. Thư gấp lắm!`);
 function nhanThu(h) {
   if (!duCap(h)) return chuaDuCap();
   const P = tt(h);
-  if (P.xong.thu) return talk(`Người đó đã nhận được thư của ta rồi, đa tạ ${xung(h)} ngươi giúp đỡ.`);
+  if (P.xong.thu) return talk(`Người đó nhận được thư của ta rồi. Việc của ngươi xong.`);
   if (P.thu) {
-    if (P.thu.da) return talk(`${vi(h)} ngươi đã giúp ta đưa thư đến nơi rồi, thật là cảm tạ. Hãy chọn "Ta đến nhận thưởng nhiệm vụ" để nhận phần thưởng.`);
+    if (P.thu.da) return talk(`Ngươi đưa thư tới nơi rồi. Chọn "Ta đến nhận thưởng nhiệm vụ" để nhận thưởng.`);
     const cu = suaThu(h, P); if (cu) return doiThu(h, P, cu);
-    return talk(`Vị này ${xung(h)}, ngươi giúp ta mang thư gửi cho ${Y(P.thu.ai)} chưa? Ngươi nhanh chóng đi ${R(P.thu.noi)} tìm cô ấy đi, bức thư này của ta rất gấp đấy.`);
+    return talk(`Ngươi mang thư cho ${Y(P.thu.ai)} chưa? Đi ${R(P.thu.noi)} tìm ngay đi. Thư gấp lắm!`);
   }
-  if (!MC.nguoiNhan.length) loi("Chưa có người nhận thư");
+  if (!MC.nguoiNhan.length) loi("Chưa có người nhận thư. Quay lại sau.");
   const ds = MC.nguoiNhan.filter((x) => toiDuoc(h, x)); // chỉ người nhận ở chỗ đủ cấp tới (anh 13/11 — Phong Lăng Độ cấp 160)
-  if (!ds.length) return talk(`Hiện chưa có ai cần ${xung(h)} ngươi đưa thư. Khi nào ${xung(h)} ngươi mạnh hơn hãy quay lại tìm ta.`);
+  if (!ds.length) return talk(`Hiện chưa có ai cần ngươi đưa thư. Mạnh hơn rồi hãy quay lại.`);
   const o = ds[Math.floor(Math.random() * ds.length)];
-  try { DO.taoQua(h, { mon: [{ k: CF.thu.mon, n: 1 }] }); } catch { return talk("Hành trang không đủ chỗ"); }
+  try { DO.taoQua(h, { mon: [{ k: CF.thu.mon, n: 1 }] }); } catch { return talk("Hành trang đầy rồi. Dọn túi đi."); }
   P.thu = { ai: o.ten, noi: o.noi, da: 0 };
-  return { ...talk(`Vị này ${xung(h)}, ngươi có quen ${Y(o.ten)} ở ${R(o.noi)} không? Đã lâu lắm rồi ta chưa gặp cô ấy, ngươi có thể giúp ta mang thư đi không? Cô ấy đang ở ${R(o.noi)}.`),
+  return { ...talk(`Ngươi có quen ${Y(o.ten)} ở ${R(o.noi)} không? Lâu lắm ta chưa gặp. Mang thư giúp ta — cô ấy đang ở ${R(o.noi)}.`),
     tin: [`Nhận nhiệm vụ đối thoại: mang Thư của Long Nhi cho ${o.ten} (${o.noi})`, "Nhận được 1 Thư của Long Nhi"] };
 }
 // làm mất thư (config.lua 11): đang có nhiệm vụ, chưa trao, trong túi / rương không còn thư -> viết lại
 function matThu(h) {
   const P = tt(h);
-  if (!P.thu) return talk(`${vi(h)} ta vẫn chưa cần ngươi giúp ta đưa thư.`);
-  if (P.thu.da) return talk(`${vi(h)} ngươi đã giúp ta đưa thư đến nơi rồi, thật là cảm tạ.`);
+  if (!P.thu) return talk(`Ta chưa cần ngươi đưa thư. Đi đi!`);
+  if (P.thu.da) return talk(`Ngươi đưa thư tới nơi rồi. Việc xong.`);
   const co = dem(h.bag, CF.thu.mon) + dem(h.ruong, CF.thu.mon) + (Array.isArray(h.ruongPhu) ? h.ruongPhu.reduce((t, L) => t + dem(L, CF.thu.mon), 0) : 0);
-  if (co > 0) return talk(`${vi(h)} trong người ngươi hoặc trong rương chứa đồ của ngươi đã có thư của ta rồi, ngươi tìm kỹ lại xem.`);
-  try { DO.taoQua(h, { mon: [{ k: CF.thu.mon, n: 1 }] }); } catch { return talk("Hành trang không đủ chỗ"); }
-  return { ...talk("Được rồi, vậy để ta viết lại cho ngươi, cũng như là luyện chữ thôi mà."), tin: ["Nhận lại thư của Long Nhi"] };
+  if (co > 0) return talk(`Thư của ta vẫn còn trong người hoặc trong rương của ngươi. Tìm kỹ lại đi!`);
+  try { DO.taoQua(h, { mon: [{ k: CF.thu.mon, n: 1 }] }); } catch { return talk("Hành trang đầy rồi. Dọn túi đi."); }
+  return { ...talk("Được. Ta viết lại cho ngươi một bức. Cầm lấy!"), tin: ["Nhận lại thư của Long Nhi"] };
 }
 // đứng gần người nhận (bãi có người đó, cách ≤ 300 — mốc vị trí the-gioi.js)
 function ganNguoi(tk, o) {
@@ -186,44 +186,44 @@ function ganNguoi(tk, o) {
   return !!p && o.bai.includes(p.zone) && Math.hypot(p.x - o.x, p.y - o.y) <= 300;
 }
 function nguoi(h, tk, ai) {
-  const o = NGUOI.get(ai); if (!o) loi("Không có người này");
-  return say("Đại hiệp tìm ta có việc gì không?", [["Ta đến trao thư cho ngươi", "traoThu"], ["Kết thúc đối thoại", null]]);
+  const o = NGUOI.get(ai); if (!o) loi("Không có người này. Tìm người khác đi.");
+  return say("Tìm ta có việc gì?", [["Ta đến trao thư cho ngươi", "traoThu"], ["Kết thúc đối thoại", null]]);
 }
 // TalkToNpc: đúng người nhận, chưa trao, còn thư trong túi -> mất thư, xong phần trao
 function traoThu(h, tk, ai) {
-  const o = NGUOI.get(ai); if (!o) loi("Không có người này");
-  if (!ganNguoi(tk, o)) loi("Các hạ đứng quá xa, hãy lại gần hơn");
+  const o = NGUOI.get(ai); if (!o) loi("Không có người này. Tìm người khác đi.");
+  if (!ganNguoi(tk, o)) loi("Đứng xa quá. Lại gần hơn đi.");
   const P = tt(h);
-  if (!P.thu || P.thu.ai !== ai || P.thu.da) return talk("Đại hiệp ngươi có nhầm người không.");
-  if (!tru(h, CF.thu.mon, 1)) return talk("Đại hiệp thư của ngươi đâu?");
+  if (!P.thu || P.thu.ai !== ai || P.thu.da) return talk("Ngươi nhầm người rồi.");
+  if (!tru(h, CF.thu.mon, 1)) return talk("Thư của ngươi đâu? Đưa đây!");
   P.thu.da = 1;
-  return { ...talk("Đa tạ đại hiệp."), tin: [`Đã trao thư cho ${ai} — về gặp Hắc Bạch Sứ Giả nhận thưởng`] };
+  return { ...talk("Được rồi. Thư tới tay rồi."), tin: [`Đã trao thư cho ${ai}. Về gặp Hắc Bạch Sứ Giả nhận thưởng.`] };
 }
 
 // ---------- thu thập ----------
 function nhanHai(h) {
   if (!duCap(h)) return chuaDuCap();
   const P = tt(h);
-  if (P.xong.hai) return talk(`Ta đã tặng hoa cho sư bá rồi, cám ơn ${xung(h)} ngươi đã giúp đỡ.`);
-  if (P.hai) return talk(`Vị này ${xung(h)}, ngươi giúp ta thu thập đủ ${G(P.hai.can)} cây ${Y(P.hai.ten)} rồi chưa? Ngươi nhanh chân đi ${R(P.hai.tenBai)} thu thập đi, ngày sinh nhật của sư phụ ta sắp đến rồi. (đang có ${dem(h.bag, LOAI.get(P.hai.loai).mon)}/${P.hai.can})`);
-  const ds = MC.loaiCay; if (!ds.length) loi("Chưa có cây thu thập");
+  if (P.xong.hai) return talk(`Ta tặng hoa cho sư bá rồi. Việc của ngươi xong.`);
+  if (P.hai) return talk(`Thu đủ ${G(P.hai.can)} cây ${Y(P.hai.ten)} chưa? Đi ${R(P.hai.tenBai)} hái ngay đi, sinh nhật sư phụ ta sắp tới rồi. (đang có ${dem(h.bag, LOAI.get(P.hai.loai).mon)}/${P.hai.can})`);
+  const ds = MC.loaiCay; if (!ds.length) loi("Chưa có cây thu thập. Quay lại sau.");
   const T = ds[Math.floor(Math.random() * ds.length)];
   P.hai = { loai: T.loai, ten: T.ten, mon: T.mon, bai: T.bai, tenBai: tenBai(T.bai), can: CF.hai.can };
-  return { ...talk(`Vị này ${xung(h)}, sư phụ của ta nói rằng ${Y(T.ten)} là một loài hoa rất thần kỳ, ta muốn lấy loài hoa này tặng cho sư phụ làm lễ vật, ngươi có thể giúp ta đến ${R(tenBai(T.bai))} giúp ta hái ${G(CF.hai.can)} cây được không? Cây mọc ngoài thành, có ${Y(CF.ve.ten)} canh giữ, phải hạ hết bọn chúng mới hái được.`),
-    tin: [`Nhận nhiệm vụ thu thập: hái ${CF.hai.can} ${T.ten} ngoài thành ${tenBai(T.bai)} — hạ 2 ${CF.ve.ten} canh giữ trước`] };
+  return { ...talk(`Sư phụ ta nói ${Y(T.ten)} là hoa thần kỳ. Ngươi tới ${R(tenBai(T.bai))} hái ${G(CF.hai.can)} cây cho ta làm lễ vật! Cây mọc ngoài thành, có ${Y(CF.ve.ten)} canh giữ — hạ hết mới hái được.`),
+    tin: [`Nhận nhiệm vụ thu thập: hái ${CF.hai.can} ${T.ten} ngoài thành ${tenBai(T.bai)}. Hạ 2 ${CF.ve.ten} canh giữ trước.`] };
 }
 // kiểm trước khi hái cây id (bắt đầu / xong): đúng loại đang nhận, chưa đủ, đứng gần, cây đã mọc lại
 function kiemCay(h, tk, id) {
-  if (!CF.bat) loi("Hoạt động Võ Lâm Minh Chủ hiện đang tạm dừng");
-  const C = CAY.get(+id); if (!C) loi("Không có cây này");
+  if (!CF.bat) loi("Hoạt động Võ Lâm Minh Chủ đang tạm dừng. Quay lại sau.");
+  const C = CAY.get(+id); if (!C) loi("Không có cây này. Kiểm tra lại.");
   const P = tt(h), T = LOAI.get(C.loai);
-  if (!P.hai || P.hai.loai !== C.loai) loi(`Chưa nhận nhiệm vụ thu thập ${T.ten} của Hắc Bạch Sứ Giả`);
-  if (dem(h.bag, T.mon) >= P.hai.can) loi("Ngươi đã thu thập đủ đạo cụ cần thiết!");
+  if (!P.hai || P.hai.loai !== C.loai) loi(`Chưa nhận nhiệm vụ thu thập ${T.ten} của Hắc Bạch Sứ Giả. Nhận rồi hãy hái.`);
+  if (dem(h.bag, T.mon) >= P.hai.can) loi("Ngươi thu đủ đạo cụ rồi. Về nộp đi!");
   const p = TG().dangChoi(tk);
-  if (!p || p.zone !== C.bai || Math.hypot(p.x - C.x, p.y - C.y) > CF.hai.gan) loi("Các hạ đứng quá xa, hãy lại gần hơn");
-  if (P.cd && P.cd[C.id] > Date.now()) loi(`${T.ten} vừa bị hái, chờ ${Math.ceil((P.cd[C.id] - Date.now()) / 1000)} giây nữa mới mọc lại`);
+  if (!p || p.zone !== C.bai || Math.hypot(p.x - C.x, p.y - C.y) > CF.hai.gan) loi("Đứng xa quá. Lại gần hơn đi.");
+  if (P.cd && P.cd[C.id] > Date.now()) loi(`${T.ten} vừa bị hái. Chờ ${Math.ceil((P.cd[C.id] - Date.now()) / 1000)} giây nữa mới mọc lại.`);
   const con = [...VE.values()].filter((g) => g.cum === C.cum && !g.chet).length; // quái canh của cụm còn sống: chưa hái được (anh 03/11 lượt 2)
-  if (con) loi(`Phải hạ hết ${CF.ve.ten} canh giữ ${T.ten} mới hái được (còn ${con} con)`);
+  if (con) loi(`Hạ hết ${CF.ve.ten} canh giữ ${T.ten} mới hái được. Còn ${con} con.`);
   return { C, T, P };
 }
 function haiBat(h, tk, id) {
@@ -233,25 +233,25 @@ function haiBat(h, tk, id) {
 }
 function hai(h, tk, id) {
   const { C, T, P } = kiemCay(h, tk, id), t = Date.now();
-  if (!P.bat || P.bat.cay !== C.id || t - P.bat.luc < CF.hai.giay * 1000 - 400 || t - P.bat.luc > CF.hai.giay * 1000 + 20000) loi("Thu thập bị gián đoạn, hãy thử lại");
+  if (!P.bat || P.bat.cay !== C.id || t - P.bat.luc < CF.hai.giay * 1000 - 400 || t - P.bat.luc > CF.hai.giay * 1000 + 20000) loi("Thu thập bị gián đoạn. Thử lại.");
   delete P.bat;
-  try { DO.taoQua(h, { mon: [{ k: T.mon, n: 1 }] }); } catch { loi("Hành trang không đủ chỗ"); }
+  try { DO.taoQua(h, { mon: [{ k: T.mon, n: 1 }] }); } catch { loi("Hành trang đầy rồi. Dọn túi đi."); }
   P.cd = Object.fromEntries(Object.entries(P.cd || {}).filter(([, v]) => v > t)); P.cd[C.id] = t + CF.hai.hoi * 1000;
   const co = dem(h.bag, T.mon);
-  return { msg: `Thu thập được 1 ${T.ten} (${co}/${P.hai.can})${co >= P.hai.can ? " — đã đủ, về gặp Hắc Bạch Sứ Giả nhận thưởng" : ""}`, cd: CF.hai.hoi, cay: C.id };
+  return { msg: `Hái được 1 ${T.ten} (${co}/${P.hai.can})${co >= P.hai.can ? " — đủ rồi, về gặp Hắc Bạch Sứ Giả nhận thưởng." : ""}`, cd: CF.hai.hoi, cay: C.id };
 }
 
 // ---------- trả nhiệm vụ ----------
-const camOn = (h) => `${xung(h)}, ngươi quả là một vị đại hiệp. Đây là món quà nhỏ ta tặng cho ngươi, mong hãy nhận lấy. Ngày mai gặp lại nhé.`;
+const camOn = (h) => `Ngươi làm tốt lắm. Đây là quà của ngươi — cầm lấy! Mai gặp lại.`;
 function traThuong(h, loai, kn, tenNv, tk) {
   const P = tt(h);
   P.xong[loai] = 1; delete P[loai];
   if (tk) try { BHO().cong(tk, null, h.name, "minhChu", null, { kieu: loai }); } catch {} // bang hội đợt 2: 20 / 15 / 15 (tk = tài khoản — api.js MC.lam)
   h.exp = (h.exp || 0) + kn; h.lvl = h.lvl || 1;
   const len = N.lenCap(h), rx = DO.choRuongXanh(h, CF.ruongXanh | 0);
-  return { ...talk(camOn(h)), tin: [`Hoàn thành nhiệm vụ Võ Lâm Minh Chủ (${tenNv}): nhận được ${so(kn)} điểm kinh nghiệm${rx ? ` và ${rx}` : ""}`], len };
+  return { ...talk(camOn(h)), tin: [`Xong nhiệm vụ Võ Lâm Minh Chủ (${tenNv}): nhận được ${so(kn)} điểm kinh nghiệm${rx ? ` và ${rx}` : ""}.`], len };
 }
-const timGi = (h) => talk(`Vị này ${xung(h)}, tìm ta có chuyện gì không?`);
+const timGi = (h) => talk(`Tìm ta có chuyện gì?`);
 function xongGiet(h, tk) {
   const P = tt(h);
   if (!P.giet) return timGi(h);
@@ -262,27 +262,27 @@ function xongThu(h, tk) {
   const P = tt(h);
   if (!P.thu) return timGi(h);
   if (!P.thu.da) { const cu = suaThu(h, P); if (cu) return doiThu(h, P, cu); }
-  if (!P.thu.da) return talk(`Vị này ${xung(h)}, ngươi vẫn chưa giúp ta mang thư cho ${Y(P.thu.ai)}. Ngươi nhanh nhanh đi ${R(P.thu.noi)} tìm cô ấy đi, bức thư này của ta rất gấp.`);
+  if (!P.thu.da) return talk(`Ngươi vẫn chưa mang thư cho ${Y(P.thu.ai)}. Đi ${R(P.thu.noi)} ngay đi. Thư gấp lắm!`);
   return traThuong(h, "thu", CF.thu.kn, "Đối thoại", tk);
 }
 function xongHai(h, tk) {
   const P = tt(h);
   if (!P.hai) return timGi(h);
   const T = LOAI.get(P.hai.loai);
-  if (!tru(h, T.mon, P.hai.can)) return talk(`Vị này ${xung(h)}, ngươi vẫn chưa giúp ta hái đủ ${G(P.hai.can)} cây ${Y(P.hai.ten)}, ngươi nhanh đi ${R(P.hai.tenBai)} giúp ta thu thập, sinh nhật của sư phụ ta sắp đến rồi đó.`);
+  if (!tru(h, T.mon, P.hai.can)) return talk(`Ngươi vẫn chưa hái đủ ${G(P.hai.can)} cây ${Y(P.hai.ten)}. Đi ${R(P.hai.tenBai)} hái ngay đi, sinh nhật sư phụ ta sắp tới rồi!`);
   return traThuong(h, "hai", CF.hai.kn, "Thu thập", tk);
 }
 
 // ---------- hội thoại ----------
-const LOI_MO = "'Hiệp Chi Đại Giả, Vì Nước Vì Dân'. Lần này ta phụng mệnh sư phụ, đến đây để tìm các chư vị anh hùng hào kiệt. Sư phụ ta nói rằng chỉ cần chúng ta đồng tâm hiệp lực, ắt sẽ có 1 ngày sẽ đánh đuổi được Thát Tử. Nhà ngươi có phải là người mà ta muốn tìm không?";
-const LOI_NHAN = () => `Những đại hiệp cấp ${CF.cap} trở lên mỗi ngày có thể đến chỗ của ta đây nhận nhiệm vụ Võ Lâm Minh Chủ, mỗi loại nhiệm vụ mỗi ngày có thể hoàn thành 1 lần, sau khi hoàn thành nhiệm vụ ta sẽ cho ngươi phần thưởng xứng đáng!`;
+const LOI_MO = "'Hiệp Chi Đại Giả, Vì Nước Vì Dân'. Ta phụng mệnh sư phụ tới đây tìm anh hùng hào kiệt. Đồng tâm hiệp lực thì có ngày đánh đuổi được Thát Tử. Ngươi có phải người ta đang tìm không?";
+const LOI_NHAN = () => `Cấp ${CF.cap} trở lên, mỗi ngày tới đây nhận nhiệm vụ Võ Lâm Minh Chủ. Mỗi loại làm được 1 lần một ngày. Xong việc thì có thưởng xứng đáng!`;
 // b.viec: "mo" | "nhan" | "thuong" | "nhanGiet" | "nhanThu" | "nhanHai" | "matThu" | "xongGiet" | "xongThu" | "xongHai" | "nguoi" (b.ai) | "traoThu"
 // (b.ai) | "haiBat" (b.cay) | "hai" (b.cay)
 function lam(h, b, tk) {
   if (!CF.bat && !/^(hai|haiBat)$/.test(b.viec)) return talk("Hoạt động Võ Lâm Minh Chủ hiện đang tạm dừng.");
   switch (b.viec) {
     case "mo": return say(LOI_MO, [["Ta đến nhận nhiệm vụ Võ Lâm Minh Chủ", "nhan"], ["Ta đến nhận thưởng nhiệm vụ", "thuong"], ["Kết thúc đối thoại", null]]);
-    case "nhan": return say(LOI_NHAN(), [["Nhận nhiệm vụ giết quái", "nhanGiet"], ["Nhận nhiệm vụ đối thoại", "nhanThu"], ["Nhận nhiệm vụ thu thập", "nhanHai"], ["Ta không cẩn thận lầm mất thư của ngươi rồi", "matThu"], ["Trở lại", "mo"]]);
+    case "nhan": return say(LOI_NHAN(), [["Nhận nhiệm vụ giết quái", "nhanGiet"], ["Nhận nhiệm vụ đối thoại", "nhanThu"], ["Nhận nhiệm vụ thu thập", "nhanHai"], ["Ta làm mất thư của ngươi rồi.", "matThu"], ["Trở lại", "mo"]]);
     case "thuong": return say(LOI_NHAN(), [["Nhận phần thưởng nhiệm vụ giết quái", "xongGiet"], ["Nhận phần thưởng nhiệm vụ đối thoại", "xongThu"], ["Nhận phần thưởng nhiệm vụ thu thập", "xongHai"], ["Trở lại", "mo"]]);
     case "nhanGiet": return nhanGiet(h);
     case "nhanThu": return nhanThu(h);
@@ -296,7 +296,7 @@ function lam(h, b, tk) {
     case "haiBat": return haiBat(h, tk, b.cay);
     case "hai": return hai(h, tk, b.cay);
   }
-  loi("Việc không rõ");
+  loi("Không có việc này. Đừng bấm nữa.");
 }
 
 // trình duyệt (api.js nvCua — bảng nhiệm vụ góc trái main.js nhiemVuHud): nhiệm vụ hôm nay, không đổi h.mc (trừ suaThu — người nhận thư chưa tới được). Nhân vật dưới cấp chưa có gì -> null

@@ -40,14 +40,14 @@ const CF = { thue: 20, cap: 10, qc: 16, cach: 40, gan: 300, ...(N.CFG.choTroi ||
 const W = 6, H = 10, HINH = 3; // lưới sạp 摆摊物品.ini ItemBox 6 × 10; số hình NPC trông sạp (src/game/main.js SAP_HINH)
 // câu client (lang\vn\stringtable_core.txt); %d / %s thay lúc dùng
 const CAU = {
-  chuaGia: "Bạn vẫn chưa định giá cho bất cứ vật phẩm nào!", chuaQc: "Xin thiết kế quảng cáo, độ dài khoảng 1-%d chữ",
-  ngoaiThanh: "Bạn chỉ có thể tiến hành sắp đặt trong thành!", ngua: "Trong lúc cỡi ngựa hoặc đang giao dịch với tổ đội không thể sắp đặt!",
-  mo: "Bạn bắt đầu sắp đặt.", dong: "Bạn quyết định không sắp đặt nữa.", chuCat: "Người sắp xếp đã cất nó rồi.", daBan: "Vật phẩm này đã bán ra.",
-  tangGia: "Người sắp xếp đã nâng giá niêm yết của vật phẩm này.", giamGia: "Người sắp xếp giảm giá niêm yết vật phẩm này.",
-  thieuTien: "Bạn chưa đủ tiền.", heCho: "Bạn không có chỗ trống để xếp vật phẩm.", hetHang: "Những vật Bạn cần đã mua đủ, có thể thu xếp rồi!",
-  thue1: "Thuế suất ở khu vực này là %d%%", thue2: "Quan phủ sau mỗi lần Bạn giao dịch thành công sẽ tự đến thu thuế.", thue3: "Người mua chịu %d%%, người bán chịu %d%% (trừ vào tiền nhận).",
-  cap: "Thông báo: %d dân chúng dưới cấp...cấm không được sắp đặt!!", banDuoc: "<%s> đã mua những thứ Bạn bày ra <%s>.",
-  khongBay: "Bày bán thất bại, xin kiểm tra: Có phải đã đặt giá cho [vật phẩm không thể bày bán] không?",
+  chuaGia: "Ngươi chưa định giá món nào cả!", chuaQc: "Lời rao dài khoảng 1-%d chữ. Viết cho đúng.",
+  ngoaiThanh: "Chỉ bày bán được trong thành!", ngua: "Đang cưỡi ngựa hoặc đang giao dịch với tổ đội thì không bày bán được!",
+  mo: "Bắt đầu bày bán.", dong: "Ngươi không bày bán nữa.", chuCat: "Chủ sạp cất món đó rồi.", daBan: "Món này bán rồi.",
+  tangGia: "Chủ sạp vừa nâng giá món này.", giamGia: "Chủ sạp vừa giảm giá món này.",
+  thieuTien: "Ngươi chưa đủ tiền.", heCho: "Ngươi không còn chỗ trống để bày món.", hetHang: "Mua đủ rồi. Thu xếp đi!",
+  thue1: "Thuế ở khu vực này là %d%%", thue2: "Quan phủ tự đến thu thuế sau mỗi lần giao dịch xong.", thue3: "Người mua chịu %d%%, người bán chịu %d%% (trừ vào tiền nhận). Nhớ kỹ.",
+  cap: "Dưới cấp %d không được bày bán!", banDuoc: "<%s> đã mua món ngươi bày ra <%s>.",
+  khongBay: "Bày bán không được. Kiểm tra xem có đặt giá cho món không bày bán được không.",
 };
 const cau = (k, ...v) => v.reduce((s, x) => s.replace(/%[ds]/, x), CAU[k]).replace(/%%/g, "%");
 // thuế chia người mua / người bán (anh 18/11) — mặc định mỗi bên CF.thue / 2 %
@@ -126,7 +126,7 @@ const DON = { ma: "1811", gia: 1 };
     if (!n) continue;
     h.gold = Math.min(N.TIEN_MAX, (h.gold || 0) + them);
     h.sap.ds = []; h.sap.mo = 0; h.sap.v = (h.sap.v | 0) + 1;
-    h.choTin = [...(h.choTin || []), `Chợ trời đã được dọn: ${n} món trên sạp của bạn được quy đổi thành ${N.tien(them)}.`].slice(-20);
+    h.choTin = [...(h.choTin || []), `Chợ trời đã dọn: ${n} món trên sạp của ngươi quy đổi thành ${N.tien(them)}.`].slice(-20);
     D.ghiTk(tk); tien += them;
     try { NK.ghi("cho", x.tk, h.name, `Dọn chợ trời (quản trị): ${n} món trên sạp quy đổi ${N.tien(them)}`, { mon: L.slice(0, 20).map((m) => NK.mon(m)) }); } catch { /* nhật ký không làm hỏng việc */ }
   }
@@ -145,7 +145,7 @@ const HT = "ht", HT_TEN = "Hệ thống";
 const htGui = (h) => DTAU.choHt(h).map((o) => ({ k: HT, ten: HT_TEN, ht: 1, yc: o.yc, loai: o.loai, ...(o.can ? { can: 1 } : {}), it: { ...o.it, u: o.u, gia: o.gia, mua: o.gia } }));
 function muaHt(tk, h, b) {
   const o = DTAU.muaHt(h, +b.u);
-  if (!o) N.loi("Hệ thống không còn bày món này — mở lại bảng Chợ Trời");
+  if (!o) N.loi("Sạp Hệ thống không còn bày món này. Mở lại bảng Chợ Trời.");
   const tinh = Math.floor(+b.gia);
   if (tinh !== o.gia) N.loi(cau(o.gia > tinh ? "tangGia" : "giamGia"));
   if ((h.gold || 0) < o.gia) N.loi(cau("thieuTien"));
@@ -157,7 +157,7 @@ function muaHt(tk, h, b) {
   D.ghiTk(tk);
   const ten = DO.tenMon(m).trim();
   NK.ghi("cho", tk.ten, h.name, `Chợ trời: mua ${ten} (Dã Tẩu: ${o.yc}) của ${HT_TEN} — ${N.tien(o.gia)}`, { mon: [NK.mon(m)] });
-  return { doi: 1, msg: `Mua ${ten} của ${HT_TEN} — ${N.tien(o.gia)}` };
+  return { doi: 1, msg: `Đã mua ${ten} của ${HT_TEN} — ${N.tien(o.gia)}` };
 }
 
 function lam(tk, h, o, b) {
@@ -179,38 +179,38 @@ function lam(tk, h, o, b) {
   if (viec === "dinhGia") {
     if ((h.lvl || 1) < CF.cap) N.loi(cau("cap", CF.cap));
     const gia = Math.floor(+b.gia), u = +b.u;
-    if (!(gia >= 1 && giaMua(gia) <= DO.NOI.TIEN_MAX)) N.loi(`Giá niêm yết từ 1 lượng tới ${N.tien(Math.floor(DO.NOI.TIEN_MAX / (1 + THUE_MUA / 100)))}`);
+    if (!(gia >= 1 && giaMua(gia) <= DO.NOI.TIEN_MAX)) N.loi(`Giá niêm yết từ 1 lượng tới ${N.tien(Math.floor(DO.NOI.TIEN_MAX / (1 + THUE_MUA / 100)))}. Đặt cho đúng.`);
     const tren = s.ds.find((v) => v.u === u);
-    if (tren) { tren.gia = gia; chiMuc(tk.ten, o, h); D.ghiTk(tk); return { sap: sapGui(h), msg: `${DO.tenMon(tren)}: giá niêm yết ${N.tien(gia)}` }; }
+    if (tren) { tren.gia = gia; chiMuc(tk.ten, o, h); D.ghiTk(tk); return { sap: sapGui(h), msg: `${DO.tenMon(tren)}: giá niêm yết ${N.tien(gia)} rồi.` }; }
     const it = (h.bag || []).find((v) => v.u === u);
-    if (!it) N.loi("Không tìm thấy vật phẩm trong hành trang");
+    if (!it) N.loi("Trong hành trang không có vật phẩm này.");
     if (it.het) N.loi(cau("khongBay")); // ngựa có hạn của Kỳ Trân Các — như giao dịch (MSG_TRADE_TASK_ITEM)
     if (it.kbh) N.loi(N.CAU_KBH.dat); // khóa bảo hiểm (anh 05/11): engine để giá bày bán 0 — không bày bán được
     if (it.tk) N.loi(N.CAU_TK); // thuốc Tống Kim (anh 12/11): không mang ra ngoài trận
-    if (GD().co(tk.ten) === 2) N.loi("Đang giao dịch — xong giao dịch rồi hãy định giá");
+    if (GD().co(tk.ten) === 2) N.loi("Đang giao dịch dở. Xong rồi hãy định giá.");
     const m = { ...it, gia }; delete m.x; delete m.y;
     const at = choDau(s.ds, m);
-    if (!at) N.loi("Sạp đã đầy (6 × 10 ô) — thu bớt món về hành trang rồi định giá tiếp");
+    if (!at) N.loi("Sạp đầy rồi (6 × 10 ô). Thu bớt món về hành trang rồi định giá tiếp.");
     [m.x, m.y] = at;
     h.bag = h.bag.filter((v) => v !== it); s.ds.push(m);
     chiMuc(tk.ten, o, h);
     D.ghiTk(tk);
-    return { sap: sapGui(h), doi: 1, msg: `${DO.tenMon(it)} lên sạp — giá niêm yết ${N.tien(gia)}: bán được nhận ${N.tien(nhanBan(gia))} (trừ thuế ${THUE_BAN}%), người mua trả ${N.tien(giaMua(gia))} (gồm thuế ${THUE_MUA}%)` };
+    return { sap: sapGui(h), doi: 1, msg: `${DO.tenMon(it)} lên sạp rồi — giá niêm yết ${N.tien(gia)}: bán được nhận ${N.tien(nhanBan(gia))} (trừ thuế ${THUE_BAN}%), người mua trả ${N.tien(giaMua(gia))} (gồm thuế ${THUE_MUA}%)` };
   }
   if (viec === "thuHoi") {
     const it = s.ds.find((v) => v.u === +b.u);
-    if (!it) N.loi("Món này không còn trên sạp");
+    if (!it) N.loi("Món này không còn trên sạp nữa.");
     const m = { ...it }; delete m.x; delete m.y; delete m.gia;
     if (N.laTB(m)) NG.cu(m); // nguồn gốc món: bày từ trước khi gắn nguồn -> đồ cũ
-    if (N.laThuoc(m) && N.soThuoc(h) + (m.n || 0) > N.mang()) N.loi(`Chỉ mang tối đa ${N.mang()} bình thuốc (mọi loại) — không nhận thêm được`);
-    if (!N.vaoTui(h, m)) N.loi("Hành trang không đủ chỗ");
+    if (N.laThuoc(m) && N.soThuocK(h, m.k, m.tk) + (m.n || 0) > N.chongMax(m.k)) N.loi(`Mỗi loại thuốc mang tối đa ${N.chongMax(m.k)} bình. Không nhận thêm được.`);
+    if (!N.vaoTui(h, m)) N.loi("Hành trang đầy rồi. Dọn túi đi.");
     if (N.xepChong(m)) N.donChong(h, m.k);
     s.ds = s.ds.filter((v) => v !== it);
     const het = s.mo && !s.ds.length;
     if (het) s.mo = 0;
     chiMuc(tk.ten, o, h);
     D.ghiTk(tk);
-    return { sap: sapGui(h), doi: 1, msg: `${DO.tenMon(it)} về hành trang` + (het ? ` — sạp hết hàng. ${cau("dong")}` : "") };
+    return { sap: sapGui(h), doi: 1, msg: `${DO.tenMon(it)} đã về hành trang` + (het ? ` — sạp hết hàng. ${cau("dong")}` : "") };
   }
   if (viec === "mo") {
     if (!b.on) { if (s.mo) { s.mo = 0; chiMuc(tk.ten, o, h); D.ghiTk(tk); } return { sap: sapGui(h), msg: cau("dong") }; }
@@ -220,11 +220,11 @@ function lam(tk, h, o, b) {
     if (GD().co(tk.ten) === 2) N.loi(cau("ngua"));
     const bai = b.bai | 0, x = Math.round(+b.x), y = Math.round(+b.y), p = TG().dangChoi(tk.ten);
     // chỗ mở sạp = chỗ đang đứng (nhịp gần nhất của máy chủ — không mở sạp từ xa)
-    if (!p || p.zone !== bai || Math.hypot(p.x - x, (p.y - y) * 2) > CF.gan) N.loi("Đứng ở chỗ muốn bày bán rồi hãy bấm Rao bán");
-    if ((N.ZONES.get(bai) || {}).bang) N.loi("Khu vực bang hội không được bày bán — hãy tới thôn / thành"); // đợt 4
+    if (!p || p.zone !== bai || Math.hypot(p.x - x, (p.y - y) * 2) > CF.gan) N.loi("Đứng đúng chỗ muốn bày bán rồi hãy bấm Rao bán.");
+    if ((N.ZONES.get(bai) || {}).bang) N.loi("Khu vực bang hội không bày bán được. Tới thôn / thành đi."); // đợt 4
     if (!trongThanh(bai, x, y)) N.loi(cau("ngoaiThanh"));
     const sat = [...SAP.values()].find((S) => S.bai === bai && !(S.tk === tk.ten && S.o === o) && Math.hypot(S.x - x, (S.y - y) * 2) < CF.cach * 2);
-    if (sat) N.loi(`Chỗ này sát sạp của ${sat.ten} — đứng xa thêm một chút rồi Rao bán`);
+    if (sat) N.loi(`Chỗ này sát sạp của ${sat.ten}. Đứng xa thêm một chút rồi Rao bán.`);
     Object.assign(s, { mo: 1, bai, x, y, hinh: Math.floor(Math.random() * HINH), luc: Date.now() });
     chiMuc(tk.ten, o, h);
     D.ghiTk(tk);
@@ -235,7 +235,7 @@ function lam(tk, h, o, b) {
     const k = String(b.k || ""), S0 = timSap(k);
     if (!S0) N.loi(cau("chuCat"));
     const tkS = S0.tk, oS = S0.o;
-    if (tkS === tk.ten) N.loi("Không mua được hàng trên sạp của chính tài khoản mình");
+    if (tkS === tk.ten) N.loi("Sạp của chính tài khoản mình thì mua làm gì. Không mua được.");
     const tkO = D.docTk(tkS), hS = tkO && tkO.nv[oS], S = hS && hS.sap;
     if (!S || !S.mo || S.id !== k) N.loi(cau("chuCat"));
     const it = (S.ds || []).find((v) => v.u === +b.u);
@@ -244,10 +244,10 @@ function lam(tk, h, o, b) {
     if (tinh !== tra) { chiMuc(tkS, oS, hS); N.loi(cau(tra > tinh ? "tangGia" : "giamGia")); }
     if ((h.gold || 0) < tra) N.loi(cau("thieuTien"));
     const nhan = nhanBan(it.gia); // người bán nhận niêm yết − thuế phần người bán (anh 18/11)
-    if ((hS.gold || 0) + nhan > DO.NOI.TIEN_MAX) N.loi(`Ngân lượng của ${hS.name} đã tới mức tối đa — chưa bán được`);
+    if ((hS.gold || 0) + nhan > DO.NOI.TIEN_MAX) N.loi(`Ngân lượng của ${hS.name} đã tới mức tối đa. Chưa bán được.`);
     const m = { ...it, u: ++h.uN }; delete m.x; delete m.y; delete m.gia;
     if (N.laTB(m)) NG.di(m, "cho", `Chợ trời: ${hS.name} → ${h.name} (${N.tien(tra)})`); // nguồn gốc món — đường đi
-    if (N.laThuoc(m) && N.soThuoc(h) + (m.n || 0) > N.mang()) N.loi(`Chỉ mang tối đa ${N.mang()} bình thuốc (mọi loại) — không mua thêm được`);
+    if (N.laThuoc(m) && N.soThuocK(h, m.k, m.tk) + (m.n || 0) > N.chongMax(m.k)) N.loi(`Mỗi loại thuốc mang tối đa ${N.chongMax(m.k)} bình. Không mua thêm được.`);
     if (!N.vaoTui(h, m)) N.loi(cau("heCho"));
     if (N.xepChong(m)) N.donChong(h, m.k);
     h.gold = (h.gold || 0) - tra; hS.gold = (hS.gold || 0) + nhan;
@@ -263,9 +263,9 @@ function lam(tk, h, o, b) {
     NK.ghi("cho", tk.ten, h.name, `Chợ trời: mua ${ten} của ${hS.name} — trả ${N.tien(tra)} (niêm yết ${N.tien(it.gia)}, thuế người mua ${N.tien(tra - it.gia)})`, { mon: [NK.mon(it)] });
     NK.ghi("cho", tkS, hS.name, `Chợ trời: ${h.name} mua ${ten} — nhận ${N.tien(nhan)} (niêm yết ${N.tien(it.gia)}, thuế người bán ${N.tien(it.gia - nhan)})`, { mon: [NK.mon(it)] });
     doiTk.add(tkS);
-    return { doi: 1, msg: `Mua ${ten} của ${hS.name} — ${N.tien(tra)} (gồm thuế ${THUE_MUA}%)`, xem: timSap(k) ? lam(tk, h, o, { viec: "xem", k }).xem : null };
+    return { doi: 1, msg: `Đã mua ${ten} của ${hS.name} — ${N.tien(tra)} (gồm thuế ${THUE_MUA}%)`, xem: timSap(k) ? lam(tk, h, o, { viec: "xem", k }).xem : null };
   }
-  N.loi("Việc chợ trời không đúng");
+  N.loi("Không có việc chợ trời nào như vậy.");
 }
 
 // danh sách sạp đang mở ở bãi (nhịp) — chỉ gửi khi trình duyệt có ver khác

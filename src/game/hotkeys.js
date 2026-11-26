@@ -65,7 +65,7 @@ export class Hotkeys {
       case "Zoom": return act.zoom(a[0] === "in" ? 1 : -1);
       case "ExitGame": case "Exit": return act.exit();
       case "PrintScreen": return act.screenshot();
-      default: return act.todo(`${key}: ${TODO[fn] || TODO[fn.replace(/_\d+$/, "_1")] || fn} — chưa có`);
+      default: return act.todo(`${key}: ${TODO[fn] || TODO[fn.replace(/_\d+$/, "_1")] || fn} — chưa mở, đừng bấm nữa`);
     }
   }
 }

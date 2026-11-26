@@ -90,9 +90,10 @@ export const AUTO_DEF = () => ({
   dung: { ds: [], leBao: { on: 0, n: 20 } },
   veThanh: { on: 0, pct: 15 },
   danh: { cach: "kc", kc: 0, doi: 8, tim: 300, uuTien: "gan", boss: 1, neSat: 1, tiep: 75, hd: 550, td: { bai: null, ds: [] }, chieu: 0, bua: [0, 0, 0], vong: 0, xoay: [0, 0], hai: [0, 0, 0], hoi: { on: 0, id: 0, pct: 50 },
+    hoTro: 1, // bảng Auto nhanh (auto-nhanh.js): tự dùng chiêu hỗ trợ — bùa lợi, vòng sáng, hồi máu (world.js autoBuff); tắt thì chỉ đánh + bùa hại
     hoiDoi: { on: 0, pct: 50 }, noi: { on: 0, duoi: 30, id: 0, len: 90 }, haiMuc: ["tat", "tat", "tat"] },
   nhat: { kieu: "tu", on: 1, r: 360, tien: 1, thuoc: 1, trang: 1, dong: 1, trangSuc: 0, loc: { on: 0, ds: LOC_DEF() }, boQua: [] },
-  treo: { on: 0, bai: null, chung: 0, tuiOn: 1, tui: 3, thuocOn: 1, thuoc: 5, nlOn: 1, nl: 5, ban: 1, mua: [{ on: 1, k: "potion:2", n: 40 }, { on: 1, k: "potion:7", n: 20 }], phu: { on: 1, n: 5 }, sua: { on: 1, pct: 20, thanh: 1 }, cat: { on: 1, giu: 100000 }, catDo: 1, boss: 1, thanh: 53 },
+  treo: { on: 0, bai: null, chung: 0, veOn: 1, tuiOn: 1, tui: 3, thuocOn: 1, thuoc: 5, nlOn: 1, nl: 5, ban: 1, mua: [{ on: 1, k: "potion:2", n: 40 }, { on: 1, k: "potion:7", n: 20 }], phu: { on: 1, n: 5 }, sua: { on: 1, pct: 20, thanh: 1 }, cat: { on: 1, giu: 100000 }, catDo: 1, boss: 1, thanh: 53 }, // veOn: bảng Auto nhanh — tự về thành (main.js treoTick); tắt thì không tự về vì lý do nào
   boss: { quay: 1, tuDi: 0, cap: 90, veBai: 1, sk: 1 }, // sk: siêu boss sự kiện tự đi đánh (anh 18/11 — mặc định bật, mọi cấp)
   tuLam: { dt: { on: 0, thuong: "kn", giuHuy: 2, gian: 0, huy: "dung" }, st: { on: 0 } },
   nh: { he: -1 },
@@ -176,6 +177,7 @@ export function chuanAuto(hero, isPotion) {
   const id = (v) => num(v, 0, 99999, 0);
   A.danh = { cach: da.cach === "td" ? "td" : "kc", kc: num(da.kc, 0, 5000, 0), doi: num(da.doi, 2, 60, 8), tim: num(da.tim, 50, 2000, 300), uuTien: da.uuTien === "dacbiet" ? "dacbiet" : "gan", boss: bit(da.boss, 1), neSat: bit(da.neSat, 1),
     tiep: num(da.tiep, 0, 2000, 75), hd: num(da.hd, 200, 1500, 550), chieu: id(da.chieu), bua: [0, 1, 2].map((i) => id((da.bua || [])[i])), vong: id(da.vong), hai: [0, 1, 2].map((i) => id((Array.isArray(da.hai) ? da.hai : [da.hai])[i])),
+    hoTro: bit(da.hoTro, 1), // bảng Auto nhanh: tự dùng chiêu hỗ trợ (bùa lợi / vòng sáng / hồi máu); nhân vật cũ chưa có cờ → bật, giữ hành vi cũ
     hoi: { on: bit((da.hoi || {}).on, 0), id: id((da.hoi || {}).id), pct: num((da.hoi || {}).pct, 1, 99, 50) },
     xoay: [0, 1].map((i) => id((da.xoay || [])[i])),
     // hồi máu đồng đội: cài đặt cũ (bật "Bùa lợi cho đồng đội" + ô hồi máu) giữ như trước
@@ -185,9 +187,9 @@ export function chuanAuto(hero, isPotion) {
     td: { bai: td.bai ?? null, ds: (Array.isArray(td.ds) ? td.ds : []).filter((p) => Array.isArray(p) && p.length === 2).slice(0, 5).map(([x, y]) => [num(x, 0, 9999, 0), num(y, 0, 9999, 0)]) } };
   A.nhat = chuanNhat(A.nhat);
   const tr = A.treo || {};
-  A.treo = { oMon: +tr.oMon === 8 ? 8 : 6, on: bit(tr.on, 0), bai: tr.bai ?? null, chung: bit(tr.chung, 0), tuiOn: bit(tr.tuiOn, 1), tui: num(tr.tui, 0, 30, 3), thuocOn: bit(tr.thuocOn, 1), thuoc: num(tr.thuoc, 0, 300, 5),
+  A.treo = { oMon: +tr.oMon === 8 ? 8 : 6, on: bit(tr.on, 0), bai: tr.bai ?? null, chung: bit(tr.chung, 0), veOn: bit(tr.veOn, 1), tuiOn: bit(tr.tuiOn, 1), tui: num(tr.tui, 0, 30, 3), thuocOn: bit(tr.thuocOn, 1), thuoc: num(tr.thuoc, 0, 300, 5),
     nlOn: bit(tr.nlOn, 0), nl: num(tr.nl, 0, 300, 5), ban: bit(tr.ban, 1),
-    mua: D.treo.mua.map((d, i) => { const m = (tr.mua || [])[i] || {}; return { on: bit(m.on, d.on), k: typeof m.k === "string" ? m.k : d.k, n: num(m.n, 1, 60, d.n) }; }), // mang tối đa 60 bình tổng
+    mua: D.treo.mua.map((d, i) => { const m = (tr.mua || [])[i] || {}; return { on: bit(m.on, d.on), k: typeof m.k === "string" ? m.k : d.k, n: num(m.n, 1, 999, d.n) }; }), // mỗi loại thuốc mua đủ tới 999 bình
     phu: { on: bit((tr.phu || {}).on, 1), n: num((tr.phu || {}).n, 1, 60, 5) }, // Thổ Địa Phù giữ đủ n tấm (mua ở Tạp hóa khi về thành)
     sua: { on: bit((tr.sua || {}).on, 1), pct: num((tr.sua || {}).pct, 1, 90, 20), thanh: bit((tr.sua || {}).thanh, 1) }, // về thành khi độ bền ≤ pct %; ở thành sửa
     cat: { on: bit((tr.cat || {}).on, 1), giu: num((tr.cat || {}).giu, 0, 2e9, 100000) }, // ở thành cất tiền vào rương, giữ lại giu lượng

@@ -83,21 +83,21 @@ const lichTin = (h) => { const L = lich(), c = h && h.pld && h.pld.chuyen ? h.pl
 
 function nam(h, ben) { // south_boatman_main
   const ten = TEN[ben - 1], { t, nghi } = lich();
-  if (nghi) return say(`${ten}: Hôm nay bến thuyền tạm nghỉ, đại hiệp hãy xem Hướng dẫn hoạt động để biết ngày thuyền chạy.`, []);
+  if (nghi) return say(`${ten}: Hôm nay bến thuyền nghỉ. Xem Hướng dẫn hoạt động mà biết ngày thuyền chạy.`, []);
   if (t < CF.baoDanh) {
     const con = CF.baoDanh - Math.floor(t);
-    return say(`${ten}: Lên thuyền thích thật đó! Còn ${con} là thuyền bắt đầu chạy rồi.`, [["Lên thuyền", "len", ben], ["Lát nữa sẽ quay lại", null]]);
+    return say(`${ten}: Còn ${con} phút nữa thuyền mới chạy.`, [["Lên thuyền", "len", ben], ["Lát nữa sẽ quay lại", null]]);
   }
-  if (t < CF.capBo) return say(`${ten}: Thật không may, thuyền đã xuất phát rồi, ngồi đợi chuyến sau vậy nhé.`, []);
-  return say(`${ten}: Thời gian đợt thuyền này vẫn chưa đến, hãy đợi thêm tí nữa hoặc đi bến khác thử xem.`, []);
+  if (t < CF.capBo) return say(`${ten}: Thuyền xuất phát rồi. Ngồi đợi chuyến sau.`, []);
+  return say(`${ten}: Chưa tới giờ. Đợi thêm một lát, hoặc đi bến khác thử xem.`, []);
 }
-const day = (ben) => say(ben === 1 ? "Ngươi đến trễ rồi! Thuyền đã đầy rồi, hãy chờ chuyến sau đi!" : "Ngươi đã đến trễ! Thuyền đã đầy rồi, hãy chờ chuyến sau đi!", []);
+const day = (ben) => say(ben === 1 ? "Tới trễ rồi! Thuyền đầy rồi. Chờ chuyến sau đi!" : "Tới trễ rồi! Thuyền đầy rồi. Chờ chuyến sau đi!", []);
 function len(h, ben) { // fld_wanttakeboat
-  if (h.fac == null) return { talk: ["Đại hiệp chưa gia nhập môn phái không thể lên thuyền"] };
+  if (h.fac == null) return { talk: ["Chưa vào môn phái thì không lên thuyền được."] };
   const { chuyen } = lich();
   if (soNguoi(chuyen, ben) >= CF.toiDa) return day(ben);
-  return say(` Muốn đón thuyền đến bờ Bắc Phong Lăng Độ phải có Phong Lăng Độ lệnh bài hoặc ngươi đưa ta ${"<color=red>" + CF.matDoCan + "<color>"} cuốn Mật đồ thần bí, ta sẽ cho ngươi lên thuyền!`,
-    [["Ta có lệnh bài Phong Lăng Độ", "lenhBai", ben], [`Ta đã thu thập đủ ${CF.matDoCan} cuốn Mật đồ thần bí`, "matDo", ben], ["Để ta suy nghĩ lại!", null]]);
+  return say(`Muốn sang bờ Bắc Phong Lăng Độ thì đưa ta Phong Lăng Độ lệnh bài, hoặc ${"<color=red>" + CF.matDoCan + "<color>"} cuốn Mật đồ thần bí. Đủ thì lên thuyền!`,
+    [["Ta có lệnh bài Phong Lăng Độ", "lenhBai", ben], [`Ta đã thu thập đủ ${CF.matDoCan} cuốn Mật đồ thần bí`, "matDo", ben], ["Để ta nghĩ lại đã.", null]]);
 }
 // fld_TakeBoat: còn giờ báo danh, còn chỗ -> ghi lên thuyền; trả null nếu không lên được (người gọi báo câu client)
 function lenThuyen(h, ben) {
@@ -108,30 +108,30 @@ function lenThuyen(h, ben) {
   for (const kk of [...trongThuyen.keys()]) if (+kk.split("|")[0] < chuyen) trongThuyen.delete(kk); // chuyến cũ
   trongThuyen.get(k).add(h.name);
   h.pld = { chuyen, ben, giet: 0, dl: 0, luc: Date.now() };
-  return { tin: [`còn ${con} phút thuyền rời bến, đến bờ Bắc Phong Lăng Độ`], di: { z: THUYEN[ben - 1], at: diemThuyen() }, lich: lichTin(h) };
+  return { tin: [`Còn ${con} phút nữa thuyền rời bến, đi bờ Bắc Phong Lăng Độ.`], di: { z: THUYEN[ben - 1], at: diemThuyen() }, lich: lichTin(h) };
 }
-const thuLai = (viec, ben) => [["à! Thì ra đặt nhầm để ta thử lại.", viec, ben], ["Để ta kiểm tra xem sao", null]];
-const tre = () => say("Thời gian không đợi ai cả! Thuyền đã đi rồi, lần sau ngươi hãy quay lại!", []);
+const thuLai = (viec, ben) => [["Đặt nhầm rồi. Để ta thử lại.", viec, ben], ["Để ta kiểm tra lại.", null]];
+const tre = () => say("Thuyền đi rồi. Lần sau quay lại sớm hơn!", []);
 function lenhBai(h, ben, u) { // use_lingpai + exchange_lingpai
   const tenVe = (N.BY.get(CF.lenhBai) || {}).n || "Lệnh bài Phong Lăng Độ";
-  if (!Array.isArray(u)) return { giao: { tieuDe: `Giao diện giao phí ${tenVe}`, loi: `Dùng 1 cái ${tenVe} đặt vào ô trống phía dưới. Nếu ngươi lấy những thứ rác rưởi khác đặt vào, ta sẽ không thèm nhận`, viec: "lenhBai", ben } };
+  if (!Array.isArray(u)) return { giao: { tieuDe: `Giao diện giao phí ${tenVe}`, loi: `Đặt 1 cái ${tenVe} vào ô trống bên dưới. Đặt thứ khác vào thì ta không nhận đâu.`, viec: "lenhBai", ben } };
   const ds = u.map((x) => h.bag.find((o) => o.u === (x | 0))).filter(Boolean);
   if (!ds.length) return say("Hừ! Không có lệnh bài mà muốn ngồi thuyền?", []);
   if (ds.length > 1) return say("Không phải ta bảo ngươi đừng đặt lung tung hay sao?", []);
   const it = ds[0];
-  if ((it.n || 1) > 1) return say("Thuyền Phu Bờ Nam:  Ta chỉ cần một cái Lệnh Bài, những thứ khác ta không cần", []); // chồng > 1 (kiểm trước loại món như client)
-  if (it.k !== CF.lenhBai) return say("Thuyền Phu Bờ Nam:  Ta chỉ cần một cái Lệnh Bài, những thứ khác ta không cần", thuLai("lenhBai", ben));
+  if ((it.n || 1) > 1) return say("Thuyền Phu Bờ Nam: Ta chỉ cần một cái Lệnh Bài. Thứ khác ta không cần.", []); // chồng > 1 (kiểm trước loại món như client)
+  if (it.k !== CF.lenhBai) return say("Thuyền Phu Bờ Nam: Ta chỉ cần một cái Lệnh Bài. Thứ khác ta không cần.", thuLai("lenhBai", ben));
   const r = lenThuyen(h, ben); if (!r) return tre(); if (r.say) return r;
   h.bag.splice(h.bag.indexOf(it), 1);
   return r;
 }
 function matDo(h, ben, u) { // use_juanzhou + exchange_juanzhou
-  if (!Array.isArray(u)) return { giao: { tieuDe: "Giao Mật đồ thần bí ", loi: `Đặt ${CF.matDoCan} cuốn Mật đồ thần bí vào ô phía dưới, bạn phải chú ý, nếu Mật đồ thần bí trong ô ít hơn hoặc nhiều hơn ${CF.matDoCan} cuốn ta sẽ không nhận.`, viec: "matDo", ben } };
+  if (!Array.isArray(u)) return { giao: { tieuDe: "Giao Mật đồ thần bí ", loi: `Đặt ${CF.matDoCan} cuốn Mật đồ thần bí vào ô bên dưới. Ít hơn hoặc nhiều hơn ${CF.matDoCan} cuốn thì ta không nhận.`, viec: "matDo", ben } };
   const ds = [...new Set(u.map((x) => x | 0))].map((x) => h.bag.find((o) => o.u === x)).filter(Boolean);
-  if (ds.some((o) => o.k !== CF.matDo)) return say("Mật đồ thần bí hình như không đúng! Hãy kiểm tra lại xem.", thuLai("matDo", ben));
+  if (ds.some((o) => o.k !== CF.matDo)) return say("Mật đồ thần bí không đúng. Kiểm tra lại đi!", thuLai("matDo", ben));
   const n = ds.reduce((a, o) => a + (o.n || 1), 0);
-  if (n > CF.matDoCan) return say(`Ta chỉ cần ${CF.matDoCan} cuốn Mật đồ thần bí, còn lại ngươi đem về đi!`, thuLai("matDo", ben));
-  if (n < CF.matDoCan) return say("Mật đồ thần bí chưa đủ! Hãy thử lại xem!", thuLai("matDo", ben));
+  if (n > CF.matDoCan) return say(`Ta chỉ cần ${CF.matDoCan} cuốn Mật đồ thần bí. Thừa thì đem về!`, thuLai("matDo", ben));
+  if (n < CF.matDoCan) return say("Mật đồ thần bí chưa đủ. Thử lại đi!", thuLai("matDo", ben));
   const r = lenThuyen(h, ben); if (!r) return tre(); if (r.say) return r;
   for (const o of ds) h.bag.splice(h.bag.indexOf(o), 1);
   return r;
@@ -153,17 +153,17 @@ function capBo(h, chet, tk, o) {
       if (L.length) {
         const chu = L.map((x) => `${x.n} ${String(DO.tenMon({ k: x.k })).trim()}`).join(", ");
         try { DO.taoQua(h, { mon: L }); tinNsk.push(`Qua được bờ kia: nhận ${chu}.`); }
-        catch { h.quaCho = [...(Array.isArray(h.quaCho) ? h.quaCho : []), { mon: L, luc: Date.now() }]; tinNsk.push(`Qua được bờ kia: nhận ${chu} — hành trang không đủ chỗ, dọn túi là tự nhận.`); }
+        catch { h.quaCho = [...(Array.isArray(h.quaCho) ? h.quaCho : []), { mon: L, luc: Date.now() }]; tinNsk.push(`Qua được bờ kia: nhận ${chu}. Hành trang đầy — dọn túi là tự nhận.`); }
       }
     } catch (e) { console.error("Nguồn sự kiện — thuyền:", e && e.message); }
   }
-  return { tin: [chet ? "Bạn không may tử vong trong lúc đi thuyền." : "đã đến bờ Bắc Phong Lăng Độ.", ...tinNsk], di: { z: BAC, at: PL ? PL.doBo[ben - 1] : null, ...(chet ? { hoiSinh: 1 } : {}) } };
+  return { tin: [chet ? "Ngươi chết trong lúc đi thuyền." : "Đã đến bờ Bắc Phong Lăng Độ.", ...tinNsk], di: { z: BAC, at: PL ? PL.doBo[ben - 1] : null, ...(chet ? { hoiSinh: 1 } : {}) } };
 }
 function bac(h, ben) { // north_boatman_main
-  return say(`${TEN[ben - 1]}: Ngươi muốn ngồi thuyền đến bờ nam Phong Lăng Độ? Đưa ta ${CF.veNamGia} lạng bạc là được.`, [["Được thôi! Đi nào!", "veNam", ben], ["Tạm thời chưa đi!", null]]);
+  return say(`${TEN[ben - 1]}: Muốn ngồi thuyền về bờ Nam Phong Lăng Độ? Đưa ta ${CF.veNamGia} lạng bạc.`, [["Được thôi! Đi nào!", "veNam", ben], ["Chưa đi vội.", null]]);
 }
 function veNam(h, ben) { // tosouth
-  if ((h.gold || 0) < CF.veNamGia) return { talk: [`${TEN[ben - 1]}: Không có tiền sao ngồi thuyền được nhỉ?`] };
+  if ((h.gold || 0) < CF.veNamGia) return { talk: [`${TEN[ben - 1]}: Không có tiền mà đòi ngồi thuyền à?`] };
   h.gold -= CF.veNamGia; delete h.pld;
   return { di: { z: NAM, at: PL ? PL.veNam[ben - 1] : null } };
 }
@@ -173,15 +173,15 @@ function veNam(h, ben) { // tosouth
 // Đặt h.pld.bac (không có thì nhanGiet bờ Bắc không nhận, nhip bỏ trạng thái); bến cập bờ ngẫu nhiên; không cộng cống hiến bang (chỉ chuyến thuyền thật).
 // Không đi được thì lỗi (do.js chưa trừ món) -> { tin, di: { z: BAC, at } }
 function truyenTong(h, z) {
-  if (h.fac == null) loi("Đại hiệp chưa gia nhập môn phái không thể đến bờ Bắc Phong Lăng Độ");
-  if (h.pld && h.pld.chuyen) loi("Đại hiệp đang ở trên thuyền Phong Lăng Độ");
-  if (h.pld && h.pld.bac) loi("Đại hiệp đang ở bờ Bắc Phong Lăng Độ rồi");
+  if (h.fac == null) loi("Chưa vào môn phái thì không đến bờ Bắc Phong Lăng Độ được.");
+  if (h.pld && h.pld.chuyen) loi("Ngươi đang ở trên thuyền Phong Lăng Độ.");
+  if (h.pld && h.pld.bac) loi("Ngươi đang ở bờ Bắc Phong Lăng Độ rồi.");
   const Z = bai(z);
-  if (!Z || !(N.THANH.has(Z.kind) || Z.id === NAM)) loi("Chỉ sử dụng được ở thành thị, thôn trấn hoặc bờ Nam Phong Lăng Độ");
-  if (lich().nghi) loi("Hôm nay bến Phong Lăng Độ tạm nghỉ, không thể truyền tống sang bờ Bắc");
+  if (!Z || !(N.THANH.has(Z.kind) || Z.id === NAM)) loi("Chỉ dùng được ở thành thị, thôn trấn hoặc bờ Nam Phong Lăng Độ.");
+  if (lich().nghi) loi("Hôm nay bến Phong Lăng Độ nghỉ. Không truyền tống sang bờ Bắc được.");
   const ben = 1 + Math.floor(Math.random() * 3);
   h.pld = { bac: 1, ben, luc: Date.now() };
-  return { tin: ["đã đến bờ Bắc Phong Lăng Độ."], di: { z: BAC, at: PL ? PL.doBo[ben - 1] : null } };
+  return { tin: ["Đã đến bờ Bắc Phong Lăng Độ."], di: { z: BAC, at: PL ? PL.doBo[ben - 1] : null } };
 }
 
 // b.viec: "mo" (+ b.bo "nam" | "bac", b.ben) | "len" | "lenhBai" / "matDo" (+ b.u) | "cap" | "chet" | "veNam" | "lich". tk / o: tài khoản + ô (cống hiến bang hội khi cập bờ)
@@ -196,7 +196,7 @@ function lam(h, b, tk, o) {
     case "chet": return capBo(h, true);
     case "veNam": return veNam(h, ben);
     case "lich": return { lich: lichTin(h) };
-    default: loi("Việc không rõ");
+    default: loi("Không có việc này. Đừng bấm nữa.");
   }
 }
 // trạng thái gửi kèm nhân vật (hero.pld của trình duyệt — cùng dạng máy chủ giữ): trên thuyền { chuyen, ben, giet, dl } | bờ Bắc { bac, ben } | null
@@ -224,7 +224,7 @@ function dev(h, b) {
       if (lb) N.themChong(h, lb, 1); if (md) N.themChong(h, md, CF.matDoCan);
       r = { tin: [`Phong Lăng Độ (thử): +1 ${lb ? lb.n : CF.lenhBai}, +${CF.matDoCan} ${md ? md.n : CF.matDo}`] }; break;
     }
-    default: loi("Việc không rõ");
+    default: loi("Không có việc này. Đừng bấm nữa.");
   }
   const L = lich();
   return { ...r, lich: lichTin(h), dev: { chung: { gio: new Date(L.chuyen + VN).toISOString().slice(11, 16), t: L.t }, pld: h.pld || null } };

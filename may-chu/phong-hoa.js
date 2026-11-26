@@ -184,8 +184,8 @@ function dotTuong(G) {
 function vaoDot(i) {
   D.gd = i; const G = GD(), n = (CF.giaiDoan || []).length, ten = G.ten || "Viện binh";
   if (i > 0) {
-    tin(`Chiến báo: ${ten} quân Tống đã tới (đợt ${i + 1}/${n}) — quân đông hơn, hành quân nhanh hơn!`, "#ffb74d");
-    TG().thongBao(`Phong Hỏa Liên Thành: ${ten} quân Tống (đợt ${i + 1}/${n}) đang tiến về thành!`);
+    tin(`Chiến báo: ${ten} quân Tống tới rồi (đợt ${i + 1}/${n}) — quân đông hơn, hành quân nhanh hơn!`, "#ffb74d");
+    TG().thongBao(`Phong Hỏa Liên Thành: ${ten} quân Tống (đợt ${i + 1}/${n}) tiến về thành!`);
   }
   const nt = dotTuong(G); if (nt) tin(`Quân Tống thêm ${nt} Chủ tướng tiến về thành!`, "#ffb74d");
 }
@@ -193,15 +193,15 @@ function vaoDot(i) {
 function dotXe(so, toc) {
   for (let i = 0; i < so; i++) { const r = (D.xeDem + i) % 3, [x, y] = chon(PD.sinh[r]); them("xe", mau("xe").tpl[0], D.lv || capTran(), 2, x, y, { duong: r, cs: 0, toc: +toc || 1 }); }
   D.xeDem += so;
-  tin(`Công Thành Chiến Xa của đối phương đang tiến công vào đây, mọi người hãy ra sức chống đỡ!!! (${so} chiếc)`, "#ffeb3b");
+  tin(`Công Thành Chiến Xa của địch đang tiến công! Ra sức chống đỡ! (${so} chiếc)`, "#ffeb3b");
 }
 // 10 Chủ soái (call_boss_zhushuai): chỗ đứng xáo trộn, chỗ 1–3 đi đường 1, 4–7 đường 2, còn lại đường 3; mẫu 1080 + i, hệ floor(i / 2)
 function raSoai() {
   const L = capTran() + 0, idx = PD.chuSoai.map((_, i) => i).sort(() => Math.random() - 0.5), tp = mau("cs").tpl;
   for (let i = 0; i < tp.length; i++) { const j = idx[i % idx.length], [x, y] = PD.chuSoai[j]; them("cs", tp[i], L, Math.floor(i / 2), x, y, { duong: j < 3 ? 0 : j < 7 ? 1 : 2, cs: 0, toc: +CF.tocSoai || 1 }); }
   D.soaiRa = true; D.soaiTong = tp.length;
-  tin("Chiến báo thủ thành: Quân Tống Chủ soái tự mình xuất trận! Các binh sĩ hãy cẩn thận phòng thủ!!", "#ff8a80");
-  TG().thongBao(`Phong Hỏa Liên Thành: Quân Tống Chủ soái đã tự mình xuất trận! Viện binh không thể vào chiến trường nữa — các tướng sĩ hãy giữ vững thành trì.`);
+  tin("Chiến báo thủ thành: Quân Tống Chủ soái tự mình xuất trận! Cẩn thận phòng thủ!", "#ff8a80");
+  TG().thongBao(`Phong Hỏa Liên Thành: Quân Tống Chủ soái tự mình xuất trận! Viện binh không vào chiến trường được nữa — giữ vững thành trì!`);
 }
 // khai chiến: phe mình (vệ binh + tướng quân — cấp trung bình người trong trận), Thần binh canh doanh trại địch, đợt quân 1 (Chủ tướng) + đợt lính đầu;
 // chiến xa theo lịch CF.xe (vòng 100 ms)
@@ -213,15 +213,15 @@ function batDau(t) {
   D.tqTong = PD.tuongQuan.length;
   vaoDot(0); dotLinh();
   D.dotLuc = t;
-  tin("Quân địch đã bắt đầu công thành, vì để bảo vệ thành chúng ta các tướng sĩ hãy xông lên!", "#ffeb3b");
-  TG().thongBao(`Phong Hỏa Liên Thành đã khai chiến! Quân Tống đang tiến về thành — ai đẳng cấp từ ${CF.cap} trở lên vẫn có thể đến Vệ binh thành môn Biện Kinh tiếp viện.`);
+  tin("Quân địch bắt đầu công thành rồi! Vì thành trì — xông lên!", "#ffeb3b");
+  TG().thongBao(`Phong Hỏa Liên Thành khai chiến! Quân Tống tiến về thành — cấp ${CF.cap} trở lên tới Vệ binh thành môn Biện Kinh tiếp viện ngay!`);
 }
 
 // ---------- mở / kết thúc ----------
 // opt (quản trị thử): baoDanh, danh, chuSoai (phút)
 function mo(opt = {}) {
   if (!PD) N.loi("Chưa có dữ liệu trận (node cong-cu/dung-phong-hoa.mjs)");
-  if (D && !D.ket) N.loi("Đang có trận Phong Hỏa Liên Thành");
+  if (D && !D.ket) N.loi("Đang có trận Phong Hỏa Liên Thành. Chờ trận này xong đã.");
   const t = Date.now(), so = (v, d) => (Number.isFinite(+v) && +v >= 0 ? +v : d);
   // tl: hệ số giãn / co mốc đợt quân + chiến xa (trận dài / ngắn hơn trận gốc — GM đổi ở F10, trận thử quản trị); phút Chủ soái của GM là phút thật của
   // trận CF.danh — trận thử ngắn hơn thì co theo dn / CF.danh
@@ -234,7 +234,7 @@ function mo(opt = {}) {
     dan: new Map(), npcHan: { han: CF.npcGiay * 3, luc: t }, tin: [], tinId: 0, lv: CF.capGoc, batDau: false, soaiRa: false, soaiTong: 0, tqTong: 0,
     dotLuc: 0, gd: -1, xeI: 0, xeDem: 0, tl, bao3: false, bao1: false, dem: { giet: 0, xeToi: 0, xeHa: 0, soaiHa: 0, tqChet: 0, veChet: 0 }, baoLuc: t, ttLuc: t,
   };
-  TG().thongBao(`Vệ quốc Phong Hỏa Liên Thành đã bắt đầu nhận báo danh! Đẳng cấp từ ${CF.cap} trở lên hãy đến Vệ binh thành môn Biện Kinh tham gia thủ thành phe Kim (lệ phí ${N.tien(CF.phi)}). Còn ${Math.round(bd)} phút nữa khai chiến.`, true);
+  TG().thongBao(`Vệ quốc Phong Hỏa Liên Thành bắt đầu nhận báo danh! Cấp ${CF.cap} trở lên tới Vệ binh thành môn Biện Kinh tham gia thủ thành phe Kim (lệ phí ${N.tien(CF.phi)}). Còn ${Math.round(bd)} phút nữa khai chiến.`, true);
   return lich(); // lịch (gio = giờ mở theo cấu hình) — trạng thái đủ gửi qua kênh tức thời
 }
 // trận kết thúc: thưởng thắng trận cho người còn trong trận (đang ở bản đồ trận), bảng kết quả; raSau giây sau trình duyệt đưa người ra Biện Kinh
@@ -254,11 +254,11 @@ function ketThuc(thang, lyDo) {
   }
   ghiKet(thang ? "thắng" : "thua", lyDo);
   // báo cả máy chủ ở khung chat (không hiện giữa màn — người trong trận có bảng kết quả)
-  if (thang) { tin(`Trải qua chiến đấu quyết liệt, phe Kim bảo vệ thành công thành trì! (${lyDo})`, "#7cff7c"); TG().thongBao(`Phong Hỏa Liên Thành: trải qua chiến đấu quyết liệt, phe Kim đã bảo vệ thành công thành trì! ${lyDo}`); }
-  else { tin(`Trải qua cuộc chiến kịch liệt, dù đã cố gắng nhưng phe ta chống không lại địch, thủ thành thất bại. (${lyDo})`, "#ff8a80"); TG().thongBao(`Phong Hỏa Liên Thành: thủ thành thất bại — ${lyDo}.`); }
+  if (thang) { tin(`Phe Kim bảo vệ thành công thành trì! (${lyDo})`, "#7cff7c"); TG().thongBao(`Phong Hỏa Liên Thành: phe Kim bảo vệ thành công thành trì! ${lyDo}`); }
+  else { tin(`Phe ta chống không lại địch, thủ thành thất bại. (${lyDo})`, "#ff8a80"); TG().thongBao(`Phong Hỏa Liên Thành: thủ thành thất bại — ${lyDo}.`); }
   return true;
 }
-function huy() { if (!D) return false; const t = Date.now(); if (!D.ket) { D.ket = "huy"; D.lyDo = "Quản trị hủy trận"; D.ketLuc = t; D.raLuc = t + 5000; D.doi = true; ghiKet("bị hủy", D.lyDo); TG().thongBao("Trận Phong Hỏa Liên Thành đã bị hủy."); } return true; }
+function huy() { if (!D) return false; const t = Date.now(); if (!D.ket) { D.ket = "huy"; D.lyDo = "Quản trị hủy trận"; D.ketLuc = t; D.raLuc = t + 5000; D.doi = true; ghiKet("bị hủy", D.lyDo); TG().thongBao("Trận Phong Hỏa Liên Thành bị hủy rồi."); } return true; }
 // nhật ký "Hoạt động" lúc trận kết thúc (anh 14/11: "phong hỏa khi kết thúc không thấy trong lịch sử hoạt động server") — trước chỉ có dòng báo danh và dòng nhận thưởng
 // khi thắng (nhịp sau), trận thua / thắng mà không đủ mức thưởng thì không có gì. Nay như Tống Kim (tong-kim.js ~804): 1 dòng chung (F10 → Nhật ký → Hoạt động) + 1 dòng mỗi
 // người đã vào trận (sổ hoạt động từng tài khoản — F10 → Người chơi → Xem hoạt động). kq: "thắng" | "thua" | "bị hủy"
@@ -275,14 +275,14 @@ function chet(e) {
   const t = Date.now(); e.mau = 0; e.chet = t; D.doi = true;
   if (e.phe) {
     if (e.vai === "tq") {
-      D.dem.tqChet++; tin("Thủ thành chiến báo: 1 tên Tướng quân thủ thành bên ta tử trận.", "#ff8a80");
-      if (D.dem.tqChet >= D.tqTong) { tin("Thủ thành chiến báo: Tướng sĩ thủ thành của ta đều tử trận.", "#ff8a80"); ketThuc(false, "3 Tướng quân thủ thành đều tử trận"); }
+      D.dem.tqChet++; tin("Thủ thành chiến báo: 1 Tướng quân thủ thành tử trận.", "#ff8a80");
+      if (D.dem.tqChet >= D.tqTong) { tin("Thủ thành chiến báo: Tướng sĩ thủ thành đều tử trận.", "#ff8a80"); ketThuc(false, "3 Tướng quân thủ thành đều tử trận"); }
     } else D.dem.veChet++;
     return;
   }
   D.dem.giet++;
-  if (e.vai === "xe") { D.dem.xeHa++; tin("Công Thành Chiến Xa của đối phương đã bị phá hủy!!!", "#ffeb3b"); }
-  if (e.vai === "cs") { D.dem.soaiHa++; tin(`Đã hạ ${D.dem.soaiHa} / ${D.soaiTong} Chủ soái quân Tống!`, "#ffb74d"); }
+  if (e.vai === "xe") { D.dem.xeHa++; tin("Công Thành Chiến Xa của địch bị phá hủy rồi!", "#ffeb3b"); }
+  if (e.vai === "cs") { D.dem.soaiHa++; tin(`Hạ ${D.dem.soaiHa} / ${D.soaiTong} Chủ soái quân Tống!`, "#ffb74d"); }
   // thưởng: người gây nhiều sát thương nhất nhận trọn, người khác kinh nghiệm × phần sát thương (như quai-chung.js; cùng đội người nhận trọn: phần
   // chia đội) — NPC phe mình đánh không có phần; kinh nghiệm gốc client (thưởng thắng trận) cộng ngay để kịp lúc kết thúc
   const v = D.vt.get(e.uid), x = v ? v[0] : e.x, y = v ? v[1] : e.y;
@@ -296,7 +296,7 @@ function chet(e) {
     L.push({ u: D.u, r, he, top: tk === top, kn: e.kn, ...(tk === top ? boc(e) : {}) }); if (L.length > 600) L.shift(); CHO.set(tk, L);
     const w = D.vao.get(tk); if (w) { w.knGoc += knG * he; if (tk === top) w.giet++; }
   }
-  if (e.vai === "cs" && D.dem.soaiHa >= D.soaiTong) { tin("Chủ soái quân địch đã bị tiêu diệt!!!", "#7cff7c"); ketThuc(true, `Hạ đủ ${D.soaiTong} Chủ soái quân Tống`); }
+  if (e.vai === "cs" && D.dem.soaiHa >= D.soaiTong) { tin("Chủ soái quân địch bị tiêu diệt rồi!", "#7cff7c"); ketThuc(true, `Hạ đủ ${D.soaiTong} Chủ soái quân Tống`); }
 }
 // rơi thêm của con e cho người nhận trọn (CF.roi, bùa CF.bua): { bua?: [khóa món], mon?: [{ k, n }], xu? }
 function boc(e) {
@@ -332,13 +332,13 @@ function nhanThuong(h, tk, key, admin) {
     for (const k of o.bua || []) out.nhan.push({ ...DO.roiMon(h, key, { z, x, y }, { k }, null), x, y, z }); // bùa: nằm đất chỗ con chết, riêng mình nhặt (do.js nhatBua)
     if (o.xu > 0) {
       h.xu = (h.xu | 0) + o.xu; out.xu = (out.xu | 0) + o.xu;
-      out.tin.push(`Bạn nhận được ${o.xu} Xu.`);
+      out.tin.push(`Nhận được ${o.xu} Xu.`);
       NK().ghi("hd", tk, h.name, `Phong Hỏa Liên Thành: +${o.xu} Xu`);
     }
   }
   if (K) {
     h.exp = (h.exp || 0) + K.kn; h.lvl = h.lvl || 1; out.len += N.lenCap(h); out.kn += K.kn; out.thang = K.kn;
-    out.tin.push(`Phe Kim giành được thắng lợi cuối cùng, nhận được ${vn(K.kn)} điểm kinh nghiệm.`);
+    out.tin.push(`Phe Kim thắng trận! Nhận được ${vn(K.kn)} điểm kinh nghiệm.`);
     NK().ghi("hd", tk, h.name, `Phong Hỏa Liên Thành thắng: +${K.kn} kinh nghiệm (kinh nghiệm trong trận ${K.goc})`);
     if (K.rx > 0) { const t = DO.choRuongXanh(h, K.rx); out.tin.push(`Thắng trận, đạt mức thưởng cao nhất: thêm ${t}`); NK().ghi("hd", tk, h.name, `Phong Hỏa Liên Thành thắng (mức cao nhất): +${t}`); }
   }
@@ -399,7 +399,7 @@ setInterval(() => {
   if (CF.bat && PD && CF.gio) {
     const s = new Date(t + 7 * 3600000).toISOString(), hm = s.slice(11, 16), ngay = s.slice(0, 10);
     // khóa có giờ (anh 05/11 — GM dời giờ muộn hơn trong ngày vẫn mở trận); ngày tắt trong tuần (CF.thu) thì không báo / không mở
-    if (CF.baoTruoc > 0 && hm === lui(CF.gio, CF.baoTruoc) && !daGoi.has(`${ngay} b${CF.gio}`) && GV.thuOk(CF, t + CF.baoTruoc * 60000)) { daGoi.add(`${ngay} b${CF.gio}`); if (!D) TG().thongBao(`${CF.baoTruoc} phút nữa Phong Hỏa Liên Thành sẽ mở báo danh ở Vệ binh thành môn Biện Kinh (đẳng cấp ${CF.cap} trở lên).`); }
+    if (CF.baoTruoc > 0 && hm === lui(CF.gio, CF.baoTruoc) && !daGoi.has(`${ngay} b${CF.gio}`) && GV.thuOk(CF, t + CF.baoTruoc * 60000)) { daGoi.add(`${ngay} b${CF.gio}`); if (!D) TG().thongBao(`${CF.baoTruoc} phút nữa Phong Hỏa Liên Thành mở báo danh ở Vệ binh thành môn Biện Kinh (cấp ${CF.cap} trở lên).`); }
     if (hm === CF.gio && !daGoi.has(`${ngay} ${CF.gio}`) && GV.thuOk(CF, t)) { daGoi.add(`${ngay} ${CF.gio}`); if (!D || D.ket) try { D = null; mo({}); } catch (e) { console.error("Phong Hỏa:", e.message); } }
   }
   if (!D) return;
@@ -424,8 +424,8 @@ setInterval(() => {
     while (D.xeI < XE.length && ph >= (+(XE[D.xeI] || [])[0] || 0)) { const r = XE[D.xeI++] || []; if (r[1] > 0) dotXe(r[1] | 0, r[2]); }
     if (!D.soaiRa && t >= D.csLuc) raSoai();
     // còn 3 / 1 phút (trận đủ dài)
-    if (!D.bao3 && D.het - t <= 180000 && D.het - D.kc > 360000) { D.bao3 = true; tin("Chiến báo: còn 3 phút nữa — giữ vững thành trì, hạ Chủ soái quân Tống!", "#ffeb3b"); }
-    if (!D.bao1 && D.het - t <= 60000 && D.het - D.kc > 120000) { D.bao1 = true; tin("Chiến báo: còn 1 phút cuối cùng — tử thủ!", "#ffeb3b"); }
+    if (!D.bao3 && D.het - t <= 180000 && D.het - D.kc > 360000) { D.bao3 = true; tin("Chiến báo: còn 3 phút — giữ vững thành trì, hạ Chủ soái quân Tống!", "#ffeb3b"); }
+    if (!D.bao1 && D.het - t <= 60000 && D.het - D.kc > 120000) { D.bao1 = true; tin("Chiến báo: còn 1 phút cuối — tử thủ!", "#ffeb3b"); }
     // mỗi 3 phút báo binh lực địch + thành (cd_sendmsg2msall)
     if (t - D.baoLuc >= 180000) { D.baoLuc = t; tin(`Thủ thành chiến báo: viện binh ${D.trong.size} người, tướng sĩ thủ thành ${song((e) => e.phe).length} người, điểm thủ thành ${D.diem} điểm; binh lực đối phương ${song((e) => !e.phe && e.vai !== "tb").length} người.`); }
     if (t >= D.het) ketThuc(true, "Giữ vững thành trì tới hết giờ");
@@ -511,26 +511,26 @@ WS.nhan("mo", (kn) => kn.gui({ t: "phLich", l: lich() }));
 // ---------- Vệ binh thành môn (HTTP) ----------
 // { viec: "mo" } -> lịch + đã báo danh chưa; { viec: "vao" } -> kiểm cấp, phí (1 lần mỗi trận), chỗ vào đại doanh
 function lam(h, b, tk) {
-  if (!h) N.loi("Chưa chọn nhân vật");
+  if (!h) N.loi("Chưa chọn nhân vật. Chọn rồi hãy vào.");
   const l = lich(), daNop = !!(D && D.nop.has(tk));
   if (b.viec === "mo") return { l, daNop, vang: h.gold | 0, soNguoi: D ? D.nop.size : 0, phiTxt: N.tien(CF.phi) };
-  if (b.viec !== "vao") N.loi("Việc không hợp lệ");
-  if (!D || !l.mo) N.loi(D && D.soaiRa && !D.ket ? "Quân viện trợ của ta đã bị địch quân chia cắt, không thể đến đây được!" : "Hoạt động thủ thành vẫn chưa bắt đầu.");
-  if ((h.lvl | 0) < CF.cap) N.loi(`Đẳng cấp lớn hơn ${CF.cap} cấp mới có thể tham gia chiến tranh vệ quốc.`);
+  if (b.viec !== "vao") N.loi("Không có việc này. Đừng bấm nữa.");
+  if (!D || !l.mo) N.loi(D && D.soaiRa && !D.ket ? "Viện binh bị địch chia cắt rồi. Không tới đây được!" : "Hoạt động thủ thành chưa bắt đầu. Quay lại sau.");
+  if ((h.lvl | 0) < CF.cap) N.loi(`Cấp ${CF.cap} trở lên mới tham gia được chiến tranh vệ quốc.`);
   if (!daNop) {
-    if ((h.gold | 0) < CF.phi) N.loi(`Sao thế, ngươi không mang theo ${N.tien(CF.phi)}, ta không thể cho ngươi vào. Hãy chuẩn bị tiền rồi hãy đến tìm ta!`);
+    if ((h.gold | 0) < CF.phi) N.loi(`Ngươi không mang ${N.tien(CF.phi)}. Chuẩn bị đủ tiền rồi hãy tới tìm ta!`);
     h.gold -= CF.phi;
     D.nop.set(tk, { ten: h.name, luc: Date.now() });
     D.vao.set(tk, { ten: h.name, giet: 0, knGoc: 0, thuong: 0, vao: 0 });
     NK().ghi("hd", tk, h.name, `Phong Hỏa Liên Thành: báo danh, nộp ${CF.phi} lượng`);
   } else { const v = D.vao.get(tk); if (v) v.ten = h.name; }
-  return { l: lich(), daNop: true, vao: { zone: BAI, at: chon(PD.hoiSinh) }, msg: daNop ? "Ngươi chuẩn bị vào trong đó đi!" : `Đã nộp ${N.tien(CF.phi)} lệ phí báo danh — vào đại doanh thủ thành phe Kim.` };
+  return { l: lich(), daNop: true, vao: { zone: BAI, at: chon(PD.hoiSinh) }, msg: daNop ? "Vào trong đó đi!" : `Nộp ${N.tien(CF.phi)} lệ phí báo danh. Vào đại doanh thủ thành phe Kim.` };
 }
 // quản trị thử: { viec: "mo" (baoDanh?, danh?, chuSoai? phút) | "huy" | "ket" (thang) | "xem" }
 function quanTri(b) {
   if (b.viec === "mo") { if (D && D.ket) D = null; return { s: mo({ baoDanh: b.baoDanh, danh: b.danh, chuSoai: b.chuSoai }) }; }
-  if (b.viec === "huy") { if (!huy()) N.loi("Không có trận"); return { s: lich() }; }
-  if (b.viec === "ket") { if (!D || D.ket) N.loi("Không có trận đang đánh"); ketThuc(!!b.thang, "Quản trị kết thúc trận"); return { s: lich() }; }
+  if (b.viec === "huy") { if (!huy()) N.loi("Không có trận nào."); return { s: lich() }; }
+  if (b.viec === "ket") { if (!D || D.ket) N.loi("Không có trận nào đang đánh."); ketThuc(!!b.thang, "Quản trị kết thúc trận"); return { s: lich() }; }
   return { s: lich(), cf: { gio: CF.gio, baoDanh: CF.baoDanh, danh: CF.danh, chuSoai: CF.chuSoai, cap: CF.cap, phi: CF.phi }, co: !!PD,
     tran: D ? { diem: D.diem, quan: D.q.size, nguoi: [...D.trong.values()], nop: D.nop.size, lv: D.lv, dem: D.dem, chu: D.trong.get(D.chu) || null } : null };
 }

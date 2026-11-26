@@ -28,12 +28,12 @@ function con() {
   }
   return S;
 }
-const cau = () => { const s = con(); return s ? `Máy chủ đang bảo trì${s.den ? ` — mở lúc ${gioVN(s.den)} (giờ Việt Nam)` : ""}.${s.loi ? ` ${s.loi}${/[.!?]$/.test(s.loi) ? "" : "."}` : ""} Hẹn gặp lại!` : ""; };
+const cau = () => { const s = con(); return s ? `Máy chủ đang bảo trì, vào không được${s.den ? ` — mở lúc ${gioVN(s.den)} (giờ Việt Nam)` : ""}.${s.loi ? ` ${s.loi}${/[.!?]$/.test(s.loi) ? "" : "."}` : ""} Quay lại đúng giờ, đừng gõ cửa nữa!` : ""; };
 const tomTat = () => { const s = con(); return s ? { den: s.den || 0, cau: cau() } : null; };
 function dat(qt, b) {
   if (b.bat) {
     const den = Math.max(0, Math.floor(+b.den || 0));
-    if (den && den <= Date.now()) throw Object.assign(new Error("Giờ mở đã qua — chọn giờ sau bây giờ"), { code: 400 });
+    if (den && den <= Date.now()) throw Object.assign(new Error("Giờ mở đã qua rồi. Chọn giờ sau bây giờ."), { code: 400 });
     S = { bat: true, den, loi: String(b.loi || "").replace(/[\u0000-\u001f<>]/g, " ").trim().slice(0, 120), boi: qt.ten, luc: Date.now() };
     NK.ghi("qt", qt.ten, null, `Bật bảo trì${den ? ` tới ${gioVN(den)}` : " (tới khi tắt)"}`);
   } else {

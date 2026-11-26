@@ -46,11 +46,11 @@ export class GameMap {
   // onp(daTai, tong): tiến độ tải ảnh bản đồ theo byte (thanh tải màn chờ — src/game/loading.js)
   static async load(meta, key, base = "assets/web/map/", onp = null) {
     const m = meta.maps[key];
-    if (!m) throw new Error(`Không có bản đồ ${key}`);
+    if (!m) throw new Error(`Không có bản đồ ${key}. Quay lại đi, đừng đứng đây.`);
     if (m.tiles) {
       const map = new GameMap(key, m, m.jmo ? meta.jmo[m.jmo] : null, null, meta, base);
       if (m.objects) {
-        const j = await thuLai(async () => { const { r, keo } = await layCoHan(base + m.objects); try { if (!r.ok) throw new Error("Không tải được lớp vật " + m.objects); return await r.json(); } finally { keo(true); } });
+        const j = await thuLai(async () => { const { r, keo } = await layCoHan(base + m.objects); try { if (!r.ok) throw new Error("Tải không nổi lớp vật " + m.objects); return await r.json(); } finally { keo(true); } });
         map.setObjects(j, base + m.tiles.dir);
       }
       if (onp) onp(1); // ô ảnh: tải theo khung nhìn (warm)
@@ -64,7 +64,7 @@ export class GameMap {
       const u = lan ? `${url}?l=${Date.now()}` : url;
       const blob = onp ? await layCoHan(u, lan ? "no-store" : "").then(async ({ r, keo }) => {
         try {
-          if (!r.ok) throw new Error(`Không tải được ảnh bản đồ ${m.img} (mã ${r.status})`);
+          if (!r.ok) throw new Error(`Tải không nổi ảnh bản đồ ${m.img} (mã ${r.status}) — mạng của ngươi có vấn đề, thử lại đi.`);
           const tot = +r.headers.get("content-length") || 0;
           if (!r.body || !tot) return await r.blob();
           const rd = r.body.getReader(), parts = []; let got = 0;
@@ -74,7 +74,7 @@ export class GameMap {
       }) : null;
       const src = blob ? URL.createObjectURL(blob) : u;
       try {
-        await new Promise((ok, bad) => { img.onload = ok; img.onerror = () => bad(new Error(`Không đọc được ảnh bản đồ ${m.img}`)); img.src = src; });
+        await new Promise((ok, bad) => { img.onload = ok; img.onerror = () => bad(new Error(`Đọc không nổi ảnh bản đồ ${m.img} — thử lại đi.`)); img.src = src; });
         // giải mã trước để khung đầu không giật; decode() có lúc không bao giờ trả về (gặp khi nạp trang) -> chờ tối đa 2 giây
         await Promise.race([img.decode().catch(() => {}), new Promise((r) => setTimeout(r, 2000))]);
       } finally { if (blob) URL.revokeObjectURL(src); } // ảnh đã nạp xong, giữ trong thẻ img

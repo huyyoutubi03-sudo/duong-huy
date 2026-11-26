@@ -232,6 +232,8 @@ export class DienThoai {
 <div class="dt-noi" data-a="noi"><i></i><span><b></b><em></em></span></div>
 <div class="dt-sap" data-a="sap"><i style="background-image:url('${A}ui/hud/cursor/8.png')"></i><span><b>Xem sạp</b><em></em></span></div>
 <div class="dt-nhat" data-a="nhat"><i style="background-image:url('${A}ui/hud/cursor/3.png')"></i><span><b></b><em></em></span></div>
+<div class="dt-auto" data-a="autonhanh">AUTO</div>
+<div class="dt-zalo" data-a="zalo" title="Nhóm Zalo"><i style="background-image:url('${A}ui/hud/btn/zalo.png')"></i></div>
 <div class="dt-mo" data-a="hang"><i></i></div>
 <div class="dt-bdl"><div class="dt-bdl-dau"><span></span><em></em><b data-a="bdl">✕</b></div><div class="dt-bdl-cv"><canvas></canvas></div></div>
 <div class="dt-bang">
@@ -243,7 +245,7 @@ export class DienThoai {
   <div class="dt-ctab">${C.tabs.list.map((t, i) => `<span data-a="kt${i}">${esc(t.label)}</span>`).join("")}</div>
   <div class="dt-ghim" style="display:none"></div>
   <div class="dt-clist"></div>
-  <div class="dt-cin"><span class="dt-ckenh" data-a="kenh"></span><input class="dt-cgo" maxlength="${H.M.input.max || 80}" spellcheck="false" autocomplete="off" enterkeyhint="send" placeholder="Nói gì đó…"><span class="dt-cbtn bieucam" data-a="bieucam"></span><span class="dt-cbtn gui" data-a="gui"></span></div>
+  <div class="dt-cin"><span class="dt-ckenh" data-a="kenh"></span><input class="dt-cgo" maxlength="${H.M.input.max || 80}" spellcheck="false" autocomplete="off" enterkeyhint="send" placeholder="Nói gì thì nói đi…"><span class="dt-cbtn bieucam" data-a="bieucam"></span><span class="dt-cbtn gui" data-a="gui"></span></div>
   <div class="dt-cmenu">${this.kenhDs.map((id, i) => { const c = C.channels[id]; return `<div data-a="kn${i}" style="color:${rgb(c.color)}">${c.menuImg ? `<i style="background-image:url('${A}ui/hud/${c.menuImg.file}')"></i>` : ""}${esc(c.menu)}</div>`; }).join("")}</div>
 </div>
 <div class="dt-tab">${THE.map(([t, k], i) => `<div data-a="t${i}"><div class="dt-tic">${ic(k, 30)}<b class="dt-so"></b></div><span>${t}</span></div>`).join("")}</div>`;
@@ -322,9 +324,9 @@ export class DienThoai {
     this.oKhoa = !!on; document.body.classList.toggle("dt-osua", !this.oKhoa);
     if (this._boNgam) this._boNgam();
     const pk = document.querySelector(".jx-skpick"), G = this.api.GW(); if (pk) pk.remove(); if (G) G._hideSkTip();
-    if (bao) this.H.msg(this.oKhoa ? "Khóa ô kỹ năng: chạm ô để dùng chiêu / thuốc, kéo chiêu để ngắm" : "Mở khóa ô kỹ năng: chạm ô để gắn chiêu / thuốc, kéo ô để đổi chỗ / gỡ — xong chạm nút khóa");
+    if (bao) this.H.msg(this.oKhoa ? "Khóa ô kỹ năng rồi: chạm ô là dùng chiêu / thuốc, kéo chiêu để ngắm. Đừng bấm bừa." : "Mở khóa rồi: chạm ô để gắn chiêu / thuốc, kéo ô đổi chỗ / gỡ — xong thì chạm nút khóa, đừng để mở toang.");
   }
-  nhacKhoa() { this.H.msg("Ô kỹ năng đang khóa (chỉ dùng) — chạm nút khóa cạnh ô để gắn chiêu / thuốc"); }
+  nhacKhoa() { this.H.msg("Ô kỹ năng đang khóa, chỉ dùng được thôi. Muốn gắn chiêu thì chạm nút khóa cạnh ô."); }
   // cỡ giao diện (Trợ Thủ → Khác — anh 30/10 "giao diện nhỏ hơn như kiểu zoom, bé hơn 10–20%") — nhớ ở máy này
   datCo(s) { if (!CO.includes(s)) return; this.co = s; try { localStorage.setItem("vl_dtCo", String(s)); } catch {} if (this.on && !this.mt) this._datCo(s); }
   // khung hình tối đa / giây lúc chơi trên điện thoại (main.js loop — anh 30/10 lần 2 "hao pin, nóng máy"): nhớ ở máy
@@ -352,6 +354,8 @@ export class DienThoai {
     if (k === "hang") { P.audio.ui("click"); this.hang = !this.hang; return this.tick(); } // màn ngang: hàng icon Mở rộng / Thu gọn
     if (k === "toan") { P.audio.ui("click"); return document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen({ navigationUI: "hide" }).catch(() => {}); }
     if (k === "tudanh") return this.api.toggleAuto();
+    if (k === "autonhanh") return this.api.moAutoNhanh && this.api.moAutoNhanh(); // bảng Auto nhanh (auto-nhanh.js): 6 công tắc to, cả dọc lẫn ngang
+    if (k === "zalo") { P.audio.ui("click"); return this.nut("NhomZalo"); } // nút Zalo nhanh màn ngang (cùng hàng AUTO dưới bản đồ nhỏ) — như ô Nhóm Zalo bảng Giang hồ
     if (k === "ngua") { P.audio.ui("click"); return this.bat("Horse"); } // lên / xuống ngựa (main.js toggleHorse — như ô Lên ngựa của bảng Giang hồ)
     if (k === "baucua") { P.audio.ui("click"); return this.nut("BauCua"); } // biểu tượng Bầu Cua: bàn cược (anh 10/11 lần 3 "icon đặt mọi nơi")
     if (k === "khoaat") { P.audio.ui("click"); return this.nut("KhoaAnToan"); } // ổ khóa an toàn (anh 10/11 — mật khẩu cấp 2): dọc dưới nút Tự đánh, ngang cạnh nút Mở rộng
@@ -789,7 +793,7 @@ export class DienThoai {
       this.sig.kenh = kk;
       const c = H.channel === "PRIVATE" ? H.M.chat.stranger : H.M.chat.channels[H.channel], k = this.el.querySelector(".dt-ckenh");
       k.style.backgroundImage = c && c.menuImg ? `url('${A}ui/hud/${c.menuImg.file}')` : "";
-      const go = this.el.querySelector(".dt-cgo"); if (go) go.placeholder = H.channel === "PRIVATE" && H.matToi ? `Mật ${H.matToi}: …` : "Nói gì đó…";
+      const go = this.el.querySelector(".dt-cgo"); if (go) go.placeholder = H.channel === "PRIVATE" && H.matToi ? `Mật ${H.matToi}: …` : "Nói gì thì nói đi…";
       this.el.querySelectorAll(".dt-cmenu > div").forEach((d, i) => d.classList.toggle("on", this.kenhDs[i] === H.channel));
     }
   }
@@ -809,7 +813,7 @@ export class DienThoai {
       // món khóa bảo hiểm (thưởng, mua bằng Xu ở Kỳ Trân Các — anh 12/11) / thuốc Tống Kim: không vứt được -> không hiện nút (G.tipIt: món đang xem)
       const ti = G.tipIt, vutDuoc = !(ti && (ti.kbh || ti.tk));
       if (sig && !giu && this.mon && this._laTui(this.mon.el) && vutDuoc) this.hd.push({ chu: "Vứt", loai: "vut", mod: {}, th: 3 });
-      b.innerHTML = giu ? `<span class="dt-hgo">Chạm ô muốn đặt</span><span class="dt-hn dt-hphu" data-a="bo">Bỏ xuống</span>`
+      b.innerHTML = giu ? `<span class="dt-hgo">Chạm đúng ô muốn đặt</span><span class="dt-hn dt-hphu" data-a="bo">Bỏ xuống</span>`
         : this.hd.map((h, i) => `<span class="dt-hn${h.th ? " dt-hphu" : ""}" data-a="h${i}">${esc(h.chu)}</span>`).join("") + `<span class="dt-hn dt-hphu" data-a="hx">Đóng</span>`;
       b.style.display = sig && (giu || this.hd.length) ? "flex" : "none";
       if (b.style.display !== "none") this._nutClient(b);
@@ -857,7 +861,7 @@ export class DienThoai {
       this.mangLuc = t;
       const ms = this.api.ping(), el = this.el.querySelector(".dt-ping");
       this._chu(".dt-fps", `FPS ${this.api.fps()}`);
-      this._chu(".dt-ping", ms == null ? "Mất kết nối" : `Mạng ${Math.round(ms)} ms`);
+      this._chu(".dt-ping", ms == null ? "Mất kết nối rồi. Kiểm tra mạng đi." : `Mạng ${Math.round(ms)} ms`);
       this._chu(".dt-onl", `Trực tuyến ${Math.max(1, (this.api.online && this.api.online()) | 0)}`);
       this._chu(".dt-ky", KY_NGAN);
       const lop = ms == null || ms >= 400 ? "mat" : ms >= 150 ? "cham" : "";
@@ -887,7 +891,7 @@ export class DienThoai {
       md.style.display = mt.n ? "" : "none"; md.classList.toggle("nhay", mt.nhay); md.querySelector(":scope > b").textContent = mt.n > 1 ? mt.n : "";
       md.classList.toggle("mo", !!mt.mo); // bảng đang mở: lên trên nút ô kỹ năng / ổ khóa ô (game.css .dt-moidoi.mo — anh 11/11 "popup mời pt đang bị icon khác đè")
       const nut = (m, v, t) => `<span class="dt-moin${v === "nhan" ? " nhan" : ""}" data-a="moiv" data-id="${m.id}" data-v="${v}">${t}</span>`;
-      p.innerHTML = mt.mo ? mt.ds.map((m) => `<div class="dt-moil"><div class="dt-moic"><span>${esc(m.tu)}</span> ${m.bh != null ? `mời bạn gia nhập bang hội <span>${esc(m.bh)}</span>` : "mời bạn gia nhập nhóm của họ"}</div>${nut(m, "nhan", "Đồng ý")}${nut(m, "tuChoi", "Cự tuyệt")}${nut(m, "an", "Xem nhẹ")}</div>`).join("") : ""; // m.bh: lời mời vào bang (anh 14/11)
+      p.innerHTML = mt.mo ? mt.ds.map((m) => `<div class="dt-moil"><div class="dt-moic"><span>${esc(m.tu)}</span> ${m.bh != null ? `mời bạn gia nhập bang hội <span>${esc(m.bh)}</span>` : "mời ngươi vào nhóm của họ"}</div>${nut(m, "nhan", "Đồng ý")}${nut(m, "tuChoi", "Cự tuyệt")}${nut(m, "an", "Xem nhẹ")}</div>`).join("") : ""; // m.bh: lời mời vào bang (anh 14/11)
       p.style.display = mt.mo ? "" : "none";
     }
   }
@@ -914,7 +918,7 @@ export class DienThoai {
     if (this.sig.viec !== sig) {
       this.sig.viec = sig;
       const v = this.el.querySelector(".dt-viec");
-      v.innerHTML = viec.length ? `<b>Việc cần làm:</b>` + viec.map(([k, t]) => `<span class="dt-chip" data-a="v${k}">${t}</span>`).join("") : `<b>Việc cần làm:</b><span class="dt-xong">không có — Trợ Thủ lo phần còn lại</span>`;
+      v.innerHTML = viec.length ? `<b>Việc phải làm:</b>` + viec.map(([k, t]) => `<span class="dt-chip" data-a="v${k}">${t}</span>`).join("") : `<b>Việc phải làm:</b><span class="dt-xong">không có — Trợ Thủ lo hết, ngươi khỏi động tay.</span>`;
     }
   }
 

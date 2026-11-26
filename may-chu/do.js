@@ -114,7 +114,7 @@ const KBH_TAM = 1;
 // thuốc Tống Kim (it.tk = 1 — anh 12/11 "máu tống kim mua = nửa giá máu ở ngoài, sau khi hết tống kim, máu đó tự mất, k dc mang ra tống kim"): mua ở Quân y trong trận
 // (act mua — giá × tongKim.giaThuoc), chồng riêng không gộp với thuốc thường; không cất rương / giao dịch / bày bán / bán / vứt; rời trận hoặc hết trận thì mất
 // (tong-kim.js boThuocTk — nhịp api.js)
-const CAU_TK = "Thuốc Tống Kim chỉ dùng trong chiến trường — không mang ra ngoài được (rời trận / hết trận tự mất)";
+const CAU_TK = "Thuốc Tống Kim chỉ dùng trong chiến trường. Mang ra ngoài là mất — rời trận / hết trận tự mất.";
 const cungKhoa = (a, b) => (a.kbh | 0) === (b.kbh | 0) && !a.tk === !b.tk;
 const voiKhoa = (kbh) => (kbh | 0 ? { kbh: kbh | 0 } : {});
 // anh 18/11 — khóa có hạn đi theo món (món mở từ hương bao khóa 72 giờ — bao-dap-an-su.js): món mới phân ra / dời / gộp từ món khóa có hạn giữ đúng giờ mở khóa
@@ -122,8 +122,8 @@ const voiKhoa = (kbh) => (kbh | 0 ? { kbh: kbh | 0 } : {});
 const khoaCua = (it) => (it && (it.kbh | 0) === KBH_TAM ? (+it.kbhHet > 0 ? { kbh: KBH_TAM, kbhHet: +it.kbhHet } : { kbh: KBH_VV }) : voiKhoa(it && it.kbh));
 const gopHet = (a, b) => { if ((a.kbh | 0) === KBH_TAM) a.kbhHet = Math.max(+a.kbhHet || 0, +(b && b.kbhHet) || 0); };
 const CAU_KBH = {
-  vut: "Nhằm bảo vệ tài sản cho bạn! Vật phẩm khóa bảo hiểm không được tùy ý vứt ra ngoài — không cần nữa thì đến Lễ quan (Ba Lăng) hủy vật phẩm.",
-  dat: "Không thể đặt vào vật phẩm đã được khóa bảo hiểm!", // G_STR_NO_BINDITEM
+  vut: "Món khóa bảo hiểm thì đừng vứt bừa ra ngoài. Không cần nữa thì tới Lễ quan (Ba Lăng) mà hủy.",
+  dat: "Đừng đặt vào món đã khóa bảo hiểm!", // G_STR_NO_BINDITEM
   xu: "khóa bảo hiểm vĩnh viễn: không giao dịch, bày bán, vứt hay bán được; không cần nữa thì hủy ở Lễ quan (Ba Lăng)", // món mua bằng Xu ở Kỳ Trân Các (anh 12/11)
 };
 // mức Tự bán (h.locDo — Trợ Thủ "Bán đồ trong túi"): chỉ xét món không xếp chồng, không phải món Kỳ Trân Các (lễ bao, ngựa mã bài có hạn); dưới
@@ -456,12 +456,12 @@ function xoaMkCua(h) {
 // h.tmHet (mỗi Tử Mẫu Lệnh +7 ngày); hết hạn thì đồ vẫn nằm đó nhưng không cất / lấy được (client SetPartnerBagLevel(0))
 function ruongSo(h, r) {
   if (r === "tm") {
-    if (!(h.tmHet > Date.now())) loi(h.tmHet ? "Túi tử mẫu đã hết hạn — dùng Tử Mẫu Lệnh (Kỳ Trân Các) để gia hạn" : "Túi tử mẫu chưa khai mở — dùng Tử Mẫu Lệnh (Kỳ Trân Các) để khai mở");
+    if (!(h.tmHet > Date.now())) loi(h.tmHet ? "Túi tử mẫu hết hạn rồi. Lấy Tử Mẫu Lệnh (Kỳ Trân Các) mà gia hạn." : "Túi tử mẫu chưa khai mở. Lấy Tử Mẫu Lệnh (Kỳ Trân Các) mà mở.");
     return (h.tuiTM = h.tuiTM || []);
   }
   r = r | 0;
   if (!r) return h.ruong;
-  if (r < 0 || r > (h.ruongMo | 0)) loi("Chưa mở rương này — mua rương mở rộng ở Thẩm Cửu, Ba Lăng");
+  if (r < 0 || r > (h.ruongMo | 0)) loi("Rương này chưa mở. Tới Thẩm Cửu, Ba Lăng mà mua rương mở rộng.");
   h.ruongPhu = h.ruongPhu || [];
   return (h.ruongPhu[r - 1] = h.ruongPhu[r - 1] || []);
 }
@@ -616,13 +616,13 @@ function nhanRuongCho(h) {
   }
   const n = h.rxCho | 0;
   if (n > 0 && x) {
-    try { themChong(h, x, n); delete h.rxCho; tin.push(`Bạn nhận được ${n} ${tenRuongXanh()}`); } catch { thieu = true; }
+    try { themChong(h, x, n); delete h.rxCho; tin.push(`Ngươi nhận được ${n} ${tenRuongXanh()}`); } catch { thieu = true; }
   }
   if (!thieu) delete h.rxDay;
   else if (!h.rxDay) {
     h.rxDay = 1;
     const ds = [(h.rxCho | 0) > 0 ? `${h.rxCho} ${tenRuongXanh()}` : "", ...(h.rxMon || []).map((m) => tenMon(m).trim())].filter(Boolean).join(", ");
-    tin.push(`Hành trang không đủ chỗ — còn ${ds} chờ nhận, dọn túi là tự vào`);
+    tin.push(`Hành trang không đủ chỗ. Còn ${ds} chờ nhận, dọn túi là tự vào`);
   }
   return tin.length ? tin : null;
 }
@@ -861,10 +861,10 @@ function nhat(h, key, ds) {
       donChong(h, v.it.k);
       bo(); kq.nhan.push({ g: v.g, n: tenMon(v.it), d: 0, sl: v.it.n || 1, db: 1 }); continue;
     }
-    // thuốc: mang tối đa MANG() bình mọi loại — đủ rồi thì nằm lại, nhặt được 1 phần thì phần còn lại nằm lại. Dồn vào chồng cùng loại có sẵn
+    // thuốc: mang tối đa chongMax bình mỗi loại — đủ rồi thì nằm lại, nhặt được 1 phần thì phần còn lại nằm lại. Dồn vào chồng cùng loại có sẵn
     // (anh 28/10 "cho cộng dồn, nhặt xong tự động dồn" — bản trước mỗi bình nhặt lên 1 ô mới)
     if (laThuoc(v.it)) {
-      const con = MANG() - soThuoc(h), n0 = v.it.n || 1, lay = Math.min(con, n0);
+      const con = chongMax(v.it.k) - soThuocK(h, v.it.k, v.it.tk), n0 = v.it.n || 1, lay = Math.min(con, n0);
       if (con <= 0) { kq.du.push(v.g); continue; }
       try { themChong(h, BY.get(v.it.k), lay, v.it.kbh, false, v.it.kbhHet); } catch { kq.day.push(v.g); continue; }
       donChong(h, v.it.k);
@@ -905,10 +905,11 @@ function doiDo(A, B) {
   if (vang.some((g) => g > TIEN_MAX)) return { loi: "tran" };
   const con = ben.map((S, i) => S.h.bag.filter((v) => !dua[i].includes(v)));
   const xep = dua.map((L) => [...L].sort((p, q) => coMon(q)[0] * coMon(q)[1] - coMon(p)[0] * coMon(p)[1]));
-  const thuoc = (L) => L.reduce((t, o) => t + (laThuoc(o) ? o.n || 0 : 0), 0);
+  const thuocK = (L, k) => L.reduce((t, o) => t + (o.k === k && laThuoc(o) ? o.n || 0 : 0), 0);
   for (let i = 0; i < 2; i++) {
     const nhan = xep[1 - i];
-    if (thuoc(nhan) && thuoc(con[i]) + thuoc(nhan) > MANG()) return { loi: "thuoc", ben: i };
+    for (const k of new Set(nhan.filter(laThuoc).map((o) => o.k))) // mỗi loại thuốc bên nhận không quá chongMax của loại đó (25/11/2026)
+      if (thuocK(con[i], k) + thuocK(nhan, k) > chongMax(k)) return { loi: "thuoc", ben: i };
     const thu = con[i].slice();
     for (const it of nhan) { const at = choDau(thu, it); if (!at) return { loi: "cho", ben: i }; thu.push({ ...it, x: at[0], y: at[1] }); }
   }
@@ -1057,7 +1058,7 @@ function nhanChia(h, tk, key) {
   if (!kn && !(lead >= 1)) return null;
   h.lvl = h.lvl || 1; h.exp = (h.exp || 0) + kn;
   const len = lenCap(h), lv = themThongSoai(h, lead), lk = luyenKn(h, kn); // chiêu luyện 120: kinh nghiệm đội chia cũng luyện
-  return { kn, len, tin: lv ? [`Đẳng cấp thống soái của Bạn thăng lên đến ${lv}!`] : [], ...(lk.length ? { luyen: lk } : {}) };
+  return { kn, len, tin: lv ? [`Đẳng cấp thống soái của ngươi lên tới ${lv}!`] : [], ...(lk.length ? { luyen: lk } : {}) };
 }
 
 // món rơi xuống đất của riêng nhân vật (key "tài khoản|ô") ở chỗ cho { z, x, y } -> mô tả gửi trình duyệt (i = thứ tự con trong lần báo giết).
@@ -1181,7 +1182,7 @@ function gietQuai(h, ds, ctx) {
       let vao = true; // lệnh xếp chồng (02/11 khuya): dồn vào chồng cùng loại; túi đầy thì nằm dưới đất
       try { themChong(h, BY.get(ST.lenh), 1); } catch { vao = false; }
       if (vao) kq.tui = 1; else its.push({ k: ST.lenh, n: 1 });
-      (kq.tin = kq.tin || []).push("Sát thủ đã bị tiêu diệt, hoàn thành nhiệm vụ.", `Bạn nhận được 1 sát thủ lệnh${vao ? "" : " (hành trang đầy — nằm dưới đất)"}`);
+      (kq.tin = kq.tin || []).push("Sát thủ chết rồi. Nhiệm vụ xong.", `Ngươi nhận được 1 sát thủ lệnh${vao ? "" : " (hành trang đầy — nằm dưới đất)"}`);
       // anh 16/11 — Báo Đáp Ân Sư (client config.lua [15] CheckKillerdBoss): nhiệm vụ bậc ≥ satThuCap -> Đỗ Khang Tửu vào túi (không khóa), túi đầy thì nằm đất như lệnh
       let ruou = [];
       try { ruou = BD().thuongNguon("satThu", ST.cap); } catch (e) { console.error("Báo Đáp Ân Sư — sát thủ:", e.message); }
@@ -1191,9 +1192,9 @@ function gietQuai(h, ds, ctx) {
         const m = BY.get(rk); if (!m) continue;
         let vr = true; try { themChong(h, m, rn); } catch { vr = false; }
         if (vr) kq.tui = 1; else its.push({ k: rk, n: rn });
-        kq.tin.push(`Bạn nhận được ${rn} ${m.n.trim()}${vr ? "" : " (hành trang đầy — nằm dưới đất)"}`);
+        kq.tin.push(`Ngươi nhận được ${rn} ${m.n.trim()}${vr ? "" : " (hành trang đầy — nằm dưới đất)"}`);
       }
-      if (ptGiet) kq.tin.push("Phân thân hạ sát thủ — vật phẩm rơi ra thuộc về đại hiệp.");
+      if (ptGiet) kq.tin.push("Phân thân hạ sát thủ rồi. Vật phẩm rơi ra là của ngươi.");
       // nhật ký chung theo hoạt động (anh 18/11 — F10 → Nhật ký → Boss Sát thủ): hạ boss nhiệm vụ — thưởng + món rơi (lệnh / rượu túi đầy cũng nằm trong its)
       try { NKD().ghi("hd", ctx.ten, h.name, `Boss Sát thủ: hạ ${ST.ten || "sát thủ"} cấp ${ST.cap}${Z ? ` ở ${Z.n}` : ""}${(ctx.doiSat | 0) > 1 ? ` (tổ đội ${ctx.doiSat | 0} người)` : ""}${ptGiet ? " (phân thân hạ)" : ""} — +${ST.kn | 0} kinh nghiệm, 1 Sát Thủ lệnh${ruou.map(([rk, rn]) => `, ${rn} ${String(tenMon({ k: rk })).trim()}`).join("")}${its.length ? `; rơi: ${chuMon(its)}` : ""}`); } catch { /* sổ không làm hỏng việc */ }
     }
@@ -1202,7 +1203,7 @@ function gietQuai(h, ds, ctx) {
   }
   // đội trưởng tự giết: kinh nghiệm thống soái của cả nhịp (chiaDoi)
   const lv = ctx.lead ? themThongSoai(h, ctx.lead) : 0;
-  if (lv) (kq.tin = kq.tin || []).push(`Đẳng cấp thống soái của Bạn thăng lên đến ${lv}!`);
+  if (lv) (kq.tin = kq.tin || []).push(`Đẳng cấp thống soái của ngươi lên tới ${lv}!`);
   if (chia) kq.doi = 1;
   const lk = luyenKn(h, kq.kn); if (lk.length) kq.luyen = lk; // chiêu luyện 120: kinh nghiệm vừa nhận
   return kq;
@@ -1215,10 +1216,10 @@ function nhatChi(h, it, z) {
   const loai = (BY.get(it.k) || {}).chi, D = h.daTau, Z = ZONES.get(z | 0);
   if (D && D.buoc === 1 && D.loai === 4 && D.bai === (z | 0) && D.chi === loai) {
     D.co = (D.co | 0) + 1;
-    return `Bạn nhận được một tấm ${Z ? Z.n + " " : ""}Địa Đồ chí! Hiện tại bạn có tổng cộng ${D.co} tấm.`;
+    return `Ngươi nhận được một tấm ${Z ? Z.n + " " : ""}Địa Đồ chí! Hiện tại ngươi có tổng cộng ${D.co} tấm.`;
   }
   h.shxt = (h.shxt | 0) + 1;
-  return `Bạn nhận được một mảnh bản đồ Sơn Hà Xã Tắc! Hiện tại bạn có tổng cộng ${h.shxt} mảnh bản đồ Sơn Hà Xã Tắc.`;
+  return `Ngươi nhận được một mảnh bản đồ Sơn Hà Xã Tắc! Hiện tại ngươi có tổng cộng ${h.shxt} mảnh bản đồ Sơn Hà Xã Tắc.`;
 }
 // Bùa Phong Hỏa Liên Thành (anh 04/11 lượt 24 — client script\item\newcitydefence\*.lua PickUp: nhặt lên không vào túi, bốc 1 dòng của món, cấp
 // ngẫu nhiên): trạng thái -> h.buff["ph:<hiệu quả>:<trị số>"] = giây (cùng hiệu quả thì thay cái cũ — AddSkillState cùng trạng thái); hồi ngay (hoi)
@@ -1406,55 +1407,55 @@ function yeuCau(h, it) {
 }
 // mặc / tháo / đặt (cầm món trên tay rồi đặt — src/game/windows.js): vị trí x, y = ô trên trái trong túi
 function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đếm theo tài khoản (banXu)
-  if (h.khoa && KHOA.has(b.act) && !(b.act === "lay" ? b.r === "tm" : b.act === "chuyenR" ? b.tu === "tm" : false)) loi("Rương và trang bị đang khóa — mở khóa ở Rương chứa đồ (nút Khóa, nhập mật mã)");
+  if (h.khoa && KHOA.has(b.act) && !(b.act === "lay" ? b.r === "tm" : b.act === "chuyenR" ? b.tu === "tm" : false)) loi("Rương và trang bị đang khóa. Tới Rương chứa đồ, bấm nút Khóa, nhập mật mã mà mở.");
   const i = h.bag.findIndex((it) => it.u === (b.u | 0)), it = h.bag[i];
   const bx = Number.isInteger(b.x) ? b.x : null, by = Number.isInteger(b.y) ? b.y : null;
   switch (b.act) {
     case "mac": { // b.slot (tùy): ô trang bị trình duyệt chọn (đặt món lên ô nhẫn trái / phải)
-      if (!it) loi("Không có món này trong túi");
+      if (!it) loi("Không có món này trong túi. Tìm lại đi.");
       const x = BY.get(it.k), own = x && SLOT_OF[x.t];
-      if (!own) loi("Món này không mặc được");
+      if (!own) loi("Món này mặc không được. Đừng cố nữa.");
       let slot = own;
       if (own === "Ring1") slot = b.slot === "Ring1" || b.slot === "Ring2" ? b.slot : h.equip.Ring1 && !h.equip.Ring2 ? "Ring2" : "Ring1";
-      else if (b.slot && b.slot !== own) loi(`${tenMon(it)} không mặc vào ô này được`);
+      else if (b.slot && b.slot !== own) loi(`${tenMon(it)} không mặc vào ô này được. Đặt đúng ô đi.`);
       const why = yeuCau(h, it); if (why) loi(`${tenMon(it)}: ${why}`);
       const old = h.equip[slot];
       h.bag.splice(i, 1);
       // món đang mặc ở ô đó về túi: vào đúng chỗ món vừa mặc nếu vừa, không thì ô trống đầu tiên
-      if (old && !vaoTui(h, old, it.x, it.y)) { h.bag.splice(i, 0, it); loi("Hành trang đầy, không tháo được món đang mặc"); }
+      if (old && !vaoTui(h, old, it.x, it.y)) { h.bag.splice(i, 0, it); loi("Hành trang đầy rồi. Không tháo được món đang mặc đâu."); }
       delete it.x; delete it.y; h.equip[slot] = it;
       return { msg: "Mặc " + tenMon(it) };
     }
     case "thao": { // b.x, b.y (tùy): đặt vào ô đó của túi
       const s = String(b.slot || ""), cur = h.equip[s];
-      if (!cur) loi("Ô này không mặc gì");
-      if (bx != null && !choTrong(h.bag, cur, bx, by)) loi("Chỗ đó không đủ ô trống");
-      if (!vaoTui(h, cur, bx, by)) loi("Hành trang đầy");
+      if (!cur) loi("Ô này trống. Có mặc gì đâu.");
+      if (bx != null && !choTrong(h.bag, cur, bx, by)) loi("Chỗ đó chật rồi. Dọn chỗ đi.");
+      if (!vaoTui(h, cur, bx, by)) loi("Hành trang đầy rồi. Dọn bớt đi.");
       delete h.equip[s];
       return { msg: "Tháo " + tenMon(cur) };
     }
     case "dat": { // dời món trong túi tới (x, y)
-      if (!it) loi("Không có món này trong túi");
+      if (!it) loi("Không có món này trong túi. Tìm lại đi.");
       return datLai(h.bag, it, bx, by);
     }
     // tách chồng (anh 28/10 — client: Shift + chuột phải -> khung 拆分): b.n (1 … n − 1) sang chồng mới ở ô trống đầu tiên; b.het ("Tách toàn
     // bộ" — client 连续拆分) = tách liên tục từng phần b.n tới khi chồng gốc còn ≤ b.n hoặc hết ô trống
     case "tach": {
-      if (!it) loi("Không có món này trong túi");
-      if (!xepChong(it) || (it.n | 0) < 2) loi("Món này không tách được");
+      if (!it) loi("Không có món này trong túi. Tìm lại đi.");
+      if (!xepChong(it) || (it.n | 0) < 2) loi("Món này tách không được. Đừng tách nữa.");
       const n = clamp(b.n | 0, 1, it.n - 1); let lan = 0;
       do {
         const moi = { ...it, n }; delete moi.u; delete moi.x; delete moi.y;
         const at = choDau(h.bag, moi); if (!at) break;
         [moi.x, moi.y] = at; moi.u = ++h.uN; h.bag.push(moi); it.n -= n; lan++;
       } while (b.het && it.n > n);
-      if (!lan) loi("Hành trang không đủ chỗ");
+      if (!lan) loi("Hành trang không đủ chỗ. Dọn bớt đi rồi hãy làm.");
       return {};
     }
     // ---- rương chứa đồ (26/10): cat = túi -> rương, lay = rương -> túi (ở ô x, y nếu có), datR = dời trong rương; gui / rut = gửi / rút
     // ngân lượng b.n
     case "cat": {
-      if (!it) loi("Không có món này trong túi");
+      if (!it) loi("Không có món này trong túi. Tìm lại đi.");
       if (it.tk) loi(CAU_TK);
       if (b.r === "tm" && laThuoc(it)) loi(TM_THUOC); // anh 16/11: túi tử mẫu (mở ở đâu cũng được) không chở thuốc — luật mang tối đa MANG() bình
       chuyen(h, h.bag, ruongSo(h, b.r), it, bx, by);
@@ -1462,7 +1463,7 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
     }
     case "chuyenR": { // dời món giữa 2 kho (rương chính 0 / rương mở rộng 1–3 / túi tử mẫu "tm") tới ô (x, y) của kho đích
       const A = ruongSo(h, b.tu), B = ruongSo(h, b.den), r = A.find((o) => o.u === (b.u | 0));
-      if (!r) loi("Không có món này");
+      if (!r) loi("Không có món này. Tìm lại đi.");
       if (A === B) return datLai(A, r, bx, by);
       if (b.den === "tm" && laThuoc(r)) loi(TM_THUOC); // anh 16/11: rương -> túi tử mẫu cũng không cho thuốc
       chuyen(h, A, B, r, bx, by);
@@ -1470,80 +1471,80 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
     }
     case "lay": case "datR": {
       const R = ruongSo(h, b.r), r = R.find((o) => o.u === (b.u | 0));
-      if (!r) loi("Không có món này trong rương");
+      if (!r) loi("Không có món này trong rương. Tìm lại đi.");
       if (b.act === "datR") return datLai(R, r, bx, by);
       // anh 16/11 ("mua máu bỏ vào túi tử mẫu thì mang được rất nhiều máu lên bãi"): thuốc cất từ trước trong túi tử mẫu chỉ lấy ra ở thành / thôn — ra bãi không nạp lại được
-      if (b.r === "tm" && laThuoc(r) && !THANH.has((ZONES.get(BAI_NAY.get(key)) || {}).kind)) loi(`Thuốc trong túi tử mẫu chỉ lấy ra được ở thành thị hoặc thôn trang (mang theo tối đa ${MANG()} bình)`);
-      const con = laThuoc(r) ? MANG() - soThuoc(h) : Infinity; // mang tối đa MANG() bình thuốc mọi loại
-      if (con <= 0) loi(`Chỉ mang tối đa ${MANG()} bình thuốc (mọi loại) — đang có ${soThuoc(h)}`);
+      if (b.r === "tm" && laThuoc(r) && !THANH.has((ZONES.get(BAI_NAY.get(key)) || {}).kind)) loi(`Thuốc trong túi tử mẫu chỉ lấy ra được ở thành thị hoặc thôn trang. Mỗi loại mang tối đa ${chongMax(r.k)} bình thôi.`);
+      const con = laThuoc(r) ? chongMax(r.k) - soThuocK(h, r.k, r.tk) : Infinity; // mang tối đa chongMax bình mỗi loại thuốc
+      if (con <= 0) loi(`Mỗi loại mang tối đa ${chongMax(r.k)} bình thôi. Ngươi đang có ${soThuocK(h, r.k, r.tk)}.`);
       const n0 = r.n, da = chuyen(h, R, h.bag, r, bx, by, con);
-      return laThuoc(r) && n0 > da ? { msg: `Lấy ${da} ${tenMon(r)} — mang tối đa ${MANG()} bình thuốc, còn ${n0 - da} bình trong rương` } : {};
+      return laThuoc(r) && n0 > da ? { msg: `Lấy ${da} ${tenMon(r)}. Mỗi loại mang tối đa ${chongMax(r.k)} bình, còn ${n0 - da} bình trong rương.` } : {};
     }
     // sắp xếp (anh 06/11): chỉ khi bấm nút Sắp xếp — túi không bao giờ tự xếp (anh 25/10). b.kho = "tui" | 0 | 1–3 | "tm"; b.uong = thuốc đã
     // uống chưa báo (chỉ khi xếp túi — trình duyệt giữ nhịp tới lúc trả lời, main.js xepDo). Không vừa: báo lỗi, không đổi gì
     case "xep": {
-      if (b.kho == null) loi("Không rõ kho");
+      if (b.kho == null) loi("Không rõ kho nào. Gửi lại cho đúng.");
       const tui = b.kho === "tui", L = tui ? h.bag : ruongSo(h, b.kho), C = xepLuoi(structuredClone(L), tui && Array.isArray(b.uong) ? b.uong : null);
-      if (!C) loi(`${tui ? "Hành trang" : "Rương"} quá chật, không sắp xếp được — bớt vài món rồi thử lại`);
+      if (!C) loi(`${tui ? "Hành trang" : "Rương"} quá chật, sắp xếp không được. Bớt vài món rồi thử lại.`);
       L.length = 0; L.push(...C);
       return { msg: `Đã sắp xếp ${tui ? "hành trang" : b.kho === "tm" ? "túi tử mẫu" : b.kho | 0 ? `rương mở rộng ${b.kho | 0}` : "rương chứa đồ"}` };
     }
     case "gui": case "rut": {
       const n = Math.floor(+b.n || 0), gui = b.act === "gui", co = gui ? h.gold || 0 : h.tienRuong || 0;
-      if (n <= 0) loi("Số tiền không hợp lệ");
-      if (n > co) loi(gui ? "Ngân lượng mang theo không đủ" : "Ngân lượng trong rương không đủ");
+      if (n <= 0) loi("Số tiền sai rồi. Gõ lại cho đúng.");
+      if (n > co) loi(gui ? "Ngân lượng mang theo không đủ. Kiếm thêm đi." : "Ngân lượng trong rương không đủ. Kiếm thêm đi.");
       h.gold = (h.gold || 0) + (gui ? -n : n); h.tienRuong = (h.tienRuong || 0) + (gui ? n : -n);
       return { msg: `${gui ? "Gửi" : "Rút"} ${tien(n)} ${gui ? "vào" : "từ"} rương` };
     }
     // ---- rương mở rộng (Thẩm Cửu) + mật mã rương + Tiền trang
     case "moRuong": {
       const n = h.ruongMo | 0, gia = RG.moRong[n];
-      if (gia == null) loi(`Đã mở đủ ${RG.moRong.length} rương mở rộng`);
-      if ((h.xu | 0) < gia) loi(`Cần ${gia} Xu — trên người có ${h.xu | 0} Xu`);
+      if (gia == null) loi(`Mở đủ ${RG.moRong.length} rương mở rộng rồi. Đừng mở nữa.`);
+      if ((h.xu | 0) < gia) loi(`Cần ${gia} Xu. Trên người ngươi chỉ có ${h.xu | 0} Xu thôi.`);
       h.xu -= gia; h.ruongMo = n + 1; h.ruongPhu = h.ruongPhu || []; h.ruongPhu[n] = [];
-      return { msg: `Mua rương mở rộng ${n + 1}: -${gia} Xu. Mở rương chứa đồ, bấm nút Mở rộng để xem${h.mkRuong ? "" : " — bấm Mật mã để thiết lập mật mã rương"}` };
+      return { msg: `Mua rương mở rộng ${n + 1}: -${gia} Xu. Mở rương chứa đồ, bấm nút Mở rộng để xem${h.mkRuong ? "" : " — bấm Mật mã mà thiết lập mật mã rương"}` };
     }
     case "datMk": case "doiMk": {
-      if (!(h.ruongMo > 0)) loi("Chưa mua chức năng mở rộng rương — đến Thẩm Cửu, Ba Lăng");
-      if (b.act === "datMk" && h.mkRuong) loi("Đã có mật mã — dùng Đổi mật mã");
-      if (b.act === "doiMk" && !dungMk(h, b.mk)) loi("Mật mã cũ không đúng");
+      if (!(h.ruongMo > 0)) loi("Chưa mua chức năng mở rộng rương. Tới Thẩm Cửu, Ba Lăng mà mua.");
+      if (b.act === "datMk" && h.mkRuong) loi("Đã có mật mã rồi. Muốn đổi thì dùng Đổi mật mã.");
+      if (b.act === "doiMk" && !dungMk(h, b.mk)) loi("Mật mã cũ sai rồi. Gõ lại đi.");
       const moi = String(b.moi ?? "");
-      if (!MK_RE.test(moi)) loi(moi[0] === "0" ? "Số đầu của mật mã không thể là số 0." : "Mật mã 1 – 9 chữ số");
+      if (!MK_RE.test(moi)) loi(moi[0] === "0" ? "Số đầu mật mã không được là số 0. Gõ lại đi." : "Mật mã chỉ 1 – 9 chữ số. Gõ lại đi.");
       h.mkRuong = bamMk(moi);
-      return { msg: b.act === "datMk" ? "Đã thiết lập mật mã rương" : "Đã đổi mật mã rương" };
+      return { msg: b.act === "datMk" ? "Thiết lập mật mã rương xong." : "Đổi mật mã rương xong." };
     }
     case "khoa": {
-      if (!h.mkRuong) loi("Chưa thiết lập mật mã — bấm Mật mã ở rương chứa đồ");
+      if (!h.mkRuong) loi("Chưa thiết lập mật mã. Bấm Mật mã ở rương chứa đồ mà đặt.");
       h.khoa = 1;
-      return { msg: "Đã khóa: không mặc / tháo đồ, không lấy đồ / tiền ra khỏi rương" };
+      return { msg: "Khóa rồi: không mặc / tháo đồ, không lấy đồ / tiền ra khỏi rương." };
     }
     case "moKhoa": {
       const s = saiMk.get(h.name), t = Date.now();
-      if (s && s.n >= 5 && t < s.den) loi(`Nhập sai quá 5 lần — thử lại sau ${Math.ceil((s.den - t) / 60000)} phút`);
-      if (!dungMk(h, b.mk)) { saiMk.set(h.name, { n: s && t < s.den ? s.n + 1 : 1, den: t + 600000 }); loi("Mật mã không đúng"); }
+      if (s && s.n >= 5 && t < s.den) loi(`Nhập sai quá 5 lần rồi. Chờ ${Math.ceil((s.den - t) / 60000)} phút nữa rồi hãy gõ lại.`);
+      if (!dungMk(h, b.mk)) { saiMk.set(h.name, { n: s && t < s.den ? s.n + 1 : 1, den: t + 600000 }); loi("Mật mã sai rồi. Gõ lại cho cẩn thận."); }
       saiMk.delete(h.name); h.khoa = 0;
-      return { msg: "Đã mở khóa" };
+      return { msg: "Mở khóa rồi." };
     }
     // ---- Lễ quan → Mở Pass Rương (xoaMkCua): b.viec "xem" | "dangKy" | "xacNhan" | "huy"; lời báo như script client
     case "xoaMk": {
       const st = xoaMkCua(h);
       if (b.viec === "dangKy") {
-        if (st.dk) loi("Đại hiệp đã đăng ký xóa pass rương rồi");
-        if (!h.mkRuong) loi("Rương chứa đồ của đại hiệp chưa có mật mã");
+        if (st.dk) loi("Ngươi đã đăng ký xóa pass rương rồi. Đừng đăng ký nữa.");
+        if (!h.mkRuong) loi("Rương chứa đồ của ngươi chưa có mật mã. Đặt mật mã trước đi.");
         h.xoaMk = ngaySo(Date.now());
         return { xoaMk: xoaMkCua(h) };
       }
       if (b.viec === "xacNhan") {
-        if (!st.xacNhan) loi(st.dk ? "Chưa tới ngày xác nhận xóa pass rương" : "Đại hiệp chưa đăng ký xóa pass rương");
+        if (!st.xacNhan) loi(st.dk ? "Chưa tới ngày xác nhận xóa pass rương. Chờ đi." : "Ngươi chưa đăng ký xóa pass rương. Đăng ký trước đi.");
         delete h.mkRuong; delete h.xoaMk; h.khoa = 0; saiMk.delete(h.name);
-        return { msg: "Đã mở pass rương thành công!", xoaMk: xoaMkCua(h) };
+        return { msg: "Mở pass rương xong!", xoaMk: xoaMkCua(h) };
       }
       if (b.viec === "huy") {
-        if (!st.dk) loi("Đại hiệp chưa đăng ký xóa pass rương");
+        if (!st.dk) loi("Ngươi chưa đăng ký xóa pass rương. Đăng ký trước đi.");
         delete h.xoaMk;
-        return { msg: "Hủy bỏ xóa pass rương thành công!", xoaMk: xoaMkCua(h) };
+        return { msg: "Hủy xóa pass rương xong!", xoaMk: xoaMkCua(h) };
       }
-      return { xoaMk: st, ...(st.het ? { msg: "Ngày xác nhận xoá pass rương đã quá hạn, xin hãy đăng ký lại!" } : {}) };
+      return { xoaMk: st, ...(st.het ? { msg: "Ngày xác nhận xoá pass rương quá hạn rồi. Đăng ký lại đi!" } : {}) };
     }
     // ---- Kỳ Trân Các: mua bằng Xu (b.k, b.n — giá theo ảnh anh gửi, assets/data/ky-tran-cac.json), dùng món (dungVat)
     // Anh 12/11 "đồ mua = xu ở kỳ trân các k giao dịch, k ném ra được, k bán dc, chỉ hủy dc ở lễ quan": món mua ở đây khóa bảo hiểm vĩnh viễn
@@ -1552,16 +1553,16 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
     // nguồn nên giữ nguyên; món cùng loại rơi từ quái / boss vẫn giao dịch được (chồng riêng theo trạng thái khóa — themChong)
     case "muaKtc": {
       const x = BY.get(String(b.k)), gia = HANG_KTC.get(String(b.k)), n = clamp(b.n | 0, 1, TC.muaToiDa);
-      if (!x || gia == null) loi("Kỳ Trân Các không bán món này");
+      if (!x || gia == null) loi("Kỳ Trân Các không bán món này. Đừng hỏi nữa.");
       // hàng sự kiện (anh 16/11 — Báo Đáp Ân Sư: dòng sk "bdas"): chỉ bán khi sự kiện đang mở
-      if (SK_KTC.has(x.k) && !skMo(SK_KTC.get(x.k), !!(tk && tk.admin))) loi(SK_KTC.get(x.k) === "bdas" ? "Hàng sự kiện chỉ bán trong thời gian hoạt động báo đáp ân sư" : "Hàng sự kiện hiện không bán");
+      if (SK_KTC.has(x.k) && !skMo(SK_KTC.get(x.k), !!(tk && tk.admin))) loi(SK_KTC.get(x.k) === "bdas" ? "Hàng sự kiện chỉ bán trong thời gian hoạt động báo đáp ân sư. Hết giờ thì đừng hỏi." : "Hàng sự kiện hiện không bán. Đừng hỏi nữa.");
       // chỉ mua ở thành thị / thôn trang; ở bãi luyện công chỉ xem (anh 28/10 lần 3)
-      if (!THANH.has((ZONES.get(BAI_NAY.get(key)) || {}).kind)) loi("Bảo vật chỉ mua được ở thành thị hoặc thôn trang — ở bãi luyện công chỉ xem được");
-      if ((h.xu | 0) < gia * n) loi(`Không đủ Xu — cần ${gia * n} Xu, trên người có ${h.xu | 0} Xu`);
+      if (!THANH.has((ZONES.get(BAI_NAY.get(key)) || {}).kind)) loi("Bảo vật chỉ mua được ở thành thị hoặc thôn trang. Ở bãi luyện công thì chỉ xem thôi.");
+      if ((h.xu | 0) < gia * n) loi(`Không đủ Xu. Cần ${gia * n} Xu, trên người ngươi chỉ có ${h.xu | 0} Xu thôi.`);
       const kb = KHONG_KHOA.has(x.k) ? 0 : KBH_VV; // Mật đồ thần bí không bao giờ khóa (anh 05/11 — Kỳ Trân Các hiện không bán)
       if (laLeBao({ k: x.k })) { // lễ bao: mỗi bao 1 ô (đếm số viên còn)
         const moi = [];
-        for (let j = 0; j < n; j++) { const o = { k: x.k, n: 1, con: x.dung.so, ...voiKhoa(kb) }, at = choDau([...h.bag, ...moi], o); if (!at) loi("Hành trang không đủ chỗ"); [o.x, o.y] = at; moi.push(o); }
+        for (let j = 0; j < n; j++) { const o = { k: x.k, n: 1, con: x.dung.so, ...voiKhoa(kb) }, at = choDau([...h.bag, ...moi], o); if (!at) loi("Hành trang không đủ chỗ. Dọn bớt đi rồi hãy làm."); [o.x, o.y] = at; moi.push(o); }
         for (const o of moi) { o.u = ++h.uN; h.bag.push(o); }
       } else themChong(h, x, n, kb);
       h.xu -= gia * n;
@@ -1570,21 +1571,21 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
     // ---- cửa hàng phúc duyên (Nhận thưởng → Phúc duyên → Giao dịch): b.k, b.n — trừ điểm phúc duyên (FuYuan_Reduce: "Bạn đã tốn N điểm phúc duyên")
     case "muaPd": {
       const x = BY.get(String(b.k)), gia = HANG_PD.get(String(b.k)), n = clamp(b.n | 0, 1, TC.muaToiDa), co = (h.pd && h.pd.bat && h.pd.diem) | 0;
-      if (!x || gia == null) loi("Thần bí Thương Nhân không bán món này");
-      if (co < gia * n) loi(`Không đủ điểm phúc duyên — cần ${gia * n}, đang có ${co}`);
+      if (!x || gia == null) loi("Thần bí Thương Nhân không bán món này. Đừng hỏi nữa.");
+      if (co < gia * n) loi(`Không đủ điểm phúc duyên. Cần ${gia * n}, ngươi đang có ${co} thôi.`);
       themChong(h, x, n);
       h.pd.diem = co - gia * n;
-      return { msg: `Mua ${n} ${x.n.trim()}: Bạn đã tốn ${gia * n} điểm phúc duyên (còn ${h.pd.diem})` };
+      return { msg: `Mua ${n} ${x.n.trim()}: tốn ${gia * n} điểm phúc duyên (còn ${h.pd.diem})` };
     }
     // ---- Quân Nhu quan Tống Kim (anh 06/11 — may-chu/tong-kim.js, client song_shop.lua / Sale 98): b.k, b.n — trừ điểm Tống Kim h.diemTk; chỉ ở Biện Kinh,
     // không bán khi trận đang đánh; đủ chỗ trong túi mới trừ điểm (món không khóa — như thưởng cuối trận)
     case "muaTk": {
       const TK = TKM(), x = BY.get(String(b.k)), gia = TK.giaTk().get(String(b.k)), n = clamp(b.n | 0, 1, TC.muaToiDa), co = h.diemTk | 0;
-      if (!x || gia == null) loi("Quân Nhu quan không bán món này");
+      if (!x || gia == null) loi("Quân Nhu quan không bán món này. Đừng hỏi nữa.");
       // Quân Nhu quan đứng ở Điểm báo danh Tống Kim (bãi 325 — Xa phu Biện Kinh đưa tới; anh 13/11 "NPC bán đồ fix lại có thể mua"): trước chỉ nhận Biện Kinh nên luôn báo lỗi
-      if (BAI_NAY.get(key) !== TK.BIEN_KINH && BAI_NAY.get(key) !== TK.BAO_DANH) loi("Chỉ mua được ở Quân Nhu quan (Điểm báo danh Tống Kim)");
-      if (TK.dangDanh()) loi("Quân Nhu quan: Chiến tranh đang diễn ra ác liệt phía trước, các vị nên tạm lánh một chút!");
-      if (co < gia * n) loi(`Không đủ điểm Tống Kim — cần ${gia * n}, đang có ${co}`);
+      if (BAI_NAY.get(key) !== TK.BIEN_KINH && BAI_NAY.get(key) !== TK.BAO_DANH) loi("Chỉ mua được ở Quân Nhu quan (Điểm báo danh Tống Kim). Đi đúng chỗ đi.");
+      if (TK.dangDanh()) loi("Quân Nhu quan: phía trước đang đánh nhau ác liệt. Lánh đi, đừng đứng đây!");
+      if (co < gia * n) loi(`Không đủ điểm Tống Kim. Cần ${gia * n}, ngươi đang có ${co} thôi.`);
       if (xepChong(x)) themChong(h, x, n); else taoQua(h, { mon: [{ k: x.k, n }] });
       h.diemTk = co - gia * n;
       return { msg: `Mua ${n} ${x.n.trim()}: tốn ${gia * n} điểm Tống Kim (còn ${h.diemTk})` };
@@ -1593,33 +1594,33 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
     // ---- mua lại món đã bán (lượt 88): b.u = mã món lúc bán; giá = giá mua lại đã chốt lúc bán; món về túi đúng như lúc bán (dòng, khóa, độ bền, phi phong…)
     case "muaLai": {
       const t = Date.now(), L = (Array.isArray(h.muaLai) ? h.muaLai : []).filter((x) => x && x.it && x.het > t), j = L.findIndex((x) => (x.it.u | 0) === (b.u | 0));
-      if (j < 0) loi(`Món này không còn trong danh sách mua lại (chỉ giữ ${MUA_LAI.phut} phút sau khi bán)`);
+      if (j < 0) loi(`Món này không còn trong danh sách mua lại. Chỉ giữ ${MUA_LAI.phut} phút sau khi bán thôi.`);
       const r = L[j], x = BY.get(r.it.k);
-      if (!x) loi("Món này không còn trong danh sách mua lại");
-      if ((h.gold || 0) < r.gia) loi(`${CAU_KHIA} — Ngân lượng không đủ: mua lại cần ${tien(r.gia)}`);
-      if (laThuoc(r.it) && soThuoc(h) + (r.it.n | 0) > MANG()) loi(`Mang tối đa ${MANG()} bình thuốc — bớt thuốc trong túi rồi mua lại`);
+      if (!x) loi("Món này không còn trong danh sách mua lại nữa.");
+      if ((h.gold || 0) < r.gia) loi(`${CAU_KHIA} Ngân lượng không đủ: mua lại cần ${tien(r.gia)}.`);
+      if (laThuoc(r.it) && soThuocK(h, r.it.k, r.it.tk) + (r.it.n | 0) > chongMax(r.it.k)) loi(`Mỗi loại mang tối đa ${chongMax(r.it.k)} bình thôi. Bớt thuốc trong túi rồi mua lại.`);
       const moi = { ...r.it, u: h.uN + 1 }; delete moi.x; delete moi.y;
-      if (!vaoTui(h, moi)) loi("Hành trang không đủ chỗ");
+      if (!vaoTui(h, moi)) loi("Hành trang không đủ chỗ. Dọn bớt đi rồi hãy làm.");
       h.uN = moi.u; h.gold -= r.gia; L.splice(j, 1);
       if (L.length) h.muaLai = L; else delete h.muaLai;
-      return { msg: `${CAU_KHIA} — Mua lại ${moi.n > 1 ? moi.n + " " : ""}${tenMon(moi)}: -${tien(r.gia)}` };
+      return { msg: `${CAU_KHIA} Mua lại ${moi.n > 1 ? moi.n + " " : ""}${tenMon(moi)}: -${tien(r.gia)}.` };
     }
     case "doiXu": {
       const n = Math.floor(+b.n || 0), gia = n * TT.luongMotXu;
-      if (n < 1 || n > 100000) loi("Số Xu không hợp lệ");
-      if ((h.gold || 0) < gia) loi(`Ngân lượng mang theo không đủ — cần ${tien(gia)}`);
+      if (n < 1 || n > 100000) loi("Số Xu sai rồi. Gõ lại cho đúng.");
+      if ((h.gold || 0) < gia) loi(`Ngân lượng mang theo không đủ. Cần ${tien(gia)}.`);
       h.gold -= gia; h.xu = (h.xu | 0) + n;
       return { msg: `Đổi ${tien(gia)} lấy ${n} Xu` };
     }
     case "banXu": { // Tiền trang thu lại Xu (cấu hình tienTrang luongBanXu / banXuNgay — anh 14/11; đếm theo tài khoản, ngày giờ Việt Nam)
       const toiDa = Math.max(0, TT.banXuNgay | 0), gia = TT.luongBanXu | 0;
-      if (!(gia > 0)) loi("Tiền trang hiện không thu lại Xu");
+      if (!(gia > 0)) loi("Tiền trang hiện không thu lại Xu. Đừng bán nữa.");
       const d = ngayVN(Date.now()), dem = tk && tk.banXu && tk.banXu.d === d ? tk.banXu.n | 0 : 0, con = Math.max(0, toiDa - dem);
       if (b.hoi) return { banXu: con }; // chỉ hỏi còn bán được bao nhiêu hôm nay (api.js trả banXu)
       const n = Math.floor(+b.n || 0);
-      if (n < 1) loi("Số Xu không hợp lệ");
-      if (n > con) loi(`Hôm nay chỉ còn bán được ${con} Xu — mỗi tài khoản tối đa ${toiDa} Xu mỗi ngày`);
-      if ((h.xu | 0) < n) loi("Xu không đủ");
+      if (n < 1) loi("Số Xu sai rồi. Gõ lại cho đúng.");
+      if (n > con) loi(`Hôm nay chỉ còn bán được ${con} Xu thôi. Mỗi tài khoản tối đa ${toiDa} Xu mỗi ngày.`);
+      if ((h.xu | 0) < n) loi("Xu không đủ. Kiếm thêm đi.");
       h.xu = (h.xu | 0) - n; h.gold = (h.gold || 0) + n * gia;
       if (tk) tk.banXu = { d, n: dem + n }; // ghiTk ở api.js /api/do lưu theo tài khoản
       return { msg: `Bán ${n} Xu: +${tien(n * gia)}`, banXu: con - n };
@@ -1627,19 +1628,19 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
     // ---- sửa đồ ở cửa hàng NPC (nút Sửa): b.slot = ô đang mặc, hoặc b.u = món trong túi. Câu báo theo engine (CoreShell GOI_TRADE_NPC_REPAIR)
     case "sua": {
       const o = b.slot ? (h.equip || {})[String(b.slot)] : it;
-      if (!o) loi("Không có món này");
-      if (!benMax(o.k)) loi("Vật phẩm này không thể sửa!");
-      if (benCua(o) >= benMax(o.k)) loi("Vật phẩm này không cần sửa!");
+      if (!o) loi("Không có món này. Tìm lại đi.");
+      if (!benMax(o.k)) loi("Vật phẩm này sửa không được!");
+      if (benCua(o) >= benMax(o.k)) loi("Vật phẩm này chưa cần sửa!");
       const p = giaSua(o);
-      if ((h.gold || 0) < p) loi("Ngân lượng không đủ, không thể sửa!");
+      if ((h.gold || 0) < p) loi("Ngân lượng không đủ, sửa không được!");
       h.gold = (h.gold || 0) - p; delete o.ben;
       return { msg: `Sửa ${tenMon(o)}: -${tien(p)}` };
     }
     case "ban": {
-      if (!it) loi("Không có món này trong túi");
+      if (!it) loi("Không có món này trong túi. Tìm lại đi.");
       // it.kbh + món của bảng Kỳ Trân Các: thuốc Hồi Thiên rút từ lễ bao mua bằng Xu (anh 12/11 — "k bán dc, chỉ hủy dc ở lễ quan")
-      if (laKtc(it) || it.het || (it.kbh && KTC.items[it.k])) loi("Vật phẩm của Kỳ Trân Các không bán cho cửa hàng được");
-      if (it.vv) loi("Ngựa vĩnh viễn từ mã bài không bán cho cửa hàng được"); // anh 16/11 — Báo Đáp Ân Sư (Mã bài Bôn Tiêu / Phiên Vũ)
+      if (laKtc(it) || it.het || (it.kbh && KTC.items[it.k])) loi("Vật phẩm của Kỳ Trân Các thì đừng bán cho cửa hàng.");
+      if (it.vv) loi("Ngựa vĩnh viễn từ mã bài thì đừng bán cho cửa hàng."); // anh 16/11 — Báo Đáp Ân Sư (Mã bài Bôn Tiêu / Phiên Vũ)
       if (it.tk) loi(CAU_TK);
       const p = giaBan(it); h.bag.splice(i, 1); h.gold = (h.gold || 0) + p;
       giuMuaLai(h, it, p); // mua lại trong 5 phút (lượt 88)
@@ -1650,16 +1651,16 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
       // trong trận Tống Kim (Quân y hậu doanh): thuốc Tống Kim nửa giá, rời trận / hết trận tự mất (anh 12/11 — CAU_TK)
       if (x && x.thuoc) { const tk = TKM().trongTran(key), g1 = tk ? TKM().giaThuocTk(x.gia) : x.gia; muaThuoc(h, x, n, tk ? g1 : 0); return { msg: `Mua ${n} ${x.n}${tk ? " (thuốc Tống Kim — rời trận tự mất)" : ""}: -${tien(g1 * n)}` }; }
       const g = HANG_VP.get(String(b.k));
-      if (!x || !g) loi("Cửa hàng không bán món này");
+      if (!x || !g) loi("Cửa hàng không bán món này. Đừng hỏi nữa.");
       if (x.phu) { muaChong(h, x, g.gia, n); return { msg: `Mua ${n} ${x.n}: -${tien(g.gia * n)}` }; }
       // đồ trắng: mỗi lần 1 món, ngũ hành theo hàng bày (goods Series), m = 1 (giá bán lại như đồ rơi từ quái cấp 1)
-      if ((h.gold || 0) < g.gia) loi("Ngân lượng không đủ");
+      if ((h.gold || 0) < g.gia) loi("Ngân lượng không đủ. Kiếm thêm đi.");
       // hệ như chuan(): món có hệ cố định (ngựa — do-goc series / items.json s) thì chuan() ghi đè hệ khác lúc lưu -> lấy luôn ở đây cho câu báo đúng hệ thật
       // (rà soát lượt 58, anh 10/11: ngựa Mã phu không ngẫu nhiên — mỗi con 1 hệ, con cấp 7 / cấp 8 "Đại Uyển Bạch Mã" đều Thủy). Hàng không ghi hệ mà không
       // có hệ cố định: đang làm nhiệm vụ Dã Tẩu mua đúng món -> hệ nhiệm vụ đòi, còn lại ngẫu nhiên
       const coDinh = (GOC[x.k] || {}).series ?? (x.t === 10 && x.s >= 0 ? x.s : null);
       const heNv = DTA().heCanMua(h, x.k), it = { k: x.k, s: coDinh ?? g.s ?? heNv ?? ri(0, 4), d: [], m: 1 }, at = choDau(h.bag, it);
-      if (!at) loi("Hành trang không đủ chỗ");
+      if (!at) loi("Hành trang không đủ chỗ. Dọn bớt đi rồi hãy làm.");
       NG.gan(it, "mua", "cửa hàng NPC", h.name);
       [it.x, it.y] = at; it.u = ++h.uN; h.bag.push(it); h.gold -= g.gia;
       // câu báo (anh 10/11 — người chơi mua nhầm Đại Uyển Bạch Mã cấp 7 cho nhiệm vụ cấp 8): tên có cấp khi trùng tên, hệ với hàng không ghi hệ (ngựa);
@@ -1668,10 +1669,10 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
       return { msg: `Mua ${DTA().tenDo(x.k)}${g.s == null ? ` (${HE_TEN[it.s] || "?"})` : ""}${dung ? " — đúng món Dã Tẩu cần" : ""}: -${tien(g.gia)}${khac ? ` — chú ý: Dã Tẩu cần ${khac}, không phải món này` : ""}` };
     }
     case "phu": { // dùng Thổ Địa Phù (b.u): trừ 1 tấm — trình duyệt đưa về thành, nhớ chỗ dùng (Xa phu "Trở lại địa điểm cũ")
-      if (!it || !laPhu(it)) loi("Không có Thổ Địa Phù");
-      if (PLD().camPhu(h)) loi("Không thể sử dụng Thổ Địa Phù ở đây"); // trên thuyền / bờ Bắc Phong Lăng Độ (DisabledUseTownP — G_ItemList_0)
-      if (LDA().chan(tkCuaKhoa(key), BAI_NAY.get(key), oCuaKhoa(key))) loi("Không thể sử dụng Thổ Địa Phù ở đây"); // Lôi Đài (anh 15/11): rời sân bằng nút Rời sân; soát 16/11: chỉ nhân vật có vai (ô khác cùng tài khoản dùng được)
-      if ((ZONES.get(BAI_NAY.get(key) | 0) || {}).kind === "đua ngựa") loi("Không thể sử dụng Thổ Địa Phù ở đây"); // đua ngựa (anh 16/11 — client racegame cấm Thổ Địa Phù): rời đường đua bằng thanh đua
+      if (!it || !laPhu(it)) loi("Không có Thổ Địa Phù. Tìm lại đi.");
+      if (PLD().camPhu(h)) loi("Thổ Địa Phù không dùng được ở đây. Đi chỗ khác đi."); // trên thuyền / bờ Bắc Phong Lăng Độ (DisabledUseTownP — G_ItemList_0)
+      if (LDA().chan(tkCuaKhoa(key), BAI_NAY.get(key), oCuaKhoa(key))) loi("Thổ Địa Phù không dùng được ở đây. Đi chỗ khác đi."); // Lôi Đài (anh 15/11): rời sân bằng nút Rời sân; soát 16/11: chỉ nhân vật có vai (ô khác cùng tài khoản dùng được)
+      if ((ZONES.get(BAI_NAY.get(key) | 0) || {}).kind === "đua ngựa") loi("Thổ Địa Phù không dùng được ở đây. Đi chỗ khác đi."); // đua ngựa (anh 16/11 — client racegame cấm Thổ Địa Phù): rời đường đua bằng thanh đua
       it.n = (it.n || 1) - 1; if (it.n <= 0) h.bag.splice(i, 1);
       return { msg: `Dùng ${tenMon(it)}` };
     }
@@ -1688,11 +1689,9 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
       const ruong0 = h.khoa ? 0 : Math.max(0, Math.floor(+h.tienRuong || 0));
       h.gold = (h.gold || 0) + ruong0; h.tienRuong = (h.tienRuong || 0) - ruong0;
       // thieu: món muốn mua mà không mua đủ (anh 31/10 khuya: Trợ Thủ ra bãi không mang Thổ Địa Phù — trước im lặng bỏ qua khi túi đầy / thiếu tiền).
-      // Thổ Địa Phù mua trước thuốc (vé về thành). Các dòng thuốc muốn quá MANG() bình thì chia theo tỉ lệ (anh 01/11 "không tự về thành mua mana":
-      // mặc định 60 máu + 30 nội lực — trước dòng đầu lấy đủ 60 bình, thuốc nội lực không còn chỗ)
+      // Thổ Địa Phù mua trước thuốc (vé về thành). Mỗi dòng thuốc mua tới chongMax của loại đó (bình máu / mana 999 từ 25/11/2026).
       const mua = [], thieu = [], ds = (Array.isArray(b.mua) ? b.mua.slice(0, 4) : []).map(([k, muon]) => [BY.get(String(k)), muon | 0]).filter(([x]) => x);
       ds.sort((a, c) => !!c[0].phu - !!a[0].phu);
-      const tongThuoc = ds.reduce((t, [x, m]) => t + (x.thuoc && HANG.has(x.k) ? clamp(m, 0, MANG()) : 0), 0), ty = tongThuoc > MANG() ? MANG() / tongThuoc : 1;
       for (const [x, muon] of ds) {
         if (x.phu && HANG_VP.has(x.k)) { // Thổ Địa Phù: mua đủ số muốn có (không tính giới hạn thuốc)
           const g = HANG_VP.get(x.k), co = h.bag.reduce((t, o) => t + (o.k === x.k ? o.n || 0 : 0), 0);
@@ -1702,7 +1701,7 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
           continue;
         }
         if (!x.thuoc || !HANG.has(x.k)) continue;
-        let can = Math.min(Math.floor(clamp(muon, 0, MANG()) * ty) - h.bag.reduce((t, o) => t + (o.k === x.k ? o.n : 0), 0), MANG() - soThuoc(h)), da = 0, ly = "";
+        let can = clamp(muon, 0, chongMax(x.k)) - h.bag.reduce((t, o) => t + (o.k === x.k && !o.tk ? o.n : 0), 0), da = 0, ly = "";
         while (can > 0) {
           const n = Math.min(can, TC.muaToiDa, Math.floor((h.gold || 0) / x.gia));
           if (n < 1) { ly = "thiếu tiền"; break; }
@@ -1742,10 +1741,10 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
       return { msg: !n && !con ? "" : !n ? `Trợ Thủ: rương chứa đồ hết chỗ — ${con} món giữ lại vẫn trong túi` : `Trợ Thủ: cất ${n} món vào rương${con ? ` — rương hết chỗ, còn ${con} món trong túi` : ""}` };
     }
     case "vut": { // vứt món trong túi ra đất ở (b.x, b.y) của bãi b.z — nằm ở danh sách chung của bãi (ai cùng bãi cũng thấy, ai nhặt trước được) TD.giay giây
-      if (!it) loi("Không có món này trong túi");
+      if (!it) loi("Không có món này trong túi. Tìm lại đi.");
       if (it.kbh) loi(CAU_KBH.vut); // khóa bảo hiểm (anh 05/11 — engine ServerThrowAwayItem)
-      if ((ZONES.get(b.z | 0) || {}).bang) loi("Khu vực bang hội không vứt vật phẩm ra đất được"); // đợt 4: vật vứt theo mã bãi — chung mọi bản bang
-      if (LDA().chan(tkCuaKhoa(key), b.z, oCuaKhoa(key)) || LDA().laSan(BAI_NAY.get(key))) loi("Lôi đài không vứt vật phẩm ra đất được"); // Lôi Đài (anh 15/11): vật vứt chung cả bãi — đường đưa đồ cho nhau; soát 16/11: chỉ nhân vật có vai
+      if ((ZONES.get(b.z | 0) || {}).bang) loi("Ở khu vực bang hội thì đừng vứt vật phẩm ra đất."); // đợt 4: vật vứt theo mã bãi — chung mọi bản bang
+      if (LDA().chan(tkCuaKhoa(key), b.z, oCuaKhoa(key)) || LDA().laSan(BAI_NAY.get(key))) loi("Ở Lôi đài thì đừng vứt vật phẩm ra đất."); // Lôi Đài (anh 15/11): vật vứt chung cả bãi — đường đưa đồ cho nhau; soát 16/11: chỉ nhân vật có vai
       if (it.tk) loi(CAU_TK);
       h.bag.splice(i, 1); delete it.x; delete it.y;
       if (laTB(it)) NG.cu(it);
@@ -1764,38 +1763,38 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
         const o = v && typeof v === "object" ? v : { u: v }, u = o.u | 0;
         if (u > 0 && !co.has(u)) { co.add(u); ds.push({ u, k: o.k, n: o.n }); }
       }
-      if (!ds.length) loi("Chưa đặt vật phẩm nào vào khung");
-      if (ds.length > MAX) loi(`Mỗi lần hủy tối đa ${MAX} món`);
+      if (!ds.length) loi("Chưa đặt vật phẩm nào vào khung. Đặt vào rồi hãy hủy.");
+      if (ds.length > MAX) loi(`Mỗi lần hủy tối đa ${MAX} món thôi. Bớt lại đi.`);
       const L = ds.map((v) => h.bag.find((o) => o.u === v.u));
-      if (L.some((o) => !o)) loi("Có món không còn trong hành trang — mở lại khung Hủy vật phẩm rồi đặt lại");
-      if (ds.some((v, j) => (v.k != null && String(v.k) !== L[j].k) || (v.n != null && (v.n | 0) !== (L[j].n || 1)))) loi("Vật phẩm trong khung đã thay đổi số lượng — mở lại khung Hủy vật phẩm rồi đặt lại");
+      if (L.some((o) => !o)) loi("Có món không còn trong hành trang. Mở lại khung Hủy vật phẩm rồi đặt lại.");
+      if (ds.some((v, j) => (v.k != null && String(v.k) !== L[j].k) || (v.n != null && (v.n | 0) !== (L[j].n || 1)))) loi("Vật phẩm trong khung đã thay đổi số lượng. Mở lại khung Hủy vật phẩm rồi đặt lại.");
       h.bag = h.bag.filter((o) => !L.includes(o));
-      return { msg: "Thao tác hủy vật phẩm thành công", huy: L };
+      return { msg: "Hủy vật phẩm xong.", huy: L };
     }
     case "loc": {
       h.locDo = clamp(b.n | 0, 0, 6);
       return { msg: (h.locDo ? `Bán đồ trong túi: món dưới ${h.locDo} dòng` : "Bán đồ trong túi: tắt") + " — Trợ Thủ bán ở thành theo mức này" };
     }
   }
-  loi("Không rõ việc");
+  loi("Không rõ việc gì. Gửi lại cho đúng.");
 }
 
 // dời món it trong lưới L (túi / rương) tới (bx, by): chỗ trống thì đặt; đặt lên chồng cùng loại thì dồn vào chồng đó (tới chongMax),
 // còn dư giữ chỗ cũ; đè đúng 1 món khác thì đổi chỗ nếu món kia vừa chỗ cũ
 function datLai(L, it, bx, by) {
-  if (bx == null || by == null) loi("Thiếu vị trí");
+  if (bx == null || by == null) loi("Thiếu vị trí. Gửi lại cho đủ.");
   if (choTrong(L, it, bx, by, [it])) { it.x = bx; it.y = by; return {}; }
   const cung = xepChong(it) && L.find((o) => o !== it && o.k === it.k && cungKhoa(o, it) && o.x === bx && o.y === by); // khác trạng thái khóa: đổi chỗ
   if (cung) {
-    const mx = chongMax(it.k), m = Math.min(it.n, mx - cung.n); if (m <= 0) loi(`Chồng đó đã đủ ${mx}${laThuoc(it) ? " bình" : ""}`);
+    const mx = chongMax(it.k), m = Math.min(it.n, mx - cung.n); if (m <= 0) loi(`Chồng đó đủ ${mx}${laThuoc(it) ? " bình" : ""} rồi. Đừng gộp nữa.`);
     gopHet(cung, it); cung.n += m; it.n -= m; if (!it.n) L.splice(L.indexOf(it), 1);
     return {};
   }
   const [w, hh] = coMon(it), ox = it.x, oy = it.y;
   const de = L.filter((o) => o !== it && !choTrong([o], it, bx, by));
-  if (bx < 0 || by < 0 || bx + w > BAG_W || by + hh > BAG_H || de.length !== 1) loi("Chỗ đó không đủ ô trống");
+  if (bx < 0 || by < 0 || bx + w > BAG_W || by + hh > BAG_H || de.length !== 1) loi("Chỗ đó chật rồi. Dọn chỗ đi.");
   const o = de[0], rest = L.filter((q) => q !== it && q !== o);
-  if (!choTrong(rest, o, ox, oy) || !choTrong([...rest, { ...o, x: ox, y: oy }], it, bx, by)) loi("Chỗ đó không đủ ô trống");
+  if (!choTrong(rest, o, ox, oy) || !choTrong([...rest, { ...o, x: ox, y: oy }], it, bx, by)) loi("Chỗ đó chật rồi. Dọn chỗ đi.");
   it.x = bx; it.y = by; o.x = ox; o.y = oy;
   return {};
 }
@@ -1803,7 +1802,7 @@ function datLai(L, it, bx, by) {
 // cùng loại chưa đầy của B (ở đúng (x, y) nếu có) trước, phần còn lại sang ô trống; chuyển tối đa toiDa (giới hạn mang thuốc), phần không
 // chuyển được ở lại A. Trả số đã chuyển; không chuyển được gì thì báo lỗi
 function chuyen(h, A, B, it, x, y, toiDa = Infinity) {
-  const coXY = Number.isInteger(x) && Number.isInteger(y), het = coXY ? "Chỗ đó không đủ ô trống" : "Không còn chỗ trống";
+  const coXY = Number.isInteger(x) && Number.isInteger(y), het = coXY ? "Chỗ đó chật rồi. Dọn chỗ đi." : "Hết chỗ trống rồi. Dọn chỗ đi.";
   if (!xepChong(it)) {
     const at = coXY ? (choTrong(B, it, x, y) ? [x, y] : null) : choDau(B, it);
     if (!at) loi(het);
@@ -1849,23 +1848,26 @@ function hao(h, ds) {
 }
 
 // mua n bình thuốc x (1 – muaToiDa): dồn vào chồng cùng loại chưa đầy trước, rồi ô trống; thiếu tiền / chỗ thì báo lỗi, không mua gì
-// tổng số bình thuốc trong túi (mọi loại) — mang tối đa TC.mangToiDa (anh 25/10: 60 bình bất kể loại, vd 30 máu + 30 nội lực)
+// tổng số bình thuốc trong túi (mọi loại) — giới hạn tổng cũ (anh 25/10: 60 bình bất kể loại, vd 30 máu + 30 nội lực); từ 25/11/2026: mỗi
+// loại mang tới chongMax của loại đó (bình máu / mana 999 — xem soThuocK), soThuoc chỉ còn để tham khảo / báo cáo
 const soThuoc = (h) => (h.bag || []).reduce((t, o) => t + (laThuoc(o) ? o.n || 0 : 0), 0);
-const MANG = () => TC.mangToiDa || 60;
+// số bình thuốc loại k đang mang (tk: thuốc Tống Kim là chồng riêng)
+const soThuocK = (h, k, tk = false) => (h.bag || []).reduce((t, o) => t + (o.k === k && laThuoc(o) && !!o.tk === !!tk ? o.n || 0 : 0), 0);
+const MANG = () => TC.mangToiDa || 60; // giới hạn tổng cũ — còn dùng trong câu báo của vài chỗ chưa đổi sang theo loại (giữ để khỏi vỡ chữ)
 // anh 16/11: túi tử mẫu (hành trang phụ mở ở đâu cũng được) không cất thuốc — trước đó cất thuốc vào túi rồi ra bãi lấy dần, mang quá MANG() bình
-const TM_THUOC = `Túi tử mẫu không cất được thuốc — thuốc chỉ mang theo trong hành trang (tối đa ${MANG()} bình mọi loại)`;
+const TM_THUOC = `Túi tử mẫu không cất được thuốc — thuốc chỉ mang theo trong hành trang (mỗi loại tối đa ${chongMax("potion:1")} bình)`;
 function muaThuoc(h, x, n, giaTk = 0) { // giaTk > 0: thuốc Tống Kim giá này (chồng riêng it.tk)
-  if (!x || !x.thuoc || !HANG.has(x.k)) loi("Cửa hàng không bán món này");
-  if (n < 1 || n > TC.muaToiDa) loi(`Mỗi lần mua 1 – ${TC.muaToiDa} bình`);
-  const co = soThuoc(h);
-  if (co + n > MANG()) loi(co >= MANG() ? `Chỉ mang tối đa ${MANG()} bình thuốc (mọi loại) — đang có ${co}` : `Chỉ mang tối đa ${MANG()} bình thuốc (mọi loại) — đang có ${co}, mua thêm được ${MANG() - co}`);
+  if (!x || !x.thuoc || !HANG.has(x.k)) loi("Cửa hàng không bán món này. Đừng hỏi nữa.");
+  if (n < 1 || n > TC.muaToiDa) loi(`Mỗi lần chỉ mua 1 – ${TC.muaToiDa} bình thôi.`);
+  const mx = chongMax(x.k), co = soThuocK(h, x.k, giaTk > 0);
+  if (co + n > mx) loi(co >= mx ? `Mỗi loại mang tối đa ${mx} bình thôi. ${x.n.trim()} ngươi đang có ${co}.` : `Mỗi loại mang tối đa ${mx} bình thôi. ${x.n.trim()} ngươi đang có ${co}, mua thêm được ${mx - co}.`);
   muaChong(h, x, giaTk > 0 ? giaTk : x.gia, n, giaTk > 0);
 }
 // mua n món xếp chồng x giá gia mỗi món: dồn vào chồng cùng loại chưa đầy trước, rồi ô trống; thiếu tiền / chỗ thì lỗi, không mua gì
 function muaChong(h, x, gia1, n, tk = false) {
-  if (n < 1 || n > TC.muaToiDa) loi(`Mỗi lần mua 1 – ${TC.muaToiDa}`);
+  if (n < 1 || n > TC.muaToiDa) loi(`Mỗi lần chỉ mua 1 – ${TC.muaToiDa} thôi.`);
   const gia = gia1 * n;
-  if ((h.gold || 0) < gia) loi("Ngân lượng không đủ");
+  if ((h.gold || 0) < gia) loi("Ngân lượng không đủ. Kiếm thêm đi.");
   themChong(h, x, n, 0, tk);
   h.gold -= gia;
 }
@@ -1957,7 +1959,7 @@ function themChong(h, x, n, kbh = 0, tk = false, het = 0) { // tk: thuốc Tốn
   const moi = [];
   while (con > 0) {
     const it = { k: x.k, n: Math.min(con, mx), ...voiKhoa(kbh), ...((kbh | 0) === KBH_TAM ? { kbhHet: +het } : {}), ...(tk ? { tk: 1 } : {}) }, at = choDau([...h.bag, ...moi], it);
-    if (!at) loi("Hành trang không đủ chỗ");
+    if (!at) loi("Hành trang không đủ chỗ. Dọn bớt đi rồi hãy làm.");
     [it.x, it.y] = at; moi.push(it); con -= it.n;
   }
   let du = n - moi.reduce((t, o) => t + o.n, 0);
@@ -1972,33 +1974,33 @@ const tenChieu = (id) => ((SK.skills[id] || {}).n || "chiêu " + id).trim();
 const gioPhutS = (s) => { const g = Math.floor(s / 3600), p = Math.floor((s % 3600) / 60); return g ? `${g} giờ${p ? ` ${p} phút` : ""}` : `${p} phút`; };
 const LD_CAM = new Set(["trangThai", "kyNang"]); // loại công dụng không dùng được trong sân Công Bình Tử (anh 17/11 — dungVat)
 function dungVat(h, it, b, key, qt = false) {
-  if (!it) loi("Không có món này trong túi");
+  if (!it) loi("Không có món này trong túi. Tìm lại đi.");
   const x = BY.get(it.k), D = x && x.dung, lv = h.lvl || 1;
-  if (!x || !x.ktc) loi("Món này không dùng được");
+  if (!x || !x.ktc) loi("Món này dùng không được. Đừng dùng nữa.");
   // Thủy Tinh / Tinh Hồng Bảo Thạch: không dùng trực tiếp — nộp cho Xa phu khi đi đảo Tẩy Tủy (anh 28/10 — may-chu/tay-tuy.js)
-  if (!D && /^qk:(238|239|240|353)$/.test(it.k)) loi(`${x.n.trim()}: mang theo khi đi đảo Tẩy Tủy (Xa phu Ba Lăng) — Lam + Tử + Lục Thủy Tinh mỗi loại 1 viên tẩy điểm kỹ năng, 6 viên Tinh Hồng Bảo Thạch tẩy điểm tiềm năng`);
+  if (!D && /^qk:(238|239|240|353)$/.test(it.k)) loi(`${x.n.trim()}: mang theo khi đi đảo Tẩy Tủy (Xa phu Ba Lăng). Lam + Tử + Lục Thủy Tinh mỗi loại 1 viên tẩy điểm kỹ năng, 6 viên Tinh Hồng Bảo Thạch tẩy điểm tiềm năng.`);
   // Nhạc Vương Kiếm (questkey 195 — "tín vật để kiến lập bang hội"; lễ bao 500 Xu mở ra kiếm — anh 31/10; đúc từ Nhạc Vương Hồn Thạch ở Quân Nhu quan Tống Kim): anh 14/11
   // bang hội mở — không dùng trực tiếp, nộp khi lập bang ở Người hướng dẫn bang hội (may-chu/bang-hoi.js lap)
-  if (!D && it.k === "qk:195") loi(`${x.n.trim()}: tín vật lập bang hội — nộp cho Người hướng dẫn bang hội (Ba Lăng huyện / Biện Kinh) khi lập bang`);
+  if (!D && it.k === "qk:195") loi(`${x.n.trim()}: tín vật lập bang hội. Nộp cho Người hướng dẫn bang hội (Ba Lăng huyện / Biện Kinh) khi lập bang.`);
   // Tống Kim (anh 06/11 — may-chu/tong-kim.js): Nhạc Vương Hồn Thạch chỉ để đúc kiếm; Huân công bài (client jungongpai.lua: bốc kinh nghiệm, hết hạn 24:00 ngày
   // hôm sau); món chỉ dùng trong chiến trường (client checkmapid.lua — đang ở trận, đang báo danh / đánh): hoàn = trạng thái 3 phút (h.buff tk…), Chiến cổ /
   // Lệnh Bài = trình duyệt cộng trạng thái cho mình + người cùng phe quanh mình (tkDoi — tkBuff), Càn Khôn Tạo Hóa Đan = trình duyệt hồi máu (tkHoi)
   const TK = TKM(), tkv = TK.vatTk(it.k, D), tru1 = () => { it.n = (it.n || 1) - 1; if (it.n <= 0) h.bag.splice(h.bag.indexOf(it), 1); };
   // Lôi Đài Công Bình Tử (anh 17/11 "khi vào công bình tử, không được dùng các loại dược, hoàn"): trong sân (hoặc nhân vật đang có vai ở sân — như Thổ Địa Phù) không dùng
   // hoàn / vật phẩm trạng thái, phù cộng cấp kỹ năng, món Tống Kim. Thuốc uống ở trình duyệt (src/game/main.js drink chặn). GIỐNG main.js LD_CAM — sửa thì sửa cả 2
-  if ((tkv || (D && LD_CAM.has(D.loai))) && LDA().chan(tkCuaKhoa(key), BAI_NAY.get(key), oCuaKhoa(key))) loi("Trong sân Công Bình Tử không dùng được thuốc, hoàn — rời sân rồi dùng");
-  if (it.k === TK.CF.thuong.htMon) loi(`Dùng ${TK.CF.duc.can} viên đúc Nhạc Vương Kiếm ở Quân Nhu quan (Biện Kinh)`);
+  if ((tkv || (D && LD_CAM.has(D.loai))) && LDA().chan(tkCuaKhoa(key), BAI_NAY.get(key), oCuaKhoa(key))) loi("Trong sân Công Bình Tử thì đừng dùng thuốc, hoàn. Rời sân rồi hãy dùng.");
+  if (it.k === TK.CF.thuong.htMon) loi(`Dùng ${TK.CF.duc.can} viên mà đúc Nhạc Vương Kiếm ở Quân Nhu quan (Biện Kinh).`);
   if (it.k === TK.CF.thuong.hcMon || (D && D.loai === "huanCong")) {
-    if (it.het && +it.het <= Date.now()) loi(`${x.n.trim()} đã hết hạn sử dụng`);
+    if (it.het && +it.het <= Date.now()) loi(`${x.n.trim()} hết hạn sử dụng rồi. Vứt đi.`);
     const bang = (D && Array.isArray(D.kn) && D.kn.length ? D.kn : TK.CF.thuong.hcKn).filter((r) => Array.isArray(r) && +r[0] > 0 && +r[1] > 0);
-    if (!bang.length) loi("Món này không dùng được");
+    if (!bang.length) loi("Món này dùng không được. Đừng dùng nữa.");
     let j = Math.random() * bang.reduce((s, r) => s + +r[1], 0), e = +bang[bang.length - 1][0];
     for (const r of bang) { j -= +r[1]; if (j < 0) { e = +r[0]; break; } }
     tru1(); h.exp = (h.exp || 0) + e; lenCap(h);
     return { msg: `Sử dụng ${x.n.trim()}: nhận được ${e.toLocaleString("vi-VN")} điểm kinh nghiệm` };
   }
   if (tkv) {
-    if (!TK.trongTran(key)) loi("Vật phẩm này chỉ có thể sử dụng ở Chiến trường Tống Kim");
+    if (!TK.trongTran(key)) loi("Vật phẩm này chỉ dùng được ở Chiến trường Tống Kim. Đi đúng chỗ đi.");
     if (tkv.loai === "hoan") {
       TK.hoanTran(h, key); // vừa trọng thương: bỏ hoàn cũ trước (anh 17/11)
       buffDem(h, key, true); // trừ hẳn phần thời gian đã trôi trước khi ghi trạng thái mới; dùng lại thì tính lại từ đầu (như hoàn Kỳ Trân Các)
@@ -2010,7 +2012,7 @@ function dungVat(h, it, b, key, qt = false) {
     if (tkv.loai === "doi") { TK.choDoi(key, tkv.k, tkv.giay); return { msg: `Dùng ${x.n.trim()}: tướng sĩ phe ta quanh đây được tăng sức trong ${gioPhutS(tkv.giay)}`, tkDoi: { k: tkv.k, giay: tkv.giay } }; }
     return { msg: `Dùng ${x.n.trim()}: hồi ${tkv.v.toLocaleString("vi-VN")} sinh lực và nội lực mỗi nửa giây trong ${tkv.giay} giây`, tkHoi: { v: tkv.v, giay: tkv.giay } };
   }
-  if (!D) loi(`${x.n.trim()}: hiện chưa dùng được (game chưa có chức năng này)`);
+  if (!D) loi(`${x.n.trim()}: hiện chưa dùng được. Game chưa có chức năng này.`);
   const bot = () => { it.n = (it.n || 1) - 1; if (it.n <= 0) h.bag.splice(h.bag.indexOf(it), 1); };
   // món mới vào túi (ngựa 2 × 3, Nhạc Vương Kiếm): chỗ trống tính cả ô của món đang dùng nếu đây là món cuối của chồng. Món mở ra từ món khóa
   // bảo hiểm cũng khóa (anh 05/11 — như client: đồ phân ra từ đồ khóa giữ trạng thái khóa)
@@ -2025,7 +2027,7 @@ function dungVat(h, it, b, key, qt = false) {
   switch (D.loai) {
     case "ngua": { // mã bài (market_pack.lua): 1 con ngựa — hạn D.ngay ngày từ lúc dùng (anh 27/10), hết hạn thì biến mất (chuan)
       // D.vinhVien (anh 16/11 — Báo Đáp Ân Sư: Mã bài Bôn Tiêu / Phiên Vũ từ hương bao): ngựa không hạn, cờ vv — không bán cho cửa hàng (act ban), Trợ Thủ không tự bán
-      const ng = BY.get(D.ngua); if (!ng) loi("Không có ngựa này");
+      const ng = BY.get(D.ngua); if (!ng) loi("Không có ngựa này. Tìm lại đi.");
       const vv = !!D.vinhVien || !(D.ngay > 0);
       datMoi({ k: D.ngua, d: [], m: 1, ...(vv ? { vv: 1 } : { het: Date.now() + D.ngay * 86400000 }) }, `Xin hãy sắp xếp lại hành trang! ${ng.n} cần ${coMon({ k: D.ngua }).join(" × ")} ô trống`);
       return { msg: vv ? `Nhận được 1 ${ng.n} — vĩnh viễn (không bán cho cửa hàng được)` : `Nhận được 1 ${ng.n} — hạn sử dụng ${D.ngay} ngày` };
@@ -2042,11 +2044,11 @@ function dungVat(h, it, b, key, qt = false) {
     case "kinhNghiem": { // Bách / Vạn / Thiên Niên Trân Lộ, Hồng Bao Sum Vầy / An Khang: + D.kn kinh nghiệm
       const e = Math.max(0, Math.floor(+D.kn || 0));
       bot(); h.exp = (h.exp || 0) + e; lenCap(h);
-      return { msg: `Sử dụng ${x.n.trim()}: Bạn nhận được ${e.toLocaleString("vi-VN")} điểm kinh nghiệm` };
+      return { msg: `Sử dụng ${x.n.trim()}: nhận được ${e.toLocaleString("vi-VN")} điểm kinh nghiệm` };
     }
     case "satThuGian": { // Sát Thủ Giản lễ hộp: D.so Sát thủ giản bậc theo cấp người dùng (20 … 200 — như Vượt Ải GIAN), khóa theo hộp
       const cap = clamp(Math.floor(lv / 10) * 10, 20, 200), m = BY.get(`ms:400:${cap}`);
-      if (!m) loi("Không có Sát thủ giản cấp này");
+      if (!m) loi("Không có Sát thủ giản cấp này. Tìm lại đi.");
       const so = Math.max(1, D.so | 0 || 2), truoc = h.bag.slice(), nCu = it.n;
       bot(); try { themChong(h, m, so, it.kbh, false, it.kbhHet); } catch (e) { h.bag = truoc; it.n = nCu; throw e; }
       return { msg: `Mở ${x.n.trim()}: nhận được ${so} ${m.n.trim()}` };
@@ -2054,11 +2056,11 @@ function dungVat(h, it, b, key, qt = false) {
     case "shxt": { // Mảnh bản đồ sơn hà xã tắc: + D.so mảnh (h.shxt — như nhặt đồ chí)
       const so = Math.max(1, D.so | 0);
       bot(); h.shxt = (h.shxt | 0) + so;
-      return { msg: `Bạn nhận được ${so} mảnh bản đồ Sơn Hà Xã Tắc! Hiện tại bạn có tổng cộng ${h.shxt} mảnh bản đồ Sơn Hà Xã Tắc.` };
+      return { msg: `Ngươi nhận được ${so} mảnh bản đồ Sơn Hà Xã Tắc! Hiện tại ngươi có tổng cộng ${h.shxt} mảnh bản đồ Sơn Hà Xã Tắc.` };
     }
     case "pldBac": { // Phong Lăng Truyền Tống Lệnh: sang thẳng bờ Bắc Phong Lăng Độ (phong-lang-do.js truyenTong — có môn phái, ở thành / thôn / bờ Nam, bến không nghỉ)
       const z = BAI_NAY.get(key);
-      if (TKM().trongTran(key) || LDA().chan(tkCuaKhoa(key), z, oCuaKhoa(key))) loi(`Không thể sử dụng ${x.n.trim()} ở đây`);
+      if (TKM().trongTran(key) || LDA().chan(tkCuaKhoa(key), z, oCuaKhoa(key))) loi(`${x.n.trim()} không dùng được ở đây. Đi chỗ khác đi.`);
       const r = PLD().truyenTong(h, z);
       bot();
       return { msg: `Sử dụng ${x.n.trim()}: ${r.tin.join(" ")}`, di: r.di };
@@ -2071,10 +2073,10 @@ function dungVat(h, it, b, key, qt = false) {
       // tổng tối đa kyNang.toiDa (trình duyệt cộng — không ghi vào h.skills)
       const t = Date.now(), L = BD().ccCon(h, t), tong = L.reduce((s, r) => s + r.v, 0), toiDa = BD().cf().kyNang.toiDa, them = Math.max(1, D.cap | 0), ngay = Math.max(1, +D.ngay || 14);
       h.ccKn = L; // bỏ dòng hết hạn
-      if (tong >= toiDa) loi(`Đã đạt tối đa +${toiDa} cấp kỹ năng`);
+      if (tong >= toiDa) loi(`Đạt tối đa +${toiDa} cấp kỹ năng rồi. Đừng dùng nữa.`);
       // vượt tối đa thì chặn luôn (soát 16/11: đang +2 dùng thêm Càn khôn +2 thành 4 nhưng chỉ tính 3 — phí món); chờ 1 hiệu ứng hết hạn rồi dùng
-      if (tong + them > toiDa) loi(`Đang được +${tong} cấp kỹ năng — dùng ${x.n.trim()} (+${them}) sẽ vượt tối đa +${toiDa}. Hãy chờ 1 hiệu ứng hết hạn rồi dùng`);
-      if (D.capNv && lv < D.capNv) loi(`Cần đẳng cấp ${D.capNv} trở lên mới sử dụng được ${x.n.trim()}`);
+      if (tong + them > toiDa) loi(`Đang được +${tong} cấp kỹ năng. Dùng ${x.n.trim()} (+${them}) sẽ vượt tối đa +${toiDa}. Chờ 1 hiệu ứng hết hạn rồi hãy dùng.`);
+      if (D.capNv && lv < D.capNv) loi(`Cần đẳng cấp ${D.capNv} trở lên mới dùng được ${x.n.trim()}. Luyện thêm đi.`);
       bot(); L.push({ v: them, het: t + ngay * 864e5 });
       return { msg: `Sử dụng ${x.n.trim()}: mọi kỹ năng đã học +${them} cấp trong ${ngay} ngày — đang được +${Math.min(toiDa, tong + them)} cấp (tối đa +${toiDa})` };
     }
@@ -2085,7 +2087,7 @@ function dungVat(h, it, b, key, qt = false) {
       if (laHoan(D.buff)) TK.hoanTran(h, key);
       buffDem(h, key, true); // trừ hẳn phần thời gian đã trôi trước khi ghi trạng thái mới
       const B = (h.buff = h.buff || {}), T = KTC.buff[D.buff] || {};
-      if (B[D.buff] > 0 && !D.lamMoi) loi(`Đang có hiệu quả ${T.n || x.n} (còn ${gioPhutS(B[D.buff])}) — dùng thêm vô hiệu`);
+      if (B[D.buff] > 0 && !D.lamMoi) loi(`Đang có hiệu quả ${T.n || x.n} (còn ${gioPhutS(B[D.buff])}). Dùng thêm cũng vô ích.`);
       // 5 loại Nội … hoàn (nei_wan.lua EatNei_Wan): ăn loại này thì các loại cùng nhóm đang có hết công hiệu
       const het = D.nhom ? Object.keys(B).filter((k2) => k2 !== D.buff && B[k2] > 0 && (KTC.buff[k2] || {}).nhom === D.nhom) : [];
       for (const k2 of het) delete B[k2];
@@ -2096,7 +2098,7 @@ function dungVat(h, it, b, key, qt = false) {
     case "kimTe": { // Kim Tê (anh 31/10, luật riêng S1): sửa trang bị đang mặc rồi đồ trong túi bằng điểm độ bền của Kim Tê — mỗi viên D.ben điểm,
       // 1 điểm = 1 độ bền; hết điểm giữa chừng thì món đó sửa được bao nhiêu hay bấy nhiêu. Không tốn tiền, không cần thợ rèn
       const ds = [...Object.values(h.equip || {}), ...h.bag.filter((o) => o !== it)].filter((o) => o && benMax(o.k) > 0 && benCua(o) < benMax(o.k));
-      if (!ds.length) loi("Trang bị không cần sửa");
+      if (!ds.length) loi("Trang bị chưa cần sửa. Đừng sửa nữa.");
       let con = (it.con ?? D.ben) + ((it.n || 1) - 1) * D.ben; // tổng điểm của cả chồng
       const truoc = con, ten = [];
       for (const o of ds) {
@@ -2111,24 +2113,24 @@ function dungVat(h, it, b, key, qt = false) {
       return { msg: `Dùng ${x.n.trim()} sửa ${ten.length} món (${ten.join(", ")}): +${truoc - con} độ bền${n > 0 ? ` — Kim Tê còn ${n > 1 ? `${n} viên, viên đang dùng ` : ""}${con - (n - 1) * D.ben} / ${D.ben} độ bền` : " — đã dùng hết Kim Tê"}` };
     }
     case "matTich": { // wulin-miji.lua: cấp ≥ 80, tối đa 15 quyển, +1 điểm kỹ năng
-      if (lv < D.cap) loi("Bạn cầm quyển Võ Lâm Mật Tịch nghiên cứu cả nửa ngày, kết quả lĩnh ngộ được chút ít (cần đẳng cấp 80)");
-      if ((h.mt | 0) >= D.toiDa) loi("Bạn đã nghiền ngẫm kỹ quyển Võ Lâm Mật Tịch, nhưng không thu được điều gì tâm đắc");
+      if (lv < D.cap) loi("Ngươi cầm quyển Võ Lâm Mật Tịch nghiên cứu cả nửa ngày mà lĩnh ngộ được chút ít. Cần đẳng cấp 80 mới đọc được.");
+      if ((h.mt | 0) >= D.toiDa) loi("Ngươi đã nghiền ngẫm kỹ quyển Võ Lâm Mật Tịch mà chẳng thu được gì tâm đắc. Đọc đủ rồi thì thôi.");
       bot(); h.mt = (h.mt | 0) + 1; h.kyNangThem = (h.kyNangThem | 0) + 1;
-      return { msg: `Bạn cầm quyển Võ Lâm Mật Tịch nghiên cứu cả nửa ngày, kết quả cũng thu được một vài điều tâm đắc liên quan đến võ công: +1 điểm kỹ năng (${h.mt} / ${D.toiDa} quyển)`, kn: 1 };
+      return { msg: `Ngươi cầm quyển Võ Lâm Mật Tịch nghiên cứu cả nửa ngày, cũng thu được vài điều tâm đắc về võ công: +1 điểm kỹ năng (${h.mt} / ${D.toiDa} quyển)`, kn: 1 };
     }
     case "tayTuy": { // xisui-jing.lua: cấp ≥ 80, tối đa 15 quyển, điểm tiềm năng theo cấp: 80–81: 1 … 88 trở lên: 5
-      if (lv < D.cap || (h.tt | 0) >= D.toiDa) loi(`Bạn đã xem kỹ quyển Tẩy Tủy kinh nhưng không thể hiểu :(${lv < D.cap ? " (cần đẳng cấp 80)" : ` (đã đọc ${D.toiDa} quyển)`}`);
+      if (lv < D.cap || (h.tt | 0) >= D.toiDa) loi(`Ngươi đã xem kỹ quyển Tẩy Tủy kinh mà không hiểu nổi :(${lv < D.cap ? " (cần đẳng cấp 80)" : ` (đã đọc ${D.toiDa} quyển)`}`);
       const pot = Math.floor((Math.min(lv, 89) - 80) / 2) + 1;
       bot(); h.tt = (h.tt | 0) + 1; h.tiemNangThem = (h.tiemNangThem | 0) + pot;
-      return { msg: `Bạn đã đọc 'Tẩy Tủy Kinh', nhận được ${pot} điểm tiềm năng (${h.tt} / ${D.toiDa} quyển)`, kn: 1 };
+      return { msg: `Ngươi đã đọc 'Tẩy Tủy Kinh', nhận được ${pot} điểm tiềm năng (${h.tt} / ${D.toiDa} quyển)`, kn: 1 };
     }
     case "sach": case "sach120": { // skillbook.lua / lv120skillbook.lua: đúng phái, đủ cấp, chưa học -> học chiêu (cấp học D.lv, sách 120: 1)
-      if (h.fac == null) loi("Chưa gia nhập môn phái, không thể học kỹ năng này!");
+      if (h.fac == null) loi("Chưa vào phái thì học kỹ năng này làm gì!");
       const chieu = D.loai === "sach" ? D.chieu : ((PHAI_SACH.get(h.fac) || {})[120] || [])[0];
-      if (D.loai === "sach" && h.fac !== D.phai) loi(`Bạn cầm lấy ${x.n} nghiên cứu cả nửa ngày, kết quả cũng không lĩnh ngộ được gì (sách của phái khác)`);
-      if (lv < D.cap) loi(D.loai === "sach" ? `Bạn cầm lấy ${x.n} nghiên cứu cả nửa ngày, kết quả lĩnh ngộ rất ít (cần đẳng cấp ${D.cap})` : "Đẳng cấp chưa đủ 120, không thể học kỹ năng này!");
+      if (D.loai === "sach" && h.fac !== D.phai) loi(`Ngươi cầm lấy ${x.n} nghiên cứu cả nửa ngày mà chẳng lĩnh ngộ được gì. Sách của phái khác đấy.`);
+      if (lv < D.cap) loi(D.loai === "sach" ? `Ngươi cầm lấy ${x.n} nghiên cứu cả nửa ngày mà lĩnh ngộ được rất ít. Cần đẳng cấp ${D.cap} mới đọc được.` : "Đẳng cấp chưa đủ 120 thì học kỹ năng này làm gì!");
       const B = new Set(h.books || []);
-      if (!chieu || B.has(chieu)) loi(D.loai === "sach" ? `Bạn đã cầm ${x.n} nghiền tới ngẫm lui, nhưng cũng không học được gì trong đó (đã học)` : "Đã lĩnh hội được kỹ năng 120 rồi, còn muốn học thêm nữa sao?");
+      if (!chieu || B.has(chieu)) loi(D.loai === "sach" ? `Ngươi đã cầm ${x.n} nghiền tới ngẫm lui mà chẳng học được gì thêm. Học rồi còn đọc nữa à?` : "Đã lĩnh hội được kỹ năng 120 rồi, còn muốn học thêm nữa sao?");
       bot(); B.add(chieu); h.books = [...B];
       const cap = D.lv ?? 1;
       if (cap > 0) {
@@ -2139,12 +2141,12 @@ function dungVat(h, it, b, key, qt = false) {
       return { msg: `Đã học được kỹ năng ${tenChieu(chieu)}`, kn: 1 };
     }
     case "daiThanh": { // dachengmiji_90 / 120.lua: chọn 1 chiêu 90 / 120 đã học chưa tới cấp 20 -> cấp 20 (không tốn điểm)
-      if (h.fac == null) loi("Hình như quyển sách này miêu tả võ công cao cấp của các đại môn phái, ngươi không thể hiểu sự huyền diệu của nó.");
+      if (h.fac == null) loi("Quyển sách này viết võ công cao cấp của các đại môn phái, ngươi không hiểu nổi đâu.");
       const ds = ((PHAI_SACH.get(h.fac) || {})[D.moc] || []).filter((c) => (h.books || []).includes(c) && ((h.skills || {})[c] | 0) < 20);
-      if (!ds.length) loi("Kỹ năng đã đạt đến cấp cao nhất hoặc vẫn chưa học.");
+      if (!ds.length) loi("Kỹ năng đã tới cấp cao nhất, hoặc ngươi vẫn chưa học. Xem lại đi.");
       const id = b.chon | 0;
       if (!id) return { chon: ds.map((c) => [c, tenChieu(c), (h.skills || {})[c] | 0]) };
-      if (!ds.includes(id)) loi("Kỹ năng đã đạt đến cấp cao nhất hoặc vẫn chưa học.");
+      if (!ds.includes(id)) loi("Kỹ năng đã tới cấp cao nhất, hoặc ngươi vẫn chưa học. Xem lại đi.");
       bot(); h.skills = h.skills || {}; const cu = h.skills[id] | 0;
       h.skills[id] = 20; h.kyNangThem = (h.kyNangThem | 0) + 20 - cu; h.skMin = { ...(h.skMin || {}), [id]: 20 };
       return { msg: `${tenChieu(id)} đã lên đẳng cấp 20`, kn: 1 };
@@ -2157,9 +2159,9 @@ function dungVat(h, it, b, key, qt = false) {
     case "phiPhong": { // Phi Phong (script\item\mantle.lua — Mantle(): khoác áo choàng lên y phục đang mặc; anh 03/11): bộ phận mantle của kho nhân
       // vật (D.mantle — 1 = 披风01). Anh 13/11 (lượt 86): kích hoạt trên CHÍNH y phục đang mặc (it.pp — kieuDang), mỗi y phục 1 lần, đi theo áo khi giao dịch
       const ao = aoMac(h);
-      if (!ao) loi("Hãy mặc y phục rồi mới kích hoạt Phi Phong");
-      if (laLePhuc(ao)) loi("Lễ phục đã có sẵn tà áo, không khoác thêm Phi Phong được — hãy mặc y phục khác rồi kích hoạt"); // anh 15/11 (LE_PHUC)
-      if (ao.pp) loi("Y phục này đã kích hoạt Phi Phong rồi — mỗi y phục chỉ kích hoạt được 1 lần");
+      if (!ao) loi("Mặc y phục vào rồi hãy kích hoạt Phi Phong.");
+      if (laLePhuc(ao)) loi("Lễ phục đã có sẵn tà áo, khoác thêm Phi Phong không được. Mặc y phục khác rồi hãy kích hoạt."); // anh 15/11 (LE_PHUC)
+      if (ao.pp) loi("Y phục này đã kích hoạt Phi Phong rồi. Mỗi y phục chỉ kích hoạt được 1 lần thôi.");
       bot(); ao.pp = D.mantle | 0 || 1; h.looks = kieuDang(h);
       return { msg: `Đã kích hoạt Phi Phong cho ${tenMon(ao).trim()} — áo choàng đi theo y phục này (giao dịch / bày bán cũng đi cùng)` };
     }
@@ -2169,9 +2171,9 @@ function dungVat(h, it, b, key, qt = false) {
       const r = PQ().chon(h, key, b.so); bot();
       return { msg: r.msg };
     }
-    case "leBao": { // caiyao\huitianlibao.lua: rút n viên (hỏi số), bao còn con viên; mang tối đa MANG() bình thuốc
-      const con = it.con ?? D.so, max = Math.min(con, MANG() - soThuoc(h));
-      if (max <= 0) loi(`Chỉ mang tối đa ${MANG()} bình thuốc (mọi loại) — đang có ${soThuoc(h)}`);
+    case "leBao": { // caiyao\huitianlibao.lua: rút n viên (hỏi số), bao còn con viên; mang tối đa chongMax bình mỗi loại thuốc
+      const con = it.con ?? D.so, mx = chongMax(D.thuoc), max = Math.min(con, mx - soThuocK(h, D.thuoc));
+      if (max <= 0) loi(`Mỗi loại mang tối đa ${mx} bình thôi. Ngươi đang có ${soThuocK(h, D.thuoc)}.`);
       if (!(b.n > 0)) return { hoiSo: max, con };
       const lay = clamp(b.n | 0, 1, max), th = BY.get(D.thuoc);
       themChong(h, th, lay, it.kbh, false, it.kbhHet); // bao khóa bảo hiểm -> thuốc rút ra cũng khóa (khóa có hạn: cùng giờ mở)
@@ -2179,7 +2181,7 @@ function dungVat(h, it, b, key, qt = false) {
       return { msg: `Rút ${lay} ${th.n}${it.con > 0 ? ` — trong bao còn ${it.con} viên` : " — đã rút hết toàn bộ thuốc trong túi"}` };
     }
     case "leBaoNhieu": { // Thiết La Hán Lễ Bao (xinnianlibao\xinniangift.lua [1665]: 10 cuốn Thiết La Hán) — anh 31/10 tối "mở bán thiết la hán lễ bao"
-      const m = BY.get(D.mon); if (!m) loi("Không có món này");
+      const m = BY.get(D.mon); if (!m) loi("Không có món này. Tìm lại đi.");
       const truoc = h.bag.slice(), nCu = it.n;
       bot(); // lễ bao cuối của chồng: ô của nó được dùng cho món mới
       try { themChong(h, m, D.so, it.kbh, false, it.kbhHet); } catch (e) { h.bag = truoc; it.n = nCu; throw e; } // lễ bao khóa bảo hiểm -> sách cũng khóa
@@ -2189,13 +2191,13 @@ function dungVat(h, it, b, key, qt = false) {
       // S1 (anh 31/10 khuya): số chùy + bảng món ở cau-hinh.json daTau.ruong { chuy, bang: [[mã | [mã…] (bốc 1), số, %]] }
       const R = (CFG.daTau || {}).ruong || {}, can = R.chuy ?? 6, bang = R.bang || [];
       const co = h.bag.reduce((t, o) => t + (o.k === D.chuy ? o.n || 1 : 0), 0);
-      if (co < can) loi(`Cần ${can} Huyền Thiên Chùy, các hạ đem không đủ số lượng!`);
-      const tong = bang.reduce((t, r) => t + (+r[2] || 0), 0); if (!(tong > 0)) loi("Bảo rương chưa có phần thưởng");
+      if (co < can) loi(`Cần ${can} Huyền Thiên Chùy. Ngươi mang không đủ số lượng!`);
+      const tong = bang.reduce((t, r) => t + (+r[2] || 0), 0); if (!(tong > 0)) loi("Bảo rương chưa có phần thưởng. Đừng mở nữa.");
       let j = Math.random() * tong, dong = bang[bang.length - 1];
       for (const r of bang) { j -= +r[2] || 0; if (j < 0) { dong = r; break; } }
       // dòng ["xu", số, %] = Xu (anh 31/10 khuya lần 2: "thêm cả 1 xu, 2 xu, 5 xu vào pool thưởng")
       const k = Array.isArray(dong[0]) ? dong[0][Math.floor(Math.random() * dong[0].length)] : dong[0], m = k === "xu" ? null : BY.get(k), so = dong[1] | 0 || 1;
-      if (k !== "xu" && !m) loi("Không có món này");
+      if (k !== "xu" && !m) loi("Không có món này. Tìm lại đi.");
       if (m) themChong(h, m, so, it.kbh, false, it.kbhHet); // như client: đủ chỗ cho món mới rồi mới trừ rương + chùy (thiếu chỗ: "Hành trang không đủ chỗ", không mất gì); món theo trạng thái khóa của rương
       else h.xu = (h.xu | 0) + so;
       bot();
@@ -2205,27 +2207,27 @@ function dungVat(h, it, b, key, qt = false) {
       return { msg: `Mở Bảo rương thần bí của Dã Tẩu (${can} Huyền Thiên Chùy): nhận được ${m ? `${so > 1 ? so + " " : ""}${m.n.trim()}` : `${so} Xu`}` };
     }
     case "phucDuyen": { // Phúc Duyên Lộ (script\item\fuyuanlu_*.lua: FuYuan_Add 10 / 20 / 50 — chưa mở phúc duyên thì câu client, không mất món)
-      if (!h.pd || !h.pd.bat) loi("Bạn tạm thời chưa thể sử dụng Phúc Duyên, trước tiên hãy vào Nhận thưởng → Phúc duyên (Võ Lâm Minh Truyền Nhân) để mở công năng này.");
+      if (!h.pd || !h.pd.bat) loi("Ngươi chưa dùng được Phúc Duyên. Vào Nhận thưởng → Phúc duyên (Võ Lâm Minh Truyền Nhân) mà mở công năng này trước đi.");
       bot(); h.pd.diem = (h.pd.diem | 0) + D.diem;
-      return { msg: `Bạn nhận được ${D.diem} điểm phúc duyên (có ${h.pd.diem})` };
+      return { msg: `Ngươi nhận được ${D.diem} điểm phúc duyên (có ${h.pd.diem})` };
     }
     case "choHoangKim": { // Hoàng Kim Bảo Hạp / Vé số Hoàng Kim (quà mốc Dã Tẩu 6000 / 7000 / 8000 — anh 31/10 khuya lần 2): giữ lại, mở khi có trang bị Hoàng Kim
-      loi(`${x.n.trim()}: game chưa có trang bị Hoàng Kim — cứ giữ lại, khi game cập nhật trang bị Hoàng Kim sẽ ${D.monPhai ? "đổi được 1 món Hoàng Kim môn phái của phái đang chơi" : "mở ra 1 món ngẫu nhiên bộ An Bang / Định Quốc"}`);
+      loi(`${x.n.trim()}: game chưa có trang bị Hoàng Kim. Cứ giữ lại, khi game cập nhật trang bị Hoàng Kim sẽ ${D.monPhai ? "đổi được 1 món Hoàng Kim môn phái của phái đang chơi" : "mở ra 1 món ngẫu nhiên bộ An Bang / Định Quốc"}`);
     }
     case "laHan": { // Thiết La Hán (script\item\tie-luohan.lua): mỗi ngày (giờ Việt Nam) tối đa D.lanNgay quyển + D.knNgay kinh nghiệm; trên cấp D.capToiDa
       // vô hiệu (không mất món). Nhóm cấp (cấp trên 100 tính như 100) -> [kinh nghiệm, %]: ngẫu nhiên 1–100 ≤ % thì đủ, không thì kinh nghiệm × số / 200
       const L = h.lvl || 1, nay = ngayVN(Date.now());
-      if (L > D.capToiDa) loi("Bạn cùng với Thiết La Hán đối luyện hơn nửa ngày, kết quả không thu được hiệu quả gì");
+      if (L > D.capToiDa) loi("Ngươi cùng Thiết La Hán đối luyện hơn nửa ngày mà chẳng thu được hiệu quả gì.");
       const S = (h.tlh = h.tlh && h.tlh.ngay === nay ? h.tlh : { ngay: nay, n: 0, kn: 0 });
-      if (S.n >= D.lanNgay) loi(`Mỗi ngày chỉ được sử dụng ${D.lanNgay} quyển`);
+      if (S.n >= D.lanNgay) loi(`Mỗi ngày chỉ được dùng ${D.lanNgay} quyển thôi.`);
       const [goc, tl] = D.kn[Math.floor((Math.min(L, 100) - 1) / 10)], so = 1 + Math.floor(Math.random() * 100), e = so > tl ? Math.floor((goc * so) / 200) : goc;
-      if (S.kn + e > D.knNgay) loi("Đại hiệp đã thu được kinh nghiệm cao nhất từ hoạt động này.");
+      if (S.kn + e > D.knNgay) loi("Ngươi đã thu đủ kinh nghiệm cao nhất từ hoạt động này rồi. Dừng đi.");
       bot(); S.n++; S.kn += e; h.exp = (h.exp || 0) + e; lenCap(h);
-      return { msg: `Bạn đấu với Thiết La Hán hơn nửa ngày, kết quả đã thu được một số kinh nghiệm thực tiễn chiến đấu: +${e.toLocaleString("vi-VN")} kinh nghiệm (hôm nay ${S.n} / ${D.lanNgay} quyển)` };
+      return { msg: `Ngươi đấu với Thiết La Hán hơn nửa ngày, thu được một số kinh nghiệm thực chiến: +${e.toLocaleString("vi-VN")} kinh nghiệm (hôm nay ${S.n} / ${D.lanNgay} quyển)` };
     }
     case "leBaoMon": { // market_pack.lua: Nhạc Vương Kiếm lễ bao -> Nhạc Vương Kiếm
       const m = BY.get(D.mon);
-      datMoi({ k: D.mon, n: 1 }, "Hành trang không đủ chỗ");
+      datMoi({ k: D.mon, n: 1 }, "Hành trang không đủ chỗ. Dọn bớt đi rồi hãy làm.");
       return { msg: `Nhận được ${m.n}` };
     }
     case "tuMau": { // ibzimudai.lua: hỏi trước (trả tuMau = hạn hiện tại) -> b.chon "Nạp 1 tuần": +D.ngay ngày (đã hết hạn thì tính từ bây giờ)
@@ -2238,7 +2240,7 @@ function dungVat(h, it, b, key, qt = false) {
       // (tiLeTtl, món ms:71 vào túi) / còn lại kinh nghiệm kn
       const C = (CFG.vuotAi || {}).leBao || {}, p = Math.random();
       if (p < (C.tiLeXu || 0)) { const n = C.xu && typeof C.xu === "object" ? +chonTrongSo(C.xu) || 1 : C.xu || 1; bot(); h.xu = (h.xu | 0) + n; return { msg: `Mở ${x.n}: nhận được ${n} Xu` }; } // anh 28/10 lần 7: 1 / 2 / 3 Xu theo trọng số
-      if (p < (C.tiLeXu || 0) + (C.tiLeTtl || 0)) { const m = BY.get(C.ttl || "ms:71"); datMoi({ k: m.k, n: 1 }, "Hành trang không đủ chỗ"); return { msg: `Mở ${x.n}: nhận được 1 ${m.n}` }; }
+      if (p < (C.tiLeXu || 0) + (C.tiLeTtl || 0)) { const m = BY.get(C.ttl || "ms:71"); datMoi({ k: m.k, n: 1 }, "Hành trang không đủ chỗ. Dọn bớt đi rồi hãy làm."); return { msg: `Mở ${x.n}: nhận được 1 ${m.n}` }; }
       bot(); const e = C.kn | 0; h.exp = (h.exp || 0) + e; lenCap(h);
       return { msg: `Mở ${x.n}: nhận được ${e.toLocaleString("vi-VN")} điểm kinh nghiệm` };
     }
@@ -2247,15 +2249,15 @@ function dungVat(h, it, b, key, qt = false) {
       // (như script client: CalcFreeItemCellCount() < 6 thì không cho mở); đã mở là chốt món — vừa túi thì vào túi, không vừa (ô trống rời rạc, vũ khí
       // 2 × 4) thì vào h.rxMon chờ, nhịp sau tự vào túi khi có chỗ (nhanRuongCho)
       const can = RXC.oTrong ?? 6;
-      if (oTrongTui(h) < can) loi(`Hành trang cần ít nhất ${can} ô trống mới mở được ${x.n.trim()}`);
+      if (oTrongTui(h) < can) loi(`Hành trang cần ít nhất ${can} ô trống mới mở được ${x.n.trim()}. Dọn chỗ đi.`);
       const moi = monRuongXanh(lv, mayMan(h, key));
-      if (!moi) loi("Bảo rương không mở được");
+      if (!moi) loi("Bảo rương mở không được. Đừng mở nữa.");
       const ten = tenMon(moi).trim(), n = moi.d.length, bao = n >= CFG.thongBaoTuDong ? { bao: [moi] } : {};
       // rương khóa bảo hiểm -> món khóa có hạn RXC.khoaGio giờ từ lúc mở (anh 11/11 — trước: khóa vĩnh viễn như rương); cả món chờ nhận (giờ vẫn chạy)
       // trình duyệt dựng câu từ moRuong (main.js dungVat) -> khoaGio để ghi "khóa bảo hiểm, tự mở khóa sau … giờ"; msg cho nơi khác
       const kb = khoaRuong(it), gio = +RXC.khoaGio || 72, chuKhoa = kb.kbh ? ` — khóa bảo hiểm, tự mở khóa sau ${gio} giờ` : "", mk = kb.kbh ? { khoaGio: gio } : {};
       if (choDau(it.n > 1 ? h.bag : h.bag.filter((o) => o !== it), moi)) {
-        datMoi(moi, "Hành trang không đủ chỗ", kb);
+        datMoi(moi, "Hành trang không đủ chỗ. Dọn bớt đi rồi hãy làm.", kb);
         return { msg: `Mở ${x.n.trim()}: nhận được ${ten} (${n} dòng)${chuKhoa}`, moRuong: { n: ten, d: n, ...mk }, ...bao };
       }
       Object.assign(moi, kb);
@@ -2271,15 +2273,15 @@ function dungVat(h, it, b, key, qt = false) {
     // trang không ghi đè giới / chỉ số gốc — api.js luuNv), gioiXong -> trình duyệt về màn chọn nhân vật (main.js dungVat), vào lại là giới mới
     case "doiGioi": {
       const Z = ZONES.get(BAI_NAY.get(key));
-      if (!Z || !THANH.has(Z.kind)) loi(`${x.n.trim()}: hãy dùng ở thành thị hoặc thôn trấn`);
+      if (!Z || !THANH.has(Z.kind)) loi(`${x.n.trim()}: dùng ở thành thị hoặc thôn trấn đi.`);
       const G = { m: "nam", f: "nữ" }, cu = h.sex === "f" ? "f" : "m", moi = cu === "f" ? "m" : "f";
       const dt = (o) => { const [w, c] = coMon(o); return w * c; };
       const cat = Object.entries(h.equip || {}).filter(([, o]) => o && o.k && (GOC[o.k] || {}).sex && GOC[o.k].sex !== moi).sort((p, q) => dt(q[1]) - dt(p[1]));
       // rương + trang bị đang khóa (h.khoa — mac / thao bị chặn): không cho món đang mặc rời ô qua đường này (soát 16/11: người có mật khẩu đăng nhập mà không có mật mã
       // rương mua Dị Dung Bí Thuật -> đồ khóa rơi vào túi, bán / giao dịch được)
-      if (h.khoa && cat.length) loi(`${x.n.trim()}: rương và trang bị đang khóa — mở khóa ở Rương chứa đồ (nút Khóa, nhập mật mã) rồi dùng lại`);
+      if (h.khoa && cat.length) loi(`${x.n.trim()}: rương và trang bị đang khóa. Mở khóa ở Rương chứa đồ (nút Khóa, nhập mật mã) rồi dùng lại.`);
       const ten = cat.map(([, o]) => tenMon(o).trim()), thu =(h.bag || []).filter((o) => o !== it || (it.n || 1) > 1).map((o) => ({ ...o })); // xếp thử trên bản sao (món đang dùng đã trừ)
-      if (!cat.every(([, o]) => vaoO(thu, { ...o }))) loi(`Hành trang không đủ chỗ cất ${cat.length} món chỉ ${G[cu]} mặc được (${ten.join(", ")}) — hãy dọn hành trang rồi dùng lại`);
+      if (!cat.every(([, o]) => vaoO(thu, { ...o }))) loi(`Hành trang không đủ chỗ cất ${cat.length} món chỉ ${G[cu]} mặc được (${ten.join(", ")}). Dọn hành trang rồi dùng lại.`);
       if (!b.chon) return { doiGioi: { tu: cu, sang: moi, mon: ten } };
       bot();
       for (const [s, o] of cat) { delete h.equip[s]; vaoTui(h, o); }
@@ -2294,7 +2296,7 @@ function dungVat(h, it, b, key, qt = false) {
       return { msg: `Dùng ${x.n}: +${D.gio} giờ ủy thác — còn ${gioPhutS(h.bch)}` };
     }
   }
-  loi("Món này không dùng được");
+  loi("Món này dùng không được. Đừng dùng nữa.");
 }
 
 // thuốc đã uống (trình duyệt đã hồi sinh lực / nội lực): ds = [[u, số bình], …]; trả true nếu túi đổi
@@ -2361,7 +2363,7 @@ function thuongDN(h, tk, b = {}) {
   if (!b.nhan) return { tt: tt() };
   if (tk.nhanThuong === d) return { msg: "Hôm nay nhân vật trong tài khoản của bạn đã nhận thưởng rồi.", tt: tt() };
   const id = b.nhan | 0;
-  if (!(id === N.n || (N.n >= 43 && id === 42))) return { msg: `Bạn vẫn chưa thể nhận được phần thưởng này — hôm nay nhận ô ngày ${Math.min(N.n, 42)} (ô đang nhấp nháy)`, tt: tt() };
+  if (!(id === N.n || (N.n >= 43 && id === 42))) return { msg: `Ngươi vẫn chưa nhận được phần thưởng này. Hôm nay nhận ô ngày ${Math.min(N.n, 42)} (ô đang nhấp nháy).`, tt: tt() };
   let ngay = id;
   if (N.n >= 43) {
     if (b.chon === "tra") { if ((h.xu | 0) < DN.phiTiep) return { msg: "Tiền đồng trên người bạn không đủ", tt: tt() }; h.xu -= DN.phiTiep; N.n = ngay = 42; }
@@ -2411,13 +2413,13 @@ function taoQua(h, q) {
   try {
     for (const m of (Array.isArray(q.mon) ? q.mon : []).slice(0, 20)) {
       const x = BY.get(String(m && m.k)), loai = loaiQua(x);
-      if (!loai) loi(`Không có món ${m && m.k}`);
+      if (!loai) loi(`Không có món ${m && m.k}. Tìm lại đi.`);
       const ten = (x.n || x.k).trim(), kb = KHONG_KHOA.has(x.k) ? {} : kb0;
       if (loai === "do") {
         const s = m.he >= 0 && m.he <= 4 ? m.he | 0 : ri(0, 4), dong = clamp(m.dong | 0, 0, 6), n = clamp(m.n | 0 || 1, 1, 10);
         for (let i = 0; i < n; i++) {
           const it = NG.gan({ k: x.k, s, d: dong ? gieoDong(x.t, capDo(x.k), s, dong) : [], m: Math.max(1, x.lv | 0), ...kb, u: ++h.uN }, "qua", q.ng || "", h.name); // q.ng: tên phần thưởng (không có: việc đang làm)
-          if (!vaoTui(h, it)) loi("Hành trang không đủ chỗ");
+          if (!vaoTui(h, it)) loi("Hành trang không đủ chỗ. Dọn bớt đi rồi hãy làm.");
           ds.push(`${ten}${it.d.length ? ` (${it.d.length} dòng)` : ""}`);
         }
       } else if (loai === "chong") {
@@ -2426,7 +2428,7 @@ function taoQua(h, q) {
         ds.push(`${n} ${ten}`);
       } else {
         const n = clamp(m.n | 0 || 1, 1, 20);
-        for (let i = 0; i < n; i++) if (!vaoTui(h, { k: x.k, ...(loai === "leBao" ? { n: 1, con: x.dung.so } : {}), ...(m.het > 0 ? { het: Math.floor(+m.het) } : {}), ...kb, u: ++h.uN })) loi("Hành trang không đủ chỗ");
+        for (let i = 0; i < n; i++) if (!vaoTui(h, { k: x.k, ...(loai === "leBao" ? { n: 1, con: x.dung.so } : {}), ...(m.het > 0 ? { het: Math.floor(+m.het) } : {}), ...kb, u: ++h.uN })) loi("Hành trang không đủ chỗ. Dọn bớt đi rồi hãy làm.");
         ds.push(`${n} ${ten}`);
       }
     }
@@ -2434,11 +2436,11 @@ function taoQua(h, q) {
   const vang = clamp(Math.floor(+q.tien || 0), 0, 1e10), xu = clamp(Math.floor(+q.xu || 0), 0, 1e6);
   if (vang) { h.gold = (h.gold || 0) + vang; ds.push(tien(vang)); }
   if (xu) { h.xu = (h.xu | 0) + xu; ds.push(`${xu} Xu`); }
-  if (!ds.length) loi("Chưa chọn quà");
+  if (!ds.length) loi("Chưa chọn quà. Chọn đi rồi hãy nhận.");
   NKD().hdNv(h.name, "nhan", "Nhận: " + ds.join(", ")); // sổ hoạt động từng tài khoản (anh 11/11) — chỉ khi h là nhân vật của yêu cầu đang xử lý
   return ds;
 }
 
 // NOI: phần dùng chung cho may-chu/da-tau.js (Dã Tẩu)
-const NOI = { oTrong: oTrongTui, laTB, campPhai: (fac) => (fac == null ? 0 : PHAI_CAMP.get(+fac) || 0), CFG, BY, ZONES, FARM, THANH, BAI_NAY, capVao, need, MAX_LEVEL, lenCap, loi, ngayVN, tien, themChong, coMon, mayMan, vaoTui, mang: MANG, soThuoc, laThuoc, xepChong, donChong, TIEN_MAX, ROWS, CHIA_XA, KBH_VV, KBH_TAM, CAU_KBH, KHONG_KHOA, CAU_TK, MAPS, FULL }; // chợ trời (may-chu/cho-troi.js): thuốc mang tối đa, gộp chồng, tiền tối đa; ROWS: sạp Hệ thống của Dã Tẩu dựng món; MAPS / FULL: bảng bản đồ đã nạp (region, scale — may-chu/npc-gan.js đổi tọa độ NPC, anh 13/11)
-module.exports = { muaLaiGui, MUA_LAI, NOI, mobStats: MS, quaiCap: (lv) => (QUAI_CAP ? QUAI_CAP(lv) : null), knBai, baiNay, chuan, hamChieu, laLuyen, sachPhai, thuocPhai, luyenDon, luyenCua, diemDaDung, dangNhapDem, thuongDN, dnCho, mauSat, gietQuai, roiMon, luyenKn, nhanChia, nhat, datBai, datChung, doiDo, banMon, coMon, tien, chet, lam, uong, hao, uyThacVe, uyThacDo, buffDem, buffCon, laHoan, CHIEU_SACH, thuUyThac, ghiDev, tenMon, giaBan, SLOT_OF, timMon, taoQua, monTin, tenBai, MAX_LEVEL, RXC, monRuongXanh, choRuongXanh, nhanRuongCho, BUA_MON, LUAT: { muaLai: { phut: MUA_LAI.phut, heSo: MUA_LAI.heSo }, sua: SUA, haoMon: +DB.haoMon || 0, vuKhi: VK, uyThac: { gioNgay: UT.gioNgay, tiLe: UT.tiLe, vangGiay: UT.vangGiay }, get dangNhap() { return { xu: DN.xu, phiTiep: DN.phiTiep }; }, ruongChuy: ((CFG.daTau || {}).ruong || {}).chuy ?? 6, ruongXanh: { soDong: RXC.soDong, oTrong: RXC.oTrong }, ruong: { moRong: RG.moRong }, tienTrang: { luongMotXu: TT.luongMotXu, luongBanXu: TT.luongBanXu, banXuNgay: TT.banXuNgay }, doiPhai: { cap: +((CFG.doiPhai || {}).cap) || 120, ngay: +((CFG.doiPhai || {}).ngay) || 7 }, kyNangPhai: CFG.kyNangPhai || null, choTroi: ((C) => { const t = C.thue ?? 20, b = Number.isFinite(+C.thueBan) ? +C.thueBan : t / 2; return { thue: t, thueBan: b, thueMua: Number.isFinite(+C.thueMua) ? +C.thueMua : t - b, cap: C.cap ?? 10 }; })(CFG.choTroi || {}), get thuongCap() { return ((CFG.thuongCap || {}).moc || []).map((m) => m.cap).filter((c) => c > 0).sort((a, b) => a - b); }, tanThu: CFG.tanThu || null, tangIchDoi: CFG.tangIchDoi || null, quaiChung: CFG.quaiChung ? { bai: (CFG.quaiChung.bai || []).map(Number), thuong: QC_THUONG, manh: CFG.quaiChung.manh || null } : null, satThu: { mau: (CFG.satThu && CFG.satThu.mau) || {}, dat: SAT_DAT }, chong: TC.chongToiDa, mua: TC.muaToiDa, mang: TC.mangToiDa || 60, banLai: TC.banLai, giaBan: CFG.giaBan, thieuCap: VB.thieuCap | 0, noiCong: +((CFG.noiCong || {}).phanTram) || 0, quaiVoCong: { ...(CFG.quaiVoCong || {}), bat: process.env.VL_QUAI_VO_CONG === "1" || !!(CFG.quaiVoCong || {}).bat }, voCong: (CFG.voCong && CFG.voCong.moPhai) || ["shaolin", "emei"], canBang: { trum: CAN_BANG.trum || null, soQuai: CAN_BANG.soQuai || null, tinhAnhMoi: QD.tinhAnhMoi, thuLinhMoi: QD.thuLinhMoi, ta: Object.fromEntries(Object.entries(RDB).map(([z, b]) => [z, { ten: b.ta.ten, mau: b.ta.mau, st: b.ta.st, ar: b.ta.ar, def: b.ta.def }])), bai: Object.fromEntries(Object.entries(CAN_BANG.bai || {}).map(([z, b]) => [z, { mau: b.mau, satThuong: b.satThuong, ...(b.chiSo ? { chiSo: b.chiSo } : {}), ...(b.soQuai ? { soQuai: b.soQuai } : {}), ...Object.fromEntries(["chinhXac", "neTranh", "capQuai", "mauThuLinh", "mauTinhAnh"].filter((k) => b[k] != null).map((k) => [k, b[k]])) }])) } } };
+const NOI = { oTrong: oTrongTui, laTB, campPhai: (fac) => (fac == null ? 0 : PHAI_CAMP.get(+fac) || 0), CFG, BY, ZONES, FARM, THANH, BAI_NAY, capVao, need, MAX_LEVEL, lenCap, loi, ngayVN, tien, themChong, coMon, mayMan, vaoTui, mang: MANG, soThuoc, soThuocK, chongMax, laThuoc, xepChong, donChong, TIEN_MAX, ROWS, CHIA_XA, KBH_VV, KBH_TAM, CAU_KBH, KHONG_KHOA, CAU_TK, MAPS, FULL }; // chợ trời (may-chu/cho-troi.js): thuốc mang tối đa, gộp chồng, tiền tối đa; ROWS: sạp Hệ thống của Dã Tẩu dựng món; MAPS / FULL: bảng bản đồ đã nạp (region, scale — may-chu/npc-gan.js đổi tọa độ NPC, anh 13/11)
+module.exports = { muaLaiGui, MUA_LAI, NOI, mobStats: MS, quaiCap: (lv) => (QUAI_CAP ? QUAI_CAP(lv) : null), knBai, baiNay, chuan, hamChieu, laLuyen, sachPhai, thuocPhai, luyenDon, luyenCua, diemDaDung, dangNhapDem, thuongDN, dnCho, mauSat, gietQuai, roiMon, luyenKn, nhanChia, nhat, datBai, datChung, doiDo, banMon, coMon, tien, chet, lam, uong, hao, uyThacVe, uyThacDo, buffDem, buffCon, laHoan, CHIEU_SACH, thuUyThac, ghiDev, tenMon, giaBan, SLOT_OF, timMon, taoQua, monTin, tenBai, MAX_LEVEL, RXC, monRuongXanh, choRuongXanh, nhanRuongCho, BUA_MON, LUAT: { muaLai: { phut: MUA_LAI.phut, heSo: MUA_LAI.heSo }, sua: SUA, haoMon: +DB.haoMon || 0, vuKhi: VK, uyThac: { gioNgay: UT.gioNgay, tiLe: UT.tiLe, vangGiay: UT.vangGiay }, get dangNhap() { return { xu: DN.xu, phiTiep: DN.phiTiep }; }, ruongChuy: ((CFG.daTau || {}).ruong || {}).chuy ?? 6, ruongXanh: { soDong: RXC.soDong, oTrong: RXC.oTrong }, ruong: { moRong: RG.moRong }, tienTrang: { luongMotXu: TT.luongMotXu, luongBanXu: TT.luongBanXu, banXuNgay: TT.banXuNgay }, doiPhai: { cap: +((CFG.doiPhai || {}).cap) || 120, ngay: +((CFG.doiPhai || {}).ngay) || 7 }, kyNangPhai: CFG.kyNangPhai || null, choTroi: ((C) => { const t = C.thue ?? 20, b = Number.isFinite(+C.thueBan) ? +C.thueBan : t / 2; return { thue: t, thueBan: b, thueMua: Number.isFinite(+C.thueMua) ? +C.thueMua : t - b, cap: C.cap ?? 10 }; })(CFG.choTroi || {}), get thuongCap() { return ((CFG.thuongCap || {}).moc || []).map((m) => m.cap).filter((c) => c > 0).sort((a, b) => a - b); }, tanThu: CFG.tanThu || null, tangIchDoi: CFG.tangIchDoi || null, quaiChung: CFG.quaiChung ? { bai: (CFG.quaiChung.bai || []).map(Number), thuong: QC_THUONG, manh: CFG.quaiChung.manh || null } : null, satThu: { mau: (CFG.satThu && CFG.satThu.mau) || {}, dat: SAT_DAT }, chong: TC.chongToiDa, chongRieng: CHONG_RIENG, mua: TC.muaToiDa, mang: TC.mangToiDa || 60, banLai: TC.banLai, giaBan: CFG.giaBan, thieuCap: VB.thieuCap | 0, noiCong: +((CFG.noiCong || {}).phanTram) || 0, quaiVoCong: { ...(CFG.quaiVoCong || {}), bat: process.env.VL_QUAI_VO_CONG === "1" || !!(CFG.quaiVoCong || {}).bat }, voCong: (CFG.voCong && CFG.voCong.moPhai) || ["shaolin", "emei"], canBang: { trum: CAN_BANG.trum || null, soQuai: CAN_BANG.soQuai || null, tinhAnhMoi: QD.tinhAnhMoi, thuLinhMoi: QD.thuLinhMoi, ta: Object.fromEntries(Object.entries(RDB).map(([z, b]) => [z, { ten: b.ta.ten, mau: b.ta.mau, st: b.ta.st, ar: b.ta.ar, def: b.ta.def }])), bai: Object.fromEntries(Object.entries(CAN_BANG.bai || {}).map(([z, b]) => [z, { mau: b.mau, satThuong: b.satThuong, ...(b.chiSo ? { chiSo: b.chiSo } : {}), ...(b.soQuai ? { soQuai: b.soQuai } : {}), ...Object.fromEntries(["chinhXac", "neTranh", "capQuai", "mauThuLinh", "mauTinhAnh"].filter((k) => b[k] != null).map((k) => [k, b[k]])) }])) } } };

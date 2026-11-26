@@ -893,7 +893,7 @@ function thOnline() {
 }
 
 function thThangCap() {
-  const T = C.CFG.thuongCap || {}, m = nap("./thuong-cap.js"), tat = T.bat === false, mang = (C.CFG.thuoc || {}).mangToiDa || 60;
+  const T = C.CFG.thuongCap || {}, m = nap("./thuong-cap.js"), tat = T.bat === false, mang = ((C.CFG.thuoc || {}).chongRieng || {})["potion:1"] || 999;
   const moc = ((m && m.MOC) || (T.moc || []).filter((x) => x && x.cap > 0).sort((a, b) => a.cap - b.cap));
   const gom = new Map();
   for (const x of moc) for (const [k, n] of x.do || []) gom.set(k, [...(gom.get(k) || []), [x.cap, n | 0 || 1]]);
@@ -906,7 +906,7 @@ function thThangCap() {
       tat ? { p: "<c>Đang tạm dừng.</c>" } : null,
       { bang: [["Cấp", "Tiền, Xu", "Món"], ...moc.map((x) => [String(x.cap), [x.tien > 0 ? luong(x.tien) : "", x.xu > 0 ? xuChu(x.xu) : ""].filter(Boolean).join(" + ") || "—",
         [dsMon(x.do), x.chon && x.chon.length ? `1 trong ${gopTen(x.chon.map((r) => monSl(r[0], r[1])))}` : ""].filter(Boolean).join(", ") || "—"])] },
-      { p: `Nhận thưởng → Thưởng thăng cấp. Mỗi mốc nhận 1 lần mỗi nhân vật; đã qua mốc vẫn nhận bù. Thuốc chỉ phát tới đủ ${so(mang)} bình mang theo. Món “1 trong” bốc ngẫu nhiên, mỗi món như nhau.` },
+      { p: `Nhận thưởng → Thưởng thăng cấp. Mỗi mốc nhận 1 lần mỗi nhân vật; đã qua mốc vẫn nhận bù. Thuốc mỗi loại chỉ phát tới đủ ${so(mang)} bình mang theo. Món “1 trong” bốc ngẫu nhiên, mỗi món như nhau.` },
     ].filter(Boolean),
   };
 }
@@ -1431,9 +1431,9 @@ function rgLaHanLeBao() {
 }
 function rgHoiThien() {
   return rgLeBaoMot("hoiThienLeBao", "leBao", (k, D) => {
-    const th = BY(D.thuoc) || {}, mang = (C.CFG.thuoc || {}).mangToiDa || 60;
+    const th = BY(D.thuoc) || {}, mang = ((C.CFG.thuoc || {}).chongRieng || {})[D.thuoc] || 999;
     nguon(D.thuoc, `${ten(k)}: ${so(D.so)} viên mỗi bao`, ten(k));
-    return { tom: `Chứa ${so(D.so)} viên ${ten(D.thuoc)}`, tim: ten(D.thuoc), noi: [{ p: `Chứa <g>${so(D.so)} viên ${ten(D.thuoc)}</g>${th.intro ? ` — ${chuClient(th.intro)}` : ""}` }, { p: `Bấm chuột phải để rút số viên muốn lấy; mang tối đa ${so(mang)} bình thuốc mọi loại, bao còn viên thì giữ lại.` }] };
+    return { tom: `Chứa ${so(D.so)} viên ${ten(D.thuoc)}`, tim: ten(D.thuoc), noi: [{ p: `Chứa <g>${so(D.so)} viên ${ten(D.thuoc)}</g>${th.intro ? ` — ${chuClient(th.intro)}` : ""}` }, { p: `Bấm chuột phải để rút số viên muốn lấy; mỗi loại mang tối đa ${so(mang)} bình, bao còn viên thì giữ lại.` }] };
   });
 }
 function rgNhacVuong() {
@@ -1518,7 +1518,7 @@ function congDung(k, x) {
       case "phuQuy": { const F = C.F.pq; L.push(`Cấp ${so(F.cap)}, đứng trong thôn / thành: chọn 1 số 10–99 dự thưởng Phú Quý (+${so(F.kn)} kinh nghiệm), tối đa ${so(F.toiDa)} hộp mỗi đợt.`); break; }
       case "laHan": L.push(`Dùng nhận kinh nghiệm thực chiến theo cấp; tối đa ${so(D.lanNgay)} quyển và ${kn(D.knNgay)} mỗi ngày, trên cấp ${so(D.capToiDa)} vô hiệu (xem Phần thưởng → ${ten(k)}).`); break;
       case "leBaoNhieu": L.push(`Mở ra ${so(D.so)} ${ten(D.mon)}.`); break;
-      case "leBao": L.push(`Chứa ${so(D.so)} viên ${ten(D.thuoc)}; rút số viên muốn lấy (mang tối đa ${so((C.CFG.thuoc || {}).mangToiDa || 60)} bình thuốc).`); break;
+      case "leBao": L.push(`Chứa ${so(D.so)} viên ${ten(D.thuoc)}; rút số viên muốn lấy (mỗi loại mang tối đa ${so(((C.CFG.thuoc || {}).chongRieng || {})[D.thuoc] || 999)} bình).`); break;
       case "leBaoMon": L.push(`Mở ra ${ten(D.mon)}.`); break;
       case "ngua": L.push(D.vinhVien || !(D.ngay > 0) ? `Nhận 1 ngựa ${ten(D.ngua)} không hạn sử dụng (không bán được cho cửa hàng).` : `Nhận 1 ngựa ${ten(D.ngua)}, hạn ${so(D.ngay)} ngày từ lúc dùng.`); break;
       // Báo Đáp Ân Sư (anh 16/11 — bao-dap-an-su.js; do.js dungVat): nguyên liệu, hương bao, món thưởng

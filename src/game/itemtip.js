@@ -28,14 +28,14 @@ const SERIES_COL = ["Metal", "Wood", "Water", "Fire", "Earth"];       // G_ITEM_
 const LEVEL = " [cấp %d]";                                              // G_ITEM_22
 const DURABILITY = "Độ bền: %3d / %3d";                                 // G_ITEM_9_1
 const DURABILITY_LOW = "Độ bền %3d / %3d";                              // G_ITEM_9_2 (<color=red>) — còn ≤ 3 như engine KItem
-const BROKEN = "Đã tổn hại, không thể tiếp tục sử dụng";               // G_STR_ITEM_ABRADETOZERO (độ bền 0)
+const BROKEN = "Hỏng rồi, không dùng được nữa. Mang đi sửa ngay!";               // G_STR_ITEM_ABRADETOZERO (độ bền 0)
 const PRICE = "Giá cả: %d %s";                                          // G_ITEM_2
 const TEN_O = { Cap: "Nón", Cloth: "Y phục", Sash: "Thắt lưng", Weapon: "Vũ khí", Shoes: "Hài", Bangle: "Hộ uyển", Necklace: "Dây chuyền", // G_ITEM_10..19
   Ring1: "Nhẫn trên", Ring2: "Nhẫn dưới", Pendant: "Ngọc bội" };
 const DA_MAC = " (đã trang bị)";                                       // engine "(已装备)" sau tên món ở ô so sánh
 // khóa bảo hiểm (anh 05/11 — it.kbh, may-chu/do.js): engine KItem::GetDesc in dòng khóa màu Green ngay dưới tên món, chữ client
 // G_ITEM_BIND_STATE (khóa thường — chưa dùng) / G_ITEM_BIND_STATE2 (vĩnh viễn — thưởng thăng cấp / online)
-const BIND = ["", "Vật phẩm này đã được khóa bảo hiểm", "Vật phẩm này đã được khóa bảo hiểm vĩnh viễn"];
+const BIND = ["", "Món này đã khóa bảo hiểm rồi.", "Món này đã khóa bảo hiểm vĩnh viễn."];
 // khóa có hạn (anh 11/11 — it.kbh 1 + it.kbhHet: trang bị mở từ Bảo rương đồ xanh khóa, may-chu/do.js KBH_TAM): dòng thứ 2 chữ client G_ITEM_UNBIND_STATE
 // (engine giữ giờ mở khóa theo giờ — YYYYMMDDHH) -> số giờ còn, làm tròn lên (còn dưới 1 giờ vẫn ghi 1); hết giờ máy chủ bỏ khóa ở nhịp
 const UNBIND = "Thời gian chờ mở khóa: %d giờ";
@@ -106,7 +106,7 @@ export function itemTipHtml(T, it, hero, opt = {}) {
   if (it.het) { const s = Math.max(0, (it.het - Date.now()) / 1000), ng = Math.floor(s / 86400), gi = Math.floor((s % 86400) / 3600); line(span(`Hạn sử dụng: còn ${ng ? ng + " ngày " : ""}${gi} giờ`, "Red")); }
   // món Dã Tẩu mua ở sạp Hệ thống của Chợ Trời (may-chu/da-tau.js choHt): Trợ Thủ không tự bán / cất; nộp loại nào Dã Tẩu cũng giữ (cả Xem vật phẩm —
   // anh 04/11)
-  if (it.dt) line(span("Món Dã Tẩu (sạp Hệ thống) — nộp là Dã Tẩu giữ, Trợ Thủ không tự bán", "Gold"));
+  if (it.dt) line(span("Món Dã Tẩu (sạp Hệ thống) — nộp là Dã Tẩu giữ. Trợ Thủ không tự bán đâu.", "Gold"));
   // Phi Phong đã kích hoạt trên y phục này (anh 13/11 lượt 86 — may-chu/do.js it.pp): mặc áo này thì có áo choàng; đi theo áo khi giao dịch / bày bán
   // lễ phục không khoác Phi Phong (anh 15/11 — src/char/jx-char.js LE_PHUC): áo đã lỡ kích hoạt thì không ghi dòng này (không có áo choàng)
   if (it.pp > 0 && !(x.g === "armor" && LE_PHUC.has(x.id))) line(span("Đã kích hoạt Phi Phong", "Gold"));

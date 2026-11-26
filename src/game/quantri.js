@@ -561,7 +561,7 @@ export class QuanTri {
     if (viec === "xoa") {
       const coNv = L.filter((t) => t.nv.length), dang = L.filter((t) => t.dang || t.mo).length;
       const cao = coNv.flatMap((t) => t.nv.map((h) => ({ ...h, tk: t.ten }))).sort((x, y) => (y.lvl | 0) - (x.lvl | 0))[0];
-      if (!(await api.hoi(`<color=red>XÓA ${n} tài khoản<color> cùng toàn bộ nhân vật?<enter>${coNv.length ? `<color=yellow>${coNv.length}<color> tài khoản CÓ nhân vật${cao ? ` (cao nhất ${rt(cao.name)} cấp ${cao.lvl | 0} — ${rt(cao.tk)})` : ""}` : "Không tài khoản nào có nhân vật"}.${dang ? `<enter>${dang} tài khoản đang chơi sẽ được bỏ qua.` : ""}<enter>Tệp chuyển sang thư mục da-xoa (xóa nhầm vẫn cứu được).`, "Xóa", "Hủy bỏ"))) return;
+      if (!(await api.hoi(`<color=red>XÓA ${n} tài khoản<color> cùng toàn bộ nhân vật?<enter>${coNv.length ? `<color=yellow>${coNv.length}<color> tài khoản CÓ nhân vật${cao ? ` (cao nhất ${rt(cao.name)} cấp ${cao.lvl | 0} — ${rt(cao.tk)})` : ""}` : "Không tài khoản nào có nhân vật"}.${dang ? `<enter>${dang} tài khoản đang chơi thì bỏ qua.` : ""}<enter>Tệp chuyển sang thư mục da-xoa. Xóa nhầm vẫn cứu được.`, "Xóa", "Hủy bỏ"))) return;
     } else if (!(await api.hoi(`${viec === "duyet" ? "Duyệt vào game" : "Bỏ duyệt"} <color=yellow>${n}<color> tài khoản đã chọn?${viec === "boDuyet" && this.dy && this.dy.bat ? "<enter>Chế độ duyệt đang bật: các tài khoản này không vào game được nữa." : ""}`, viec === "duyet" ? "Duyệt" : "Bỏ duyệt", "Hủy bỏ"))) return;
     const j = await this.goi("loat", { viec, ds: ten, lyDo: this.val("lyDo") || undefined });
     if (!j) return;
@@ -660,7 +660,7 @@ export class QuanTri {
       case "duyet": this.dyForm = !this.dyForm; this.dyKet = null; this.render(); if (this.dyForm) { await this.taiDy(); this.render(); } return;
       case "dyBat": case "dyTat": {
         const n = (this.dy && this.dy.n) | 0;
-        if (a === "dyBat" && !(await api.hoi(`Bật duyệt vào game?<enter>Chỉ tài khoản quản trị + <color=yellow>${n}<color> tài khoản đã duyệt đăng nhập / chơi được — người khác đang chơi bị đưa về màn đăng nhập.`, "Bật duyệt", "Hủy bỏ"))) return;
+        if (a === "dyBat" && !(await api.hoi(`Bật duyệt vào game?<enter>Chỉ tài khoản quản trị + <color=yellow>${n}<color> tài khoản đã duyệt được chơi. Người khác đang chơi thì bị đưa về màn đăng nhập.`, "Bật duyệt", "Hủy bỏ"))) return;
         const j = await this.goi("duyet", { viec: a === "dyBat" ? "bat" : "tat" }); if (!j) return;
         this.dy = j.duyet; this.bao(j.msg); api.msg(`Quản trị: ${j.msg}`); return this.taiDs().then(() => this.render());
       }
@@ -675,7 +675,7 @@ export class QuanTri {
       }
       case "dyBo": {
         const ten = t.dataset.ten; if (!ten) return;
-        if (!(await api.hoi(`Bỏ duyệt <color=yellow>${rt(ten)}<color>?${this.dy && this.dy.bat ? "<enter>Chế độ duyệt đang bật: tài khoản này không vào game được nữa (đang chơi thì bị đưa về màn đăng nhập)." : ""}`, "Bỏ duyệt", "Hủy bỏ"))) return;
+        if (!(await api.hoi(`Bỏ duyệt <color=yellow>${rt(ten)}<color>?${this.dy && this.dy.bat ? "<enter>Chế độ duyệt đang bật thì tài khoản này không vào game được nữa. Đang chơi thì bị đưa về màn đăng nhập." : ""}`, "Bỏ duyệt", "Hủy bỏ"))) return;
         const j = await this.goi("duyet", { viec: "bo", ten }); if (!j) return;
         this.dy = j.duyet; this.bao(j.msg); await this.taiDs(); if (ct && ct.ten === ten) await this.taiCt(ten); return this.render();
       }
@@ -703,7 +703,7 @@ export class QuanTri {
         if (!g || !d || +g[1] > 23 || +g[2] > 59) return this.bao("Giờ dạng 13:00, ngày dạng 01/11", true);
         const nam = new Date(Date.now() + 7 * 3600e3).getUTCFullYear(), den = Date.UTC(nam, +d[2] - 1, +d[1], +g[1] - 7, +g[2]);
         if (!(den > Date.now())) return this.bao("Giờ mở đã qua — chọn giờ sau bây giờ", true);
-        if (!(await api.hoi(`Bật bảo trì tới <color=yellow>${p2(+g[1])}:${g[2]} ngày ${p2(+d[1])}/${p2(+d[2])}<color> (giờ Việt Nam)?<enter>Chỉ tài khoản quản trị vào được game; người đang chơi bị đưa về màn đăng nhập.`, "Xác nhận", "Hủy bỏ"))) return;
+        if (!(await api.hoi(`Bật bảo trì tới <color=yellow>${p2(+g[1])}:${g[2]} ngày ${p2(+d[1])}/${p2(+d[2])}<color> (giờ Việt Nam)?<enter>Chỉ tài khoản quản trị vào được. Người đang chơi thì bị đưa về màn đăng nhập.`, "Xác nhận", "Hủy bỏ"))) return;
         const j = await this.goi("bao-tri", { bat: true, den, loi: this.val("btLoi") }); if (!j) return;
         this.bao(`Đã bật bảo trì — ${j.baoTri ? j.baoTri.cau : ""}`); api.msg("Quản trị: đã bật bảo trì"); this.btForm = false; return this.taiDs().then(() => this.render());
       }
@@ -731,7 +731,7 @@ export class QuanTri {
       // chủ cũ lag; cờ ×2 trở lên và cờ của bộ dò mới (nghi thật) giữ lại để xem từng người (lọc Nghi tăng tốc) — may-chu/quan-tri.js bo-hack-het
       case "boHackHet": {
         const co = (this.ds || []).filter((t) => t.hack), nhe = co.filter((t) => !t.hack.v && !(+t.hack.x >= 2)).length, giu = co.length - nhe;
-        const cau = this.ds ? `Xóa cờ nghi tăng tốc của <color=yellow>${nhe} tài khoản<color> do bộ dò cũ đặt, hệ số dưới ×2 — phần lớn là báo nhầm lúc máy chủ cũ lag?${giu ? `<enter>Giữ lại ${giu} cờ ×2 trở lên hoặc do bộ dò mới bắt, để xem từng người.` : ""}<enter>Nhật ký vẫn giữ các lần đã ghi.`
+        const cau = this.ds ? `Xóa cờ nghi tăng tốc của <color=yellow>${nhe} tài khoản<color> do bộ dò cũ đặt, hệ số dưới ×2. Phần lớn là báo nhầm lúc máy chủ cũ lag.${giu ? `<enter>Giữ lại ${giu} cờ ×2 trở lên hoặc do bộ dò mới bắt, để xem từng người.` : ""}<enter>Nhật ký vẫn giữ các lần đã ghi.`
           : `Xóa cờ nghi tăng tốc cũ hệ số dưới ×2? Cờ nặng và cờ của bộ dò mới giữ lại.<enter>Nhật ký vẫn giữ các lần đã ghi.`;
         if (this.ds && !nhe) return this.bao(giu ? `Còn ${giu} cờ cần xem từng người (×2 trở lên hoặc do bộ dò mới bắt)` : "Không có cờ nào", true);
         if (!(await api.hoi(cau, "Xóa cờ", "Hủy bỏ"))) return;
@@ -744,7 +744,7 @@ export class QuanTri {
       case "mkToi": return api.doiMk1 && api.doiMk1(); // máy chủ bỏ đường cũ doi-mk-minh (rà soát 10/11) — luôn khung khóa an toàn
       // xóa mật khẩu cấp 2 của người chơi quên (lựa chọn 3a: chỉ quản trị xóa — xác minh qua Zalo / điện thoại trước)
       case "xoaMk2": {
-        if (!ct || !(await api.hoi(`Xóa mật khẩu cấp 2 của <color=yellow>${rt(ct.ten)}<color>?<enter>Chỉ làm khi đã xác minh đúng chủ tài khoản. Lần tới cần giao dịch / bày bán / vứt / hủy đồ, người chơi sẽ được hỏi đặt mật khẩu mới.`, "Xác nhận", "Hủy bỏ"))) return;
+        if (!ct || !(await api.hoi(`Xóa mật khẩu cấp 2 của <color=yellow>${rt(ct.ten)}<color>?<enter>Xác minh đúng chủ tài khoản rồi mới làm. Lần tới giao dịch / bày bán / vứt / hủy đồ, người chơi phải đặt mật khẩu mới.`, "Xác nhận", "Hủy bỏ"))) return;
         const j = await this.goi("xu-ly", { viec: "xoa-mk2", ten: ct.ten }); if (!j) return;
         this.bao(j.msg); api.msg(`Quản trị: ${j.msg}`); this.taiDs(); return this.taiCt(ct.ten);
       }
@@ -827,7 +827,7 @@ export class QuanTri {
         if (a === "doiMk" && mk.length < 4) return this.bao("Mật khẩu mới cần ít nhất 4 ký tự", true);
         const han = (KHOA_GIO.find(([v]) => v === gio) || [0, "vĩnh viễn"])[1].toLowerCase();
         const cau = { da: `Đưa <color=yellow>${rt(ct.ten)}<color> ra khỏi game?`, khoa: `Khóa tài khoản <color=yellow>${rt(ct.ten)}<color> ${rt(han)}?`,
-          moKhoa: `Mở khóa tài khoản <color=yellow>${rt(ct.ten)}<color>?`, doiMk: `Đặt lại mật khẩu tài khoản <color=yellow>${rt(ct.ten)}<color>? Tài khoản đó sẽ bị đăng xuất; lần đăng nhập tới người chơi phải tự đổi mật khẩu mới vào game được. Mật khẩu cấp 2 giữ nguyên.` }[a];
+          moKhoa: `Mở khóa tài khoản <color=yellow>${rt(ct.ten)}<color>?`, doiMk: `Đặt lại mật khẩu tài khoản <color=yellow>${rt(ct.ten)}<color>? Tài khoản đó bị đăng xuất. Lần đăng nhập tới, người chơi phải tự đổi mật khẩu. Mật khẩu cấp 2 giữ nguyên.` }[a];
         if (!(await api.hoi(cau + (lyDo && (a === "da" || a === "khoa") ? `<enter>Lý do: ${rt(lyDo)}` : ""), "Xác nhận", "Hủy bỏ"))) return;
         const j = await this.goi("xu-ly", { viec: { da: "da", khoa: "khoa", moKhoa: "mo-khoa", doiMk: "doi-mk" }[a], ten: ct.ten, lyDo, gio, mk });
         if (!j) return;
@@ -870,7 +870,7 @@ export class QuanTri {
         if (!(await api.hoi(`Tạo mã kích hoạt <color=yellow>${ma ? rt(ma.toUpperCase()) : "(tự sinh)"}<color>${q.maKhoa ? " — <color=yellow>món khóa vĩnh viễn<color>" : " — món không khóa"}:<enter>${ds.map(rt).join(", ")}<enter>${toiDa ? `${toiDa} lượt` : "Không giới hạn lượt"} · ${rt(han)}`, "Tạo mã", "Hủy bỏ"))) return;
         const j = await this.goi("ma-qua", { viec: "tao", ma, toiDa, ngay, tien: q.tien, xu: q.xu, exp: q.exp, loi: q.loi, ...(q.maKhoa ? { khoa: 1 } : {}), mon: q.mon.map((m) => ({ k: m.k, n: m.so, ...(m.loai === "do" ? { dong: m.dong, he: m.he } : {}) })) });
         if (!j) return;
-        this.bao(`${j.msg} — đưa mã này cho người chơi nhập ở Lễ quan`); api.msg(`Quản trị: ${j.msg}`);
+        this.bao(`${j.msg} — đưa mã này cho người chơi. Nhập ở Lễ quan.`); api.msg(`Quản trị: ${j.msg}`);
         this.maForm = { o: -1, mon: [], tien: 0, xu: 0, exp: 0, loi: "", tim: "", kq: [] };
         return this.render();
       }
@@ -906,7 +906,7 @@ export class QuanTri {
         const o = t.dataset.o | 0, h = ct && ct.nv.find((x) => x.o === o);
         if (!h) return;
         let b = { ten: ct.ten, o }, cau = "";
-        if (a === "giaiKet") { b.viec = "giai-ket"; cau = `Đưa <color=yellow>${rt(h.name)}<color> về Ba Lăng huyện?<enter>Đang chơi thì chuyển ngay; không chơi thì lần vào game sau đứng ở Ba Lăng.`; }
+        if (a === "giaiKet") { b.viec = "giai-ket"; cau = `Đưa <color=yellow>${rt(h.name)}<color> về Ba Lăng huyện?<enter>Đang chơi thì chuyển ngay. Không chơi thì lần vào sau đứng ở Ba Lăng.`; }
         else if (a === "tangCap") {
           const lv = Math.floor(+this.val("qlLv" + o) || 0);
           if (!(lv > h.lvl)) return this.bao(`Nhập cấp mới lớn hơn cấp hiện tại (${h.lvl})`, true);
@@ -916,7 +916,7 @@ export class QuanTri {
           const v = this.val("qlFac" + o), F = (this.api.factions ? this.api.factions() : []).find((f) => String(f.id) === v);
           if (!F) return this.bao("Chọn môn phái cần chuyển", true);
           b = { ...b, viec: "phai", fac: F.id };
-          cau = `Chuyển <color=yellow>${rt(h.name)}<color> sang <color=yellow>${rt(F.n)}<color> (hệ ${HE[F.series]})?<enter>Võ công phái cũ và sách 90 / 120 đã học bị bỏ, điểm kỹ năng trả lại để cộng lại.${ct.dang ? "<enter>Người này đang chơi — sẽ bị đưa ra màn đăng nhập." : ""}`;
+          cau = `Chuyển <color=yellow>${rt(h.name)}<color> sang <color=yellow>${rt(F.n)}<color> (hệ ${HE[F.series]})?<enter>Võ công phái cũ và sách 90 / 120 đã học thì bỏ. Điểm kỹ năng trả lại để cộng lại.${ct.dang ? "<enter>Người này đang chơi — sẽ bị đưa ra màn đăng nhập." : ""}`;
         }
         if (!(await api.hoi(cau, "Xác nhận", "Hủy bỏ"))) return;
         const j = await this.goi("xu-ly", b);

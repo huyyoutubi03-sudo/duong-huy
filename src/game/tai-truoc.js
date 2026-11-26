@@ -58,7 +58,7 @@ export async function taiTruoc(L, P, hero) {
 
   const tong = can.reduce((a, f) => a + f[1], 0);
   let xong = 0, byte = 0, hong = 0, i = 0;
-  const ten = cu ? "Cập nhật tài nguyên" : "Tải tài nguyên lần đầu (chỉ 1 lần, lần sau vào ngay)"; // cu: đã tải đủ 1 lần, nay có file đổi
+  const ten = cu ? "Cập nhật tài nguyên" : "Tải một lần cho xong, lần sau vào thẳng."; // cu: đã tải đủ 1 lần, nay có file đổi
   L.start(null, ten + "…");
   const bao = L.part(tong);
   const ve = () => { bao(byte, tong); L.chu(`${ten}: ${mb(byte, tong)} / ${mb(tong, tong)} · ${xong} / ${can.length} tệp`); };
@@ -77,7 +77,7 @@ export async function taiTruoc(L, P, hero) {
   // "Vào game ngay": không chờ — phần còn lại tải tiếp lúc chơi
   let bo;
   const thoi = new Promise((r) => { bo = r; });
-  L.nut("Vào game ngay (tải tiếp lúc chơi)", () => bo());
+  L.nut("Vào ngay, tải nốt lúc chơi.", () => bo());
   await Promise.race([het, thoi]);
   L.nut(null);
 }

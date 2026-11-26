@@ -16,6 +16,7 @@ const TN = require("./may-chu/tai-nguyen"); // phiên bản tài nguyên + gói 
 const D = require("./may-chu/du-lieu");
 const CSC = require("./may-chu/chong-sao-chep"); // chống sao chép (anh 10/11): trang tên miền khác không dùng được tài nguyên / máy chủ này
 const KTN = require("./may-chu/khoa-tai-nguyen"); // assets/ chỉ cho người đã đăng nhập — phiếu vl_tn (lượt 61)
+const NPC = require("./may-chu/npc-choi"); // NPC mẫu chơi như người thật — chỉ chạy khi VL_NPC_CHOI=1 (máy thử)
 
 const PORT = +process.argv.slice(2).find((a) => /^\d+$/.test(a)) || 8101;
 const LAN = process.argv.includes("--lan"), HOST = LAN ? "0.0.0.0" : "127.0.0.1";
@@ -77,6 +78,7 @@ server.listen(PORT, HOST, () => {
   const n = D.dsTk().length;
   console.log(n ? `${n} tài khoản. Thêm tài khoản: Tao_Tai_Khoan.bat` : "Chưa có tài khoản nào — bấm Tao_Tai_Khoan.bat để tạo (tài khoản đầu tiên là quản trị).");
   saoLuu(); setInterval(saoLuu, 24 * 3600 * 1000);
+  NPC.tuDong(); // NPC mẫu (VL_NPC_CHOI=1) — không có cờ thì không làm gì
   if (!process.argv.includes("--no-open")) {
     const [cmd, args] = process.platform === "win32" ? ["cmd", ["/c", "start", "", url]] : process.platform === "darwin" ? ["open", [url]] : ["xdg-open", [url]];
     execFile(cmd, args, () => {});

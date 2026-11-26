@@ -112,8 +112,8 @@ export function skillTipHtml(T, skills, id, lv, opt = {}) {
       // chiêu đánh địch có dòng giảm tốc chạy (âm — Ngũ Độc Vô Hình Độc): client chỉ in "Tốc độ di chuyển: -42%", dễ hiểu nhầm là của
       // mình -> ghi rõ làm chậm đối phương + thời gian (anh 26/10)
       if (k === "fastwalkrun_p" && p[0] < 0 && sk.target && sk.target.enemy) {
-        dst.push(`Làm chậm đối phương: ${p[0]}% tốc độ di chuyển`);
-        if (p[1] > 0) dst.push(`Thời gian làm chậm: ${Math.round((p[1] / 18) * 10) / 10} giây`);
+        dst.push(`Địch bị chậm: ${p[0]}% tốc độ di chuyển`);
+        if (p[1] > 0) dst.push(`Thời gian địch bị chậm: ${Math.round((p[1] / 18) * 10) / 10} giây`);
         return;
       }
       // chiêu ghép (Nga My 120 Bế Nguyệt Phất Trần: 5 dòng "Gồm kỹ năng" — gói giữ dòng 2 trở đi ở lvGhep). Câu client "đẳng cấp cao nhất: cấp
@@ -142,10 +142,10 @@ export function skillTipHtml(T, skills, id, lv, opt = {}) {
       const es = skills[(s.subLv && s.subLv[k]) || (s.sub && s.sub[k])]; if (!es) continue;
       const E = el && el[0] > 0 ? el[0] : L, r = stats(es, E, true), lap = LAP_LAI[es.id] ? LAP_LAI[es.id](E) : 1;
       n++; lines.push(`${cf(T.str["G_Skills_" + (50 + n)])}<color=Blue>${es.n}${cf(T.str.G_ITEM_22, E)}<color>`, ...r.g1, ...r.g2);
-      if (lap > 1) lines.push(`Số lần nổ: ${lap}`); // chỉnh riêng của bản mình (vocong.js LAP_LAI) — ghi rõ cho người chơi
+      if (lap > 1) lines.push(`Nổ: ${lap} lần`); // chỉnh riêng của bản mình (vocong.js LAP_LAI) — ghi rõ cho người chơi
     }
     // giới hạn đòn mỗi mục tiêu mỗi lần ra chiêu (chỉnh riêng của bản mình — vocong.js GIOI_HAN_DON, anh 11/11): ghi rõ cho người chơi
-    if (GIOI_HAN_DON[s.id]) lines.push(...wrapRich(`Mỗi mục tiêu chịu tối đa ${GIOI_HAN_DON[s.id]} đòn mỗi tầng trong 1 lần xuất chiêu`, LVDESC_MAX));
+    if (GIOI_HAN_DON[s.id]) lines.push(...wrapRich(`Mỗi thằng chỉ ăn tối đa ${GIOI_HAN_DON[s.id]} đòn mỗi tầng trong một lần ra chiêu`, LVDESC_MAX));
     return [lines, bonus];
   };
   const out = []; // [html, màu]
@@ -182,7 +182,7 @@ export function skillTipHtml(T, skills, id, lv, opt = {}) {
       const cua = (t) => Object.entries(o.lv || {}).reduce((v, [k, a]) => { const p = /^addskilldamage\d$/.test(k) && a[Math.min(a.length, slv) - 1]; return p && p[0] === t ? v + p[2] : v; }, 0);
       const x = cua(c); if (x && x !== cua(id)) r += x;
     }
-    if (r > 0 && !/[一-鿿]/.test(name(c))) push(`Hỗ trợ đòn ${name(c)}: ${r}%\n`);
+    if (r > 0 && !/[一-鿿]/.test(name(c))) push(`Đòn ${name(c)} được hỗ trợ thêm: ${r}%\n`);
   }
   // "Mức độ luyện" theo cột IsExpSkill (ảnh game thật 24/10: 1370 có dòng này dù không có skill_skillexp_v). Chiêu luyện (anh 29/10 — opt.luyen =
   // { exp, can }): như engine KSkill 当前熟练度 = độ luyện đã có / độ luyện cần ở cấp đang có; chiêu khác 0%

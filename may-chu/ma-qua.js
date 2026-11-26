@@ -2,7 +2,9 @@
 // Quản trị tạo mã ở bảng quản trị (F10 — thẻ Mã quà, src/game/quantri.js): quà như Gửi quà (ngân lượng, Xu, vật phẩm — do.js taoQua) + kinh nghiệm
 // (chủ server 22/11/2026: nhập mã nhận exp, lên cấp theo đúng luật chung lenCap, trần 200), số lần
 // dùng tối đa của cả máy chủ (0 = không giới hạn), hạn dùng, lời nhắn. Mỗi nhân vật dùng 1 mã 1 lần (chủ server 23/11/2026: đổi từ mỗi tài khoản —
-// nhân vật khác cùng tài khoản vẫn dùng được; lượt đã dùng ghi cả tài khoản lẫn tên nhân vật nên nhân vật đã dùng vẫn bị chặn như cũ). Người chơi
+// nhân vật khác cùng tài khoản vẫn dùng được; lượt đã dùng ghi cả tài khoản lẫn tên nhân vật nên nhân vật đã dùng vẫn bị chặn như cũ). NGOẠI LỆ (chủ server
+// 25/11/2026): mã chung (tuDong, vd MAXPING) dùng lại KHÔNG GIỚI HẠN; nhập lại thì ngân lượng/Xu KHÔNG cộng dồn, chỉ nhận lại đồ (chỉ số gieo ngẫu nhiên
+// mới qua taoQua) + kinh nghiệm. Người chơi
 // nhập ở Lễ quan Ba Lăng (main.js — khung nhập chữ của client 输入字串界面2.ini) -> POST /api/ma-qua { o, ma } (api.js).
 // du-lieu/ma-qua.json = { ma: { MÃ: { qua: { tien, xu, exp, mon: [{ k, n, dong?, he? }] }, loi, toiDa, het (ms, 0 = không hạn), tat, tao: { boi, luc },
 //   dung: [{ tk, nv, luc }] } } } — sao lưu hằng ngày cùng tài khoản (du-lieu.js saoLuu).
@@ -47,7 +49,7 @@ const doTheoPhai = (h, eqt) => { // bộ đồ cấp 10 như mã MAXPING từng 
     { k: nu ? "amulet:10" : "amulet:20", n: 1, dong: 6, he: series }, { k: nu ? "boot:40" : "boot:20", n: 1, dong: 6, he: series },
     { k: "belt:20", n: 1, dong: 6, he: series }, { k: mu, n: 1, dong: 6, he: series },
     { k: nu ? "cuff:10" : "cuff:20", n: 1, dong: 6, he: series }, { k: nu ? "pendant:10" : "pendant:20", n: 1, dong: 6, he: series },
-    { k: "horse:10", n: 1, dong: 6, he: series }, { k: "ms:26", n: 15 }, { k: "ms:22", n: 15 });
+    { k: "horse:10", n: 1, dong: 6, he: series }, { k: "horse:55", n: 1, dong: 6, he: series }, { k: "ms:26", n: 15 }, { k: "ms:22", n: 15 }); // ngựa nhanh nhất (25/11/2026): Chiếu Dạ Ngọc Sư Tử, tốc độ 100, cấp 80, không giới hạn hệ/giới/trùng sinh — thêm 1 con, giữ nguyên horse:10
   return mon;
 };
 const sach = (s, n) => String(s || "").replace(/[\u0000-\u001f\u007f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
@@ -69,24 +71,25 @@ const tinhTrang = (m, t = Date.now()) => (m.tat ? "tat" : m.het && t > m.het ? "
 
 function nhap(tk, h, ma0, he0) {
   const t = Date.now(), s = sai.get(tk.ten);
-  if (s && s.n >= SAI_MAX && t < s.den) loi(`Nhập sai quá nhiều lần — thử lại sau ${Math.ceil((s.den - t) / 60000)} phút`, 429);
+  if (s && s.n >= SAI_MAX && t < s.den) loi(`Nhập sai lắm rồi. Chờ ${Math.ceil((s.den - t) / 60000)} phút nữa rồi hãy gõ lại.`, 429);
   const k = chuanMa(ma0), all = doc(), m = k && all.ma[k];
-  if (!m) { sai.set(tk.ten, { n: s && t < s.den ? s.n + 1 : 1, den: t + SAI_MS }); loi("Mã kích hoạt không đúng"); }
+  if (!m) { sai.set(tk.ten, { n: s && t < s.den ? s.n + 1 : 1, den: t + SAI_MS }); loi("Mã sai rồi. Gõ lại cho cẩn thận."); }
   const tt = tinhTrang(m, t);
-  if (tt === "tat") loi("Mã kích hoạt này đã ngừng sử dụng");
-  if (tt === "het") loi("Mã kích hoạt này đã hết hạn");
-  if (tt === "day") loi("Mã kích hoạt này đã hết lượt sử dụng");
-  if (m.dung.some((d) => d.tk === tk.ten && d.nv === h.name)) loi("Nhân vật này đã dùng mã kích hoạt này rồi");
+  if (tt === "tat") loi("Mã này bị tắt rồi. Đừng gõ nữa.");
+  if (tt === "het") loi("Mã này hết hạn rồi.");
+  if (tt === "day") loi("Mã này hết lượt rồi.");
+  const daDung = m.dung.some((d) => d.tk === tk.ten && d.nv === h.name);
+  if (daDung && !(m.qua && m.qua.tuDong)) loi("Nhân vật này dùng mã này rồi. Đừng nhập nữa."); // mã chung dùng lại không giới hạn (25/11/2026)
   let qua = m.qua;
   if (qua && qua.tuDong) { // mã chung: quà theo phái + giới tính; chưa chọn hệ thì chỉ trả lựa chọn, chưa tính là đã dùng
-    if (h.fac == null) loi("Hãy bái nhập môn phái trước rồi mới nhập mã này");
+    if (h.fac == null) loi("Mã này chỉ dành cho người đã vào phái. Chưa bái nhập thì đi bái nhập trước đi, rồi hãy quay lại.");
     const nhanh = nhanhPhai(h.fac);
-    if (!nhanh.length) loi("Môn phái này chưa có quà mã chung");
+    if (!nhanh.length) loi("Phái này chưa có quà mã chung. Đừng nhập nữa.");
     const he = he0 == null || he0 === "" ? null : +he0;
     if (nhanh.length > 1 && he == null) return { chonHe: nhanh.map((e) => ({ eqt: e, ten: TEN_HE[e] || `Hệ ${e}` })), ma: k };
     const chon = he == null ? nhanh[0] : he;
-    if (!nhanh.includes(chon)) loi("Lựa chọn không đúng với môn phái của bạn");
-    qua = { tien: qua.tien || 0, xu: qua.xu || 0, exp: qua.exp || 0, mon: doTheoPhai(h, chon) };
+    if (!nhanh.includes(chon)) loi("Chọn sai rồi. Hệ đó không phải của phái ngươi.");
+    qua = { tien: daDung ? 0 : qua.tien || 0, xu: daDung ? 0 : qua.xu || 0, exp: qua.exp || 0, mon: doTheoPhai(h, chon) }; // nhập lại: ngân lượng/Xu không cộng dồn; đồ gieo lại chỉ số ngẫu nhiên qua taoQua
   }
   const ds = DO.taoQua(h, qua); // túi không đủ chỗ -> lỗi, túi giữ nguyên
   const e = Math.max(0, Math.floor(qua.exp || 0));
@@ -135,22 +138,22 @@ function quanTri(qt, b) {
   }
   if (b.viec === "tao") {
     let k = chuanMa(b.ma);
-    if (String(b.ma || "").trim() && !k) loi("Mã chỉ gồm chữ không dấu, số, dấu - và _ (4–32 ký tự)");
+    if (String(b.ma || "").trim() && !k) loi("Mã chỉ gồm chữ không dấu, số, dấu - và _ (4–32 ký tự). Gõ lại cho đúng.");
     if (!k) do k = sinhMa(); while (all.ma[k]);
-    if (all.ma[k]) loi(`Mã ${k} đã có`);
+    if (all.ma[k]) loi(`Mã ${k} đã có rồi. Đặt mã khác đi.`);
     const { qua } = kiemQua(b), ngay = Math.max(0, Math.min(3650, +b.ngay || 0));
     if (b.tuDong) qua.tuDong = 1; // mã chung theo phái: quà tính lúc nhập, không ghi sẵn danh sách món
     all.ma[k] = { qua, loi: sach(b.loi, LOI_MAX), toiDa: Math.max(0, Math.min(1e6, b.toiDa | 0)), het: ngay ? t + ngay * 86400e3 : 0, tao: { boi: qt.ten, luc: t }, dung: [] };
     ghi(all);
     NK.ghi("qt", qt.ten, null, `Tạo mã kích hoạt ${k}: ${tomTat(all.ma[k])}${chuKhoa(all.ma[k])}${all.ma[k].toiDa ? ` · ${all.ma[k].toiDa} lượt` : ""}${ngay ? ` · hạn ${ngay} ngày` : ""}`);
-    return { msg: `Đã tạo mã ${k}`, ma: k };
+    return { msg: `Tạo xong mã ${k}.`, ma: k };
   }
   const k = chuanMa(b.ma), m = k && all.ma[k];
-  if (!m) loi("Không có mã này", 404);
+  if (!m) loi("Không có mã này. Gõ lại đi.", 404);
   if (b.viec === "tat" || b.viec === "mo") {
     m.tat = b.viec === "tat"; if (!m.tat) delete m.tat;
     ghi(all); NK.ghi("qt", qt.ten, null, `${b.viec === "tat" ? "Tắt" : "Mở lại"} mã kích hoạt ${k}`);
-    return { msg: `${b.viec === "tat" ? "Đã tắt" : "Đã mở lại"} mã ${k}` };
+    return { msg: `${b.viec === "tat" ? "Tắt mã" : "Mở lại mã"} ${k} rồi` };
   }
   if (b.viec === "lay") {
     const q = m.qua || {};
@@ -172,14 +175,14 @@ function quanTri(qt, b) {
     }
     m.qua = qua; m.loi = sach(b.loi, LOI_MAX); m.toiDa = Math.max(0, Math.min(1e6, b.toiDa | 0));
     ghi(all); NK.ghi("qt", qt.ten, null, `Sửa mã kích hoạt ${k}: ${tomTat(m)}${chuKhoa(m)}${m.toiDa ? ` · ${m.toiDa} lượt` : ""} · ${han}`);
-    return { msg: `Đã lưu mã ${k}` };
+    return { msg: `Lưu mã ${k} xong.` };
   }
   if (b.viec === "xoa") {
     delete all.ma[k];
     ghi(all); NK.ghi("qt", qt.ten, null, `Xóa mã kích hoạt ${k} (${m.dung.length} lượt đã dùng)`);
-    return { msg: `Đã xóa mã ${k}` };
+    return { msg: `Xóa mã ${k} xong.` };
   }
-  loi("Việc không rõ");
+  loi("Không rõ việc gì. Gửi lại cho đúng.");
 }
 
 module.exports = { nhap, quanTri, FILE };

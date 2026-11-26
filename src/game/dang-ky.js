@@ -31,11 +31,11 @@ if (modal) {
   const kiemBuoc1 = () => {
     const ten = tenEl.value.trim().toLowerCase(), gmail = gmailEl.value.trim().toLowerCase(),
       mk = mkEl.value, mk2 = mk2El.value;
-    if (!TEN_RE.test(ten)) return { loi: "Tên tài khoản 3–20 ký tự: chữ thường không dấu, số, dấu _" };
-    if (!GMAIL_RE.test(gmail) || gmail.length > 254) return { loi: "Gmail chưa đúng — dùng địa chỉ @gmail.com" };
-    if (mk.length < 6 || mk.length > 64) return { loi: "Mật khẩu 6–64 ký tự" };
-    if (mk === ten) return { loi: "Mật khẩu phải khác tên tài khoản" };
-    if (mk !== mk2) return { loi: "Nhập lại mật khẩu chưa khớp" };
+    if (!TEN_RE.test(ten)) return { loi: "Tên tài khoản 3–20 ký tự: chữ thường không dấu, số, dấu _. Gõ sai thì sửa lại, đừng hỏi." };
+    if (!GMAIL_RE.test(gmail) || gmail.length > 254) return { loi: "Gmail sai rồi — chỉ nhận @gmail.com. Gõ lại đi." };
+    if (mk.length < 6 || mk.length > 64) return { loi: "Mật khẩu 6–64 ký tự. Ngắn hơn thì đừng hòng qua." };
+    if (mk === ten) return { loi: "Mật khẩu trùng tên tài khoản thì không được. Đổi đi." };
+    if (mk !== mk2) return { loi: "Nhập lại chưa khớp. Gõ cho cẩn thận vào." };
     return { ten, gmail, mk };
   };
 
@@ -61,13 +61,13 @@ if (modal) {
         err.textContent = "";
       } else {
         const ma = maEl.value.trim();
-        if (!/^\d{6}$/.test(ma)) { err.textContent = "Mã xác minh có 6 số"; return; }
+        if (!/^\d{6}$/.test(ma)) { err.textContent = "Mã xác minh đúng 6 số. Thiếu thì đừng gửi."; return; }
         await Net.call("POST", "dang-ky/xac-minh", { ten: luu.ten, ma });
         form.hidden = true;
         $("#dk-ten-xong").textContent = luu.ten;
         xong.hidden = false;
       }
-    } catch (er) { err.textContent = er.message || "Không gửi được — thử lại sau"; }
+    } catch (er) { err.textContent = er.message || "Gửi không được — thử lại sau, đừng gửi dồn."; }
     finally { dangGui = false; ok.disabled = false; }
   });
 
@@ -77,8 +77,8 @@ if (modal) {
     try {
       dangGui = true; guilai.disabled = true;
       await Net.call("POST", "dang-ky", luu);
-      err.textContent = "Đã gửi lại mã mới — kiểm tra hộp thư.";
-    } catch (er) { err.textContent = er.message || "Không gửi được — thử lại sau"; }
+      err.textContent = "Mã mới đã gửi. Mở hộp thư mà lấy, đừng ngồi chờ.";
+    } catch (er) { err.textContent = er.message || "Gửi không được — thử lại sau, đừng gửi dồn."; }
     finally { dangGui = false; guilai.disabled = false; }
   });
 

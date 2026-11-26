@@ -146,9 +146,9 @@ function moTa(k, vai, R) {
 const loiXa = (msg) => Object.assign(new Error(msg), { code: 400, ma: "xa-npc" });
 function cau(k, vai) {
   const ten = TEN_VAI[vai] || vai, noi = noiCo(vai);
-  if (k.ly === "xa") return `Hãy lại gần ${ten} rồi nói chuyện`;
-  if (k.ly === "sai-ban-do") return `${ten} không ở bản đồ này${noi ? ` — hãy tới ${noi} gặp ${ten}` : ""}`;
-  return `Chưa rõ chỗ đang đứng — hãy lại gần ${ten} rồi nói chuyện lại`;
+  if (k.ly === "xa") return `Lại gần ${ten} rồi hãy nói chuyện. Đứng xa thế thì ai nghe?`;
+  if (k.ly === "sai-ban-do") return `${ten} không ở đây${noi ? ` — muốn gặp thì tới ${noi} mà tìm` : ""}`;
+  return `Chưa biết ngươi đang đứng đâu. Lại gần ${ten} rồi nói lại đi.`;
 }
 // phải đứng gần: không thì 400 + cờ — khác bản đồ: "xa-npc" (mạnh — công cụ gọi từ bãi train); cùng bản đồ mà xa: "xa-npc-gan" (yếu — người thật để khung
 // thoại mở rồi đi xa); chưa rõ chỗ đứng: "npc-vi-tri" (yếu — máy chủ vừa khởi động lại, lỡ nhịp)
@@ -240,7 +240,7 @@ function chan(tk, p, m, b) {
     case "/api/vuot-ai":
       if (VA_CAM.has(viec)) {
         NT.ghi(tk, h, "xa-npc", `${ten}: gọi thẳng /api/vuot-ai (vào ải chỉ qua hội thoại Nhiếp Thí Trần — /api/sat-thu) — đã chặn`);
-        throw loiXa(`Vào ải Vượt Ải: hãy nói chuyện với Nhiếp Thí Trần${noiCo("satThu") ? ` (${noiCo("satThu")})` : ""}`);
+        throw loiXa(`Muốn vào ải thì nói chuyện với Nhiếp Thí Trần trước đã${noiCo("satThu") ? ` (${noiCo("satThu")})` : ""}`);
       }
       return;
     case "/api/tu-lam": {

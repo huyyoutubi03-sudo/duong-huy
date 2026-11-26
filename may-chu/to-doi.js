@@ -67,7 +67,7 @@ function giaiDoi(d, cau, tru) {
 // tk ra khỏi đội đang ở: đội trưởng ra -> giải tán (engine); đội viên ra -> báo cả đội (cauDoi)
 function raDoi(tk, cauDoi) {
   const d = doiCua(tk); if (!d) return;
-  if (d.truong === tk) return giaiDoi(d, `${tenCua(tk)} giải tán nhóm!`, tk);
+  if (d.truong === tk) return giaiDoi(d, `${tenCua(tk)} đã giải tán nhóm.`, tk);
   cuaTk.delete(tk); d.tv = d.tv.filter((x) => x !== tk);
   if (!dayDoi(d)) d.mo = true; // engine KTeam::DeleteMember: chưa đủ người thì mở lại
   if (cauDoi) baoCa(d, cauDoi);
@@ -75,7 +75,7 @@ function raDoi(tk, cauDoi) {
 // dọn: lời mời quá hạn, người rời game quá VANG_GIAY giây
 function don(t) {
   for (const [tk, L] of loiMoi) { const con = L.filter((m) => t - m.luc < MOI_GIAY * 1000); if (con.length) loiMoi.set(tk, con); else loiMoi.delete(tk); }
-  for (const tk of [...cuaTk.keys()]) if (cuaTk.has(tk) && t - (thay.get(tk) || 0) > VANG_GIAY * 1000) raDoi(tk, `${tenCua(tk)} rời khỏi nhóm.`);
+  for (const tk of [...cuaTk.keys()]) if (cuaTk.has(tk) && t - (thay.get(tk) || 0) > VANG_GIAY * 1000) raDoi(tk, `${tenCua(tk)} đã rời khỏi nhóm.`);
 }
 
 function cua(tk) {
@@ -91,98 +91,98 @@ function cua(tk) {
 
 function lam(tk, b) {
   const t = Date.now(); thay.set(tk, t); don(t);
-  if (!TG.dangChoi(tk)) loi("Chưa vào game");
+  if (!TG.dangChoi(tk)) loi("Chưa vào game. Vào rồi hãy bấm.");
   const d = doiCua(tk), toi = tenCua(tk);
-  const nguoi = (ten) => { const x = TG.timTen(String(ten || "").trim()); if (!x) loi(`Không tìm thấy người chơi ${ten || ""} đang trong game`); return x; };
-  const laTruong = () => { if (!d) loi("Bạn chưa có đội ngũ"); if (d.truong !== tk) loi("Chỉ nhóm trưởng mới làm được"); };
+  const nguoi = (ten) => { const x = TG.timTen(String(ten || "").trim()); if (!x) loi(`Không thấy người chơi ${ten || ""} đang trong game.`); return x; };
+  const laTruong = () => { if (!d) loi("Ngươi chưa có đội ngũ."); if (d.truong !== tk) loi("Chỉ nhóm trưởng mới làm được. Ngươi không phải nhóm trưởng."); };
   let msg = "";
   switch (b.viec) {
     case "lap":
-      if (d) loi("Bạn đã có đội ngũ");
-      if (oSan(tk)) loi("Đang ở lôi đài — không lập nhóm được");
-      lapDoi(tk); msg = "Bạn sáng lập nên một nhóm mới";
+      if (d) loi("Ngươi đã có đội ngũ rồi.");
+      if (oSan(tk)) loi("Đang ở lôi đài. Không lập nhóm được.");
+      lapDoi(tk); msg = "Ngươi đã lập một nhóm mới.";
       break;
     case "moi": {
       const x = nguoi(b.ten);
-      if (x === tk) loi("Không thể mời chính mình");
-      if (oSan(tk)) loi("Đang ở lôi đài — không mời người vào nhóm được");
-      if (oSan(x)) loi(`${tenCua(x)} đang ở lôi đài — không mời vào nhóm được`);
-      if (d && d.truong !== tk) loi("Chỉ nhóm trưởng mới mời được người vào nhóm");
-      if (d && dayDoi(d)) loi(`Nhóm đã đủ người — sức thống soái của Bạn dẫn được ${sucDan(tk)} đội viên`);
-      if (!vaoPhai(tk) && vaoPhai(x)) loi("Người mới chơi không thể mời được người của tổ đội khác"); // CheckAddCondition: đội trưởng chưa vào phái
-      if (d && d.tv.includes(x)) loi(`${tenCua(x)} đã ở trong nhóm của Bạn`);
+      if (x === tk) loi("Tự mời chính mình làm gì.");
+      if (oSan(tk)) loi("Đang ở lôi đài. Không mời được.");
+      if (oSan(x)) loi(`${tenCua(x)} đang ở lôi đài. Không mời được.`);
+      if (d && d.truong !== tk) loi("Chỉ nhóm trưởng mới mời được.");
+      if (d && dayDoi(d)) loi(`Nhóm đủ người rồi — sức thống soái của ngươi dẫn được ${sucDan(tk)} đội viên.`);
+      if (!vaoPhai(tk) && vaoPhai(x)) loi("Người mới chơi không mời được người của tổ đội khác."); // CheckAddCondition: đội trưởng chưa vào phái
+      if (d && d.tv.includes(x)) loi(`${tenCua(x)} đã ở trong nhóm của ngươi rồi.`);
       // Trợ Thủ tự mời (b.tu — main.js mỗi 3 giây mời người quanh mình) cũng tới người đã có đội như mời tay (anh 06/11 chiều "người khác auto mời
       // vẫn sẽ hiện chứ không phải chặn, nó sẽ hiện ở dạng cái icon thôi" — trước bỏ qua người có đội ≥ 2 người)
       const L = (loiMoi.get(x) || []).filter((m) => m.tu !== tk);
       L.push({ id: ++soId, tu: tk, luc: t }); loiMoi.set(x, L);
-      if (!d) { lapDoi(tk); bao(tk, "Bạn sáng lập nên một nhóm mới"); }
-      msg = `Đã gửi lời mời tới ${tenCua(x)}`;
+      if (!d) { lapDoi(tk); bao(tk, "Ngươi đã lập một nhóm mới."); }
+      msg = `Đã gửi lời mời tới ${tenCua(x)} rồi.`;
       break;
     }
     case "nhan": {
       const L = loiMoi.get(tk) || [], m = L.find((v) => v.id === (b.id | 0));
       loiMoi.set(tk, L.filter((v) => v !== m));
-      if (!m) loi("Lời mời đã hết hạn");
-      if (oSan(tk)) loi("Đang ở lôi đài — không vào nhóm được");
-      if (oSan(m.tu)) loi(`${tenCua(m.tu)} đang ở lôi đài — không vào nhóm được`);
+      if (!m) loi("Lời mời hết hạn rồi.");
+      if (oSan(tk)) loi("Đang ở lôi đài. Không vào nhóm được.");
+      if (oSan(m.tu)) loi(`${tenCua(m.tu)} đang ở lôi đài. Không vào nhóm được.`);
       // anh 06/11: kiểm tra hết điều kiện của đội mới TRƯỚC — không đủ thì giữ nguyên đội cũ
-      if (!TG.dangChoi(m.tu)) loi(`${tenCua(m.tu)} đã rời game`);
+      if (!TG.dangChoi(m.tu)) loi(`${tenCua(m.tu)} rời game rồi.`);
       let dm = doiCua(m.tu);
-      if (dm && dm.truong !== m.tu) loi(`${tenCua(m.tu)} không còn là nhóm trưởng`);
-      if (dm && dm === d) loi("Bạn đã ở trong nhóm này");
-      if (dm && dayDoi(dm)) loi("Nhóm đã đủ người");
-      if (!vaoPhai(m.tu) && vaoPhai(tk)) loi("Người mới chơi không thể mời được người của tổ đội khác");
+      if (dm && dm.truong !== m.tu) loi(`${tenCua(m.tu)} không còn là nhóm trưởng nữa.`);
+      if (dm && dm === d) loi("Ngươi đã ở trong nhóm này rồi.");
+      if (dm && dayDoi(dm)) loi("Nhóm đủ người rồi.");
+      if (!vaoPhai(m.tu) && vaoPhai(tk)) loi("Người mới chơi không mời được người của tổ đội khác.");
       // đủ điều kiện: rời đội đang ở (nhóm 1 người: bỏ; đội trưởng: giải tán — raDoi; đội viên: cả đội nghe "<tên> rời khỏi nhóm.")
-      if (d) raDoi(tk, d.tv.length > 1 ? `${toi} rời khỏi nhóm.` : "");
+      if (d) raDoi(tk, d.tv.length > 1 ? `${toi} đã rời khỏi nhóm.` : "");
       if (!dm) dm = lapDoi(m.tu);
-      baoCa(dm, `${toi} trở thành bằng hữu của nhóm Bạn.`);
+      baoCa(dm, `${toi} đã gia nhập nhóm.`);
       dm.tv.push(tk); cuaTk.set(tk, dm.id); loiMoi.delete(tk);
       if (dayDoi(dm)) dm.mo = false; // đủ người: đóng (KTeam::SetTeamClose — hết cờ)
-      msg = `Bạn gia nhập nhóm của ${tenCua(dm.truong)}.`;
+      msg = `Ngươi đã gia nhập nhóm của ${tenCua(dm.truong)}.`;
       break;
     }
     case "tuChoi": {
       const L = loiMoi.get(tk) || [], m = L.find((v) => v.id === (b.id | 0));
       loiMoi.set(tk, L.filter((v) => v !== m));
-      if (m) bao(m.tu, `${toi} cự tuyệt lời mời của nhóm Bạn!`);
+      if (m) bao(m.tu, `${toi} từ chối lời mời của nhóm ngươi!`);
       break;
     }
     case "roi":
-      if (!d) loi("Bạn chưa có đội ngũ");
-      msg = d.truong === tk ? "Bạn đã giải tán nhóm của mình" : "Bạn đã rời khỏi nhóm.";
-      raDoi(tk, `${toi} rời khỏi nhóm.`);
+      if (!d) loi("Ngươi chưa có đội ngũ.");
+      msg = d.truong === tk ? "Ngươi đã giải tán nhóm của mình." : "Ngươi đã rời khỏi nhóm.";
+      raDoi(tk, `${toi} đã rời khỏi nhóm.`);
       break;
     case "duoi": {
       laTruong();
       const x = nguoi(b.ten);
-      if (x === tk || !d.tv.includes(x)) loi("Người này không ở trong nhóm");
-      raDoi(x); bao(x, "Bạn bị khai trừ khỏi nhóm"); baoCa(d, `${tenCua(x)} bị khai trừ khỏi nhóm`, tk);
-      msg = `${tenCua(x)} bị khai trừ khỏi nhóm`;
+      if (x === tk || !d.tv.includes(x)) loi("Người này không ở trong nhóm.");
+      raDoi(x); bao(x, "Ngươi bị khai trừ khỏi nhóm."); baoCa(d, `${tenCua(x)} đã bị khai trừ khỏi nhóm.`, tk);
+      msg = `${tenCua(x)} đã bị khai trừ khỏi nhóm.`;
       break;
     }
     case "giao": {
       laTruong();
       const x = nguoi(b.ten);
-      if (x === tk || !d.tv.includes(x)) loi("Người này không ở trong nhóm");
-      if (vaoPhai(tk) && !vaoPhai(x)) loi("nhóm của Bạn không thể chuyển giao cho người mới");
-      if (d.tv.length - 1 > sucDan(x)) loi(`${tenCua(x)} không đủ sức thống soái!`);
+      if (x === tk || !d.tv.includes(x)) loi("Người này không ở trong nhóm.");
+      if (vaoPhai(tk) && !vaoPhai(x)) loi("Nhóm của ngươi không chuyển giao cho người mới được.");
+      if (d.tv.length - 1 > sucDan(x)) loi(`${tenCua(x)} không đủ sức thống soái.`);
       d.truong = x; d.tv = [x, ...d.tv.filter((v) => v !== x)];
-      bao(x, `Bạn được ${toi} đảm nhận là nhóm trưởng!`);
-      for (const v of d.tv) if (v !== x && v !== tk) bao(v, `${tenCua(x)} được đảm nhận là nhóm trưởng`);
-      msg = `${tenCua(x)} được đảm nhận là nhóm trưởng`;
+      bao(x, `Ngươi được ${toi} giao làm nhóm trưởng!`);
+      for (const v of d.tv) if (v !== x && v !== tk) bao(v, `${tenCua(x)} đã làm nhóm trưởng.`);
+      msg = `${tenCua(x)} đã làm nhóm trưởng.`;
       break;
     }
     case "mo": // ô "Lập nhóm" của đội trưởng: mở / đóng nhận người (câu client MSG_TEAM_OPEN / CLOSE — bản dịch 2 câu như nhau, câu mở viết lại)
       laTruong();
-      if (b.on && dayDoi(d)) loi("Nhóm đã đủ người");
+      if (b.on && dayDoi(d)) loi("Nhóm đủ người rồi.");
       d.mo = !!b.on;
-      msg = d.mo ? "Nhóm của Bạn hiện giờ được phép tiếp nhận thêm hội viên mới" : "Nhóm của Bạn hiện giờ không được phép tiếp nhận thêm hội viên mới";
+      msg = d.mo ? "Nhóm của ngươi giờ nhận thêm người mới được." : "Nhóm của ngươi giờ không nhận thêm người mới.";
       break;
     case "giai":
       laTruong();
-      giaiDoi(d, `${toi} giải tán nhóm!`, tk); msg = "Bạn đã giải tán nhóm của mình";
+      giaiDoi(d, `${toi} đã giải tán nhóm!`, tk); msg = "Ngươi đã giải tán nhóm của mình.";
       break;
-    default: loi("Việc này chưa có");
+    default: loi("Không có việc này. Đừng bấm nữa.");
   }
   return { doi: cua(tk), msg };
 }
