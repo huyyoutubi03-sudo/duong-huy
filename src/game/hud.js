@@ -66,7 +66,7 @@ const TAB_FILTER = {
 export class Hud {
   static async load() {
     const r = await fetch(BASE + "hud.json");
-    if (!r.ok) throw new Error("Không đọc được hud.json");
+    if (!r.ok) throw new Error("Đọc không nổi hud.json");
     const meta = await r.json();
     // thẻ "Đội ngũ" sau thẻ Mật (anh 01/11 — client không có thẻ này); mỗi thẻ giữ bề rộng của client (60) — bản đầu thu hẹp cho cả dãy dài như cũ
     // thì chữ các thẻ lệch, khoảng cách không đều (anh 01/11 "bố cục text các kênh lệch")
@@ -107,7 +107,7 @@ export class Hud {
     top.querySelectorAll(".jx-bar").forEach((el, i) => (el.title = M.bars[i].n));
     top.querySelector(".jx-lv").title = "Cấp";
     // ô Hạng: thứ tự cấp trong máy chủ (nhịp — may-chu/xep-hang.js); bấm: khung xếp hạng của client (排名.ini — anh 27/10, bước 7)
-    const rk = top.querySelector(".jx-rank"); rk.title = "Hạng cấp trong máy chủ — bấm: bảng xếp hạng"; rk.onclick = () => cb.onButton && cb.onButton("XepHang");
+    const rk = top.querySelector(".jx-rank"); rk.title = "Hạng cấp trong máy chủ — bấm là thấy bảng xếp hạng, đừng hỏi."; rk.onclick = () => cb.onButton && cb.onButton("XepHang");
 
     // ---- bản đồ nhỏ: khối riêng dán góc phải trên của trình duyệt (anh muốn 23/10); cách mép phải giữ như client ở 1024 px ----
     // ảnh + chấm vẽ trên canvas; dải tối mờ sau tên; tên bãi (bấm: chọn bãi); tọa độ (bấm: gõ tọa độ để đi tới); 4 nút
@@ -135,9 +135,9 @@ export class Hud {
       `<div class="jx-auto" style="${css({ left: MM.x - X0, top: MM.y + MM.h + 1, width: MM.w })}" title="Tự đánh (phím Space)"></div>`;
     mm.insertAdjacentHTML("beforeend", `<div class="jx-btn jx-lpbtn" title="Đăng nhập nhận thưởng" style="${css({ left: LP.x - X0, top: LP.y, width: LP.w, height: LP.h, "background-image": `url(${BASE}btn/nhanthuong.png)`, "background-position": "0 0" })}"></div>`);
     // nút Trợ Thủ (game thêm): icon "Chủ động công kích" của thanh đồng hành client trong ô cột icon
-    mm.insertAdjacentHTML("beforeend", `<div class="jx-btn jx-ttbtn" title="Trợ Thủ — bấm: mở / đóng (phím K) · chuột phải: bật / tắt tự đánh" style="${css({ left: TT.x - X0, top: TT.y, width: TT.w, height: TT.h, "background-image": `url(${BASE}btn/trothu_cot.png)`, "background-position": "0 0" })}"></div>`);
-    mm.insertAdjacentHTML("beforeend", `<div class="jx-btn jx-hdbtn" title="Hướng dẫn hoạt động — lịch, giờ, yêu cầu, tra cứu rơi đồ và rương" style="${css({ left: HD.x - X0, top: HD.y, width: HD.w, height: HD.h, "background-image": `url(${BASE}btn/huongdan.png)`, "background-position": "0 0" })}"></div>`);
-    mm.insertAdjacentHTML("beforeend", `<div class="jx-btn jx-ptbtn" title="Phân Thân — thuê phân thân của cao thủ khác đi theo hỗ trợ, đánh quái" style="${css({ left: PTB.x - X0, top: PTB.y, width: PTB.w, height: PTB.h, "background-image": `url(${BASE}btn/phanthan.png)`, "background-position": "0 0" })}"></div>`);
+    mm.insertAdjacentHTML("beforeend", `<div class="jx-btn jx-ttbtn" title="Trợ Thủ — bấm mở / đóng (phím K) · chuột phải bật / tắt tự đánh, đừng bấm bừa" style="${css({ left: TT.x - X0, top: TT.y, width: TT.w, height: TT.h, "background-image": `url(${BASE}btn/trothu_cot.png)`, "background-position": "0 0" })}"></div>`);
+    mm.insertAdjacentHTML("beforeend", `<div class="jx-btn jx-hdbtn" title="Hướng dẫn hoạt động — lịch, giờ, yêu cầu, tra cứu rơi đồ và rương. Đọc cho kỹ vào" style="${css({ left: HD.x - X0, top: HD.y, width: HD.w, height: HD.h, "background-image": `url(${BASE}btn/huongdan.png)`, "background-position": "0 0" })}"></div>`);
+    mm.insertAdjacentHTML("beforeend", `<div class="jx-btn jx-ptbtn" title="Phân Thân — thuê cao thủ khác theo đánh quái, hỗ trợ ngươi" style="${css({ left: PTB.x - X0, top: PTB.y, width: PTB.w, height: PTB.h, "background-image": `url(${BASE}btn/phanthan.png)`, "background-position": "0 0" })}"></div>`);
     mm.insertAdjacentHTML("beforeend", `<div class="jx-btn jx-zlbtn" style="${css({ left: ZL.x - X0, top: ZL.y, width: ZL.w, height: ZL.h, "background-image": `url(${BASE}btn/zalo.png)`, "background-size": "100% 100%" })}"></div>`);
     mm.insertAdjacentHTML("beforeend", `<div class="jx-bcbtn" style="${css({ left: BCB.x - X0, top: BCB.y, width: BCB.w, height: BCB.h })}">${XUC_XAC}</div><div class="jx-bcchu" style="${css({ left: BCB.x - X0 - 4, top: BCB.y + 2 })}"></div>`);
     // ổ khóa an toàn (anh 10/11 — mật khẩu cấp 2, src/game/khoaantoan.js): đúng chỗ client — securitylock_icon.ini Left 650 Top 20 ở màn 800 × 600 =
@@ -156,7 +156,7 @@ export class Hud {
     let ch = "";
     // thanh cuộn trái của khung chat: đỉnh, ruột lặp, nút bóng nền, đáy; nút khung tin hệ thống
     if (S.mid) ch += at(YC({ x: S.mid.x, y: S.mid.y, w: S.mid.w, h: S.shadow.y - S.mid.y }), "jx-strip", "", { "background-image": `url(${BASE}${S.mid.file})`, "background-repeat": "repeat-y" }, ' data-s="mid"');
-    for (const k of ["top", "bottom"]) if (S[k]) ch += at(YC(S[k]), "jx-strip", "", img(S[k]), ` data-s="${k}"${k === "top" ? ' title="Kéo lên / xuống: đổi chiều cao khung chat"' : ""}`);
+    for (const k of ["top", "bottom"]) if (S[k]) ch += at(YC(S[k]), "jx-strip", "", img(S[k]), ` data-s="${k}"${k === "top" ? ' title="Kéo lên / xuống là đổi chiều cao khung chat"' : ""}`);
     for (const k of ["shadow", "sysUp", "sysDown", "sysOpen"]) if (S[k]) ch += at(YC(S[k]), "jx-btn jx-cbtn", "", img(S[k], S[k].up), ` data-c="${k}" title="${esc(S[k].tip)}"`);
     ch += at(YC(C.list), "jx-chat");
     ch += at(YC(C.sys), "jx-sys", "", { color: rgb(C.sys.color) });
@@ -182,7 +182,7 @@ export class Hud {
     // chiều "cái icon này bỏ góc này đi em", mũi tên trong ảnh: từ cuối dòng ô tin hệ thống sang góc phải dưới, ngay trên nút Bảo vật): biểu tượng
     // 组队 (moiDoi) + bảng dòng lời mời bên trái biểu tượng, đáy ngang đáy biểu tượng (bấm biểu tượng: hiện / ẩn — moiIcon)
     const MK = B.Market, TIN = { x: MK ? Math.round(MK.x + MK.w / 2 - 12) : 902, y: MK ? MK.y - 30 : 650, w: 24, h: 24 };
-    html += at(Y(TIN), "jx-tinic", "<b></b>", { "background-image": `url(${BASE}btn/tin_doi.png)` }, ' title="Lời mời tổ đội / bang hội — bấm để xem, trả lời"');
+    html += at(Y(TIN), "jx-tinic", "<b></b>", { "background-image": `url(${BASE}btn/tin_doi.png)` }, ' title="Lời mời tổ đội / bang hội — bấm mà xem, trả lời ngay"');
     html += `<div class="jx-moip" style="${css({ right: F.w - TIN.x - 4, bottom: F.h - TIN.y - TIN.h })}"></div>`;
     bot.innerHTML = html;
     // ---- hàng biểu tượng trạng thái: dán góc trái trên (ảnh client anh gửi 27/10: sát mép trái, ngay dưới dải trên) ----
@@ -282,7 +282,7 @@ export class Hud {
     // bấm tên bãi: bản đồ lớn / nhỏ như phím Tab (anh 26/10: bỏ menu chọn bãi — đi bãi bằng Xa phu)
     const nameEl = mm.querySelector(".jx-mm-name");
     nameEl.onclick = () => this._mmButton("SwitchBtn");
-    nameEl.title = "Bấm: bản đồ lớn / nhỏ (Tab)";
+    nameEl.title = "Bấm là bản đồ lớn / nhỏ (Tab)";
     // giữ chuột phải kéo: xem chỗ khác của bản đồ như client (Ba Lăng rộng) — khung đứng yên ở chỗ đã kéo; bấm chuột phải không kéo, phím
     // Tab hoặc đổi bản đồ thì về lại theo nhân vật. Bấm chuột trái vẫn là chạy tới chỗ bấm
     this.mmCv.oncontextmenu = (e) => e.preventDefault();
@@ -303,7 +303,7 @@ export class Hud {
     posEl.onclick = () => { posIn.style.display = "block"; posIn.value = ""; posIn.placeholder = posEl.textContent; posIn.focus(); };
     posIn.onkeydown = (e) => {
       e.stopPropagation();
-      if (e.key === "Enter") { const m = /^\s*(\d+)\s*[\/ ,.]\s*(\d+)\s*$/.exec(posIn.value); if (m && cb.onGoto) cb.onGoto(+m[1], +m[2]); else if (posIn.value.trim()) this.msg("Tọa độ ghi dạng 200/200"); hidePos(); }
+      if (e.key === "Enter") { const m = /^\s*(\d+)\s*[\/ ,.]\s*(\d+)\s*$/.exec(posIn.value); if (m && cb.onGoto) cb.onGoto(+m[1], +m[2]); else if (posIn.value.trim()) this.msg("Tọa độ ghi dạng 200/200, ghi sai thì tự chịu."); hidePos(); }
       if (e.key === "Escape") hidePos();
     };
     // ẩn ngay (không đợi mất focus — trang ẩn / chưa focus được thì sự kiện blur không tới)
@@ -446,7 +446,7 @@ export class Hud {
     try { gon = localStorage.getItem("vl_nvGon") === "1"; } catch {}
     const nut = nv.querySelector(".jx-nv-nut"), dau = nv.querySelector(".jx-nv-dau");
     const ve = (f) => { nut.style.backgroundImage = `url(${BASE}btn/${this.nvGon ? "sys_down" : "sys_up"}.png)`; nut.style.backgroundPosition = `${-15 * f}px 0`; };
-    const dat = (g) => { this.nvGon = g; nv.classList.toggle("gon", g); dau.dataset.tip = g ? "Bấm: mở rộng bảng nhiệm vụ" : "Bấm: thu gọn bảng nhiệm vụ"; ve(0); try { localStorage.setItem("vl_nvGon", g ? "1" : "0"); } catch {} this._nvCao(); };
+    const dat = (g) => { this.nvGon = g; nv.classList.toggle("gon", g); dau.dataset.tip = g ? "Bấm là mở rộng bảng nhiệm vụ" : "Bấm là thu gọn bảng nhiệm vụ"; ve(0); try { localStorage.setItem("vl_nvGon", g ? "1" : "0"); } catch {} this._nvCao(); };
     dau.onmouseenter = () => ve(2); dau.onmouseleave = () => ve(0);
     dau.onmousedown = (e) => { e.preventDefault(); ve(1); };
     dau.onclick = () => dat(!this.nvGon);
@@ -482,7 +482,7 @@ export class Hud {
     this.nvBang.querySelector(".jx-nv-than").innerHTML = nhom.length ? nhom.map((g) => `<div class="jx-nv-nhom">${esc(g.ten)}</div>` + g.muc.map((m) =>
       `<div class="jx-nv-muc"><div class="jx-nv-ten">${esc(m.ten)}${m.phu ? ` <span>${esc(m.phu)}</span>` : ""}</div>` +
       m.dong.map((d) => `<div class="jx-nv-dong">${d.map(doan).join("")}</div>`).join("") + "</div>").join("")).join("")
-      : `<div class="jx-nv-dong trong">Chưa nhận nhiệm vụ nào</div>`;
+      : `<div class="jx-nv-dong trong">Chưa nhận nhiệm vụ nào — đi mà nhận, đừng đứng đây.</div>`;
     this._nvCao();
   }
   setTroThu(open) { this.ttOpen = !!open; if (this.ttBtn) this.ttBtn.style.backgroundPosition = open ? "-23px 0" : "0 0"; }
@@ -502,8 +502,8 @@ export class Hud {
     const dong = !!(tt.co && !tt.mo);
     b.style.backgroundImage = `url(${BASE}btn/${dong ? "khoa_dong" : "khoa_mo"}.png)`;
     b.classList.toggle("co-moi", !tt.co);
-    b.title = !tt.co ? "Khóa an toàn — chưa đặt mật khẩu cấp 2\nBấm để đặt: bảo vệ giao dịch, bày bán / mua ở Chợ Trời, vứt đồ, hủy vật phẩm, xóa nhân vật"
-      : dong ? "Khóa an toàn — đang khóa\nBấm để mở khóa hoặc đổi mật khẩu" : "Khóa an toàn — đang mở (tới khi thoát game hoặc tải lại trang)\nBấm để khóa lại hoặc đổi mật khẩu";
+    b.title = !tt.co ? "Khóa an toàn — chưa đặt mật khẩu cấp 2\nBấm để đặt: giữ giao dịch, bày bán / mua ở Chợ Trời, vứt đồ, hủy vật phẩm, xóa nhân vật cho chắc."
+      : dong ? "Khóa an toàn — đang khóa\nMuốn mở thì mở khóa hoặc đổi mật khẩu đi." : "Khóa an toàn — đang mở (tới khi thoát game hoặc tải lại trang)\nKhóa lại hoặc đổi mật khẩu thì bấm, đừng để mở toang.";
   }
   // dòng đếm giờ trên thuyền Phong Lăng Độ (main.js pldTick — anh 27/10): giữa phía trên màn hình như dòng tin chạy của client
   // (新闻消息来了.ini: rộng 400, chữ cỡ 14 màu 255,253,122, nền bóng đen độ trong 80); text null = ẩn
@@ -522,7 +522,7 @@ export class Hud {
     let s = b.querySelector(".jx-ntso");
     if (!s) { s = document.createElement("b"); s.className = "jx-ntso"; b.appendChild(s); }
     s.textContent = n > 0 ? String(n) : ""; s.style.display = n > 0 ? "" : "none";
-    b.title = n > 0 ? `Nhận thưởng — ${n} phần thưởng chưa nhận` : "Đăng nhập nhận thưởng";
+    b.title = n > 0 ? `Nhận thưởng đi — ${n} phần thưởng chưa nhận` : "Đăng nhập nhận thưởng";
   }
   setAuto(on) { const el = this.mm.querySelector(".jx-auto"); el.textContent = "Tự đánh: " + (on ? "Bật" : "Tắt"); el.classList.toggle("off", !on); }
 
@@ -544,7 +544,7 @@ export class Hud {
     if (!on) { d.innerHTML = ""; return this._nvCao(); }
     if (this.doiGon == null) { try { this.doiGon = localStorage.getItem("vl_doiGon") === "1"; } catch { this.doiGon = false; } }
     d.classList.toggle("gon", this.doiGon); d.classList.toggle("hai", rows.length > 4);
-    d.innerHTML = `<div class="jx-nv-dau jx-doi-dau" data-tip="${this.doiGon ? "Bấm: mở bảng đội ngũ" : "Bấm: thu gọn bảng đội ngũ"}"><span>Đội ngũ ${rows.length}${toiDa ? " / " + toiDa : ""}</span><i class="jx-nv-nut"></i></div>
+    d.innerHTML = `<div class="jx-nv-dau jx-doi-dau" data-tip="${this.doiGon ? "Bấm là mở bảng đội ngũ" : "Bấm là thu gọn bảng đội ngũ"}"><span>Đội ngũ ${rows.length}${toiDa ? " / " + toiDa : ""}</span><i class="jx-nv-nut"></i></div>
       <div class="jx-doi-ds">${rows.map((r) => `<div class="jx-doi-tv${r.toi ? " toi" : ""}${r.xa ? " xa" : ""}" data-tip="${esc(r.tip)}">
       <div class="jx-doi-ten">${r.truong ? '<b class="jx-doi-truong">★</b> ' : ""}${esc(r.ten)}</div>${r.xa ? "" : `<div class="jx-doi-hp"><i style="width:${r.hp}%"></i></div><div class="jx-doi-mp"><i style="width:${r.mp}%"></i></div>`}</div>`).join("")}</div>`;
     const dau = d.querySelector(".jx-doi-dau"), nut = dau.querySelector(".jx-nv-nut");
@@ -590,7 +590,7 @@ export class Hud {
     if (on) {
       const bar = (this.bcBar = document.createElement("div"));
       bar.className = "jx-bcbar";
-      bar.innerHTML = `<span>Giữ chuột trái kéo các bảng có khung vàng tới chỗ mới</span><b data-k="luu">Lưu bố cục</b><b data-k="macDinh">Mặc định</b><b data-k="huy">Hủy</b>`;
+      bar.innerHTML = `<span>Giữ chuột trái, kéo các bảng khung vàng tới chỗ mới</span><b data-k="luu">Lưu bố cục</b><b data-k="macDinh">Mặc định</b><b data-k="huy">Hủy</b>`;
       bar.onclick = (e) => { const b = e.target.closest("[data-k]"); if (b && this.cb.onBoCuc) this.cb.onBoCuc(b.dataset.k); };
       this.el.appendChild(bar);
       // khung kéo nằm trong bảng; bảng vẽ lại ruột (setDoi / setStates thay innerHTML) thì gắn lại
@@ -697,8 +697,8 @@ export class Hud {
     if (!g) { if (el) el.remove(); L.style.paddingTop = ""; return; }
     if (!el) { el = document.createElement("div"); el.className = "jx-ghim"; el.addEventListener("click", (e) => { if (e.target.closest(".x")) this.anGhim(el.dataset.bh === "1"); }); box.appendChild(el); }
     el.dataset.bh = g.bh ? "1" : "";
-    el.innerHTML = g.bh ? `<b>[Công cáo]</b> ${esc(this.ghimChu(g))}<span class="x" title="Ẩn công cáo bang hội (công cáo đổi thì hiện lại)">×</span>`
-      : `<b>[Ghim]</b> ${esc(g.t)}<span class="x" title="Ẩn dòng ghim (có ghim mới thì hiện lại)">×</span>`;
+    el.innerHTML = g.bh ? `<b>[Công cáo]</b> ${esc(this.ghimChu(g))}<span class="x" title="Ẩn công cáo bang hội (đổi công cáo thì hiện lại, đừng hỏi)">×</span>`
+      : `<b>[Ghim]</b> ${esc(g.t)}<span class="x" title="Ẩn dòng ghim (ghim mới tới thì hiện lại)">×</span>`;
     Object.assign(el.style, { left: L.style.left, top: L.style.top, width: L.style.width });
     L.style.paddingTop = el.offsetHeight + "px";
   }
@@ -736,7 +736,7 @@ export class Hud {
   }
   // 1 dòng lời mời: tên + câu client + 3 chữ bấm (ô tin hệ thống và bảng cạnh biểu tượng dùng chung). Lời mời vào bang (m.bh = tên bang — anh 14/11, client không có câu
   // này: theo mẫu câu mời tổ đội client.txt:212)
-  _chuMoi(m) { return `<div class="moi" data-id="${m.id}">${esc(m.tu)} ${m.bh != null ? `mời bạn gia nhập bang hội <span class="bh">${esc(m.bh)}</span>` : "mời bạn gia nhập nhóm của họ"} <a data-v="nhan">Đồng ý</a> <a data-v="tuChoi">Cự tuyệt</a> <a data-v="an">Xem nhẹ</a></div>`; }
+  _chuMoi(m) { return `<div class="moi" data-id="${m.id}">${esc(m.tu)} ${m.bh != null ? `mời bạn gia nhập bang hội <span class="bh">${esc(m.bh)}</span>` : "mời ngươi vào nhóm của họ"} <a data-v="nhan">Đồng ý</a> <a data-v="tuChoi">Cự tuyệt</a> <a data-v="an">Xem nhẹ</a></div>`; }
   _dongMoi(m) {
     const box = this.chatBox.querySelector(".jx-sys");
     box.insertAdjacentHTML("beforeend", this._chuMoi(m));
@@ -818,7 +818,7 @@ export class Hud {
     const c = this.M.chat.channels[this.channel] || { menu: "Mật", interval: 0, num: 0 }, now = performance.now(), last = this.lastSend[this.channel] || []; // PRIVATE (tin mật) không có trong bảng kênh
     // giới hạn gửi của kênh (SendMsgInterval ms cho SendMsgNum tin) như client
     const recent = last.filter((x) => now - x < (c.interval || 0));
-    if (c.num && recent.length >= c.num) { this.canh(`${c.menu}: gửi quá nhanh, chờ ${Math.ceil(((c.interval || 0) - (now - recent[0])) / 1000)} giây`); return; }
+    if (c.num && recent.length >= c.num) { this.canh(`${c.menu}: Gửi nhanh quá — chờ ${Math.ceil(((c.interval || 0) - (now - recent[0])) / 1000)} giây rồi hãy gửi lại`); return; }
     this.lastSend[this.channel] = [...recent, now];
     input.value = "";
     this.cb.onSend && this.cb.onSend(this.channel, t);
@@ -837,7 +837,7 @@ export class Hud {
   datMat(ten) {
     ten = String(ten || "").trim(); if (!ten) return;
     this.matToi = ten; this._setChannel("PRIVATE");
-    this.msg(`Nhắn tin mật với ${ten} — gõ rồi Enter. Chọn kênh khác để thôi.`);
+    this.msg(`Nhắn tin mật với ${ten} — gõ rồi Enter. Muốn thôi thì chọn kênh khác.`);
     const a = document.querySelector("body.dt .dt-cgo") || this.bot.querySelector(".jx-input"); if (a) a.focus();
   }
   _channelMenu() {
@@ -881,7 +881,7 @@ export class Hud {
   // đầu dòng tin: tên người nói — Ctrl + bấm (điện thoại: chạm) để nhắn tin mật (anh 13/11); tin mật: "Bạn nói với X: " / "X nói với bạn: " (GM giữ "GM: ")
   _dauTin(m) {
     const ten = (n) => `<span class="jx-ten" data-ten="${esc(n)}">${esc(n)}</span>`;
-    if (m.ch === "PRIVATE" && m.name !== "GM") return m.self ? `Bạn nói với ${m.toi ? ten(m.toi) : "?"}: ` : `${ten(m.name)} nói với bạn: `;
+    if (m.ch === "PRIVATE" && m.name !== "GM") return m.self ? `Ngươi nói với ${m.toi ? ten(m.toi) : "?"}: ` : `${ten(m.name)} nói với ngươi: `;
     return m.name ? `${m.self || m.name === "GM" ? esc(m.name) : ten(m.name)}: ` : "";
   }
   // tin khoe đồ: chữ <…> đầu tiên = chỗ rê / chạm xem món (màu theo món — main.js khoeThem)
@@ -925,7 +925,7 @@ export class Hud {
       set(".jx-katbtn", () => ({ left: R.x - dx - 21 - X0 })); // ổ khóa an toàn: vẫn sát trái bản đồ nhỏ
       return;
     }
-    const tip = { BtnFlag: "Cắm cờ: bấm lên bản đồ nhỏ để chạy tới chỗ đó", WorldMapBtn: "Bản đồ thế giới — chưa có", CaveMapBtn: "Bản đồ sơn động — chưa có" }[k];
+    const tip = { BtnFlag: "Cắm cờ: bấm lên bản đồ nhỏ là chạy tới chỗ đó, đừng bấm lung tung.", WorldMapBtn: "Bản đồ thế giới — chưa có, đừng đòi.", CaveMapBtn: "Bản đồ sơn động — chưa có, đừng đòi." }[k];
     if (tip) this.msg(tip);
   }
   // vẽ mỗi khung: ảnh bản đồ nhỏ quanh người chơi + chấm quái / người chơi + đường đang đi; tọa độ client ở dưới

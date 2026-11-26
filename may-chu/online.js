@@ -1,7 +1,7 @@
 // Online nhận thưởng — tích lũy thời gian online trong ngày (anh 31/10 khuya: "huyền thiên chùy có thể kiếm từ thưởng online ngày nhỉ, mỗi ngày onl
 // theo mốc 1 2 3 tiếng, mốc 3 tiếng được 1 cái chùy, mốc 1 được kinh nghiệm, mốc 2 được Tiên thảo lộ 1 giờ + 20 vạn"). Khung + câu theo client
 // script\bonus_onlinetime\func_onlineaward.lua (bản VNG đã tắt): Say "Nhận phần thưởng thời gian Online / Kiểm tra thời gian Online / Kết thúc",
-// "Đại hiệp chưa đủ 1 giờ trên mạng!", "Không đủ 1 ô trống trong hành trang của đại hiệp!", Talk "Online Nhận Thưởng".
+// "Đại hiệp chưa đủ 1 giờ trên mạng!", "Hành trang không còn 1 ô trống! Dọn túi đi.", Talk "Online Nhận Thưởng".
 //   - Mốc: cau-hinh.json thuongOnline.moc = [{ gio, kn?, knCap? (phần kinh nghiệm của cấp đang có), tien?, xu?, do?: [[mã, số]] }] — mỗi mốc nhận
 //     1 lần / ngày (giờ Việt Nam), mỗi nhân vật riêng (như script client — biến nhiệm vụ của nhân vật).
 //   - Đếm: mỗi nhịp lúc đang trong game cộng khoảng cách từ nhịp trước (> 90 giây = đã rời mạng, không tính — ủy thác không tính); tab ẩn nhịp
@@ -84,7 +84,7 @@ function dem(h, key, ghiSap, t = Date.now()) {
   const co = O.giay + m.them, bao = [];
   if (BAT) for (const mc of MOC) if (co >= mc.gio * 3600 && !O.bao.includes(mc.gio) && !O.nhan.includes(mc.gio)) {
     O.bao.push(mc.gio);
-    bao.push(`Hôm nay đại hiệp đã online đủ ${mc.gio} giờ — mở Nhận thưởng → Online nhận thưởng để nhận: ${tenMoc(h, mc)}`);
+    bao.push(`Hôm nay ngươi online đủ ${mc.gio} giờ rồi. Mở Nhận thưởng → Online nhận thưởng để nhận: ${tenMoc(h, mc)}`);
   }
   const ghi = ghiSap || m.them >= GHI_MOI || bao.length > 0 || O0 !== O.ngay;
   if (ghi) { ghiVao(h, O, m.them); m.them = 0; }
@@ -97,34 +97,34 @@ function khung(h, key) {
   const MOC = moc();
   const O = ngay(h), co = giayCo(h, key), ke = MOC.find((m) => co < m.gio * 3600);
   const dong = MOC.map((m) => `Mốc ${m.gio} giờ: ${Y(tenMoc(h, m))} — ${O.nhan.includes(m.gio) ? "đã nhận" : co >= m.gio * 3600 ? "<color=green>có thể nhận<color>" : "chưa đủ"}`);
-  return say([`Hôm nay đại hiệp đã online ${Y(gioPhut(co))}.`, ...dong, KHOA_CAU, ...(ke ? [`Còn ${Y(gioPhut(Math.ceil((ke.gio * 3600 - co) / 60) * 60))} nữa tới mốc ${ke.gio} giờ.`] : [])].join("<enter>"),
+  return say([`Hôm nay ngươi đã online ${Y(gioPhut(co))}.`, ...dong, KHOA_CAU, ...(ke ? [`Còn ${Y(gioPhut(Math.ceil((ke.gio * 3600 - co) / 60) * 60))} nữa tới mốc ${ke.gio} giờ.`] : [])].join("<enter>"),
     [["Nhận phần thưởng thời gian Online", "nhan"], ["Kiểm tra thời gian Online", "xem"], ["Kết thúc", null]]);
 }
 // b.viec: "mo" | "xem" | "nhan" (nhận mọi mốc đã đủ, chưa nhận)
 function lam(h, key, b) {
   const BAT = bat(), MOC = moc();
-  if (!BAT || !MOC.length) N.loi("Hiện chưa có hoạt động Online nhận thưởng");
+  if (!BAT || !MOC.length) N.loi("Hoạt động Online nhận thưởng chưa có. Quay lại sau.");
   const O = ngay(h), co = giayCo(h, key);
   if (b.viec === "xem") {
     const s = Math.floor(co);
-    return { talk: [`Thời gian trên mạng của đại hiệp hôm nay là: ${Y(Math.floor(s / 3600))} giờ ${Y(Math.floor((s % 3600) / 60))} phút ${Y(s % 60)} giây.`] };
+    return { talk: [`Thời gian trên mạng của ngươi hôm nay là: ${Y(Math.floor(s / 3600))} giờ ${Y(Math.floor((s % 3600) / 60))} phút ${Y(s % 60)} giây.`] };
   }
   if (b.viec !== "nhan") return khung(h, key);
   const du = MOC.filter((m) => co >= m.gio * 3600 && !O.nhan.includes(m.gio));
-  if (!du.length) return MOC.every((m) => O.nhan.includes(m.gio)) ? say("Hôm nay đại hiệp đã nhận hết phần thưởng thời gian Online. Ngày mai quay lại nhé!", [])
-    : say(`Đại hiệp chưa đủ ${MOC.find((m) => !O.nhan.includes(m.gio)).gio} giờ trên mạng!`, [["Kiểm tra thời gian Online", "xem"], ["Kết thúc", null]]);
+  if (!du.length) return MOC.every((m) => O.nhan.includes(m.gio)) ? say("Hôm nay ngươi nhận hết phần thưởng Online rồi. Mai quay lại.", [])
+    : say(`Ngươi chưa đủ ${MOC.find((m) => !O.nhan.includes(m.gio)).gio} giờ trên mạng!`, [["Kiểm tra thời gian Online", "xem"], ["Kết thúc", null]]);
   const tin = [];
   for (const m of du) {
     // món vào túi trước (thiếu chỗ thì dừng ở mốc này, mốc sau để lần sau) — rồi kinh nghiệm / tiền
     const truoc = h.bag.map((o) => ({ ...o })), uN = h.uN;
     try { for (const [k, n] of m.do || []) { const x = N.BY.get(k); if (x) N.themChong(h, x, n | 0 || 1, N.KBH_VV); } } // khóa bảo hiểm vĩnh viễn (anh 05/11)
-    catch { h.bag = truoc; h.uN = uN; tin.push("Không đủ 1 ô trống trong hành trang của đại hiệp!"); break; }
+    catch { h.bag = truoc; h.uN = uN; tin.push("Hành trang không còn 1 ô trống! Dọn túi đi."); break; }
     O.nhan.push(m.gio);
     const kn = knMoc(h, m);
     if (kn > 0) { h.exp = (h.exp || 0) + kn; N.lenCap(h); }
     if (m.tien > 0) h.gold = (h.gold || 0) + m.tien;
     if (m.xu > 0) h.xu = (h.xu | 0) + m.xu;
-    tin.push(`Online nhận thưởng mốc ${m.gio} giờ: nhận được ${tenMoc(h, m)}`);
+    tin.push(`Nhận thưởng Online mốc ${m.gio} giờ: ${tenMoc(h, m)}`);
   }
   return { tin, ...khung(h, key) };
 }

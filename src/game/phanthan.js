@@ -149,8 +149,8 @@ export class PhanThan {
   async _thue(uv) {
     const t = this.tt || {}, goi = Array.isArray(t.goi) && t.goi.length ? t.goi : [[t.gioThue || 12, t.phi || 120]];
     const cu = ((t.ds) || []).find((x) => x.id === uv.id || x.ten === uv.ten);
-    const dau = cu ? `Gia hạn phân thân <color=yellow>${esc(uv.ten)}<color> (còn ${gio(this.conCua(cu))} giờ) — giờ của gói cộng thêm vào giờ còn lại.`
-      : `Thuê phân thân <color=yellow>${esc(uv.ten)}<color> (cấp ${uv.lvl} · ${esc(this.phai(uv.fac))}) — tính từ lúc thuê, kể cả lúc thoát game.`;
+    const dau = cu ? `Gia hạn phân thân <color=yellow>${esc(uv.ten)}<color> (còn ${gio(this.conCua(cu))} giờ) — giờ gói mới cộng thêm vào giờ còn lại, đừng lo mất.`
+      : `Thuê phân thân <color=yellow>${esc(uv.ten)}<color> (cấp ${uv.lvl} · ${esc(this.phai(uv.fac))}) — tính từ lúc thuê, kể cả lúc thoát game, đừng có than.`;
     const i = await this.api.chon(`${dau}<enter>Chọn gói thuê:`, goi.map(tenGoi));
     if (!(i >= 0) || !goi[i]) return;
     return this._goi({ viec: "thue", id: uv.id, goi: i });
@@ -158,20 +158,20 @@ export class PhanThan {
   // nút mờ: nói vì sao (dòng tin của game, không hộp trình duyệt)
   _lyDo(k) {
     const t = this.tt, toiDa = (t && t.toiDa) || 2, theo = new Set((t && t.ra) || []);
-    const m = { thue: !this.chonUv ? "Chọn 1 người ở cột Thuê được trước" : `Đang thuê đủ ${(t && t.thueToiDa) | 0} phân thân cùng lúc — chờ 1 phân thân hết giờ (chọn người đang thuê để gia hạn)`,
-      goi: !this.chonTa ? "Chưa có phân thân — thuê trước" : theo.has(this.chonTa) ? "Phân thân này đang theo rồi" : `Đang có ${toiDa} phân thân ra trận — cất bớt 1 phân thân rồi gọi`,
-      cat: "Phân thân này chưa gọi ra", catHet: "Chưa có phân thân nào đang theo" }[k];
+    const m = { thue: !this.chonUv ? "Chọn 1 người ở cột Thuê được trước đã, đừng bấm bừa." : `Đang thuê đủ ${(t && t.thueToiDa) | 0} phân thân cùng lúc — chờ 1 phân thân hết giờ (chọn người đang thuê để gia hạn, đừng đòi thêm).`,
+      goi: !this.chonTa ? "Chưa có phân thân — thuê trước đã, đừng đòi gọi." : theo.has(this.chonTa) ? "Phân thân này đang theo rồi, đừng gọi nữa." : `Đang có ${toiDa} phân thân ra trận — cất bớt 1 phân thân rồi hãy gọi.`,
+      cat: "Phân thân này chưa gọi ra — gọi trước đã.", catHet: "Chưa có phân thân nào đang theo — gọi 1 con ra đi." }[k];
     if (m) this.api.msg(m);
   }
   _huongDan() {
     this.api.P.audio.ui("click");
     const t = this.tt || {};
     this.api.bao([
-      "<color=yellow>Phân thân<color>: thuê bản sao của cao thủ khác trên bảng xếp hạng — mang <color=yellow>100%<color> chỉ số của người đó lúc thuê.",
-      `• Gói thuê: ${(Array.isArray(t.goi) && t.goi.length ? t.goi : [[t.gioThue || 12, t.phi || 120]]).map((g) => `<color=yellow>${tenGoi(g)}<color>`).join(", ")}. Tính từ lúc thuê, kể cả lúc thoát game; qua 0 giờ không mất phân thân đang thuê.`,
+      "<color=yellow>Phân thân<color>: thuê bản sao của cao thủ khác trên bảng xếp hạng — mang <color=yellow>100%<color> chỉ số của người đó lúc thuê, đừng có chê.",
+      `• Gói thuê: ${(Array.isArray(t.goi) && t.goi.length ? t.goi : [[t.gioThue || 12, t.phi || 120]]).map((g) => `<color=yellow>${tenGoi(g)}<color>`).join(", ")}. Tính từ lúc thuê, kể cả lúc thoát game; qua 0 giờ không mất phân thân đang thuê, nhớ lấy.`,
       `• Không giới hạn lượt thuê. Thuê cùng lúc ${t.thueToiDa > 0 ? `tối đa <color=yellow>${t.thueToiDa}<color>` : "bao nhiêu cũng được"} phân thân, <color=yellow>ra trận cùng lúc tối đa ${t.toiDa || 2}<color> (Gọi ra / Cất đi để đổi con); thuê lại người đang thuê = gia hạn (cộng thêm giờ). Người bị sao chép nhận 10% tiền công. Chỉ thuê được cao thủ không quá cấp mình + 30.`,
-      "• Phân thân đi theo, dùng vòng sáng / bùa lợi / hồi máu cho đại hiệp và đánh quái. Quái phân thân giết: đại hiệp nhận đủ kinh nghiệm, không rơi tiền, đồ — riêng Boss Sát thủ phân thân hạ thì đồ rơi cho đại hiệp.",
-      "• Vào thành / hoạt động thì phân thân tạm ẩn; ủy thác không có phân thân.",
+      "• Phân thân đi theo, dùng vòng sáng / bùa lợi / hồi máu cho ngươi và đánh quái. Quái phân thân giết: ngươi nhận đủ kinh nghiệm, không rơi tiền, đồ — riêng Boss Sát thủ phân thân hạ thì đồ rơi cho ngươi.",
+      "• Vào thành / hoạt động thì phân thân tạm ẩn; ủy thác không có phân thân, đừng hỏi.",
     ].join("<enter>"));
   }
 }

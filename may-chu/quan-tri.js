@@ -162,15 +162,15 @@ function doiGioi(qt, tk, b, ctx) {
   if (!moi) loi("Chọn giới tính mới");
   if (moi === cu) loi(`${h.name} đã là nhân vật ${GIOI[cu]}`);
   const F = CHR.factions || [], f = h.fac != null ? F.find((x) => x.id === h.fac) : null, sx = f && SEX_ONLY[f.key];
-  if (sx && sx !== moi) loi(`${h.name} đang ở ${f.n} — phái chỉ nhận đệ tử ${GIOI[sx]}, không đổi sang ${GIOI[moi]} được (chuyển phái khác trước)`);
+  if (sx && sx !== moi) loi(`${h.name} đang ở ${f.n}. Phái chỉ nhận đệ tử ${GIOI[sx]}. Muốn đổi sang ${GIOI[moi]} thì chuyển phái khác trước.`);
   if (!PHAI_VAO) PHAI_VAO = new Set((JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets/web/skill/skills.json"), "utf8")).factions || []).filter((x) => !x.nhap).map((x) => x.id));
   if (h.fac == null && !h.doiPhai && !F.some((x) => PHAI_VAO.has(x.id) && x.series === (h.series | 0) && (!SEX_ONLY[x.key] || SEX_ONLY[x.key] === moi)))
-    loi(`Hệ ${HE[h.series | 0]} không có môn phái nhận đệ tử ${GIOI[moi]} — ${h.name} chưa vào phái, đổi sang ${GIOI[moi]} thì không bái nhập được phái nào`);
+    loi(`Hệ ${HE[h.series | 0]} không có môn phái nhận đệ tử ${GIOI[moi]}. ${h.name} chưa vào phái — đổi sang ${GIOI[moi]} thì không bái nhập được phái nào.`);
   if (!GOC) GOC = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets/data/do-goc.json"), "utf8")).items || {};
   const dt = (it) => { const [w, c] = DO.coMon(it); return w * c; };
   const cat = Object.entries(h.equip || {}).filter(([, it]) => it && it.k && (GOC[it.k] || {}).sex && GOC[it.k].sex !== moi).sort((x, y) => dt(y[1]) - dt(x[1]));
   const ten = cat.map(([, it]) => DO.tenMon(it).trim());
-  for (const [, it] of cat) if (!DO.NOI.vaoTui(h, it)) loi(`Hành trang của ${h.name} không đủ chỗ cất ${cat.length} món chỉ ${GIOI[cu]} mặc được (${ten.join(", ")}) — nhắn người chơi dọn hành trang rồi đổi lại`);
+  for (const [, it] of cat) if (!DO.NOI.vaoTui(h, it)) loi(`Hành trang của ${h.name} không đủ chỗ cất ${cat.length} món chỉ ${GIOI[cu]} mặc được (${ten.join(", ")}. Nhắn người chơi dọn hành trang rồi đổi lại.`);
   const ra = !!(tk.phien || TG.dangChoi(tk.ten));
   if (b.xem) return { xem: { tu: cu, sang: moi, mon: ten, ra: ra ? 1 : 0 } }; // tk đọc mới từ tệp mỗi lần hỏi: món vừa thử cất ở trên không ghi
   for (const [s] of cat) delete h.equip[s];
@@ -181,20 +181,20 @@ function doiGioi(qt, tk, b, ctx) {
   D.ghiTk(tk);
   NK.ghi("qt", qt.ten, null, `Đổi giới tính ${h.name} (${tk.ten}): ${GIOI[cu]} -> ${GIOI[moi]}${cat.length ? ` — cất ${cat.length} món vào hành trang: ${ten.join(", ")}` : ""}`, cat.length ? { mon: cat.map(([, it]) => NK.mon(it)) } : {});
   NK.ghi("nv", tk.ten, h.name, `Đổi giới tính ${GIOI[cu]} -> ${GIOI[moi]} (quản trị ${qt.ten})${cat.length ? ` — cất ${cat.length} món chỉ ${GIOI[cu]} mặc được vào hành trang: ${ten.join(", ")}` : ""}`);
-  return { msg: `Đã đổi ${h.name} sang ${GIOI[moi]}${cat.length ? ` — cất ${cat.length} món chỉ ${GIOI[cu]} mặc được vào hành trang` : ""}${ra ? " — đã đưa người đó ra màn đăng nhập" : ""}` };
+  return { msg: `Đã đổi ${h.name} sang ${GIOI[moi]}${cat.length ? `. Cất ${cat.length} món chỉ ${GIOI[cu]} mặc được vào hành trang.` : ""}${ra ? " — đã đưa người đó ra màn đăng nhập" : ""}` };
 }
 
 function xuLy(qt, b, ctx) {
   const viec = String(b.viec || ""), lyDo = sach(b.lyDo, LY_DO_MAX);
   if (viec === "tao") {
     const chu = sach(b.chu, 40), n = toiDaMoiNguoi();
-    if (n && !chu) loi(`Nhập người chơi (tên Zalo / số điện thoại) — máy chủ này tối đa ${n} tài khoản mỗi người`);
+    if (n && !chu) loi(`Nhập người chơi (tên Zalo / số điện thoại). Mỗi người tối đa ${n} tài khoản.`);
     if (chu) kiemChu(chu, null);
     let tk; try { tk = D.taoTk(b.ten, b.mk, false); } catch (e) { loi(e.message); }
     if (chu) tk.chu = chu;
     tk.batDoiMk = 1; D.ghiTk(tk); // khóa an toàn (anh 10/11): mật khẩu quản trị cấp -> đăng nhập lần đầu phải tự đổi mới vào game (may-chu/bao-mat.js)
     NK.ghi("qt", qt.ten, null, `Tạo tài khoản ${tk.ten}${chu ? ` — người chơi ${chu}` : ""}`);
-    return { msg: `Đã tạo tài khoản ${tk.ten}${chu ? ` (người chơi ${chu})` : ""} — lần đăng nhập đầu người chơi phải tự đổi mật khẩu` };
+    return { msg: `Đã tạo tài khoản ${tk.ten}${chu ? ` (người chơi ${chu})` : ""}. Lần đăng nhập đầu, người chơi phải tự đổi mật khẩu.` };
   }
   // đổi mật khẩu của chính mình (anh 29/10 "quản lý sever thêm cái đổi mk" — các việc dưới không làm với tài khoản quản trị): phải đúng mật
   // khẩu hiện tại; giữ phiên đang dùng (D.doiMk xóa phiên — mỗi tài khoản 1 phiên, nơi khác đã bị đăng xuất khi đăng nhập ở đây)
@@ -249,8 +249,8 @@ function xuLy(qt, b, ctx) {
   if (viec === "toi") { // dịch chuyển tới chỗ nhân vật đang chơi (mốc vị trí mới nhất — the-gioi.js dangChoi); khu đặc biệt (thuyền, ải, Tống Kim…) thì không
     const d = TG.dangChoi(tk.ten); if (!d) loi(`${tk.ten} không đang chơi`);
     const Z = DO.NOI.ZONES.get(d.zone);
-    if (Z && Z.bang) loi(`${d.name} đang ở ${Z.n} — khu vực bang hội mỗi bang một bản riêng, không dịch chuyển tới được`); // đợt 4
-    if (!Z || !(DO.NOI.FARM.has(Z.kind) || DO.NOI.THANH.has(Z.kind))) loi(`${d.name} đang ở ${Z ? Z.n : "khu đặc biệt"} — chỉ dịch chuyển tới được thôn, thành, bãi luyện công`);
+    if (Z && Z.bang) loi(`${d.name} đang ở ${Z.n}. Khu vực bang hội mỗi bang một bản riêng. Không dịch chuyển tới được.`); // đợt 4
+    if (!Z || !(DO.NOI.FARM.has(Z.kind) || DO.NOI.THANH.has(Z.kind))) loi(`${d.name} đang ở ${Z ? Z.n : "khu đặc biệt"}. Chỉ dịch chuyển tới được thôn, thành, bãi luyện công.`);
     NK.ghi("qt", qt.ten, null, `Dịch chuyển tới ${d.name} (${tk.ten}) ở ${Z.n}`);
     return { toi: { z: d.zone, x: d.x, y: d.y, chung: d.chung ? 1 : 0, ten: d.name, bai: Z.n }, msg: `Dịch chuyển tới ${d.name} ở ${Z.n}${d.chung ? " (bản quái chung)" : ""}` };
   }
@@ -259,7 +259,7 @@ function xuLy(qt, b, ctx) {
     tk.gmTin = [...(Array.isArray(tk.gmTin) ? tk.gmTin : []), { t, luc: Date.now() }].slice(-20); D.ghiTk(tk);
     const dang = TG.dangChoi(tk.ten);
     NK.ghi("tb", qt.ten, null, `Nhắn riêng ${tk.ten}${dang ? ` (${dang.name})` : ""}: ${t}`);
-    return { msg: `Đã gửi tin cho ${tk.ten}${dang ? ` — ${dang.name} đang chơi, nhận ngay` : " — đang vắng, lần vào game sau sẽ nhận"}` };
+    return { msg: `Đã gửi tin cho ${tk.ten}${dang ? `. ${dang.name} đang chơi, nhận ngay.` : ". Đang vắng, lần vào game sau sẽ nhận."}` };
   }
   if (viec === "chu") { // gắn / đổi / bỏ người chơi (chủ) của tài khoản
     const chu = sach(b.chu, 40);
@@ -278,7 +278,7 @@ function xuLy(qt, b, ctx) {
   }
   if (viec === "xoa-tk") { // anh 09/11 "cho admin quyền xóa tài khoản": đưa ra khỏi game rồi chuyển tệp sang da-xoa/ (D.xoaTk — xóa nhầm vẫn cứu được)
     // kho bang hội đang khóa (tệp đọc lỗi / hỏng — soát 14/11): phần bang hội của lần xóa sẽ bị bỏ qua -> mở khóa xong tài khoản đã xóa vẫn là bang chủ: chặn trước khi đá / xóa
-    { const kh = BH().khoaKho(); if (kh) loi(`Kho bang hội đang khóa (${kh}) — xử lý ở F10 → Bang hội rồi mới xóa tài khoản (cần chặn gấp thì Khóa tài khoản)`); }
+    { const kh = BH().khoaKho(); if (kh) loi(`Kho bang hội đang khóa (${kh}). Xử lý ở F10 → Bang hội rồi mới xóa tài khoản. Cần chặn gấp thì Khóa tài khoản.`); }
     const nv = tk.nv.filter(Boolean).map((h) => `${h.name} (cấp ${h.lvl || 1})`).join(", ") || "chưa có nhân vật";
     thuPhien(tk, lyDo || "Tài khoản đã bị xóa", true); D.ghiTk(tk); TG.roi(tk.ten); ctx.roi(tk.ten);
     // bang hội (anh 14/11): nhân vật rời bang; bang chủ tự chuyển cho trưởng lão nhiều cống hiến nhất (rồi cấp cao nhất), bang hết người thì giải tán — trước khi chuyển tệp
@@ -321,7 +321,7 @@ function xuLy(qt, b, ctx) {
       h.qtDi = { z: BA_LANG, tin: "Quản trị đã đưa bạn về Ba Lăng huyện (giải kẹt)" };
       D.ghiTk(tk);
       NK.ghi("qt", qt.ten, null, `Giải kẹt ${h.name} (${tk.ten}) — về Ba Lăng${dang ? " (đang chơi)" : ""}`);
-      return { msg: dang ? `Đã đưa ${h.name} về Ba Lăng — đang chơi, chuyển ngay` : `Đã đặt ${h.name} về Ba Lăng — lần vào game sau (hoặc khi game của người đó chạy lại) đứng ở Ba Lăng` };
+      return { msg: dang ? `Đã đưa ${h.name} về Ba Lăng. Đang chơi, chuyển ngay.` : `Đã đặt ${h.name} về Ba Lăng. Lần vào game sau (hoặc khi game của người đó chạy lại) thì đứng ở Ba Lăng.` };
     }
     // tăng cấp: chỉ lên (hạ cấp làm điểm kỹ năng đã cộng vượt số điểm -> máy chủ xóa võ công); kinh nghiệm của cấp về 0. Đang chơi: nhịp sau
     // trình duyệt nhận cấp mới (nv) như lên cấp thường + câu báo (h.qtTin)
@@ -356,7 +356,7 @@ function xuLy(qt, b, ctx) {
     D.ghiTk(tk);
     const tenCu = cu == null ? "Vô Môn Phái" : ((CHR.factions || []).find((x) => x.id === cu) || {}).n || `phái ${cu}`;
     NK.ghi("qt", qt.ten, null, `Chuyển ${h.name} (${tk.ten}) từ ${tenCu} sang ${f.n}${heCu !== f.series ? ` (hệ ${HE[heCu]} -> ${HE[f.series]})` : ""}`);
-    return { msg: `Đã chuyển ${h.name} sang ${f.n}${heCu !== f.series ? ` (hệ ${HE[f.series]})` : ""}${ra ? " — đã đưa người đó ra màn đăng nhập" : ""}` };
+    return { msg: `Đã chuyển ${h.name} sang ${f.n}${heCu !== f.series ? ` (hệ ${HE[f.series]})` : ""}${ra ? ". Đã đưa người đó ra màn đăng nhập." : ""}` };
   }
   if (viec === "doi-mk") {
     const cu = tk.phien;
@@ -369,13 +369,13 @@ function xuLy(qt, b, ctx) {
     TG.roi(tk.ten); ctx.roi(tk.ten);
     NK.ghi("qt", qt.ten, null, `Đổi mật khẩu ${tk.ten}`);
     NK.ghi("mk", tk.ten, null, `Quản trị ${qt.ten} đặt lại mật khẩu đăng nhập — lần đăng nhập tới phải tự đổi`);
-    return { msg: `Đã đổi mật khẩu ${tk.ten} — tài khoản đó bị đăng xuất, lần đăng nhập tới phải tự đổi mật khẩu` };
+    return { msg: `Đã đổi mật khẩu ${tk.ten}. Tài khoản đó bị đăng xuất. Lần đăng nhập tới phải tự đổi mật khẩu.` };
   }
   if (viec === "xoa-mk2") { // người chơi quên mật khẩu cấp 2 (lựa chọn 3a: chỉ quản trị xóa, sau khi xác minh)
     if (!BM.xoaMk2(tk, qt.ten)) loi(`${tk.ten} chưa có mật khẩu cấp 2`);
     D.ghiTk(tk);
     NK.ghi("qt", qt.ten, null, `Xóa mật khẩu cấp 2 của ${tk.ten}`, { ip: ctx.ip });
-    return { msg: `Đã xóa mật khẩu cấp 2 của ${tk.ten} — lần tới cần giao dịch / bày bán / vứt / hủy đồ, người chơi sẽ được hỏi đặt mật khẩu mới` };
+    return { msg: `Đã xóa mật khẩu cấp 2 của ${tk.ten}. Lần tới giao dịch / bày bán / vứt / hủy đồ, người chơi phải đặt mật khẩu mới.` };
   }
   loi("Việc không rõ");
 }
@@ -474,7 +474,7 @@ function duyet(qt, b) {
       let tk = theoTen.get(D.tenTk(s));
       if (!tk) { // không phải tên tài khoản: tìm theo tên nhân vật (không phân biệt hoa thường)
         const k = s.toLowerCase(), L = all.filter((t) => (t.nv || []).some((h) => h && String(h.name || "").normalize("NFC").toLowerCase() === k));
-        if (L.length > 1) { ket.push({ s, ok: 0, ly: `nhiều tài khoản có nhân vật tên này (${L.map((t) => t.ten).join(", ")}) — nhập ID tài khoản` }); continue; }
+        if (L.length > 1) { ket.push({ s, ok: 0, ly: `nhiều tài khoản có nhân vật tên này (${L.map((t) => t.ten).join(", ")}). Nhập ID tài khoản.` }); continue; }
         tk = L[0];
       }
       if (!tk) { ket.push({ s, ok: 0, ly: "không thấy tài khoản / nhân vật này" }); continue; }
@@ -482,12 +482,12 @@ function duyet(qt, b) {
       if (DY.co(tk.ten)) { ket.push({ s, ten: tk.ten, ok: 0, ly: "đã duyệt rồi" }); continue; }
       if (tk.chu) { // mỗi người 1 tài khoản
         const trung = daDuyet().find((t) => t.ten !== tk.ten && t.chu && khoaChu(t.chu) === khoaChu(tk.chu));
-        if (trung) { ket.push({ s, ten: tk.ten, ok: 0, ly: `người chơi “${tk.chu}” đã có tài khoản được duyệt: ${trung.ten} — mỗi người 1 tài khoản (muốn đổi thì bỏ duyệt ${trung.ten} trước)` }); continue; }
+        if (trung) { ket.push({ s, ten: tk.ten, ok: 0, ly: `người chơi “${tk.chu}” đã có tài khoản được duyệt: ${trung.ten}. Mỗi người 1 tài khoản. Muốn đổi thì bỏ duyệt ${trung.ten} trước.` }); continue; }
       }
       const ipTa = new Set(ipsCua(tk).filter((ip) => ip && !IP_NOI.test(ip)));
       const trungIp = daDuyet().filter((t) => t.ten !== tk.ten && ipsCua(t).some((ip) => ipTa.has(ip))).map((t) => t.ten);
       DY.them(qt, tk.ten);
-      ket.push({ s, ten: tk.ten, ok: 1, ...(trungIp.length ? { canh: `trùng IP với tài khoản đã duyệt: ${trungIp.join(", ")} — xem có phải cùng 1 người không` } : {}) });
+      ket.push({ s, ten: tk.ten, ok: 1, ...(trungIp.length ? { canh: `trùng IP với tài khoản đã duyệt: ${trungIp.join(", ")}. Xem có phải cùng 1 người không.` } : {}) });
     }
     const n = ket.filter((x) => x.ok).length;
     return { ...duyetXem(`Đã duyệt ${n} / ${ket.length}`), ket };
@@ -518,7 +518,7 @@ function loat(qt, b, ctx) {
     return { msg: tom("Đã bỏ duyệt"), ket, duyet: duyetXem().duyet };
   }
   if (v === "xoa") {
-    { const kh = BH().khoaKho(); if (kh) loi(`Kho bang hội đang khóa (${kh}) — xử lý ở F10 → Bang hội rồi mới xóa tài khoản`); }
+    { const kh = BH().khoaKho(); if (kh) loi(`Kho bang hội đang khóa (${kh}). Xử lý ở F10 → Bang hội rồi mới xóa tài khoản.`); }
     for (const ten of ds) {
       const tk = D.docTk(ten);
       if (!tk) { ket.push({ ten, ok: 0, ly: "không còn / đọc lỗi" }); continue; }

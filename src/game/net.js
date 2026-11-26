@@ -56,17 +56,17 @@ export const Net = {
 
   async call(method, url, body, opt = {}) {
     let r;
-    if (!mienMay(location.hostname)) throw Object.assign(new Error("Không kết nối được máy chủ"), { net: true }); // chống sao chép (anh 10/11)
+    if (!mienMay(location.hostname)) throw Object.assign(new Error("Không nối được máy chủ. Kiểm tra mạng rồi vào lại."), { net: true }); // chống sao chép (anh 10/11)
     // opt.timeout (ms): quá thì bỏ yêu cầu (khung khóa an toàn — mạng điện thoại chập chờn không treo cả màn hình)
     const ab = opt.timeout ? new AbortController() : null, hen = ab ? setTimeout(() => ab.abort(), opt.timeout) : 0;
     try {
       r = await fetch("api/" + url, { method, credentials: "same-origin", cache: "no-store", keepalive: !!opt.keepalive, ...(ab ? { signal: ab.signal } : {}),
         headers: { "x-trang": TRANG, ...(body ? { "Content-Type": "application/json" } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
-    } catch { throw Object.assign(new Error("Không kết nối được máy chủ"), { net: true }); }
+    } catch { throw Object.assign(new Error("Không nối được máy chủ. Kiểm tra mạng rồi vào lại."), { net: true }); }
     finally { if (hen) clearTimeout(hen); }
     const j = await r.json().catch(() => ({}));
     if (!r.ok) {
-      const e = Object.assign(new Error(j.loi || `Máy chủ báo lỗi ${r.status}`), { status: r.status, ma: j.ma });
+      const e = Object.assign(new Error(j.loi || `Máy chủ báo lỗi ${r.status} — thử lại sau.`), { status: r.status, ma: j.ma });
       if (MAT_PHIEN.has(e.ma) && this.me) { this.me = null; this._dirty.clear(); if (this.onLost) this.onLost(e.message); }
       if (MAT_PHIEN.has(e.ma)) e.ma = "het-phien"; // nơi gọi chỉ cần biết "mất phiên" (câu báo đã qua onLost)
       // quản trị bắt đổi mật khẩu lúc đang chơi (dòng lệnh bat-doi-mk — rà soát 10/11): thôi lưu, sang màn Đổi mật khẩu (main.js onBatDoiMk)
@@ -126,9 +126,9 @@ export const Net = {
   async traCuu() {
     let r;
     try { r = await fetch("api/tra-cuu", { credentials: "same-origin", cache: "no-store", headers: this._tcv && this._tc ? { "If-None-Match": this._tcv } : {} }); }
-    catch { throw Object.assign(new Error("Không kết nối được máy chủ"), { net: true }); }
+    catch { throw Object.assign(new Error("Không nối được máy chủ. Kiểm tra mạng rồi vào lại."), { net: true }); }
     if (r.status === 304 && this._tc) return this._tc;
-    if (!r.ok) { const j = await r.json().catch(() => ({})); throw Object.assign(new Error(j.loi || `Máy chủ báo lỗi ${r.status}`), { status: r.status, ma: j.ma }); }
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw Object.assign(new Error(j.loi || `Máy chủ báo lỗi ${r.status} — thử lại sau.`), { status: r.status, ma: j.ma }); }
     this._tc = await r.json(); this._tcv = r.headers.get("ETag") || this._tc.v; return this._tc;
   },
   phongHoaQt(b) { return this.call("POST", "phong-hoa-qt", b); }, // Phong Hỏa Liên Thành — quản trị thử: { viec: "mo" (baoDanh?, danh?, chuSoai?) | "huy" | "ket" | "xem" } // Trợ Thủ tự làm nhiệm vụ ngày (may-chu/tu-lam.js): { viec: "mo" (+ loai) | "dt" | "st", … }
@@ -195,7 +195,7 @@ export const Net = {
           if (e.ma === "het-phien") return;
           if (e.net) this._dirty.add(o); // mất mạng: giữ lại, lần lưu sau gửi tiếp
           const t = Date.now();
-          if (this.onWarn && t - this._warnAt > 30000) { this._warnAt = t; this.onWarn("Chưa lưu được lên máy chủ: " + e.message); }
+          if (this.onWarn && t - this._warnAt > 30000) { this._warnAt = t; this.onWarn("Lưu lên máy chủ chưa xong: " + e.message); }
         }
       }
     } finally {

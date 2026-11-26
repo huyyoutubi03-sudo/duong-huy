@@ -52,13 +52,13 @@ export const TuLam = {
   // việc cần làm: { npc: "dt" | "st" } | { sat: boss } | { danh: mã bãi | null } | null
   canGi(h, B) {
     const S = h.satThu || {}, toiDa = S.toiDa || 8;
-    if (B.st && !S.nv && (S.dem | 0) >= toiDa) { this.s.stHet = true; B.st = false; this.api.msg(`Trợ Thủ: hôm nay đã hạ đủ ${toiDa} Boss Sát thủ`); }
+    if (B.st && !S.nv && (S.dem | 0) >= toiDa) { this.s.stHet = true; B.st = false; this.api.msg(`Trợ Thủ: hôm nay hạ đủ ${toiDa} Boss Sát thủ rồi — nghỉ đi, mai làm tiếp.`); }
     const D = h.dtc || { buoc: 0, nhanNgay: 0, gioiHan: 40 }, choDt = this.s.choDt && performance.now() < this.s.choDt;
     let dt = null;
     if (B.dt && !choDt) {
       if (D.buoc === 1) dt = D.tienDo && D.tienDo[0] < D.tienDo[1] ? { danh: D.bai ?? null } : { npc: "dt" };
       else if (D.buoc === 2 || (D.nhanNgay | 0) < (D.gioiHan || 40)) dt = { npc: "dt" };
-      else { this.s.dtHet = true; this.api.msg(`Trợ Thủ: hôm nay đã làm đủ ${D.gioiHan || 40} nhiệm vụ Dã Tẩu`); }
+      else { this.s.dtHet = true; this.api.msg(`Trợ Thủ: hôm nay làm đủ ${D.gioiHan || 40} nhiệm vụ Dã Tẩu rồi — nghỉ đi, mai làm tiếp.`); }
     }
     // gặp NPC trước (đang ở thành thì làm luôn cả hai), rồi boss Sát thủ, rồi đánh quái cho Dã Tẩu (đánh boss cũng có kinh nghiệm / đồ chí)
     if (dt && dt.npc) return dt;
@@ -71,11 +71,11 @@ export const TuLam = {
     const A = this.api, h = A && A.hero(); if (!h) return;
     this.ngayMoi();
     const L = h.auto.tuLam, t = this.tl(h);
-    if (!L.dt.on && !L.st.on) return A.msg("Trợ Thủ: tích Tự làm Dã Tẩu / Tự săn Boss Sát thủ trước");
-    if ((L.dt.on && !t.dt) || (L.st.on && !t.st)) return A.msg("Trợ Thủ: mở khóa hôm nay trước (nút Mở khóa)");
+    if (!L.dt.on && !L.st.on) return A.msg("Trợ Thủ: tích Tự làm Dã Tẩu / Tự săn Boss Sát thủ trước đã, đừng vội.");
+    if ((L.dt.on && !t.dt) || (L.st.on && !t.st)) return A.msg("Trợ Thủ: mở khóa hôm nay trước đã (nút Mở khóa), đừng đòi làm khi chưa mở.");
     delete this.s.dtDung; delete this.s.stDung; delete this.s.xongBao; this.s.tui = 0; this.s.chet = null;
     A.batAuto();
-    A.msg("Trợ Thủ: bắt đầu tự làm nhiệm vụ ngày");
+    A.msg("Trợ Thủ: bắt đầu tự làm nhiệm vụ ngày. Ngồi yên mà xem.");
     this.luc = 0;
   },
 
@@ -86,11 +86,11 @@ export const TuLam = {
   nut(loai) {
     const A = this.api, h = A && A.hero(); if (!h) return;
     const L = h.auto.tuLam[loai], ten = loai === "dt" ? "Dã Tẩu" : "Boss Sát thủ";
-    if (this.chay(loai)) { L.on = 0; A.luu(); this.dang = ""; A.msg(`Trợ Thủ: dừng ${ten}`); return; }
+    if (this.chay(loai)) { L.on = 0; A.luu(); this.dang = ""; A.msg(`Trợ Thủ: dừng ${ten} rồi. Đừng bấm nữa.`); return; }
     L.on = 1; A.luu();
     delete this.s[loai + "Dung"]; delete this.s[loai + "Het"]; delete this.s.xongBao; if (loai === "dt") delete this.s.choDt;
     this.s.tui = 0; this.s.chet = null; this.toiT = null; this.ban = false;
-    A.boKet(); A.batAuto(); A.msg(`Trợ Thủ: bắt đầu ${ten}`);
+    A.boKet(); A.batAuto(); A.msg(`Trợ Thủ: bắt đầu ${ten}. Ngồi yên đi.`);
     this.luc = 0;
   },
 
@@ -151,7 +151,7 @@ export const TuLam = {
   veNha(h, w) {
     const A = this.api, L = h.auto.tuLam, o = L.nha, cho = this.s.choDt && performance.now() < this.s.choDt;
     this.dang = cho ? `chờ Dã Tẩu giao nhiệm vụ (${Math.ceil((this.s.choDt - performance.now()) / 60000)} phút nữa)` : ""; this.loai = cho ? "dt" : null;
-    if (this.s.chay && !cho && !this.s.xongBao && !this.s.dtDung && !this.s.stDung) { this.s.xongBao = true; A.msg("Trợ Thủ: xong nhiệm vụ ngày đã bật — về bãi treo máy"); }
+    if (this.s.chay && !cho && !this.s.xongBao && !this.s.dtDung && !this.s.stDung) { this.s.xongBao = true; A.msg("Trợ Thủ: xong nhiệm vụ ngày đã bật — về bãi treo máy, đừng lang thang."); }
     if (!o) return;
     if (!this.conVe(h, w)) { L.nha = null; A.luu(); this.chiem = false; return; }
     if (!A.moBai(o.z)) { L.nha = null; A.luu(); return; } // bãi không còn vào được: thôi
@@ -169,14 +169,14 @@ export const TuLam = {
     if (A.laBai(w.zone)) {
       if (this.choNhat(w)) { this.dang = "nhặt đồ boss rơi"; return; }
       this.dang = `về thành gặp ${ten}`; this.ghiNha(h, w);
-      if (!A.veThanh(`gặp ${ten}`, tz)) this.thoi(loai, "không về thành được (hết Thổ Địa Phù?)");
+      if (!A.veThanh(`gặp ${ten}`, tz)) this.thoi(loai, "không về thành được — hết Thổ Địa Phù rồi à?");
       return;
     }
     if (!A.laThanh(w.zone)) { this.dang = ""; return; } // ải, đảo, thuyền…: chờ ra
     if (loai === "dt" && A.npcDt(w)) tz = w.zone.id; // Dã Tẩu ở cả Ba Lăng huyện và Biện Kinh
     if (w.zone.id !== tz) { this.dang = `đi Xa phu tới ${ten}`; this.ghiNha(h, w); A.xe({ thanh: tz }); return; }
     const n = loai === "st" ? A.npcSat(w) : A.npcDt(w);
-    if (!n) { this.thoi(loai, `không thấy ${ten} ở ${w.zone.n}`); return; }
+    if (!n) { this.thoi(loai, `không thấy ${ten} ở ${w.zone.n} — tìm chỗ khác đi.`); return; }
     this.dang = `gặp ${ten}`;
     if (!this.toi(w, n)) return;
     this.goi(h, loai);
@@ -215,10 +215,10 @@ export const TuLam = {
         if (j.tiep === "lai") { this.s.tui = 0; await ngu(300); continue; }
         if (j.tiep === "tui") {
           this.s.tui = (this.s.tui | 0) + 1;
-          if (this.s.tui > 2) this.thoi(loai, "hành trang không còn đủ 5 ô trống");
-          else { A.msg("Trợ Thủ: hành trang sắp đầy — bán / cất đồ rồi gặp lại " + (loai === "st" ? "Nhiếp Thí Trần" : "Dã Tẩu")); A.lamThanh("hành trang sắp đầy"); }
+          if (this.s.tui > 2) this.thoi(loai, "hành trang không còn đủ 5 ô trống — dọn đi rồi hãy gặp.");
+          else { A.msg("Trợ Thủ: hành trang sắp đầy — bán / cất đồ rồi hãy gặp lại " + (loai === "st" ? "Nhiếp Thí Trần" : "Dã Tẩu")); A.lamThanh("hành trang sắp đầy"); }
         } else if (j.tiep === "het") { if (loai === "dt") this.s.dtHet = true; else this.s.stHet = true; if (j.ly) A.msg("Trợ Thủ: " + j.ly); }
-        else if (j.tiep === "cho") { this.s.choDt = performance.now() + (j.giay | 0) * 1000; A.msg(`Trợ Thủ: ${j.ly || "Dã Tẩu chưa giao nhiệm vụ"} — làm việc khác, ${Math.ceil((j.giay | 0) / 60)} phút sau quay lại`); }
+        else if (j.tiep === "cho") { this.s.choDt = performance.now() + (j.giay | 0) * 1000; A.msg(`Trợ Thủ: ${j.ly || "Dã Tẩu chưa giao nhiệm vụ"} — làm việc khác đi, ${Math.ceil((j.giay | 0) / 60)} phút sau quay lại`); }
         else if (j.tiep === "dung") this.thoi(loai, j.ly || "dừng");
         else this.s.tui = 0; // "danh": đi đánh
         break;
@@ -232,7 +232,7 @@ export const TuLam = {
   // thôi làm 1 loại trong ngày (bấm Bắt đầu tự làm để thử lại)
   thoi(loai, ly) {
     if (loai === "dt") this.s.dtDung = ly; else this.s.stDung = ly;
-    this.api.canh(`Trợ Thủ thôi ${loai === "dt" ? "tự làm Dã Tẩu" : "tự săn Boss Sát thủ"}: ${ly}`);
+    this.api.canh(`Trợ Thủ thôi ${loai === "dt" ? "tự làm Dã Tẩu" : "tự săn Boss Sát thủ"}: ${ly} — tự lo phần còn lại đi.`);
   },
 
   // Boss Sát thủ đã nhận: ở bãi của boss (bản quái chung nếu bãi có) -> chạy tới chỗ boss, đứng gần thì World nhắm boss; không thì về thành / Xa phu
@@ -240,10 +240,10 @@ export const TuLam = {
     const A = this.api, p = w.player, dung = w.zone.id === b.bai && (!A.laQc(b.bai) || w.chung);
     if (!dung) {
       this.bossT = null;
-      if (!A.moBai(b.bai)) { this.thoi("st", `bãi có ${b.ten} chưa đủ cấp vào`); return; }
+      if (!A.moBai(b.bai)) { this.thoi("st", `bãi có ${b.ten} chưa đủ cấp vào — luyện thêm đi.`); return; }
       this.ghiNha(h, w);
       if (A.laThanh(w.zone)) { this.dang = `đi Xa phu tới ${b.ten}`; A.xe({ sat: 1 }); return; }
-      if (A.laBai(w.zone)) { this.dang = `về thành đi hạ ${b.ten}`; if (!A.veThanh(`đi hạ ${b.ten}`, null)) this.thoi("st", "không về thành được (hết Thổ Địa Phù?)"); }
+      if (A.laBai(w.zone)) { this.dang = `về thành đi hạ ${b.ten}`; if (!A.veThanh(`đi hạ ${b.ten}`, null)) this.thoi("st", "không về thành được — hết Thổ Địa Phù rồi à?"); }
       return;
     }
     const nv = (h.satThu || {}).nv | 0, m = w.mobs.find((x) => x.alive && x.sat === nv);
@@ -253,7 +253,7 @@ export const TuLam = {
     this.dang = m ? `chạy tới ${b.ten}` : xa > 200 ? `chạy tới chỗ ${b.ten}` : `chờ ${b.ten} xuất hiện`;
     if (xa <= 200) {
       if (!this.bossT.t0) this.bossT.t0 = performance.now();
-      if (!m && performance.now() - this.bossT.t0 > CHO_BOSS) this.thoi("st", `chờ ${b.ten} quá 5 phút không thấy`);
+      if (!m && performance.now() - this.bossT.t0 > CHO_BOSS) this.thoi("st", `chờ ${b.ten} quá 5 phút không thấy — bỏ đi, đừng chờ nữa.`);
       return;
     }
     if (!p.goal && !p.target) w.walkTo(m ? m.x : b.x, m ? m.y : b.y);
@@ -278,11 +278,11 @@ export const TuLam = {
     if (A.laThanh(w.zone)) {
       this.ghiNha(h, w);
       const o = bai != null ? { z: bai, c: 0 } : A.baiTreo();
-      if (!o) { this.thoi("dt", "chưa có bãi để đánh quái (chọn bãi treo máy ở thẻ Đánh quái)"); return; }
-      if (!A.moBai(o.z)) { this.thoi("dt", "bãi của nhiệm vụ chưa đủ cấp vào"); return; }
+      if (!o) { this.thoi("dt", "chưa có bãi để đánh quái — chọn bãi treo máy ở thẻ Đánh quái đi."); return; }
+      if (!A.moBai(o.z)) { this.thoi("dt", "bãi của nhiệm vụ chưa đủ cấp vào — luyện thêm đi rồi hãy tới."); return; }
       this.dang = "đi Xa phu tới bãi đánh quái cho Dã Tẩu"; A.xe({ bai: o.z, c: o.c });
       return;
     }
-    if (A.laBai(w.zone)) { this.dang = "đổi bãi cho nhiệm vụ Dã Tẩu"; this.ghiNha(h, w); if (!A.veThanh("đổi bãi cho Dã Tẩu", null)) this.thoi("dt", "không về thành được (hết Thổ Địa Phù?)"); }
+    if (A.laBai(w.zone)) { this.dang = "đổi bãi cho nhiệm vụ Dã Tẩu"; this.ghiNha(h, w); if (!A.veThanh("đổi bãi cho Dã Tẩu", null)) this.thoi("dt", "không về thành được — hết Thổ Địa Phù rồi à?"); }
   },
 };

@@ -203,25 +203,25 @@ function dangBan() {
 function khoiDong(qt, b) {
   if (b.huy) { if (!hen) loi("Không có lần khởi động lại nào đang hẹn"); clearTimeout(hen.t); hen = null; TG().thongBao("Đã hủy khởi động lại máy chủ.", true); NK().ghi("qt", qt.ten, null, "Hủy khởi động lại máy chủ"); return { msg: "Đã hủy", ...xem() }; }
   if (hen) loi("Đã hẹn khởi động lại rồi");
-  const ban = dangBan(); if (ban.length && !b.ep) loi(`Đang có hoạt động: ${ban.join(", ")} — chờ xong rồi khởi động lại`);
+  const ban = dangBan(); if (ban.length && !b.ep) loi(`Đang có hoạt động: ${ban.join(", ")}. Chờ xong rồi khởi động lại.`);
   const giay = Math.max(10, Math.min(300, b.giay | 0 || 60));
-  TG().thongBao(`Máy chủ sẽ khởi động lại để cập nhật sau ${giay} giây — chỉ mất vài giây, các hạ chờ chút rồi chơi tiếp.`, true);
+  TG().thongBao(`Máy chủ khởi động lại sau ${giay} giây để cập nhật. Mất vài giây thôi. Xong thì vào lại ngay.`, true);
   const t = setTimeout(() => { try { TG().thongBao("Máy chủ đang khởi động lại…", true); } catch {} setTimeout(() => { try { NK().xa(); } catch {} console.log("Khởi động lại theo lệnh quản trị", qt.ten); process.exit(0); }, 1500); }, giay * 1000);
   hen = { luc: Date.now() + giay * 1000, ai: qt.ten, t };
   NK().ghi("qt", qt.ten, null, `Hẹn khởi động lại máy chủ sau ${giay} giây`);
-  return { msg: `Máy chủ khởi động lại sau ${giay} giây (đã báo cả máy chủ). Chạy bằng Chay_Game.bat thì thoát xong phải bật lại tay.`, ...xem() };
+  return { msg: `Máy chủ khởi động lại sau ${giay} giây. Đã báo cả máy chủ. Chạy bằng Chay_Game.bat thì thoát xong tự bật lại tay.`, ...xem() };
 }
 function taiLai(qt, b) {
   // Lôi Đài (anh 15/11): bắt F5 giữa trận = mọi tuyển thủ thoát game (bị loại) -> từ chối như khởi động lại an toàn
   let ld = 0; try { ld = LDA().soSanBan(); } catch {}
-  if (ld && !b.ep) loi(`Đang có hoạt động: Lôi đài (${ld} sân đang dùng) — bắt F5 lúc này tuyển thủ bị loại, chờ xong rồi làm`);
+  if (ld && !b.ep) loi(`Đang có hoạt động: Lôi đài (${ld} sân đang dùng). Bắt F5 lúc này là loại tuyển thủ. Chờ xong rồi làm.`);
   // đua ngựa (anh 16/11): bắt F5 giữa lượt = mọi người đua tải lại trang giữa đường — chờ xong
   let dn = false; try { dn = require("./dua-ngua.js").dangCo(); } catch {}
-  if (dn && !b.ep) loi("Đang có hoạt động: Truy Phong Đại Loạn Đấu (đua ngựa) — chờ lượt đua xong rồi làm");
+  if (dn && !b.ep) loi("Đang có hoạt động: Truy Phong Đại Loạn Đấu (đua ngựa). Chờ lượt đua xong rồi làm.");
   TL = { v: (TL.v | 0) + 1, g: Math.max(10, Math.min(120, b.giay | 0 || 30)), luc: Date.now(), ai: qt.ten };
   ghiTep(TEP_TL, TL);
   NK().ghi("qt", qt.ten, null, `Bắt cả máy chủ tải lại trang (F5) — sau ${TL.g} giây`);
-  return { msg: `Đã gửi lệnh tải lại: mọi người đang chơi thấy đếm ngược ${TL.g} giây rồi tự F5, vào lại đúng nhân vật.`, ...xem() };
+  return { msg: `Đã gửi lệnh tải lại. Mọi người đang chơi thấy đếm ngược ${TL.g} giây rồi tự F5. Vào lại đúng nhân vật.`, ...xem() };
 }
 
 // mã bản trình duyệt: băm tên + cỡ + giờ sửa các tệp trang (src/ + game.html) — tính lại mỗi 30 giây (lên VPS không khởi động lại vẫn thấy)

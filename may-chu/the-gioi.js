@@ -91,7 +91,7 @@ function sach(s) {
   // phân thân đang theo (anh 05/11): mã + mốc + vòng sáng / bùa — nhip kiểm mã với h.pt.ra
   const pt = (Array.isArray(s.pt) ? s.pt : []).slice(0, PT_MAX).filter((c) => c && typeof c.i === "string" && Array.isArray(c.tr))
     .map((c) => ({ i: c.i.slice(0, 80), tr: c.tr.slice(-MOC_GUI).filter(Array.isArray).map(moc).sort((a, b) => a[0] - b[0]), vs: vsSach(c.vs), bl: blSach(c.bl) }));
-  return tr.length ? { zone: nguyen(s.zone, 0, 1e6, -1), ...(s.c ? { chung: 1 } : {}), lvl: nguyen(s.lvl, 1, 200, 1), look, tr, hp: nguyen(s.hp, 0, 100, 100), mp: nguyen(s.mp, 0, 100, 100), ...(vs.length ? { vs } : {}), ...(bc.length ? { bc } : {}), ...(kd ? { kd } : {}), ...(bl.length ? { bl } : {}), ...(pt.length ? { pt } : {}) } : null;
+  return tr.length ? { zone: nguyen(s.zone, 0, 1e6, -1), ...(s.c ? { chung: 1 } : {}), ...(s.npc ? { npc: 1 } : {}), lvl: nguyen(s.lvl, 1, 200, 1), look, tr, hp: nguyen(s.hp, 0, 100, 100), mp: nguyen(s.mp, 0, 100, 100), ...(vs.length ? { vs } : {}), ...(bc.length ? { bc } : {}), ...(kd ? { kd } : {}), ...(bl.length ? { bl } : {}), ...(pt.length ? { pt } : {}) } : null;
 }
 
 // phe đang theo (anh 31/10 "tên nhân vật đúng màu chính tà trung lập theo client … vào pt thì đổi sang màu của chủ pt"): trong đội -> phe theo
@@ -161,13 +161,13 @@ function nhip(tk, b) {
 
 function chat(tk, b) {
   const oNv = nguyen(b.o, 0, tk.nv.length - 1), h = tk.nv[oNv];
-  if (!h) throw Object.assign(new Error("Chưa vào game"), { code: 400 });
-  if (!KENH[b.ch]) throw Object.assign(new Error("Kênh này chưa có trên máy chủ"), { code: 400 });
+  if (!h) throw Object.assign(new Error("Chưa vào game. Vào game rồi hãy nói."), { code: 400 });
+  if (!KENH[b.ch]) throw Object.assign(new Error("Kênh này chưa có. Đừng gửi vào đây."), { code: 400 });
   const doi = KENH[b.ch] === "doi" ? TD().idCua(tk.ten) : null;
-  if (KENH[b.ch] === "doi" && !doi) throw Object.assign(new Error("Bạn chưa có đội ngũ — lập nhóm / vào nhóm rồi mới nói được ở Tần số đội ngũ"), { code: 400 });
+  if (KENH[b.ch] === "doi" && !doi) throw Object.assign(new Error("Chưa có đội thì đừng nói ở kênh đội. Lập nhóm / vào nhóm rồi hãy nói."), { code: 400 });
   // kênh Bang hội (anh 14/11): chỉ thành viên — tin mang mã bang, chỉ người cùng bang nhận (nhip thay)
   const bang = KENH[b.ch] === "bang" ? BH().idCua(tk.ten, oNv, h.name) : null;
-  if (KENH[b.ch] === "bang" && bang == null) throw Object.assign(new Error("Bạn chưa gia nhập bang hội — vào bang rồi mới nói được ở kênh Bang hội"), { code: 400 });
+  if (KENH[b.ch] === "bang" && bang == null) throw Object.assign(new Error("Chưa vào bang thì đừng nói ở kênh bang. Vào bang rồi hãy nói."), { code: 400 });
   let text = String(b.t || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, TIN_MAX);
   // khoe đồ (anh 12/11 "thêm chức năng post đồ trên kênh thế giới"): b.u = mã món ở hành trang / trang bị -> lấy đúng món nhân vật đang có (không
   // tin trình duyệt: không khoe được đồ không có), tin mang bản sao món (it — người xem rê / chạm chữ <tên đồ> để xem ô món). Chữ chưa có
@@ -177,19 +177,19 @@ function chat(tk, b) {
     const the = `<${String(DO().tenMon(it)).replace(/\s+/g, " ").trim()}>`;
     if (!text.includes(the)) text = /<[^<>]*>/.test(text) ? text.replace(/<[^<>]*>/, the) : `${text.slice(0, Math.max(0, TIN_MAX - the.length - 1))} ${the}`.trim();
   }
-  if (!text) throw Object.assign(new Error("Tin trống"), { code: 400 });
+  if (!text) throw Object.assign(new Error("Tin trống rỗng. Gõ chữ vào rồi hãy gửi."), { code: 400 });
   // nhắn tin mật (anh 13/11 "thêm tính năng nhắn tin mật với người chơi"): tới đúng 1 người đang chơi — b.toi = tên nhân vật (Ctrl + bấm tên ở khung chat /
   // menu người chơi "Nhắn tin mật"); chỉ máy người đó nhận (chi), người gửi tự hiện tin ở máy mình
   let chi = null, toi = null;
   if (KENH[b.ch] === "mat") {
     toi = String(b.toi || "").replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, 40);
-    if (!toi) throw Object.assign(new Error("Chưa chọn người nhận — Ctrl + bấm tên người đó ở khung chat"), { code: 400 });
-    if (toi === h.name) throw Object.assign(new Error("Không nhắn tin mật cho chính mình được"), { code: 400 });
+    if (!toi) throw Object.assign(new Error("Chưa chọn người nhận. Ctrl + bấm tên người đó ở khung chat rồi hãy gửi."), { code: 400 });
+    if (toi === h.name) throw Object.assign(new Error("Tự nhắn cho mình làm gì. Chọn người khác đi."), { code: 400 });
     chi = timTen(toi);
-    if (!chi || chi === tk.ten) throw Object.assign(new Error(`${toi} hiện không trực tuyến`), { code: 400 });
+    if (!chi || chi === tk.ten) throw Object.assign(new Error(`${toi} đang không ở đây. Đừng gửi nữa.`), { code: 400 });
   }
   const t = Date.now();
-  if (t - (guiCuoi.get(tk.ten) || 0) < TIN_CACH) throw Object.assign(new Error("Gửi quá nhanh"), { code: 429 });
+  if (t - (guiCuoi.get(tk.ten) || 0) < TIN_CACH) throw Object.assign(new Error("Gửi chậm lại. Đừng spam."), { code: 429 });
   guiCuoi.set(tk.ten, t);
   if (text.toLowerCase() === GOC_LENH) { thongBaoTk(gocCau(), tk.ten); return { id: tinId }; } // lệnh bí mật bản gốc: chỉ người gõ thấy
   const b0 = ben.get(tk.ten);
@@ -202,7 +202,7 @@ function chat(tk, b) {
 // món khoe (chat b.u): món mã u ở hành trang / trang bị của nhân vật -> bản sao bỏ chỗ trong túi; không có -> lỗi (vừa bán / cất / giao dịch)
 function monKhoe(h, u) {
   const m = (h.bag || []).find((x) => x && x.u === (u | 0)) || Object.values(h.equip || {}).find((x) => x && x.u === (u | 0));
-  if (!m) throw Object.assign(new Error("Không thấy món này trong hành trang / trang bị (vừa bán, cất hay giao dịch?)"), { code: 400 });
+  if (!m) throw Object.assign(new Error("Không thấy món này trong hành trang / trang bị. Bán, cất hay giao dịch mất rồi à?"), { code: 400 });
   const { x, y, ...r } = m;
   return JSON.parse(JSON.stringify(r));
 }

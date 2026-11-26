@@ -1,0 +1,6164 @@
+{
+  "version": 1,
+  "ghiChu": "170 NPC chơi như người thật — sinh bởi gen-config-170.mjs 26/11/2026. Bảng chiêu suy lúc chạy bằng npc-bang-chieu.js, không chép cứng ở đây.",
+  "zones": {
+    "201": {
+      "ten": "Băng Hà động",
+      "mobs": [
+        169,
+        159
+      ],
+      "lv": 185,
+      "so": 3
+    },
+    "205": {
+      "ten": "Dương Trung động",
+      "mobs": [
+        159,
+        169
+      ],
+      "lv": 195,
+      "so": 5
+    },
+    "336": {
+      "ten": "Phong Lăng độ",
+      "mobs": [
+        707
+      ],
+      "lv": 165,
+      "so": 1
+    },
+    "340": {
+      "ten": "Mạc Cao Quật",
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "lv": 175,
+      "so": 1
+    }
+  },
+  "bots": [
+    {
+      "acct": "npcmau1",
+      "ten": "Pháp Không",
+      "tenDuPhong": [
+        "Pháp Duyên",
+        "Pháp Hỷ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1039,
+      "cy": 119,
+      "r": 320,
+      "stalls": [
+        [
+          18684,
+          7469
+        ],
+        [
+          19464,
+          9029
+        ],
+        [
+          18294,
+          9939
+        ]
+      ]
+    },
+    {
+      "acct": "npc002",
+      "ten": "Pháp Hải",
+      "tenDuPhong": [
+        "Pháp Duyên",
+        "Pháp Hỷ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1050,
+      "cy": 290,
+      "r": 320,
+      "stalls": [
+        [
+          18944,
+          7534
+        ],
+        [
+          12314,
+          9094
+        ],
+        [
+          18554,
+          9939
+        ]
+      ]
+    },
+    {
+      "acct": "npc003",
+      "ten": "Pháp Minh",
+      "tenDuPhong": [
+        "Pháp Duyên",
+        "Pháp Hỷ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1126,
+      "cy": 395,
+      "r": 320,
+      "stalls": [
+        [
+          18944,
+          7664
+        ],
+        [
+          12834,
+          9094
+        ],
+        [
+          12314,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc004",
+      "ten": "Pháp Trí",
+      "tenDuPhong": [
+        "Pháp Duyên",
+        "Pháp Hỷ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1056,
+      "cy": 461,
+      "r": 320,
+      "stalls": [
+        [
+          18684,
+          7729
+        ],
+        [
+          13094,
+          9094
+        ],
+        [
+          13744,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc005",
+      "ten": "Pháp Tâm",
+      "tenDuPhong": [
+        "Pháp Duyên",
+        "Pháp Hỷ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1887,
+      "cy": 451,
+      "r": 320,
+      "stalls": [
+        [
+          18944,
+          7729
+        ],
+        [
+          13614,
+          9094
+        ],
+        [
+          14004,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc006",
+      "ten": "Pháp Đức",
+      "tenDuPhong": [
+        "Pháp Duyên",
+        "Pháp Hỷ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 902,
+      "cy": 288,
+      "r": 320,
+      "stalls": [
+        [
+          19204,
+          7729
+        ],
+        [
+          14914,
+          9094
+        ],
+        [
+          14524,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc007",
+      "ten": "Pháp Huệ",
+      "tenDuPhong": [
+        "Pháp Duyên",
+        "Pháp Hỷ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2031,
+      "cy": 364,
+      "r": 320,
+      "stalls": [
+        [
+          18814,
+          7794
+        ],
+        [
+          15304,
+          9094
+        ],
+        [
+          15044,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc008",
+      "ten": "Pháp Quang",
+      "tenDuPhong": [
+        "Pháp Duyên",
+        "Pháp Hỷ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 104,
+      "cy": 379,
+      "r": 320,
+      "stalls": [
+        [
+          19204,
+          7794
+        ],
+        [
+          15564,
+          9094
+        ],
+        [
+          15304,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc009",
+      "ten": "Pháp An",
+      "tenDuPhong": [
+        "Pháp Duyên",
+        "Pháp Hỷ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 1796,
+      "cy": 62,
+      "r": 320,
+      "stalls": [
+        [
+          18294,
+          7859
+        ],
+        [
+          16344,
+          9094
+        ],
+        [
+          15694,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc010",
+      "ten": "Pháp Tịnh",
+      "tenDuPhong": [
+        "Pháp Duyên",
+        "Pháp Hỷ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 2399,
+      "cy": 28,
+      "r": 320,
+      "stalls": [
+        [
+          18554,
+          7859
+        ],
+        [
+          18814,
+          9094
+        ],
+        [
+          16994,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc011",
+      "ten": "Tuệ Không",
+      "tenDuPhong": [
+        "Tuệ Chân",
+        "Tuệ Ngộ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": -1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2211,
+      "cy": 484,
+      "r": 320,
+      "stalls": [
+        [
+          18944,
+          7859
+        ],
+        [
+          19074,
+          9094
+        ],
+        [
+          17254,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc012",
+      "ten": "Tuệ Hải",
+      "tenDuPhong": [
+        "Tuệ Chân",
+        "Tuệ Ngộ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": -1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2565,
+      "cy": 585,
+      "r": 320,
+      "stalls": [
+        [
+          19204,
+          7859
+        ],
+        [
+          19334,
+          9094
+        ],
+        [
+          17514,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc013",
+      "ten": "Tuệ Minh",
+      "tenDuPhong": [
+        "Tuệ Chân",
+        "Tuệ Ngộ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": -1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 723,
+      "cy": 561,
+      "r": 320,
+      "stalls": [
+        [
+          18034,
+          7924
+        ],
+        [
+          12444,
+          9159
+        ],
+        [
+          17774,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc014",
+      "ten": "Tuệ Đức",
+      "tenDuPhong": [
+        "Tuệ Chân",
+        "Tuệ Ngộ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": -1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2349,
+      "cy": 598,
+      "r": 320,
+      "stalls": [
+        [
+          18294,
+          7924
+        ],
+        [
+          12964,
+          9159
+        ],
+        [
+          18294,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc015",
+      "ten": "Tuệ Tâm",
+      "tenDuPhong": [
+        "Tuệ Chân",
+        "Tuệ Ngộ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": -1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1972,
+      "cy": 683,
+      "r": 320,
+      "stalls": [
+        [
+          18814,
+          7924
+        ],
+        [
+          13224,
+          9159
+        ],
+        [
+          18554,
+          10004
+        ]
+      ]
+    },
+    {
+      "acct": "npc016",
+      "ten": "Tuệ Quang",
+      "tenDuPhong": [
+        "Tuệ Chân",
+        "Tuệ Ngộ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": -1,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1223,
+      "cy": 461,
+      "r": 320,
+      "stalls": [
+        [
+          17254,
+          7989
+        ],
+        [
+          13614,
+          9159
+        ],
+        [
+          12184,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc017",
+      "ten": "Tuệ Tịnh",
+      "tenDuPhong": [
+        "Tuệ Chân",
+        "Tuệ Ngộ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": -1,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1482,
+      "cy": 443,
+      "r": 320,
+      "stalls": [
+        [
+          17514,
+          7989
+        ],
+        [
+          14134,
+          9159
+        ],
+        [
+          12574,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc018",
+      "ten": "Tuệ An",
+      "tenDuPhong": [
+        "Tuệ Chân",
+        "Tuệ Ngộ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": -1,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1530,
+      "cy": 435,
+      "r": 320,
+      "stalls": [
+        [
+          17904,
+          7989
+        ],
+        [
+          15044,
+          9159
+        ],
+        [
+          13744,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc019",
+      "ten": "Tuệ Giác",
+      "tenDuPhong": [
+        "Tuệ Chân",
+        "Tuệ Ngộ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": -1,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 413,
+      "cy": 157,
+      "r": 320,
+      "stalls": [
+        [
+          18294,
+          7989
+        ],
+        [
+          15434,
+          9159
+        ],
+        [
+          14004,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc020",
+      "ten": "Tuệ Viên",
+      "tenDuPhong": [
+        "Tuệ Chân",
+        "Tuệ Ngộ"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": -1,
+      "sex": "m",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 1336,
+      "cy": 69,
+      "r": 320,
+      "stalls": [
+        [
+          18554,
+          7989
+        ],
+        [
+          16084,
+          9159
+        ],
+        [
+          14654,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc021",
+      "ten": "Thích Đạt",
+      "tenDuPhong": [
+        "Thích Vân",
+        "Thích Sơn"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1889,
+      "cy": 659,
+      "r": 320,
+      "stalls": [
+        [
+          18814,
+          7989
+        ],
+        [
+          16344,
+          9159
+        ],
+        [
+          15044,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc022",
+      "ten": "Thích Ngộ",
+      "tenDuPhong": [
+        "Thích Vân",
+        "Thích Sơn"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 705,
+      "cy": 828,
+      "r": 320,
+      "stalls": [
+        [
+          17384,
+          8054
+        ],
+        [
+          16734,
+          9159
+        ],
+        [
+          15304,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc023",
+      "ten": "Thích Giới",
+      "tenDuPhong": [
+        "Thích Vân",
+        "Thích Sơn"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2277,
+      "cy": 812,
+      "r": 320,
+      "stalls": [
+        [
+          17644,
+          8054
+        ],
+        [
+          18814,
+          9159
+        ],
+        [
+          16734,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc024",
+      "ten": "Thích Định",
+      "tenDuPhong": [
+        "Thích Vân",
+        "Thích Sơn"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 674,
+      "cy": 850,
+      "r": 320,
+      "stalls": [
+        [
+          17904,
+          8054
+        ],
+        [
+          19074,
+          9159
+        ],
+        [
+          17124,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc025",
+      "ten": "Thích Tuệ",
+      "tenDuPhong": [
+        "Thích Vân",
+        "Thích Sơn"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 796,
+      "cy": 909,
+      "r": 320,
+      "stalls": [
+        [
+          18424,
+          8054
+        ],
+        [
+          12184,
+          9224
+        ],
+        [
+          17384,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc026",
+      "ten": "Thích Chân",
+      "tenDuPhong": [
+        "Thích Vân",
+        "Thích Sơn"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2065,
+      "cy": 485,
+      "r": 320,
+      "stalls": [
+        [
+          18814,
+          8054
+        ],
+        [
+          12444,
+          9224
+        ],
+        [
+          17644,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc027",
+      "ten": "Thích Tính",
+      "tenDuPhong": [
+        "Thích Vân",
+        "Thích Sơn"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2379,
+      "cy": 608,
+      "r": 320,
+      "stalls": [
+        [
+          17254,
+          8119
+        ],
+        [
+          12964,
+          9224
+        ],
+        [
+          17904,
+          10069
+        ]
+      ]
+    },
+    {
+      "acct": "npc028",
+      "ten": "Thích Viên",
+      "tenDuPhong": [
+        "Thích Vân",
+        "Thích Sơn"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 389,
+      "cy": 625,
+      "r": 320,
+      "stalls": [
+        [
+          17514,
+          8119
+        ],
+        [
+          13354,
+          9224
+        ],
+        [
+          12314,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc029",
+      "ten": "Thích Giác",
+      "tenDuPhong": [
+        "Thích Vân",
+        "Thích Sơn"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 1722,
+      "cy": 221,
+      "r": 320,
+      "stalls": [
+        [
+          17904,
+          8119
+        ],
+        [
+          13874,
+          9224
+        ],
+        [
+          12574,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc030",
+      "ten": "Thích Không",
+      "tenDuPhong": [
+        "Thích Vân",
+        "Thích Sơn"
+      ],
+      "fac": 0,
+      "facKey": "shaolin",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 23,
+      "cy": 165,
+      "r": 320,
+      "stalls": [
+        [
+          18294,
+          8119
+        ],
+        [
+          15044,
+          9224
+        ],
+        [
+          12834,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc031",
+      "ten": "Liệt Diệm",
+      "tenDuPhong": [
+        "Lôi Đình",
+        "Thiên Kiếp"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1859,
+      "cy": 996,
+      "r": 320,
+      "stalls": [
+        [
+          18684,
+          8119
+        ],
+        [
+          15434,
+          9224
+        ],
+        [
+          13874,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc032",
+      "ten": "Cuồng Đao",
+      "tenDuPhong": [
+        "Lôi Đình",
+        "Thiên Kiếp"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 544,
+      "cy": 1056,
+      "r": 320,
+      "stalls": [
+        [
+          17124,
+          8184
+        ],
+        [
+          15954,
+          9224
+        ],
+        [
+          14134,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc033",
+      "ten": "Xích Chiến",
+      "tenDuPhong": [
+        "Lôi Đình",
+        "Thiên Kiếp"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 797,
+      "cy": 1102,
+      "r": 320,
+      "stalls": [
+        [
+          17644,
+          8184
+        ],
+        [
+          16474,
+          9224
+        ],
+        [
+          14784,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc034",
+      "ten": "Phá Trận",
+      "tenDuPhong": [
+        "Lôi Đình",
+        "Thiên Kiếp"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1029,
+      "cy": 1181,
+      "r": 320,
+      "stalls": [
+        [
+          17904,
+          8184
+        ],
+        [
+          16864,
+          9224
+        ],
+        [
+          15044,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc035",
+      "ten": "Khai Thiên",
+      "tenDuPhong": [
+        "Lôi Đình",
+        "Thiên Kiếp"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2453,
+      "cy": 1320,
+      "r": 320,
+      "stalls": [
+        [
+          18164,
+          8184
+        ],
+        [
+          18684,
+          9224
+        ],
+        [
+          16864,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc036",
+      "ten": "Diệt Ma",
+      "tenDuPhong": [
+        "Lôi Đình",
+        "Thiên Kiếp"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 582,
+      "cy": 753,
+      "r": 320,
+      "stalls": [
+        [
+          16604,
+          8249
+        ],
+        [
+          18944,
+          9224
+        ],
+        [
+          17124,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc037",
+      "ten": "Trảm Long",
+      "tenDuPhong": [
+        "Lôi Đình",
+        "Thiên Kiếp"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2326,
+      "cy": 739,
+      "r": 320,
+      "stalls": [
+        [
+          16864,
+          8249
+        ],
+        [
+          12314,
+          9289
+        ],
+        [
+          17384,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc038",
+      "ten": "Đoạn Nhạc",
+      "tenDuPhong": [
+        "Lôi Đình",
+        "Thiên Kiếp"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2357,
+      "cy": 822,
+      "r": 320,
+      "stalls": [
+        [
+          17124,
+          8249
+        ],
+        [
+          12704,
+          9289
+        ],
+        [
+          17774,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc039",
+      "ten": "Kinh Lôi",
+      "tenDuPhong": [
+        "Lôi Đình",
+        "Thiên Kiếp"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 472,
+      "cy": 207,
+      "r": 320,
+      "stalls": [
+        [
+          17904,
+          8249
+        ],
+        [
+          13094,
+          9289
+        ],
+        [
+          18034,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc040",
+      "ten": "Bôn Lôi",
+      "tenDuPhong": [
+        "Lôi Đình",
+        "Thiên Kiếp"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 1442,
+      "cy": 251,
+      "r": 320,
+      "stalls": [
+        [
+          18164,
+          8249
+        ],
+        [
+          13354,
+          9289
+        ],
+        [
+          18294,
+          10134
+        ]
+      ]
+    },
+    {
+      "acct": "npc041",
+      "ten": "Phá Quân",
+      "tenDuPhong": [
+        "Chấn Nhạc",
+        "Khai Sơn"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1003,
+      "cy": 1365,
+      "r": 320,
+      "stalls": [
+        [
+          18424,
+          8249
+        ],
+        [
+          14134,
+          9289
+        ],
+        [
+          12574,
+          10199
+        ]
+      ]
+    },
+    {
+      "acct": "npc042",
+      "ten": "Định Quốc",
+      "tenDuPhong": [
+        "Chấn Nhạc",
+        "Khai Sơn"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1298,
+      "cy": 1448,
+      "r": 320,
+      "stalls": [
+        [
+          16474,
+          8314
+        ],
+        [
+          15044,
+          9289
+        ],
+        [
+          13744,
+          10199
+        ]
+      ]
+    },
+    {
+      "acct": "npc043",
+      "ten": "Trấn Viễn",
+      "tenDuPhong": [
+        "Chấn Nhạc",
+        "Khai Sơn"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1447,
+      "cy": 1482,
+      "r": 320,
+      "stalls": [
+        [
+          16994,
+          8314
+        ],
+        [
+          15304,
+          9289
+        ],
+        [
+          14004,
+          10199
+        ]
+      ]
+    },
+    {
+      "acct": "npc044",
+      "ten": "Uy Vũ",
+      "tenDuPhong": [
+        "Chấn Nhạc",
+        "Khai Sơn"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2682,
+      "cy": 1532,
+      "r": 320,
+      "stalls": [
+        [
+          17904,
+          8314
+        ],
+        [
+          16084,
+          9289
+        ],
+        [
+          14524,
+          10199
+        ]
+      ]
+    },
+    {
+      "acct": "npc045",
+      "ten": "Thiết Bích",
+      "tenDuPhong": [
+        "Chấn Nhạc",
+        "Khai Sơn"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1459,
+      "cy": 1558,
+      "r": 320,
+      "stalls": [
+        [
+          18164,
+          8314
+        ],
+        [
+          16344,
+          9289
+        ],
+        [
+          14914,
+          10199
+        ]
+      ]
+    },
+    {
+      "acct": "npc046",
+      "ten": "Kim Giáp",
+      "tenDuPhong": [
+        "Chấn Nhạc",
+        "Khai Sơn"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1968,
+      "cy": 1002,
+      "r": 320,
+      "stalls": [
+        [
+          18554,
+          8314
+        ],
+        [
+          16604,
+          9289
+        ],
+        [
+          15174,
+          10199
+        ]
+      ]
+    },
+    {
+      "acct": "npc047",
+      "ten": "Hổ Uy",
+      "tenDuPhong": [
+        "Chấn Nhạc",
+        "Khai Sơn"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 61,
+      "cy": 1006,
+      "r": 320,
+      "stalls": [
+        [
+          16604,
+          8379
+        ],
+        [
+          18554,
+          9289
+        ],
+        [
+          17254,
+          10199
+        ]
+      ]
+    },
+    {
+      "acct": "npc048",
+      "ten": "Long Tương",
+      "tenDuPhong": [
+        "Chấn Nhạc",
+        "Khai Sơn"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1074,
+      "cy": 1097,
+      "r": 320,
+      "stalls": [
+        [
+          16864,
+          8379
+        ],
+        [
+          18944,
+          9289
+        ],
+        [
+          17514,
+          10199
+        ]
+      ]
+    },
+    {
+      "acct": "npc049",
+      "ten": "Thần Uy",
+      "tenDuPhong": [
+        "Chấn Nhạc",
+        "Khai Sơn"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 2130,
+      "cy": 270,
+      "r": 320,
+      "stalls": [
+        [
+          18034,
+          8379
+        ],
+        [
+          12184,
+          9354
+        ],
+        [
+          17904,
+          10199
+        ]
+      ]
+    },
+    {
+      "acct": "npc050",
+      "ten": "Bá Thiên",
+      "tenDuPhong": [
+        "Chấn Nhạc",
+        "Khai Sơn"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 2483,
+      "cy": 301,
+      "r": 320,
+      "stalls": [
+        [
+          18424,
+          8379
+        ],
+        [
+          12444,
+          9354
+        ],
+        [
+          18164,
+          10199
+        ]
+      ]
+    },
+    {
+      "acct": "npc051",
+      "ten": "Chấn Thiên",
+      "tenDuPhong": [
+        "Cự Linh",
+        "Thần Lực"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 4,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2298,
+      "cy": 1597,
+      "r": 320,
+      "stalls": [
+        [
+          13224,
+          8444
+        ],
+        [
+          13094,
+          9354
+        ],
+        [
+          12574,
+          10264
+        ]
+      ]
+    },
+    {
+      "acct": "npc052",
+      "ten": "Phá Nhạc",
+      "tenDuPhong": [
+        "Cự Linh",
+        "Thần Lực"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 4,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1830,
+      "cy": 1535,
+      "r": 320,
+      "stalls": [
+        [
+          14654,
+          8444
+        ],
+        [
+          13354,
+          9354
+        ],
+        [
+          12964,
+          10264
+        ]
+      ]
+    },
+    {
+      "acct": "npc053",
+      "ten": "Kim Cang",
+      "tenDuPhong": [
+        "Cự Linh",
+        "Thần Lực"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 4,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 213,
+      "cy": 1654,
+      "r": 320,
+      "stalls": [
+        [
+          15044,
+          8444
+        ],
+        [
+          14134,
+          9354
+        ],
+        [
+          14134,
+          10264
+        ]
+      ]
+    },
+    {
+      "acct": "npc054",
+      "ten": "Thiết Chùy",
+      "tenDuPhong": [
+        "Cự Linh",
+        "Thần Lực"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 4,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 715,
+      "cy": 1751,
+      "r": 320,
+      "stalls": [
+        [
+          16344,
+          8444
+        ],
+        [
+          14394,
+          9354
+        ],
+        [
+          14394,
+          10264
+        ]
+      ]
+    },
+    {
+      "acct": "npc055",
+      "ten": "Oanh Thiên",
+      "tenDuPhong": [
+        "Cự Linh",
+        "Thần Lực"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 4,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 208,
+      "cy": 1876,
+      "r": 320,
+      "stalls": [
+        [
+          16604,
+          8444
+        ],
+        [
+          15434,
+          9354
+        ],
+        [
+          14654,
+          10264
+        ]
+      ]
+    },
+    {
+      "acct": "npc056",
+      "ten": "Bá Vương",
+      "tenDuPhong": [
+        "Cự Linh",
+        "Thần Lực"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 4,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 929,
+      "cy": 1146,
+      "r": 320,
+      "stalls": [
+        [
+          18164,
+          8444
+        ],
+        [
+          15824,
+          9354
+        ],
+        [
+          15044,
+          10264
+        ]
+      ]
+    },
+    {
+      "acct": "npc057",
+      "ten": "Hám Địa",
+      "tenDuPhong": [
+        "Cự Linh",
+        "Thần Lực"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 4,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 703,
+      "cy": 1198,
+      "r": 320,
+      "stalls": [
+        [
+          18554,
+          8444
+        ],
+        [
+          16084,
+          9354
+        ],
+        [
+          17384,
+          10264
+        ]
+      ]
+    },
+    {
+      "acct": "npc058",
+      "ten": "Liệt Sơn",
+      "tenDuPhong": [
+        "Cự Linh",
+        "Thần Lực"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 4,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 764,
+      "cy": 1282,
+      "r": 320,
+      "stalls": [
+        [
+          13094,
+          8509
+        ],
+        [
+          16474,
+          9354
+        ],
+        [
+          17644,
+          10264
+        ]
+      ]
+    },
+    {
+      "acct": "npc059",
+      "ten": "Thiên Quân",
+      "tenDuPhong": [
+        "Cự Linh",
+        "Thần Lực"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 4,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 1367,
+      "cy": 380,
+      "r": 320,
+      "stalls": [
+        [
+          13354,
+          8509
+        ],
+        [
+          16734,
+          9354
+        ],
+        [
+          18034,
+          10264
+        ]
+      ]
+    },
+    {
+      "acct": "npc060",
+      "ten": "Vạn Quân",
+      "tenDuPhong": [
+        "Cự Linh",
+        "Thần Lực"
+      ],
+      "fac": 1,
+      "facKey": "tianwang",
+      "series": 0,
+      "eqt": 4,
+      "sex": "m",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 1530,
+      "cy": 419,
+      "r": 320,
+      "stalls": [
+        [
+          13744,
+          8509
+        ],
+        [
+          16994,
+          9354
+        ],
+        [
+          12704,
+          10329
+        ]
+      ]
+    },
+    {
+      "acct": "npc061",
+      "ten": "Vô Ảnh",
+      "tenDuPhong": [
+        "Dạ Vũ",
+        "Hàn Tinh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 100,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 384,
+      "cy": 2008,
+      "r": 320,
+      "stalls": [
+        [
+          14654,
+          8509
+        ],
+        [
+          18554,
+          9354
+        ],
+        [
+          12964,
+          10329
+        ]
+      ]
+    },
+    {
+      "acct": "npc062",
+      "ten": "Truy Hồn",
+      "tenDuPhong": [
+        "Dạ Vũ",
+        "Hàn Tinh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 100,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 273,
+      "cy": 2251,
+      "r": 320,
+      "stalls": [
+        [
+          14914,
+          8509
+        ],
+        [
+          18944,
+          9354
+        ],
+        [
+          14394,
+          10329
+        ]
+      ]
+    },
+    {
+      "acct": "npc063",
+      "ten": "Đoạt Mệnh",
+      "tenDuPhong": [
+        "Dạ Vũ",
+        "Hàn Tinh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 100,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 727,
+      "cy": 2309,
+      "r": 320,
+      "stalls": [
+        [
+          16084,
+          8509
+        ],
+        [
+          12054,
+          9419
+        ],
+        [
+          14784,
+          10329
+        ]
+      ]
+    },
+    {
+      "acct": "npc064",
+      "ten": "Xuyên Vân",
+      "tenDuPhong": [
+        "Dạ Vũ",
+        "Hàn Tinh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 100,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2210,
+      "cy": 2325,
+      "r": 320,
+      "stalls": [
+        [
+          16604,
+          8509
+        ],
+        [
+          12444,
+          9419
+        ],
+        [
+          15304,
+          10329
+        ]
+      ]
+    },
+    {
+      "acct": "npc065",
+      "ten": "Lãnh Tiễn",
+      "tenDuPhong": [
+        "Dạ Vũ",
+        "Hàn Tinh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 100,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2229,
+      "cy": 2305,
+      "r": 320,
+      "stalls": [
+        [
+          18424,
+          8509
+        ],
+        [
+          13094,
+          9419
+        ],
+        [
+          17644,
+          10329
+        ]
+      ]
+    },
+    {
+      "acct": "npc066",
+      "ten": "Ám Dạ",
+      "tenDuPhong": [
+        "Dạ Vũ",
+        "Hàn Tinh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 100,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2074,
+      "cy": 1387,
+      "r": 320,
+      "stalls": [
+        [
+          13094,
+          8574
+        ],
+        [
+          13354,
+          9419
+        ],
+        [
+          18034,
+          10329
+        ]
+      ]
+    },
+    {
+      "acct": "npc067",
+      "ten": "Quỷ Ảnh",
+      "tenDuPhong": [
+        "Dạ Vũ",
+        "Hàn Tinh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 100,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 855,
+      "cy": 1376,
+      "r": 320,
+      "stalls": [
+        [
+          13484,
+          8574
+        ],
+        [
+          13744,
+          9419
+        ],
+        [
+          12834,
+          10394
+        ]
+      ]
+    },
+    {
+      "acct": "npc068",
+      "ten": "Tàn Nguyệt",
+      "tenDuPhong": [
+        "Dạ Vũ",
+        "Hàn Tinh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 100,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2071,
+      "cy": 1467,
+      "r": 320,
+      "stalls": [
+        [
+          13874,
+          8574
+        ],
+        [
+          14264,
+          9419
+        ],
+        [
+          13094,
+          10394
+        ]
+      ]
+    },
+    {
+      "acct": "npc069",
+      "ten": "Phi Tinh",
+      "tenDuPhong": [
+        "Dạ Vũ",
+        "Hàn Tinh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 100,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 2422,
+      "cy": 474,
+      "r": 320,
+      "stalls": [
+        [
+          14654,
+          8574
+        ],
+        [
+          15434,
+          9419
+        ],
+        [
+          14264,
+          10394
+        ]
+      ]
+    },
+    {
+      "acct": "npc070",
+      "ten": "Tuyệt Ảnh",
+      "tenDuPhong": [
+        "Dạ Vũ",
+        "Hàn Tinh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 100,
+      "sex": "f",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 277,
+      "cy": 457,
+      "r": 320,
+      "stalls": [
+        [
+          14914,
+          8574
+        ],
+        [
+          15694,
+          9419
+        ],
+        [
+          15304,
+          10394
+        ]
+      ]
+    },
+    {
+      "acct": "npc071",
+      "ten": "Liễu Diệp",
+      "tenDuPhong": [
+        "Tật Phong",
+        "Tật Ảnh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 101,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1190,
+      "cy": 2409,
+      "r": 320,
+      "stalls": [
+        [
+          15954,
+          8574
+        ],
+        [
+          15954,
+          9419
+        ],
+        [
+          15564,
+          10394
+        ]
+      ]
+    },
+    {
+      "acct": "npc072",
+      "ten": "Kim Đao",
+      "tenDuPhong": [
+        "Tật Phong",
+        "Tật Ảnh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 101,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2293,
+      "cy": 2418,
+      "r": 320,
+      "stalls": [
+        [
+          16214,
+          8574
+        ],
+        [
+          16344,
+          9419
+        ],
+        [
+          17774,
+          10394
+        ]
+      ]
+    },
+    {
+      "acct": "npc073",
+      "ten": "Nguyệt Nha",
+      "tenDuPhong": [
+        "Tật Phong",
+        "Tật Ảnh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 101,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1430,
+      "cy": 2491,
+      "r": 320,
+      "stalls": [
+        [
+          16474,
+          8574
+        ],
+        [
+          16604,
+          9419
+        ],
+        [
+          12964,
+          10459
+        ]
+      ]
+    },
+    {
+      "acct": "npc074",
+      "ten": "Độc Trích",
+      "tenDuPhong": [
+        "Tật Phong",
+        "Tật Ảnh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 101,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2161,
+      "cy": 2463,
+      "r": 320,
+      "stalls": [
+        [
+          18554,
+          8574
+        ],
+        [
+          16864,
+          9419
+        ],
+        [
+          13224,
+          10459
+        ]
+      ]
+    },
+    {
+      "acct": "npc075",
+      "ten": "Phong Nhận",
+      "tenDuPhong": [
+        "Tật Phong",
+        "Tật Ảnh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 101,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1277,
+      "cy": 2506,
+      "r": 320,
+      "stalls": [
+        [
+          18814,
+          8574
+        ],
+        [
+          17124,
+          9419
+        ],
+        [
+          14134,
+          10459
+        ]
+      ]
+    },
+    {
+      "acct": "npc076",
+      "ten": "Lãnh Phong",
+      "tenDuPhong": [
+        "Tật Phong",
+        "Tật Ảnh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 101,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2325,
+      "cy": 1526,
+      "r": 320,
+      "stalls": [
+        [
+          13094,
+          8639
+        ],
+        [
+          18424,
+          9419
+        ],
+        [
+          14394,
+          10459
+        ]
+      ]
+    },
+    {
+      "acct": "npc077",
+      "ten": "Tử Điện",
+      "tenDuPhong": [
+        "Tật Phong",
+        "Tật Ảnh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 101,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1236,
+      "cy": 1602,
+      "r": 320,
+      "stalls": [
+        [
+          13354,
+          8639
+        ],
+        [
+          11924,
+          9484
+        ],
+        [
+          15564,
+          10459
+        ]
+      ]
+    },
+    {
+      "acct": "npc078",
+      "ten": "Thanh Mang",
+      "tenDuPhong": [
+        "Tật Phong",
+        "Tật Ảnh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 101,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1027,
+      "cy": 1722,
+      "r": 320,
+      "stalls": [
+        [
+          13744,
+          8639
+        ],
+        [
+          12314,
+          9484
+        ],
+        [
+          15824,
+          10459
+        ]
+      ]
+    },
+    {
+      "acct": "npc079",
+      "ten": "Dạ Nguyệt",
+      "tenDuPhong": [
+        "Tật Phong",
+        "Tật Ảnh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 101,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 1233,
+      "cy": 457,
+      "r": 320,
+      "stalls": [
+        [
+          14004,
+          8639
+        ],
+        [
+          12834,
+          9484
+        ],
+        [
+          16344,
+          10459
+        ]
+      ]
+    },
+    {
+      "acct": "npc080",
+      "ten": "Ảo Đao",
+      "tenDuPhong": [
+        "Tật Phong",
+        "Tật Ảnh"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 101,
+      "sex": "f",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 1215,
+      "cy": 531,
+      "r": 320,
+      "stalls": [
+        [
+          14394,
+          8639
+        ],
+        [
+          13094,
+          9484
+        ],
+        [
+          13094,
+          10524
+        ]
+      ]
+    },
+    {
+      "acct": "npc081",
+      "ten": "Bạo Vũ",
+      "tenDuPhong": [
+        "Thiên Võng",
+        "Hỏa Cơ"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 102,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1039,
+      "cy": 119,
+      "r": 320,
+      "stalls": [
+        [
+          14784,
+          8639
+        ],
+        [
+          13614,
+          9484
+        ],
+        [
+          13614,
+          10524
+        ]
+      ]
+    },
+    {
+      "acct": "npc082",
+      "ten": "Liên Châu",
+      "tenDuPhong": [
+        "Thiên Võng",
+        "Hỏa Cơ"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 102,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1050,
+      "cy": 290,
+      "r": 320,
+      "stalls": [
+        [
+          15044,
+          8639
+        ],
+        [
+          13874,
+          9484
+        ],
+        [
+          13874,
+          10524
+        ]
+      ]
+    },
+    {
+      "acct": "npc083",
+      "ten": "Thiên La",
+      "tenDuPhong": [
+        "Thiên Võng",
+        "Hỏa Cơ"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 102,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1126,
+      "cy": 395,
+      "r": 320,
+      "stalls": [
+        [
+          15304,
+          8639
+        ],
+        [
+          15694,
+          9484
+        ],
+        [
+          14134,
+          10524
+        ]
+      ]
+    },
+    {
+      "acct": "npc084",
+      "ten": "Địa Võng",
+      "tenDuPhong": [
+        "Thiên Võng",
+        "Hỏa Cơ"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 102,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1056,
+      "cy": 461,
+      "r": 320,
+      "stalls": [
+        [
+          15824,
+          8639
+        ],
+        [
+          15954,
+          9484
+        ],
+        [
+          14524,
+          10524
+        ]
+      ]
+    },
+    {
+      "acct": "npc085",
+      "ten": "Mạn Thiên",
+      "tenDuPhong": [
+        "Thiên Võng",
+        "Hỏa Cơ"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 102,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1887,
+      "cy": 451,
+      "r": 320,
+      "stalls": [
+        [
+          16214,
+          8639
+        ],
+        [
+          16474,
+          9484
+        ],
+        [
+          14784,
+          10524
+        ]
+      ]
+    },
+    {
+      "acct": "npc086",
+      "ten": "Xuyên Tâm",
+      "tenDuPhong": [
+        "Thiên Võng",
+        "Hỏa Cơ"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 102,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2595,
+      "cy": 1787,
+      "r": 320,
+      "stalls": [
+        [
+          18554,
+          8639
+        ],
+        [
+          16994,
+          9484
+        ],
+        [
+          15694,
+          10524
+        ]
+      ]
+    },
+    {
+      "acct": "npc087",
+      "ten": "Tán Hoa",
+      "tenDuPhong": [
+        "Thiên Võng",
+        "Hỏa Cơ"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 102,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1791,
+      "cy": 1825,
+      "r": 320,
+      "stalls": [
+        [
+          18814,
+          8639
+        ],
+        [
+          17254,
+          9484
+        ],
+        [
+          16214,
+          10524
+        ]
+      ]
+    },
+    {
+      "acct": "npc088",
+      "ten": "Hỏa Tuyến",
+      "tenDuPhong": [
+        "Thiên Võng",
+        "Hỏa Cơ"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 102,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2623,
+      "cy": 1929,
+      "r": 320,
+      "stalls": [
+        [
+          19204,
+          8639
+        ],
+        [
+          18164,
+          9484
+        ],
+        [
+          13224,
+          10589
+        ]
+      ]
+    },
+    {
+      "acct": "npc089",
+      "ten": "Thần Cơ",
+      "tenDuPhong": [
+        "Thiên Võng",
+        "Hỏa Cơ"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 102,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 2592,
+      "cy": 611,
+      "r": 320,
+      "stalls": [
+        [
+          12054,
+          8704
+        ],
+        [
+          12054,
+          9549
+        ],
+        [
+          13484,
+          10589
+        ]
+      ]
+    },
+    {
+      "acct": "npc090",
+      "ten": "Quỷ Phủ",
+      "tenDuPhong": [
+        "Thiên Võng",
+        "Hỏa Cơ"
+      ],
+      "fac": 2,
+      "facKey": "tangmen",
+      "series": 1,
+      "eqt": 102,
+      "sex": "f",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 765,
+      "cy": 554,
+      "r": 320,
+      "stalls": [
+        [
+          12314,
+          8704
+        ],
+        [
+          12834,
+          9549
+        ],
+        [
+          13744,
+          10589
+        ]
+      ]
+    },
+    {
+      "acct": "npc091",
+      "ten": "Xích Luyện",
+      "tenDuPhong": [
+        "Hủ Cốt",
+        "Phệ Tâm"
+      ],
+      "fac": 3,
+      "facKey": "wudu",
+      "series": 1,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2211,
+      "cy": 484,
+      "r": 320,
+      "stalls": [
+        [
+          13094,
+          8704
+        ],
+        [
+          13484,
+          9549
+        ],
+        [
+          14134,
+          10589
+        ]
+      ]
+    },
+    {
+      "acct": "npc092",
+      "ten": "Cuồng Ẩm",
+      "tenDuPhong": [
+        "Hủ Cốt",
+        "Phệ Tâm"
+      ],
+      "fac": 3,
+      "facKey": "wudu",
+      "series": 1,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2565,
+      "cy": 585,
+      "r": 320,
+      "stalls": [
+        [
+          13484,
+          8704
+        ],
+        [
+          13744,
+          9549
+        ],
+        [
+          14394,
+          10589
+        ]
+      ]
+    },
+    {
+      "acct": "npc093",
+      "ten": "Vô Ngân",
+      "tenDuPhong": [
+        "Hủ Cốt",
+        "Phệ Tâm"
+      ],
+      "fac": 3,
+      "facKey": "wudu",
+      "series": 1,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 723,
+      "cy": 561,
+      "r": 320,
+      "stalls": [
+        [
+          13744,
+          8704
+        ],
+        [
+          15564,
+          9549
+        ],
+        [
+          14654,
+          10589
+        ]
+      ]
+    },
+    {
+      "acct": "npc094",
+      "ten": "Độc Vụ",
+      "tenDuPhong": [
+        "Hủ Cốt",
+        "Phệ Tâm"
+      ],
+      "fac": 3,
+      "facKey": "wudu",
+      "series": 1,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2349,
+      "cy": 598,
+      "r": 320,
+      "stalls": [
+        [
+          14004,
+          8704
+        ],
+        [
+          15824,
+          9549
+        ],
+        [
+          15954,
+          10589
+        ]
+      ]
+    },
+    {
+      "acct": "npc095",
+      "ten": "Ngô Công",
+      "tenDuPhong": [
+        "Hủ Cốt",
+        "Phệ Tâm"
+      ],
+      "fac": 3,
+      "facKey": "wudu",
+      "series": 1,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1972,
+      "cy": 683,
+      "r": 320,
+      "stalls": [
+        [
+          14394,
+          8704
+        ],
+        [
+          16474,
+          9549
+        ],
+        [
+          16214,
+          10589
+        ]
+      ]
+    },
+    {
+      "acct": "npc096",
+      "ten": "Thiềm Thừ",
+      "tenDuPhong": [
+        "Hủ Cốt",
+        "Phệ Tâm"
+      ],
+      "fac": 3,
+      "facKey": "wudu",
+      "series": 1,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 696,
+      "cy": 1963,
+      "r": 320,
+      "stalls": [
+        [
+          14654,
+          8704
+        ],
+        [
+          16864,
+          9549
+        ],
+        [
+          13484,
+          10654
+        ]
+      ]
+    },
+    {
+      "acct": "npc097",
+      "ten": "Âm Phong",
+      "tenDuPhong": [
+        "Hủ Cốt",
+        "Phệ Tâm"
+      ],
+      "fac": 3,
+      "facKey": "wudu",
+      "series": 1,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 207,
+      "cy": 2009,
+      "r": 320,
+      "stalls": [
+        [
+          14914,
+          8704
+        ],
+        [
+          17254,
+          9549
+        ],
+        [
+          13744,
+          10654
+        ]
+      ]
+    },
+    {
+      "acct": "npc098",
+      "ten": "Dạ Xoa",
+      "tenDuPhong": [
+        "Hủ Cốt",
+        "Phệ Tâm"
+      ],
+      "fac": 3,
+      "facKey": "wudu",
+      "series": 1,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1067,
+      "cy": 2115,
+      "r": 320,
+      "stalls": [
+        [
+          15174,
+          8704
+        ],
+        [
+          17644,
+          9549
+        ],
+        [
+          14134,
+          10654
+        ]
+      ]
+    },
+    {
+      "acct": "npc099",
+      "ten": "Đoạn Hồn",
+      "tenDuPhong": [
+        "Hủ Cốt",
+        "Phệ Tâm"
+      ],
+      "fac": 3,
+      "facKey": "wudu",
+      "series": 1,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 1014,
+      "cy": 654,
+      "r": 320,
+      "stalls": [
+        [
+          15564,
+          8704
+        ],
+        [
+          18164,
+          9549
+        ],
+        [
+          14394,
+          10654
+        ]
+      ]
+    },
+    {
+      "acct": "npc100",
+      "ten": "Thực Cốt",
+      "tenDuPhong": [
+        "Hủ Cốt",
+        "Phệ Tâm"
+      ],
+      "fac": 3,
+      "facKey": "wudu",
+      "series": 1,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 2556,
+      "cy": 571,
+      "r": 320,
+      "stalls": [
+        [
+          15824,
+          8704
+        ],
+        [
+          12704,
+          9614
+        ],
+        [
+          14654,
+          10654
+        ]
+      ]
+    },
+    {
+      "acct": "npc101",
+      "ten": "Diệu Âm",
+      "tenDuPhong": [
+        "Hồng Liên",
+        "Tuyết Liên"
+      ],
+      "fac": 4,
+      "facKey": "emei",
+      "series": 2,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1889,
+      "cy": 659,
+      "r": 320,
+      "stalls": [
+        [
+          16084,
+          8704
+        ],
+        [
+          13614,
+          9614
+        ],
+        [
+          15954,
+          10654
+        ]
+      ]
+    },
+    {
+      "acct": "npc102",
+      "ten": "Từ Hàng",
+      "tenDuPhong": [
+        "Hồng Liên",
+        "Tuyết Liên"
+      ],
+      "fac": 4,
+      "facKey": "emei",
+      "series": 2,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 705,
+      "cy": 828,
+      "r": 320,
+      "stalls": [
+        [
+          18684,
+          8704
+        ],
+        [
+          13874,
+          9614
+        ],
+        [
+          16214,
+          10654
+        ]
+      ]
+    },
+    {
+      "acct": "npc103",
+      "ten": "Tịnh Tâm",
+      "tenDuPhong": [
+        "Hồng Liên",
+        "Tuyết Liên"
+      ],
+      "fac": 4,
+      "facKey": "emei",
+      "series": 2,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2277,
+      "cy": 812,
+      "r": 320,
+      "stalls": [
+        [
+          18944,
+          8704
+        ],
+        [
+          15434,
+          9614
+        ],
+        [
+          13614,
+          10719
+        ]
+      ]
+    },
+    {
+      "acct": "npc104",
+      "ten": "Huệ Nguyện",
+      "tenDuPhong": [
+        "Hồng Liên",
+        "Tuyết Liên"
+      ],
+      "fac": 4,
+      "facKey": "emei",
+      "series": 2,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 674,
+      "cy": 850,
+      "r": 320,
+      "stalls": [
+        [
+          12054,
+          8769
+        ],
+        [
+          15694,
+          9614
+        ],
+        [
+          13874,
+          10719
+        ]
+      ]
+    },
+    {
+      "acct": "npc105",
+      "ten": "Thanh Liên",
+      "tenDuPhong": [
+        "Hồng Liên",
+        "Tuyết Liên"
+      ],
+      "fac": 4,
+      "facKey": "emei",
+      "series": 2,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 796,
+      "cy": 909,
+      "r": 320,
+      "stalls": [
+        [
+          12314,
+          8769
+        ],
+        [
+          15954,
+          9614
+        ],
+        [
+          14524,
+          10719
+        ]
+      ]
+    },
+    {
+      "acct": "npc106",
+      "ten": "Bạch Liên",
+      "tenDuPhong": [
+        "Hồng Liên",
+        "Tuyết Liên"
+      ],
+      "fac": 4,
+      "facKey": "emei",
+      "series": 2,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2477,
+      "cy": 2147,
+      "r": 320,
+      "stalls": [
+        [
+          13094,
+          8769
+        ],
+        [
+          16344,
+          9614
+        ],
+        [
+          14784,
+          10719
+        ]
+      ]
+    },
+    {
+      "acct": "npc107",
+      "ten": "Diệu Thiện",
+      "tenDuPhong": [
+        "Hồng Liên",
+        "Tuyết Liên"
+      ],
+      "fac": 4,
+      "facKey": "emei",
+      "series": 2,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2290,
+      "cy": 2172,
+      "r": 320,
+      "stalls": [
+        [
+          13354,
+          8769
+        ],
+        [
+          16734,
+          9614
+        ],
+        [
+          15694,
+          10719
+        ]
+      ]
+    },
+    {
+      "acct": "npc108",
+      "ten": "Phổ Độ",
+      "tenDuPhong": [
+        "Hồng Liên",
+        "Tuyết Liên"
+      ],
+      "fac": 4,
+      "facKey": "emei",
+      "series": 2,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 197,
+      "cy": 2182,
+      "r": 320,
+      "stalls": [
+        [
+          13614,
+          8769
+        ],
+        [
+          17124,
+          9614
+        ],
+        [
+          16084,
+          10719
+        ]
+      ]
+    },
+    {
+      "acct": "npc109",
+      "ten": "Tố Tâm",
+      "tenDuPhong": [
+        "Hồng Liên",
+        "Tuyết Liên"
+      ],
+      "fac": 4,
+      "facKey": "emei",
+      "series": 2,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 2471,
+      "cy": 665,
+      "r": 320,
+      "stalls": [
+        [
+          14004,
+          8769
+        ],
+        [
+          17384,
+          9614
+        ],
+        [
+          13484,
+          10784
+        ]
+      ]
+    },
+    {
+      "acct": "npc110",
+      "ten": "Lan Nhược",
+      "tenDuPhong": [
+        "Hồng Liên",
+        "Tuyết Liên"
+      ],
+      "fac": 4,
+      "facKey": "emei",
+      "series": 2,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 1132,
+      "cy": 712,
+      "r": 320,
+      "stalls": [
+        [
+          14264,
+          8769
+        ],
+        [
+          17774,
+          9614
+        ],
+        [
+          13744,
+          10784
+        ]
+      ]
+    },
+    {
+      "acct": "npc111",
+      "ten": "Lãnh Nguyệt",
+      "tenDuPhong": [
+        "Vân Mộng",
+        "Thủy Nguyệt"
+      ],
+      "fac": 5,
+      "facKey": "cuiyan",
+      "series": 2,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1859,
+      "cy": 996,
+      "r": 320,
+      "stalls": [
+        [
+          14654,
+          8769
+        ],
+        [
+          18034,
+          9614
+        ],
+        [
+          14004,
+          10784
+        ]
+      ]
+    },
+    {
+      "acct": "npc112",
+      "ten": "Thu Thủy",
+      "tenDuPhong": [
+        "Vân Mộng",
+        "Thủy Nguyệt"
+      ],
+      "fac": 5,
+      "facKey": "cuiyan",
+      "series": 2,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 544,
+      "cy": 1056,
+      "r": 320,
+      "stalls": [
+        [
+          15044,
+          8769
+        ],
+        [
+          12444,
+          9679
+        ],
+        [
+          14914,
+          10784
+        ]
+      ]
+    },
+    {
+      "acct": "npc113",
+      "ten": "Hàn Yên",
+      "tenDuPhong": [
+        "Vân Mộng",
+        "Thủy Nguyệt"
+      ],
+      "fac": 5,
+      "facKey": "cuiyan",
+      "series": 2,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 797,
+      "cy": 1102,
+      "r": 320,
+      "stalls": [
+        [
+          15434,
+          8769
+        ],
+        [
+          12704,
+          9679
+        ],
+        [
+          15174,
+          10784
+        ]
+      ]
+    },
+    {
+      "acct": "npc114",
+      "ten": "Sương Nguyệt",
+      "tenDuPhong": [
+        "Vân Mộng",
+        "Thủy Nguyệt"
+      ],
+      "fac": 5,
+      "facKey": "cuiyan",
+      "series": 2,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1029,
+      "cy": 1181,
+      "r": 320,
+      "stalls": [
+        [
+          15694,
+          8769
+        ],
+        [
+          13874,
+          9679
+        ],
+        [
+          15694,
+          10784
+        ]
+      ]
+    },
+    {
+      "acct": "npc115",
+      "ten": "Băng Tâm",
+      "tenDuPhong": [
+        "Vân Mộng",
+        "Thủy Nguyệt"
+      ],
+      "fac": 5,
+      "facKey": "cuiyan",
+      "series": 2,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2453,
+      "cy": 1320,
+      "r": 320,
+      "stalls": [
+        [
+          15954,
+          8769
+        ],
+        [
+          14134,
+          9679
+        ],
+        [
+          16084,
+          10784
+        ]
+      ]
+    },
+    {
+      "acct": "npc116",
+      "ten": "Tuyết Nhạn",
+      "tenDuPhong": [
+        "Vân Mộng",
+        "Thủy Nguyệt"
+      ],
+      "fac": 5,
+      "facKey": "cuiyan",
+      "series": 2,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2180,
+      "cy": 2246,
+      "r": 320,
+      "stalls": [
+        [
+          18684,
+          8769
+        ],
+        [
+          15564,
+          9679
+        ],
+        [
+          13224,
+          10849
+        ]
+      ]
+    },
+    {
+      "acct": "npc117",
+      "ten": "Ngưng Sương",
+      "tenDuPhong": [
+        "Vân Mộng",
+        "Thủy Nguyệt"
+      ],
+      "fac": 5,
+      "facKey": "cuiyan",
+      "series": 2,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2099,
+      "cy": 2392,
+      "r": 320,
+      "stalls": [
+        [
+          18944,
+          8769
+        ],
+        [
+          15954,
+          9679
+        ],
+        [
+          13484,
+          10849
+        ]
+      ]
+    },
+    {
+      "acct": "npc118",
+      "ten": "Thanh Sương",
+      "tenDuPhong": [
+        "Vân Mộng",
+        "Thủy Nguyệt"
+      ],
+      "fac": 5,
+      "facKey": "cuiyan",
+      "series": 2,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2125,
+      "cy": 2430,
+      "r": 320,
+      "stalls": [
+        [
+          19204,
+          8769
+        ],
+        [
+          16214,
+          9679
+        ],
+        [
+          13744,
+          10849
+        ]
+      ]
+    },
+    {
+      "acct": "npc119",
+      "ten": "Linh Lung",
+      "tenDuPhong": [
+        "Vân Mộng",
+        "Thủy Nguyệt"
+      ],
+      "fac": 5,
+      "facKey": "cuiyan",
+      "series": 2,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 774,
+      "cy": 800,
+      "r": 320,
+      "stalls": [
+        [
+          12314,
+          8834
+        ],
+        [
+          16474,
+          9679
+        ],
+        [
+          15044,
+          10849
+        ]
+      ]
+    },
+    {
+      "acct": "npc120",
+      "ten": "Mộng Điệp",
+      "tenDuPhong": [
+        "Vân Mộng",
+        "Thủy Nguyệt"
+      ],
+      "fac": 5,
+      "facKey": "cuiyan",
+      "series": 2,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 2635,
+      "cy": 715,
+      "r": 320,
+      "stalls": [
+        [
+          12834,
+          8834
+        ],
+        [
+          16864,
+          9679
+        ],
+        [
+          15434,
+          10849
+        ]
+      ]
+    },
+    {
+      "acct": "npc121",
+      "ten": "Tiêu Dao",
+      "tenDuPhong": [
+        "Hành Khất",
+        "Thiên Nhai"
+      ],
+      "fac": 6,
+      "facKey": "gaibang",
+      "series": 3,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1003,
+      "cy": 1365,
+      "r": 320,
+      "stalls": [
+        [
+          13094,
+          8834
+        ],
+        [
+          17514,
+          9679
+        ],
+        [
+          15694,
+          10849
+        ]
+      ]
+    },
+    {
+      "acct": "npc122",
+      "ten": "Lãng Tử",
+      "tenDuPhong": [
+        "Hành Khất",
+        "Thiên Nhai"
+      ],
+      "fac": 6,
+      "facKey": "gaibang",
+      "series": 3,
+      "eqt": 2,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1298,
+      "cy": 1448,
+      "r": 320,
+      "stalls": [
+        [
+          13484,
+          8834
+        ],
+        [
+          17774,
+          9679
+        ],
+        [
+          13354,
+          10914
+        ]
+      ]
+    },
+    {
+      "acct": "npc123",
+      "ten": "Túy Ông",
+      "tenDuPhong": [
+        "Hành Khất",
+        "Thiên Nhai"
+      ],
+      "fac": 6,
+      "facKey": "gaibang",
+      "series": 3,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1447,
+      "cy": 1482,
+      "r": 320,
+      "stalls": [
+        [
+          13874,
+          8834
+        ],
+        [
+          18294,
+          9679
+        ],
+        [
+          13614,
+          10914
+        ]
+      ]
+    },
+    {
+      "acct": "npc124",
+      "ten": "Phong Trần",
+      "tenDuPhong": [
+        "Hành Khất",
+        "Thiên Nhai"
+      ],
+      "fac": 6,
+      "facKey": "gaibang",
+      "series": 3,
+      "eqt": 2,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2682,
+      "cy": 1532,
+      "r": 320,
+      "stalls": [
+        [
+          14134,
+          8834
+        ],
+        [
+          12184,
+          9744
+        ],
+        [
+          15044,
+          10914
+        ]
+      ]
+    },
+    {
+      "acct": "npc125",
+      "ten": "Dã Hạc",
+      "tenDuPhong": [
+        "Hành Khất",
+        "Thiên Nhai"
+      ],
+      "fac": 6,
+      "facKey": "gaibang",
+      "series": 3,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1459,
+      "cy": 1558,
+      "r": 320,
+      "stalls": [
+        [
+          14394,
+          8834
+        ],
+        [
+          12444,
+          9744
+        ],
+        [
+          15434,
+          10914
+        ]
+      ]
+    },
+    {
+      "acct": "npc126",
+      "ten": "Cuồng Ca",
+      "tenDuPhong": [
+        "Hành Khất",
+        "Thiên Nhai"
+      ],
+      "fac": 6,
+      "facKey": "gaibang",
+      "series": 3,
+      "eqt": 2,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1450,
+      "cy": 2584,
+      "r": 320,
+      "stalls": [
+        [
+          14654,
+          8834
+        ],
+        [
+          12704,
+          9744
+        ],
+        [
+          13224,
+          10979
+        ]
+      ]
+    },
+    {
+      "acct": "npc127",
+      "ten": "Tiếu Thiên",
+      "tenDuPhong": [
+        "Hành Khất",
+        "Thiên Nhai"
+      ],
+      "fac": 6,
+      "facKey": "gaibang",
+      "series": 3,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 645,
+      "cy": 2545,
+      "r": 320,
+      "stalls": [
+        [
+          15174,
+          8834
+        ],
+        [
+          13874,
+          9744
+        ],
+        [
+          13484,
+          10979
+        ]
+      ]
+    },
+    {
+      "acct": "npc128",
+      "ten": "Phóng Đãng",
+      "tenDuPhong": [
+        "Hành Khất",
+        "Thiên Nhai"
+      ],
+      "fac": 6,
+      "facKey": "gaibang",
+      "series": 3,
+      "eqt": 2,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2244,
+      "cy": 2621,
+      "r": 320,
+      "stalls": [
+        [
+          15434,
+          8834
+        ],
+        [
+          14264,
+          9744
+        ],
+        [
+          15174,
+          10979
+        ]
+      ]
+    },
+    {
+      "acct": "npc129",
+      "ten": "Du Hiệp",
+      "tenDuPhong": [
+        "Hành Khất",
+        "Thiên Nhai"
+      ],
+      "fac": 6,
+      "facKey": "gaibang",
+      "series": 3,
+      "eqt": 2,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 1835,
+      "cy": 785,
+      "r": 320,
+      "stalls": [
+        [
+          15694,
+          8834
+        ],
+        [
+          15174,
+          9744
+        ],
+        [
+          12964,
+          11044
+        ]
+      ]
+    },
+    {
+      "acct": "npc130",
+      "ten": "Lãng Khách",
+      "tenDuPhong": [
+        "Hành Khất",
+        "Thiên Nhai"
+      ],
+      "fac": 6,
+      "facKey": "gaibang",
+      "series": 3,
+      "eqt": 2,
+      "sex": "f",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 1369,
+      "cy": 871,
+      "r": 320,
+      "stalls": [
+        [
+          16084,
+          8834
+        ],
+        [
+          15564,
+          9744
+        ],
+        [
+          13224,
+          11044
+        ]
+      ]
+    },
+    {
+      "acct": "npc131",
+      "ten": "Hỏa Phượng",
+      "tenDuPhong": [
+        "Hỏa Thần",
+        "Dung Nham"
+      ],
+      "fac": 7,
+      "facKey": "tianren",
+      "series": 3,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2298,
+      "cy": 1597,
+      "r": 320,
+      "stalls": [
+        [
+          18814,
+          8834
+        ],
+        [
+          16084,
+          9744
+        ],
+        [
+          13484,
+          11044
+        ]
+      ]
+    },
+    {
+      "acct": "npc132",
+      "ten": "Viêm Dương",
+      "tenDuPhong": [
+        "Hỏa Thần",
+        "Dung Nham"
+      ],
+      "fac": 7,
+      "facKey": "tianren",
+      "series": 3,
+      "eqt": 3,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1830,
+      "cy": 1535,
+      "r": 320,
+      "stalls": [
+        [
+          19074,
+          8834
+        ],
+        [
+          17514,
+          9744
+        ],
+        [
+          15044,
+          11044
+        ]
+      ]
+    },
+    {
+      "acct": "npc133",
+      "ten": "Liệt Hỏa",
+      "tenDuPhong": [
+        "Hỏa Thần",
+        "Dung Nham"
+      ],
+      "fac": 7,
+      "facKey": "tianren",
+      "series": 3,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 213,
+      "cy": 1654,
+      "r": 320,
+      "stalls": [
+        [
+          19334,
+          8834
+        ],
+        [
+          17774,
+          9744
+        ],
+        [
+          12834,
+          11109
+        ]
+      ]
+    },
+    {
+      "acct": "npc134",
+      "ten": "Phần Thiên",
+      "tenDuPhong": [
+        "Hỏa Thần",
+        "Dung Nham"
+      ],
+      "fac": 7,
+      "facKey": "tianren",
+      "series": 3,
+      "eqt": 3,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 715,
+      "cy": 1751,
+      "r": 320,
+      "stalls": [
+        [
+          12444,
+          8899
+        ],
+        [
+          18424,
+          9744
+        ],
+        [
+          13094,
+          11109
+        ]
+      ]
+    },
+    {
+      "acct": "npc135",
+      "ten": "Xích Viêm",
+      "tenDuPhong": [
+        "Hỏa Thần",
+        "Dung Nham"
+      ],
+      "fac": 7,
+      "facKey": "tianren",
+      "series": 3,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 208,
+      "cy": 1876,
+      "r": 320,
+      "stalls": [
+        [
+          12704,
+          8899
+        ],
+        [
+          12314,
+          9809
+        ],
+        [
+          13354,
+          11109
+        ]
+      ]
+    },
+    {
+      "acct": "npc136",
+      "ten": "Hỏa Vân",
+      "tenDuPhong": [
+        "Hỏa Thần",
+        "Dung Nham"
+      ],
+      "fac": 7,
+      "facKey": "tianren",
+      "series": 3,
+      "eqt": 3,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2287,
+      "cy": 2614,
+      "r": 320,
+      "stalls": [
+        [
+          12964,
+          8899
+        ],
+        [
+          12574,
+          9809
+        ],
+        [
+          13744,
+          11109
+        ]
+      ]
+    },
+    {
+      "acct": "npc137",
+      "ten": "Diệm Ma",
+      "tenDuPhong": [
+        "Hỏa Thần",
+        "Dung Nham"
+      ],
+      "fac": 7,
+      "facKey": "tianren",
+      "series": 3,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 902,
+      "cy": 288,
+      "r": 320,
+      "stalls": [
+        [
+          13744,
+          8899
+        ],
+        [
+          13094,
+          9809
+        ],
+        [
+          14914,
+          11109
+        ]
+      ]
+    },
+    {
+      "acct": "npc138",
+      "ten": "Thiên Hỏa",
+      "tenDuPhong": [
+        "Hỏa Thần",
+        "Dung Nham"
+      ],
+      "fac": 7,
+      "facKey": "tianren",
+      "series": 3,
+      "eqt": 3,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2031,
+      "cy": 364,
+      "r": 320,
+      "stalls": [
+        [
+          14004,
+          8899
+        ],
+        [
+          13484,
+          9809
+        ],
+        [
+          15174,
+          11109
+        ]
+      ]
+    },
+    {
+      "acct": "npc139",
+      "ten": "Hỏa Lân",
+      "tenDuPhong": [
+        "Hỏa Thần",
+        "Dung Nham"
+      ],
+      "fac": 7,
+      "facKey": "tianren",
+      "series": 3,
+      "eqt": 3,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 659,
+      "cy": 902,
+      "r": 320,
+      "stalls": [
+        [
+          14264,
+          8899
+        ],
+        [
+          14134,
+          9809
+        ],
+        [
+          12834,
+          11174
+        ]
+      ]
+    },
+    {
+      "acct": "npc140",
+      "ten": "Viêm Ma",
+      "tenDuPhong": [
+        "Hỏa Thần",
+        "Dung Nham"
+      ],
+      "fac": 7,
+      "facKey": "tianren",
+      "series": 3,
+      "eqt": 3,
+      "sex": "f",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 2425,
+      "cy": 878,
+      "r": 320,
+      "stalls": [
+        [
+          14524,
+          8899
+        ],
+        [
+          14394,
+          9809
+        ],
+        [
+          13224,
+          11174
+        ]
+      ]
+    },
+    {
+      "acct": "npc141",
+      "ten": "Thanh Phong",
+      "tenDuPhong": [
+        "Chân Vũ",
+        "Hư Không"
+      ],
+      "fac": 8,
+      "facKey": "wudang",
+      "series": 4,
+      "eqt": 0,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 384,
+      "cy": 2008,
+      "r": 320,
+      "stalls": [
+        [
+          14914,
+          8899
+        ],
+        [
+          15174,
+          9809
+        ],
+        [
+          13744,
+          11174
+        ]
+      ]
+    },
+    {
+      "acct": "npc142",
+      "ten": "Vô Nhai",
+      "tenDuPhong": [
+        "Chân Vũ",
+        "Hư Không"
+      ],
+      "fac": 8,
+      "facKey": "wudang",
+      "series": 4,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 273,
+      "cy": 2251,
+      "r": 320,
+      "stalls": [
+        [
+          15174,
+          8899
+        ],
+        [
+          15564,
+          9809
+        ],
+        [
+          14784,
+          11174
+        ]
+      ]
+    },
+    {
+      "acct": "npc143",
+      "ten": "Thần Vũ",
+      "tenDuPhong": [
+        "Chân Vũ",
+        "Hư Không"
+      ],
+      "fac": 8,
+      "facKey": "wudang",
+      "series": 4,
+      "eqt": 0,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 727,
+      "cy": 2309,
+      "r": 320,
+      "stalls": [
+        [
+          15564,
+          8899
+        ],
+        [
+          15824,
+          9809
+        ],
+        [
+          12834,
+          11239
+        ]
+      ]
+    },
+    {
+      "acct": "npc144",
+      "ten": "Thái Cực",
+      "tenDuPhong": [
+        "Chân Vũ",
+        "Hư Không"
+      ],
+      "fac": 8,
+      "facKey": "wudang",
+      "series": 4,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2210,
+      "cy": 2325,
+      "r": 320,
+      "stalls": [
+        [
+          16214,
+          8899
+        ],
+        [
+          16344,
+          9809
+        ],
+        [
+          13094,
+          11239
+        ]
+      ]
+    },
+    {
+      "acct": "npc145",
+      "ten": "Vô Cực",
+      "tenDuPhong": [
+        "Chân Vũ",
+        "Hư Không"
+      ],
+      "fac": 8,
+      "facKey": "wudang",
+      "series": 4,
+      "eqt": 0,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2229,
+      "cy": 2305,
+      "r": 320,
+      "stalls": [
+        [
+          18944,
+          8899
+        ],
+        [
+          17514,
+          9809
+        ],
+        [
+          13874,
+          11239
+        ]
+      ]
+    },
+    {
+      "acct": "npc146",
+      "ten": "Linh Hư",
+      "tenDuPhong": [
+        "Chân Vũ",
+        "Hư Không"
+      ],
+      "fac": 8,
+      "facKey": "wudang",
+      "series": 4,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 104,
+      "cy": 379,
+      "r": 320,
+      "stalls": [
+        [
+          19204,
+          8899
+        ],
+        [
+          18034,
+          9809
+        ],
+        [
+          14524,
+          11239
+        ]
+      ]
+    },
+    {
+      "acct": "npc147",
+      "ten": "Thanh Hư",
+      "tenDuPhong": [
+        "Chân Vũ",
+        "Hư Không"
+      ],
+      "fac": 8,
+      "facKey": "wudang",
+      "series": 4,
+      "eqt": 0,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1223,
+      "cy": 461,
+      "r": 320,
+      "stalls": [
+        [
+          19464,
+          8899
+        ],
+        [
+          18294,
+          9809
+        ],
+        [
+          14914,
+          11239
+        ]
+      ]
+    },
+    {
+      "acct": "npc148",
+      "ten": "Tùng Hạc",
+      "tenDuPhong": [
+        "Chân Vũ",
+        "Hư Không"
+      ],
+      "fac": 8,
+      "facKey": "wudang",
+      "series": 4,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1482,
+      "cy": 443,
+      "r": 320,
+      "stalls": [
+        [
+          12444,
+          8964
+        ],
+        [
+          12054,
+          9874
+        ],
+        [
+          12704,
+          11304
+        ]
+      ]
+    },
+    {
+      "acct": "npc149",
+      "ten": "Vân Hạc",
+      "tenDuPhong": [
+        "Chân Vũ",
+        "Hư Không"
+      ],
+      "fac": 8,
+      "facKey": "wudang",
+      "series": 4,
+      "eqt": 0,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 2329,
+      "cy": 999,
+      "r": 320,
+      "stalls": [
+        [
+          12704,
+          8964
+        ],
+        [
+          12444,
+          9874
+        ],
+        [
+          13874,
+          11304
+        ]
+      ]
+    },
+    {
+      "acct": "npc150",
+      "ten": "Đạo Chân",
+      "tenDuPhong": [
+        "Chân Vũ",
+        "Hư Không"
+      ],
+      "fac": 8,
+      "facKey": "wudang",
+      "series": 4,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 1988,
+      "cy": 1020,
+      "r": 320,
+      "stalls": [
+        [
+          12964,
+          8964
+        ],
+        [
+          13094,
+          9874
+        ],
+        [
+          14654,
+          11304
+        ]
+      ]
+    },
+    {
+      "acct": "npc151",
+      "ten": "Kiếm Tiên",
+      "tenDuPhong": [
+        "Ngân Hà",
+        "Vô Trần"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 0,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1190,
+      "cy": 2409,
+      "r": 320,
+      "stalls": [
+        [
+          13744,
+          8964
+        ],
+        [
+          13354,
+          9874
+        ],
+        [
+          12574,
+          11369
+        ]
+      ]
+    },
+    {
+      "acct": "npc152",
+      "ten": "Ngự Kiếm",
+      "tenDuPhong": [
+        "Ngân Hà",
+        "Vô Trần"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2293,
+      "cy": 2418,
+      "r": 320,
+      "stalls": [
+        [
+          14004,
+          8964
+        ],
+        [
+          14134,
+          9874
+        ],
+        [
+          13744,
+          11369
+        ]
+      ]
+    },
+    {
+      "acct": "npc153",
+      "ten": "Phi Tiên",
+      "tenDuPhong": [
+        "Ngân Hà",
+        "Vô Trần"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 0,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1430,
+      "cy": 2491,
+      "r": 320,
+      "stalls": [
+        [
+          14524,
+          8964
+        ],
+        [
+          14394,
+          9874
+        ],
+        [
+          14264,
+          11369
+        ]
+      ]
+    },
+    {
+      "acct": "npc154",
+      "ten": "Lăng Tiêu",
+      "tenDuPhong": [
+        "Ngân Hà",
+        "Vô Trần"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 2161,
+      "cy": 2463,
+      "r": 320,
+      "stalls": [
+        [
+          14784,
+          8964
+        ],
+        [
+          15304,
+          9874
+        ],
+        [
+          14654,
+          11369
+        ]
+      ]
+    },
+    {
+      "acct": "npc155",
+      "ten": "Thiên Ngoại",
+      "tenDuPhong": [
+        "Ngân Hà",
+        "Vô Trần"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 0,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1277,
+      "cy": 2506,
+      "r": 320,
+      "stalls": [
+        [
+          15174,
+          8964
+        ],
+        [
+          15824,
+          9874
+        ],
+        [
+          13614,
+          11434
+        ]
+      ]
+    },
+    {
+      "acct": "npc156",
+      "ten": "Vân Du",
+      "tenDuPhong": [
+        "Ngân Hà",
+        "Vô Trần"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 1530,
+      "cy": 435,
+      "r": 320,
+      "stalls": [
+        [
+          15434,
+          8964
+        ],
+        [
+          17254,
+          9874
+        ],
+        [
+          13874,
+          11434
+        ]
+      ]
+    },
+    {
+      "acct": "npc157",
+      "ten": "Tuyệt Trần",
+      "tenDuPhong": [
+        "Ngân Hà",
+        "Vô Trần"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 0,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2065,
+      "cy": 485,
+      "r": 320,
+      "stalls": [
+        [
+          15824,
+          8964
+        ],
+        [
+          17514,
+          9874
+        ],
+        [
+          14264,
+          11434
+        ]
+      ]
+    },
+    {
+      "acct": "npc158",
+      "ten": "Phá Hư",
+      "tenDuPhong": [
+        "Ngân Hà",
+        "Vô Trần"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2379,
+      "cy": 608,
+      "r": 320,
+      "stalls": [
+        [
+          18944,
+          8964
+        ],
+        [
+          17774,
+          9874
+        ],
+        [
+          14524,
+          11434
+        ]
+      ]
+    },
+    {
+      "acct": "npc159",
+      "ten": "Thương Thiên",
+      "tenDuPhong": [
+        "Ngân Hà",
+        "Vô Trần"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 0,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 857,
+      "cy": 1052,
+      "r": 320,
+      "stalls": [
+        [
+          19204,
+          8964
+        ],
+        [
+          18294,
+          9874
+        ],
+        [
+          14784,
+          11434
+        ]
+      ]
+    },
+    {
+      "acct": "npc160",
+      "ten": "Tinh Hà",
+      "tenDuPhong": [
+        "Ngân Hà",
+        "Vô Trần"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 0,
+      "sex": "f",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 1279,
+      "cy": 1009,
+      "r": 320,
+      "stalls": [
+        [
+          19464,
+          8964
+        ],
+        [
+          18554,
+          9874
+        ],
+        [
+          15044,
+          11434
+        ]
+      ]
+    },
+    {
+      "acct": "npc161",
+      "ten": "Triệu Phong",
+      "tenDuPhong": [
+        "Côn Sơn",
+        "Dao Quang"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1039,
+      "cy": 119,
+      "r": 320,
+      "stalls": [
+        [
+          12184,
+          9029
+        ],
+        [
+          12184,
+          9939
+        ],
+        [
+          13874,
+          11499
+        ]
+      ]
+    },
+    {
+      "acct": "npc162",
+      "ten": "Hoán Vũ",
+      "tenDuPhong": [
+        "Côn Sơn",
+        "Dao Quang"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1050,
+      "cy": 290,
+      "r": 320,
+      "stalls": [
+        [
+          12834,
+          9029
+        ],
+        [
+          12444,
+          9939
+        ],
+        [
+          14134,
+          11499
+        ]
+      ]
+    },
+    {
+      "acct": "npc163",
+      "ten": "Ngự Lôi",
+      "tenDuPhong": [
+        "Côn Sơn",
+        "Dao Quang"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1126,
+      "cy": 395,
+      "r": 320,
+      "stalls": [
+        [
+          13744,
+          9029
+        ],
+        [
+          13614,
+          9939
+        ],
+        [
+          14784,
+          11499
+        ]
+      ]
+    },
+    {
+      "acct": "npc164",
+      "ten": "Phi Tuyết",
+      "tenDuPhong": [
+        "Côn Sơn",
+        "Dao Quang"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1056,
+      "cy": 461,
+      "r": 320,
+      "stalls": [
+        [
+          14004,
+          9029
+        ],
+        [
+          14394,
+          9939
+        ],
+        [
+          13874,
+          11564
+        ]
+      ]
+    },
+    {
+      "acct": "npc165",
+      "ten": "Hàn Băng",
+      "tenDuPhong": [
+        "Côn Sơn",
+        "Dao Quang"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 205,
+      "mobLv": 195,
+      "mobs": [
+        159,
+        169
+      ],
+      "cx": 1887,
+      "cy": 451,
+      "r": 320,
+      "stalls": [
+        [
+          14914,
+          9029
+        ],
+        [
+          15174,
+          9939
+        ],
+        [
+          14134,
+          11564
+        ]
+      ]
+    },
+    {
+      "acct": "npc166",
+      "ten": "Lôi Chấn",
+      "tenDuPhong": [
+        "Côn Sơn",
+        "Dao Quang"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 389,
+      "cy": 625,
+      "r": 320,
+      "stalls": [
+        [
+          15174,
+          9029
+        ],
+        [
+          15564,
+          9939
+        ],
+        [
+          14784,
+          11564
+        ]
+      ]
+    },
+    {
+      "acct": "npc167",
+      "ten": "Phong Lôi",
+      "tenDuPhong": [
+        "Côn Sơn",
+        "Dao Quang"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 582,
+      "cy": 753,
+      "r": 320,
+      "stalls": [
+        [
+          15434,
+          9029
+        ],
+        [
+          16474,
+          9939
+        ],
+        [
+          15044,
+          11564
+        ]
+      ]
+    },
+    {
+      "acct": "npc168",
+      "ten": "Băng Phách",
+      "tenDuPhong": [
+        "Côn Sơn",
+        "Dao Quang"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 201,
+      "mobLv": 185,
+      "mobs": [
+        169,
+        159
+      ],
+      "cx": 2326,
+      "cy": 739,
+      "r": 320,
+      "stalls": [
+        [
+          16344,
+          9029
+        ],
+        [
+          16734,
+          9939
+        ],
+        [
+          14134,
+          11629
+        ]
+      ]
+    },
+    {
+      "acct": "npc169",
+      "ten": "Tuyết Sơn",
+      "tenDuPhong": [
+        "Côn Sơn",
+        "Dao Quang"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 1,
+      "sex": "m",
+      "zone": 340,
+      "mobLv": 175,
+      "mobs": [
+        704,
+        703,
+        705
+      ],
+      "cx": 2334,
+      "cy": 1048,
+      "r": 320,
+      "stalls": [
+        [
+          18944,
+          9029
+        ],
+        [
+          17384,
+          9939
+        ],
+        [
+          15044,
+          11629
+        ]
+      ]
+    },
+    {
+      "acct": "npc170",
+      "ten": "Thiên Phong",
+      "tenDuPhong": [
+        "Côn Sơn",
+        "Dao Quang"
+      ],
+      "fac": 9,
+      "facKey": "kunlun",
+      "series": 4,
+      "eqt": 1,
+      "sex": "f",
+      "zone": 336,
+      "mobLv": 165,
+      "mobs": [
+        707
+      ],
+      "cx": 947,
+      "cy": 1087,
+      "r": 320,
+      "stalls": [
+        [
+          19204,
+          9029
+        ],
+        [
+          17774,
+          9939
+        ],
+        [
+          15174,
+          11694
+        ]
+      ]
+    }
+  ]
+}

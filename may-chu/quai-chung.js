@@ -78,7 +78,7 @@ function cuBdv(P, M, t) {
   for (const a of P.cu) {
     if (t - (BAO_BDV.get(a) || 0) < BAO_BDV_MS) continue;
     BAO_BDV.set(a, t);
-    try { require("./the-gioi.js").thongBaoTk(`${(N.ZONES.get(P.bai) || {}).n || "Bãi này"} vừa đổi bản đồ — tải lại trang (F5) để thấy quái đứng đúng chỗ`, a, true); } catch (e) { console.error("Quái chung — báo tải lại:", e.message); }
+    try { require("./the-gioi.js").thongBaoTk(`${(N.ZONES.get(P.bai) || {}).n || "Bãi này"} vừa đổi bản đồ. Tải lại trang (F5) để thấy quái đứng đúng chỗ.`, a, true); } catch (e) { console.error("Quái chung — báo tải lại:", e.message); }
   }
 }
 const mauCua = (m) => [m.uid, Math.max(0, Math.ceil(m.mau))];

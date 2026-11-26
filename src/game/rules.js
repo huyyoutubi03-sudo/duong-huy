@@ -94,12 +94,12 @@ export const CHIEU_TRUOC = {
 export function chanNang(skills, id, ten) {
   const L = CHIEU_TRUOC[id]; if (!L) return null;
   const m = (skills || {})[id] | 0;
-  if (m > 19 && +id !== 1110) return "Cấp tu luyện của bạn đã tới đỉnh rồi, không thể nâng cao hơn nữa.";
+  if (m > 19 && +id !== 1110) return "Cấp tu luyện của ngươi tới đỉnh rồi, nâng nữa cũng vô ích.";
   for (const p of L) {
     const pl = (skills || {})[p] | 0;
-    if (pl < 5) return `Võ công cơ bản của [${ten(p)}] bạn quá thấp, hạn chế [${ten(id)}] luyện cấp.`;
+    if (pl < 5) return `Võ công cơ bản [${ten(p)}] của ngươi quá thấp, [${ten(id)}] luyện cấp bị hạn chế — luyện cơ bản lên đi.`;
     if (m > 15) return null;
-    if (pl < m + 5) return `Võ công cơ bản của [${ten(p)}] bạn quá thấp, hạn chế [${ten(id)}] tăng cấp.`;
+    if (pl < m + 5) return `Võ công cơ bản [${ten(p)}] của ngươi quá thấp, [${ten(id)}] tăng cấp bị hạn chế — luyện cơ bản lên đi.`;
   }
   return null;
 }

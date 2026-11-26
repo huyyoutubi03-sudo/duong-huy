@@ -181,8 +181,8 @@ function docBody(req) {
     const parts = []; let n = 0;
     req.on("data", (c) => { n += c.length; if (n <= BODY_MAX) parts.push(c); });
     req.on("end", () => {
-      if (n > BODY_MAX) return no(Object.assign(new Error("Dữ liệu gửi lên quá lớn"), { code: 413 }));
-      try { ok(n ? JSON.parse(Buffer.concat(parts).toString("utf8")) : {}); } catch { no(Object.assign(new Error("Dữ liệu gửi lên bị hỏng"), { code: 400 })); }
+      if (n > BODY_MAX) return no(Object.assign(new Error("Gửi lên nhiều quá. Gửi ít lại đi."), { code: 413 }));
+      try { ok(n ? JSON.parse(Buffer.concat(parts).toString("utf8")) : {}); } catch { no(Object.assign(new Error("Dữ liệu gửi lên hỏng rồi. Gửi lại đi."), { code: 400 })); }
     });
     req.on("error", no);
   });
@@ -232,7 +232,7 @@ const nvCua = (h) => ({ lvl: h.lvl, exp: h.exp, gold: h.gold, xu: h.xu | 0, lead
 // sách / điểm thêm của nhân vật (vừa dùng món Kỳ Trân Các): trình duyệt nhận books, điểm thêm, skMin (cấp tối thiểu từ sách / Đại Thành) và
 // nâng hero.skills tới skMin — không ghi đè các điểm kỹ năng trình duyệt vừa cộng mà chưa lưu
 const knCua = (h) => ({ books: h.books || [], skMin: h.skMin || {}, kyNangThem: h.kyNangThem | 0, tiemNangThem: h.tiemNangThem | 0, mt: h.mt | 0, tt: h.tt | 0 });
-const oCua = (tk, b) => { const o = b.o | 0, h = o >= 0 && o < D.SLOT_N && tk.nv[o]; if (!h) throw Object.assign(new Error("Ô này không có nhân vật"), { code: 404 }); return h; };
+const oCua = (tk, b) => { const o = b.o | 0, h = o >= 0 && o < D.SLOT_N && tk.nv[o]; if (!h) throw Object.assign(new Error("Ô này trống. Không có nhân vật nào cả."), { code: 404 }); return h; };
 
 // batDoiMk: phải đổi mật khẩu đăng nhập trước khi vào game (tài khoản quản trị tạo / đặt lại — may-chu/bao-mat.js); truoc: lần đăng nhập trước { luc, ip }
 // (vào game hiện 1 dòng để người chơi tự thấy có ai vào lén); co2: đã có mật khẩu cấp 2
@@ -269,12 +269,12 @@ function tenNv(s) {
 
 function dangNhap(req, res, b) {
   const k = diaChi(req) + "|" + D.tenTk(b.ten), s = sai.get(k), t = Date.now();
-  if (s && s.n >= SAI_MAX && t < s.den) return loi(res, 429, `Sai quá ${SAI_MAX} lần — thử lại sau ${Math.ceil((s.den - t) / 60000)} phút`);
+  if (s && s.n >= SAI_MAX && t < s.den) return loi(res, 429, `Sai quá ${SAI_MAX} lần rồi. Chờ ${Math.ceil((s.den - t) / 60000)} phút nữa rồi hãy gõ lại.`);
   const tk = D.docTk(b.ten), ip = diaChi(req);
   if (!tk || !D.dungMk(tk, b.mk)) {
     sai.set(k, { n: s && t < s.den ? s.n + 1 : 1, den: t + SAI_KHOA });
     NK.ghi("sai-mk", tk ? tk.ten : D.tenTk(b.ten).slice(0, 20) || "?", null, tk ? "Sai mật khẩu" : "Đăng nhập tài khoản không có", { ip });
-    return loi(res, 401, "Sai tên tài khoản hoặc mật khẩu");
+    return loi(res, 401, "Tên tài khoản hoặc mật khẩu sai. Gõ cho cẩn thận vào.");
   }
   sai.delete(k);
   const khoa = QT.khoaCon(tk); // quản trị khóa (bảng quản trị)
@@ -294,26 +294,26 @@ function dangNhap(req, res, b) {
 }
 
 function taoNv(res, tk, o, b, trang) {
-  if (tk.nv[o]) return loi(res, 409, "Ô này đã có nhân vật");
-  const h = b.hero; if (!h || typeof h !== "object" || Array.isArray(h)) return loi(res, 400, "Thiếu nhân vật");
-  const name = tenNv(h.name); if (!name) return loi(res, 400, "Tên nhân vật 2–14 ký tự, không dùng < > & \" ' ` \\ hay ký tự ẩn / ký tự điều khiển");
-  if (!(tk.admin && BM.daMo(tk, trang)) && tenCam(name)) return loi(res, 400, "Tên nhân vật không được có chữ GM, ADMIN hay từ ngữ thô tục — chọn tên khác"); // quản trị: phải mở khóa an toàn
-  if (D.tenDaCo(name)) return loi(res, 409, `Tên "${name}" đã có người dùng — chọn tên khác`);
+  if (tk.nv[o]) return loi(res, 409, "Ô này đã có nhân vật rồi. Chọn ô khác đi.");
+  const h = b.hero; if (!h || typeof h !== "object" || Array.isArray(h)) return loi(res, 400, "Không thấy nhân vật. Gửi lại đi.");
+  const name = tenNv(h.name); if (!name) return loi(res, 400, "Tên nhân vật chỉ 2–14 ký tự, cấm < > & \" ' ` \\ và ký tự ẩn / ký tự điều khiển. Đặt lại cho đúng.");
+  if (!(tk.admin && BM.daMo(tk, trang)) && tenCam(name)) return loi(res, 400, "Tên này cấm dùng chữ GM, ADMIN hay từ thô tục. Đổi tên khác đi."); // quản trị: phải mở khóa an toàn
+  if (D.tenDaCo(name)) return loi(res, 409, `Tên "${name}" đã có người lấy rồi. Đổi tên khác đi.`);
   const t = Date.now();
   // trường máy chủ giữ (GIU) không nhận từ trình duyệt lúc tạo (soát 05/11: trước nhận nguyên -> gieo được rương / tiền công phân thân… = đúc vật phẩm)
   const goc = { ...h }; for (const k of GIU) delete goc[k];
   const hero = { ...goc, v: 1, slot: o, name, server: SV.server, lvl: 1, exp: 0, gold: 0, xu: 0, bag: [], equip: {}, uN: 0, locDo: 0, created: t, last: t };
   DO.chuan(hero);
-  if (JSON.stringify(hero).length > NV_MAX) return loi(res, 413, "Nhân vật quá lớn");
+  if (JSON.stringify(hero).length > NV_MAX) return loi(res, 413, "Nhân vật quá lớn rồi. Bớt lại đi.");
   tk.nv[o] = hero; D.ghiTk(tk);
   NK.ghi("nv", tk.ten, name, "Tạo nhân vật");
   guiJson(res, 200, { hero });
 }
 
 function luuNv(res, tk, o, b) {
-  const cu = tk.nv[o]; if (!cu) return loi(res, 404, "Ô này không có nhân vật");
-  const h = b.hero; if (!h || typeof h !== "object" || Array.isArray(h)) return loi(res, 400, "Thiếu nhân vật");
-  if (h.name !== cu.name) return loi(res, 409, "Nhân vật không khớp ô lưu — hãy tải lại trang");
+  const cu = tk.nv[o]; if (!cu) return loi(res, 404, "Ô này trống. Không có nhân vật nào cả.");
+  const h = b.hero; if (!h || typeof h !== "object" || Array.isArray(h)) return loi(res, 400, "Không thấy nhân vật. Gửi lại đi.");
+  if (h.name !== cu.name) return loi(res, 409, "Nhân vật không khớp ô lưu. Tải lại trang đi rồi làm lại.");
   const hero = { ...h, v: 1, slot: o, name: cu.name, server: cu.server, created: cu.created, last: Date.now() };
   const dpCu = (h.dpV | 0) !== (cu.dpV | 0); // bản lưu gửi trước lần đổi môn phái gần nhất (may-chu/doi-phai.js): phái / hệ / võ công theo bản máy chủ
   for (const k of GIU) if (k in cu) hero[k] = cu[k]; else delete hero[k];
@@ -341,7 +341,7 @@ function luuNv(res, tk, o, b) {
   // sai phái cũng phải bỏ — PUT gán chiêu tier của phái khác vẫn qua, chỉ trình duyệt chặn. Chiêu trung lập (không thuộc phái nào) giữ nguyên)
   for (const id of Object.keys(hero.skills)) if ((DO.CHIEU_SACH.has(+id) && !DO.sachPhai(hero.fac, id)) || (!DO.CHIEU_SACH.has(+id) && !DO.thuocPhai(hero.fac, id))) delete hero.skills[id];
   DO.hamChieu(hero); // từng chiêu ≤ cấp nhân vật − cấp yêu cầu + 1 (anh 29/10 — như engine)
-  if (JSON.stringify(hero).length > NV_MAX) return loi(res, 413, "Nhân vật quá lớn");
+  if (JSON.stringify(hero).length > NV_MAX) return loi(res, 413, "Nhân vật quá lớn rồi. Bớt lại đi.");
   tk.nv[o] = hero; D.ghiTk(tk);
   guiJson(res, 200, { ok: 1, online: soOnline() });
 }
@@ -477,7 +477,7 @@ function nhip(res, tk, b, trang) {
     // hoàn trong trận (anh 17/11): tối đa 3 phút, trọng thương thì mất hết (tong-kim.js hoanTran)
     if (TKM.hoanTran(h, key)) ghi = true;
     // thuốc Tống Kim (anh 12/11 — do.js CAU_TK): rời trận / sang bãi khác / hết trận thì mất (chỉ nhịp có trạng thái bãi — BAI_NAY vừa cập nhật ở trên)
-    if (s) { const bo = TKM.boThuocTk(h, key); if (bo) { ghi = true; ket.tui = tuiCua(h); ket.tkMat = [`Rời chiến trường Tống Kim: ${bo} bình thuốc Tống Kim đã mất (chỉ dùng trong trận)`]; } }
+    if (s) { const bo = TKM.boThuocTk(h, key); if (bo) { ghi = true; ket.tui = tuiCua(h); ket.tkMat = [`Rời chiến trường Tống Kim: mất ${bo} bình thuốc Tống Kim rồi. Thuốc này chỉ dùng trong trận thôi.`]; } }
     if (DO.buffDem(h, key, ghi)) ghi = true; // trạng thái Tiên Thảo Lộ / may mắn: giờ trôi lúc đang chơi
     ket.buff = DO.buffCon(h, key);
     // Phân Thân (may-chu/phan-than.js — anh 05/11): giờ dùng trong ngày (chỉ lúc có phân thân theo ở bãi train), hết giờ thì cất hết, tiền công
@@ -518,7 +518,7 @@ function nhip(res, tk, b, trang) {
     if (rxb) { ket.rxBao = rxb; DO.chuan(h); ket.tui = tuiCua(h); ghi = true; }
     // khóa bảo hiểm có hạn vừa hết giờ (anh 11/11 — trang bị mở từ Bảo rương đồ xanh khóa; do.js chuan ghi h.kbhMoTin): câu báo + túi mới (bỏ dòng khóa)
     if (Array.isArray(h.kbhMoTin) && h.kbhMoTin.length) {
-      ket.kbhMo = [...(ket.kbhMo || []), ...h.kbhMoTin.map((n) => `${n}: hết thời gian chờ mở khóa — đã mở khóa bảo hiểm, giao dịch / bày bán được`)];
+      ket.kbhMo = [...(ket.kbhMo || []), ...h.kbhMoTin.map((n) => `${n}: hết giờ chờ mở khóa. Mở khóa bảo hiểm rồi, giao dịch / bày bán được.`)];
       delete h.kbhMoTin; ket.tui = tuiCua(h); ghi = true;
     } else if (h.kbhMoTin) { delete h.kbhMoTin; ghi = true; }
     // phần thưởng đang chờ nhận (anh 03/11 — "nhân vật đủ điều kiện nhận thưởng nhưng họ quên thì làm sao nhắc", chọn kiểu chấm đỏ có số): loại thưởng
@@ -539,6 +539,16 @@ function nhip(res, tk, b, trang) {
     if ((h.lvl || 1) > lv0) NK.ghi("cap", tk.ten, h.name, `Lên cấp ${h.lvl}`);
   }
   if (ghi) D.ghiTk(tk);
+  // Móc báo đòn lên NPC nhân vật mẫu (may-chu/npc-choi.js nhanBaoDon — Huy duyệt 25/11/2026): xử lý TRƯỚC khi
+  // gửi TG.nhip để ben / VT_NV còn là nhịp TRƯỚC (xét mp% / sống-chết / vị trí từ hiện diện máy chủ giữ).
+  // b.npcHit = [[seq, chiêu, x, y, t], ...] — chỉ sự kiện, KHÔNG số sát thương; danh tính lấy từ phiên.
+  // Đòn đánh trả của bot (nếu có) gửi kèm nhịp này trong ket.npcDanh. Lỗi móc không làm hỏng nhịp.
+  try {
+    const NPCM = () => { try { return require("./npc-choi"); } catch { return null; } };
+    const npc = NPCM();
+    if (Array.isArray(b.npcHit) && b.npcHit.length && npc && h) npc.nhanBaoDon(tk, h, o, b.npcHit); // h đã có nghĩa là ô o hợp lệ (o = 0 vẫn đúng — không kiểm o truthy)
+    if (npc) { const dd = npc.layDanhCho(tk.ten); if (dd.length) ket.npcDanh = dd; }
+  } catch (e) { console.error("Nhịp npcHit:", e.message); }
   // ghim của quản trị ở khung chat (may-chu/quan-tri.js ghim — anh 03/11): b.gh = mã ghim trình duyệt đang có; khác mã hiện tại thì gửi { id, t? }
   const G = QT.ghimNay(), gh = b.gh != null && +b.gh !== G.id ? { gh: G } : {};
   // bang hội (anh 14/11 — may-chu/bang-hoi.js nhip, tra O(1)): bhMinh (bang của nhân vật này) | null, bhMoi (lời mời vào bang đang chờ) | null, bhCc (công cáo ghim — chỉ khi
@@ -553,10 +563,10 @@ function nhip(res, tk, b, trang) {
 // hệ / phái / điểm gốc + điểm cộng (trình duyệt tính yêu cầu đủ / thiếu, dòng ẩn — như Soi đồ của quản trị, quan-tri.js soi); không túi / rương
 function xemDo(tk, b) {
   const bao = (t) => { throw Object.assign(new Error(t), { code: 400 }); };
-  const toi = TG.dangChoi(tk.ten); if (!toi) bao("Chưa vào game");
+  const toi = TG.dangChoi(tk.ten); if (!toi) bao("Chưa vào game. Vào game rồi hãy xem.");
   const ten = String(b.ten || "").trim().slice(0, 40), ai = ten ? TG.timTen(ten) : null, o = ai && TG.dangChoi(ai);
-  if (!o || ai === tk.ten || o.zone !== toi.zone || !o.chung !== !toi.chung || !KB.cungBan(ai, tk.ten, toi.zone)) bao(`Không thấy ${ten || "người chơi này"} ở gần`); // khu vực bang: chỉ cùng bản (đợt 4)
-  const tk2 = D.docTk(ai), h = tk2 && tk2.nv.find((x) => x && x.name === ten); if (!h) bao(`Không thấy ${ten} ở gần`);
+  if (!o || ai === tk.ten || o.zone !== toi.zone || !o.chung !== !toi.chung || !KB.cungBan(ai, tk.ten, toi.zone)) bao(`Không thấy ${ten || "người chơi này"} ở gần. Lại gần rồi hãy xem.`); // khu vực bang: chỉ cùng bản (đợt 4)
+  const tk2 = D.docTk(ai), h = tk2 && tk2.nv.find((x) => x && x.name === ten); if (!h) bao(`Không thấy ${ten} ở gần. Lại gần rồi hãy xem.`);
   // anh 17/11 (khung xem người khác mẫu B — thẻ Thuộc tính): chân dung, hạng cấp cả máy chủ (xep-hang.js), bang + chức như nhãn trên đầu (bang-hoi.js nhanCua — danh hiệu
   // riêng / chung thay chữ chức, ẩn sỹ); lỗi tra bang không làm hỏng việc xem
   const o2 = tk2.nv.indexOf(h); let bang = null;
@@ -567,7 +577,7 @@ function xemDo(tk, b) {
 }
 
 function xoaNv(res, tk, o) {
-  if (!tk.nv[o]) return loi(res, 404, "Ô này không có nhân vật");
+  if (!tk.nv[o]) return loi(res, 404, "Ô này trống. Không có nhân vật nào cả.");
   // bang hội (anh 14/11 — THIET-KE-BANG-HOI.md 1.5): bang chủ phải chuyển vị trước (chặn xóa); thành viên khác rời bang, bỏ đơn / lời mời / thời gian chờ của ô này
   const bhLoi = BH.xoaNv(tk.ten, o, tk.nv[o].name); if (bhLoi) return loi(res, 409, bhLoi);
   NK.ghi("nv", tk.ten, tk.nv[o].name, `Xóa nhân vật cấp ${tk.nv[o].lvl || 1}`);
@@ -590,7 +600,7 @@ async function xuLyApi(req, res, p) {
     // ủng hộ duy trì máy chủ (anh 13/11 — khung 4 bước ở trang chủ / Esc → Ủng hộ tác giả): "Đã ủng hộ" -> danh sách chờ quản trị duyệt (may-chu/ung-ho.js dangKy);
     // công khai — chưa đăng nhập (trang chủ) cũng gửi được
     if (p === "/api/ung-ho-dk" && m === "POST") return guiJson(res, 200, require("./ung-ho").dangKy(body, tk && tk.ten, diaChi(req)));
-    if (!tk) { const mat = matPhien(req); return mat ? loi(res, 401, mat.msg, mat.ma) : loi(res, 401, "Chưa đăng nhập, hoặc tài khoản vừa đăng nhập ở nơi khác", "het-phien"); }
+    if (!tk) { const mat = matPhien(req); return mat ? loi(res, 401, mat.msg, mat.ma) : loi(res, 401, "Chưa đăng nhập, hoặc tài khoản vừa đăng nhập ở nơi khác. Đăng nhập lại đi.", "het-phien"); }
     // bảo trì (may-chu/bao-tri.js — anh 31/10 khuya): tài khoản thường đang mở game -> rời game, trình duyệt về màn đăng nhập kèm câu báo
     if (!tk.admin && BT.con()) {
       if (trongGame.delete(tk.ten)) { TG.roi(tk.ten); NK.ghi("roi", tk.ten, null, "Rời game — máy chủ bảo trì"); }
@@ -671,7 +681,7 @@ async function xuLyApi(req, res, p) {
       res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-cache", ETag: r.v }); return res.end(r.json);
     }
     if (p === "/api/do" && m === "POST") {
-      if (body.act === "xep" && GD.co(tk.ten) === 2) return loi(res, 400, "Đang giao dịch, không thể sắp xếp"); // Sắp xếp (anh 06/11): món đang đặt ở khung giao dịch giữ theo mã + ô
+      if (body.act === "xep" && GD.co(tk.ten) === 2) return loi(res, 400, "Đang giao dịch thì đừng sắp xếp. Xong giao dịch rồi hãy làm."); // Sắp xếp (anh 06/11): món đang đặt ở khung giao dịch giữ theo mã + ô
       const h = oCua(tk, body), r = DO.lam(h, body, tk.ten + "|" + (body.o | 0), tk);
       DO.chuan(h); D.ghiTk(tk);
       if (r && r.msg && HD_DO[body.act]) NK.hd(HD_DO[body.act], r.msg); // sổ hoạt động từng tài khoản (anh 11/11 "mua gì, nhặt gì, lấy gì") // tính lại kiểu dáng theo đồ mặc
@@ -719,7 +729,7 @@ async function xuLyApi(req, res, p) {
     }
     // nhiệm vụ Võ Lâm Minh Chủ (chỉ tài khoản quản trị — thử): { o, viec: "xem" | "dat" (giet?: số con, xong?: bỏ dấu đã xong hôm nay) }
     if (p === "/api/minh-chu-qt" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       const h = oCua(tk, body), r = MC.quanTri(h, body); D.ghiTk(tk);
       return guiJson(res, 200, { ...r, nv: nvCua(h) });
     }
@@ -730,7 +740,7 @@ async function xuLyApi(req, res, p) {
     }
     // Rương Thần Bí (chỉ tài khoản quản trị — thử): { viec: "ra" (so?, tai?: [[bãi, x, y]]) | "huy" | "xem" }
     if (p === "/api/ruong-tb-qt" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       return guiJson(res, 200, RTB.quanTri(body));
     }
     // Phú Quý Cẩm Hạp — Thần Tài (may-chu/phu-quy.js — anh 03/11): { o, viec, n? } -> { say | talk | tin } + nhân vật / túi
@@ -740,7 +750,7 @@ async function xuLyApi(req, res, p) {
     }
     // Phú Quý Cẩm Hạp (chỉ tài khoản quản trị — thử): { viec: "xem" | "quay" (so?, dot?) | "lech" (phut — máy thử) }
     if (p === "/api/phu-quy-qt" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       return guiJson(res, 200, PQ.quanTri(body));
     }
     // Bầu Cua — Chủ sòng bạc (may-chu/bau-cua.js — anh 10/11): { o, viec: "mo" | "luat" | "xem" | "dat" (cua 0–5, n vạn) } -> { say | talk | bc (bàn
@@ -752,7 +762,7 @@ async function xuLyApi(req, res, p) {
     }
     // Bầu Cua (chỉ tài khoản quản trị — thử): { viec: "xem" | "lech" (phut) | "ep" (kq) — 2 việc sau chỉ máy thử VL_BC_THU=1 }
     if (p === "/api/bau-cua-qt" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       return guiJson(res, 200, BC.quanTri(body));
     }
     if (p === "/api/phuc-duyen" && m === "POST") {
@@ -763,7 +773,7 @@ async function xuLyApi(req, res, p) {
     // /api/vuot-ai + dev (trạng thái)
     // boss thế giới (chỉ tài khoản quản trị — thử): { viec: "goi" (tpl?, tai?: { bai, x, y, X, Y }, mau?) | "huy" | "xem" } -> { b, … }
     if (p === "/api/boss-tg" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       return guiJson(res, 200, BTG.quanTri(body));
     }
     // Phong Hỏa Liên Thành — Vệ binh thành môn Biện Kinh (may-chu/phong-hoa.js — anh 04/11): { o, viec: "mo" | "vao" } -> { l (lịch), daNop, vao?: { zone,
@@ -782,7 +792,7 @@ async function xuLyApi(req, res, p) {
     // Lôi Đài — trận thử với bot (chỉ tài khoản quản trị như /api/tong-kim-qt; khóa an toàn cấp 2: bao-mat.js QT_RE "-qt" — THIET-KE-LOI-DAI.md §6, anh 16/11):
     // { o, viec: "mo" (che, ben, doiThu, dongDoi, cap, chuanBi, thiDau) | "huy" } -> { vao?: { zone, at }, msg } + nhân vật (không phí — nhân vật không đổi, không ghi tệp)
     if (p === "/api/loi-dai-qt" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       const h = oCua(tk, body); return guiJson(res, 200, { ...LD.thu(h, body, tk.ten), nv: nvCua(h) });
     }
     // Tỉ thí (anh 17/11 — may-chu/ti-thi.js lam): { o, viec: gui (ten, cau) | nhan (id) | tuChoi (id) | vao | luat } -> { msg, vao?, ttGui?, tiThi? } + nhân vật. Nhận lời = vào sân lôi
@@ -812,7 +822,7 @@ async function xuLyApi(req, res, p) {
     }
     // đua ngựa — lượt thử của công cụ thử (chỉ quản trị; khóa an toàn cấp 2: bao-mat.js QT_RE "-qt"): { o, viec, … } -> { vao?, msg?, s? } + nhân vật (không đổi nhân vật)
     if (p === "/api/dua-ngua-qt" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       const h = oCua(tk, body); return guiJson(res, 200, { ...DN.thu(h, body, tk.ten), nv: nvCua(h) });
     }
     // Tống Kim — Mộ binh quan / Quân Nhu quan Biện Kinh (may-chu/tong-kim.js lam — anh 06/11): { o, viec: "mo" | "phe" (x 0 Tống / 1 Kim) | "vao" | "luat" |
@@ -823,16 +833,16 @@ async function xuLyApi(req, res, p) {
     }
     // Phong Hỏa Liên Thành (chỉ tài khoản quản trị — thử): { viec: "mo" (baoDanh?, danh?, chuSoai? phút) | "huy" | "ket" (thang) | "xem" }
     if (p === "/api/phong-hoa-qt" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       return guiJson(res, 200, PHO.quanTri(body));
     }
     // Săn Nhím Béo Phì (chỉ tài khoản quản trị — thử): { viec: "mo" (tai?: [[bãi, x, y]], mau?, ngay?, phut?) | "huy" | "xem" } -> { s, … }
     if (p === "/api/san-nhim" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       return guiJson(res, 200, SN.quanTri(body));
     }
     if (p === "/api/quan-tri/hoat-dong" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       const h = oCua(tk, body), r = body.hd === "dt" ? DTau.dev(h, body) : body.hd === "st" ? SAT.dev(h, body) : body.hd === "va" ? VAI.dev(h, body) : body.hd === "vd" ? VDE.dev(h, body, tk) : body.hd === "onl" ? ONL.dev(h, tk.ten + "|" + (body.o | 0), body) : body.hd === "pd" ? PD.dev(h, tk.ten + "|" + (body.o | 0), body) : body.hd === "cap" ? TCAP.dev(h, body) : PLD.dev(h, body);
       DO.chuan(h); D.ghiTk(tk);
       return guiJson(res, 200, { ...r, nv: nvCua(h), tui: tuiCua(h) });
@@ -886,12 +896,12 @@ async function xuLyApi(req, res, p) {
       return guiJson(res, 200, { ...r, nv: nvCua(h), tui: tuiCua(h) });
     }
     if (p === "/api/quan-tri/uy-thac" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       const h = oCua(tk, body), r = DO.thuUyThac(h, body); D.ghiTk(tk);
       return guiJson(res, 200, { uyThac: r.kq ? (({ bao, ...k }) => k)(r.kq) : null, trangThai: r.trangThai, nv: nvCua(h), tui: tuiCua(h) });
     }
     if (p === "/api/quan-tri/nv" && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       const h = oCua(tk, body), tao = DO.ghiDev(h, body.hero) || []; D.ghiTk(tk);
       // nguồn gốc món (anh 18/11 tối): trang bị công cụ thử tạo / sửa dòng -> nhật ký quản trị (kèm món — F10 trỏ vào xem đủ dòng)
       if (tao.length) NK.ghi("qt", tk.ten, h.name, `Công cụ thử tạo / sửa ${tao.length} trang bị: ${tao.slice(0, 8).map((o) => `${DO.tenMon(o).trim()} [${(o.d || []).map((l) => l.join("=")).join(", ")}]`).join("; ")}`, { mon: tao.slice(0, 8).map(NK.mon) });
@@ -900,11 +910,11 @@ async function xuLyApi(req, res, p) {
     // Tống Kim bãi thử (chỉ tài khoản quản trị — may-chu/tong-kim.js): { viec: "mo" (bai, trai, soBot?, tri?, cap?, hs?) | "huy" | "xem" | "phe" (phe) |
     // "soBot" (soBot) | "tri" (tri) | "hs" (hs — hệ số sát thương PK) } -> { ok?, s }; trận theo lịch (thử nhanh — anh 06/11): "moTran" (baoDanh, danh, soai1,
     // soai2 — phút, số lẻ được; vaoMuon?, soBot?, thienTu?) | "ketTran" | "huyTran" -> { ok, l (lịch), s? }
-    if (p === "/api/tong-kim-qt" && m === "POST") { if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị"); return guiJson(res, 200, TKM.quanTri(body, tk)); }
+    if (p === "/api/tong-kim-qt" && m === "POST") { if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào."); return guiJson(res, 200, TKM.quanTri(body, tk)); }
     // bảng quản trị (may-chu/quan-tri.js)
     const qv = QT.VIEC.exec(p);
     if (qv && m === "POST") {
-      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị");
+      if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào.");
       return guiJson(res, 200, QT.lam(qv[1], tk, body, {
         online: (ten) => { const at = online.get(ten) || 0; return Date.now() - at < ONLINE_MS ? at : 0; },
         roi: (ten) => { online.delete(ten); trongGame.delete(ten); },
@@ -924,7 +934,7 @@ async function xuLyApi(req, res, p) {
       if (m === "PUT") return luuNv(res, tk, o, body);
       if (m === "DELETE") return xoaNv(res, tk, o);
     }
-    return loi(res, 404, "Không có API này");
+    return loi(res, 404, "Không có API này. Đừng gọi bậy.");
   } catch (e) {
     // mã lỗi của API là số (400, 404, 413…); lỗi hệ thống có mã chữ (ECONNRESET: người chơi ngắt kết nối giữa lúc gửi — docBody; ENOENT…) — trước
     // đem làm mã HTTP -> writeHead ném lỗi, cả máy chủ sập (VPS 31/10 16:04): giờ trả 500; đã trả lời / kết nối đã đứt thì thôi

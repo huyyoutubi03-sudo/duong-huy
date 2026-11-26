@@ -53,18 +53,18 @@ export class ChoTroi {
     w.on("MakeAdvBtn", () => this.moQc());
     w.on("MarkPriceBtn", () => this.batDinhGia(!this.dinhGiaMo));
     w.on("MakeStallBtn", () => { this.veNut(); this.api.moSap(!this.sapMinh().mo).then(() => this.veNut()); });
-    for (const [k, t] of [["MakeAdvBtn", "Lời rao: chữ trên bảng hiệu khi bày bán"], ["MarkPriceBtn", "Định giá: bấm món trong hành trang để đặt giá niêm yết (thu nhập) — món lên sạp"], ["MakeStallBtn", "Rao bán: ngồi bày bán ở chỗ đang đứng (trong thành) — đi luyện công / thoát game sạp vẫn mở"]]) w.node(k).title = t;
+    for (const [k, t] of [["MakeAdvBtn", "Lời rao: chữ trên bảng hiệu khi bày bán — viết cho ra hồn."], ["MarkPriceBtn", "Định giá: bấm món trong hành trang, đặt giá niêm yết (thu nhập) — món lên sạp ngay."], ["MakeStallBtn", "Rao bán: ngồi bày bán ở chỗ đang đứng (trong thành) — đi luyện công / thoát game sạp vẫn mở, khỏi lo."]]) w.node(k).title = t;
   }
   veNut() { const w = this.W.get("items"); w.check("MarkPriceBtn", this.dinhGiaMo).check("MakeStallBtn", !!this.sapMinh().mo); }
   batDinhGia(on) {
     this.dinhGiaMo = !!on; this.veNut(); this.gw._bagSig = null; this.gw.refresh(true);
     if (!on) { this.W.get("dinhgia").hide(); return; }
     this.api.P.audio.ui("click");
-    this.api.msg("Định giá: bấm món trong hành trang, nhập giá niêm yết (số tiền bạn nhận) — món lên sạp. Bấm Định giá lần nữa để thôi");
+    this.api.msg("Định giá: bấm món trong hành trang, nhập giá niêm yết (số tiền ngươi nhận) — món lên sạp. Bấm Định giá lần nữa là thôi.");
     this.moSapMinh(true);
   }
   // dòng gợi ý của món trong túi ở chế độ Định giá
-  goiY(it) { return it.kbh ? "Vật phẩm khóa bảo hiểm không bày bán được" : ItemDB.item(it.k) && it.het ? "Ngựa có hạn của Kỳ Trân Các không bày bán được" : "Bấm: định giá — bày lên sạp"; } // kbh: anh 05/11
+  goiY(it) { return it.kbh ? "Vật phẩm khóa bảo hiểm thì đừng hòng bày bán" : ItemDB.item(it.k) && it.het ? "Ngựa có hạn của Kỳ Trân Các thì đừng hòng bày bán" : "Bấm là định giá — bày lên sạp."; } // kbh: anh 05/11
 
   // ---------- khung RAO BÁN ----------
   _sap() {
@@ -98,7 +98,7 @@ export class ChoTroi {
     const w = this.W.get("sap"), h = this.api.hero(); if (!h) return;
     const M = this.sapMinh(), S = this.xem || { ten: h.name, minh: true, qc: M.qc, ds: M.ds || [] }, set = w.def.sec.Settings || {};
     w.set("Owner", S.ten);
-    w.node("Owner").title = S.qc ? `Lời rao: ${S.qc}` : "Chưa có lời rao";
+    w.node("Owner").title = S.qc ? `Lời rao: ${S.qc}` : "Chưa có lời rao — viết một câu đi.";
     const box = w.node("ItemBox"), B = w.def.sec.ItemBox.unitBorder ?? 2;
     box.querySelectorAll(".jw-it").forEach((e) => e.remove());
     for (const it of S.ds) {
@@ -111,8 +111,8 @@ export class ChoTroi {
       el.innerHTML = html + (x.ic ? `<img class="jw-icon" src="assets/web/icon/${esc(x.ic)}" alt="">` : "") + (so && it.n > 1 ? `<b class="jw-n">${it.n}</b>` : "");
       const t = this.tMua(), tb = this.tBan();
       const goiY = S.minh
-        ? [`Giá niêm yết : ${fmtMoney(it.gia)}`, `Bạn nhận: ${fmtMoney(it.gia - Math.floor((it.gia * tb) / 100))}${tb ? ` (trừ thuế ${tb}%)` : ""}`, `Người mua trả: ${fmtMoney(it.mua)} (gồm thuế ${t}%)`, "Bấm: định giá lại · Chuột phải: không bán (về hành trang)"]
-        : [`Giá bán (gồm thuế ) : ${fmtMoney(it.mua)}`, `Thuế người mua: ${t}%`, "Bấm: mua"];
+        ? [`Giá niêm yết : ${fmtMoney(it.gia)}`, `Bạn nhận: ${fmtMoney(it.gia - Math.floor((it.gia * tb) / 100))}${tb ? ` (trừ thuế ${tb}%)` : ""}`, `Người mua trả: ${fmtMoney(it.mua)} (gồm thuế ${t}%)`, "Bấm là định giá lại · Chuột phải: không bán (về hành trang)."]
+        : [`Giá bán (gồm thuế ) : ${fmtMoney(it.mua)}`, `Thuế người mua: ${t}%`, "Bấm là mua."];
       el.onmousemove = (e) => this.gw._showTip(it, e, goiY);
       el.onmouseleave = () => this.gw._hideTip();
       el.onclick = (e) => { this.gw._hideTip(); if (S.minh) this.dinhGiaMon(it, e, true); else this.gw._tradeOpen("sap", { ...it, sapK: S.k, chu: S.ten }); };
@@ -153,19 +153,19 @@ export class ChoTroi {
     inp.oninput = () => { inp.value = inp.value.replace(/\D/g, "").replace(/^0+/, ""); upd(); };
     const ok = () => {
       const G = this.gia; if (!G) return;
-      const n = so(); if (!n) return this.api.msg("Nhập giá niêm yết (lượng) — số tiền bạn nhận khi bán được");
+      const n = so(); if (!n) return this.api.msg("Nhập giá niêm yết (lượng) — số tiền ngươi nhận khi bán được. Ghi cho đúng vào.");
       this.api.cho({ viec: "dinhGia", u: G.it.u, gia: n }).then((j) => { if (j && this.gia === G) w.hide(); });
     };
     inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === "Enter") ok(); else if (e.key === "Escape") w.hide(); };
     w.on("OkBtn", ok).on("CancelBtn", () => { const G = this.gia; w.hide(); if (G && G.tren) this.thuHoi(G.it); });
-    w.node("CancelBtn").title = "Không bán: món trên sạp về hành trang";
+    w.node("CancelBtn").title = "Không bán nữa: món trên sạp về hành trang.";
     w.cb.hide = () => { this.gia = null; inp.blur(); };
     this._giaInp = inp; this._giaUpd = upd;
   }
   // khung giá ngay trên chỗ bấm (như client — ini Left 0 Top 0: engine đặt cạnh món)
   dinhGiaMon(it, e, tren) {
     const w = this.W.get("dinhgia"), x = ItemDB.item(it.k); if (!x) return;
-    if (!tren && it.het) return this.api.msg("Ngựa có hạn của Kỳ Trân Các không bày bán được");
+    if (!tren && it.het) return this.api.msg("Ngựa có hạn của Kỳ Trân Các thì đừng hòng bày bán");
     if (!tren && it.kbh) return this.api.msg("Không thể đặt vào vật phẩm đã được khóa bảo hiểm!"); // client G_STR_NO_BINDITEM (anh 05/11)
     this.gia = { it, tren: !!tren };
     w.set("ObjectName", x.n.trim());
@@ -226,8 +226,8 @@ export class ChoTroi {
       return item;
     });
     const nhan = (k, t, tip) => { const q = w.node(k).querySelector(".jw-t"); if (q) q.textContent = t; w.node(k).title = tip; };
-    nhan("PrePaid", "Treo bán", "Mở hành trang ở chế độ Định giá: bấm món để đặt giá rồi bày lên sạp");
-    nhan("ShoppingCart", "Sạp của tôi", "Xem sạp của mình: món đang bày, giá niêm yết");
+    nhan("PrePaid", "Treo bán", "Mở hành trang ở chế độ Định giá: bấm món đặt giá rồi bày lên sạp, đừng lề mề.");
+    nhan("ShoppingCart", "Sạp của tôi", "Xem sạp của mình: món đang bày, giá niêm yết — coi cho kỹ.");
     w.on("PrePaid", () => { const t = this.W.get("items"); t.show(); this.batDinhGia(true); });
     w.on("ShoppingCart", () => this.moSapMinh());
     // ô tìm giữa nút Treo bán và Trước / Kế — nền tối viền như ô nhập của client
@@ -311,15 +311,15 @@ export class ChoTroi {
       q.box.innerHTML = x.ic ? `<img src="assets/web/icon/${esc(x.ic)}" alt="" style="max-width:28px;max-height:50px;image-rendering:pixelated">` : "";
       const it = { ...r.it, sapK: r.k, chu: r.ten };
       const goiY = r.ht
-        ? [`Giá bán : ${fmtMoney(r.it.mua)}`, "Hàng Hệ thống — giá cố định, không thu thuế", r.can ? `Dã Tẩu đang đòi: ${r.yc}` : `Dã Tẩu Xem vật phẩm: ${r.yc} — nộp là Dã Tẩu giữ luôn`, "Bấm Mua để mua"]
-        : [`Giá bán (gồm thuế ) : ${fmtMoney(r.it.mua)}`, `Thuế người mua: ${this.tMua()}% · Chủ sạp: ${r.ten} (${r.tenBai})`, "Bấm Mua để mua"];
+        ? [`Giá bán : ${fmtMoney(r.it.mua)}`, "Hàng Hệ thống — giá cố định, không thu thuế, đừng mặc cả.", r.can ? `Dã Tẩu đang đòi: ${r.yc}` : `Dã Tẩu Xem vật phẩm: ${r.yc} — nộp là Dã Tẩu giữ luôn, đừng tiếc.`, "Bấm Mua là mua, đừng chần chừ."]
+        : [`Giá bán (gồm thuế ) : ${fmtMoney(r.it.mua)}`, `Thuế người mua: ${this.tMua()}% · Chủ sạp: ${r.ten} (${r.tenBai})`, "Bấm Mua là mua, đừng chần chừ."];
       q.box.onmousemove = (e) => this.gw._showTip(r.it, e, goiY);
       q.box.onmouseleave = () => this.gw._hideTip();
       q.bi.fn = () => { this.gw._hideTip(); this.api.P.audio.ui("click"); this.gw._tradeOpen("sap", it); };
       q.box.onclick = () => q.bi.fn(); // bấm hình món cũng mua (điện thoại: nút Mua của hàng việc làm gửi bấm vào ô xem món — dienthoai.js hanhDong)
     });
     this._rong.style.display = this.ds && !L.length ? "" : "none";
-    this._rong.textContent = this.tim.trim() ? `Không có món nào khớp "${this.tim.trim()}" ở mục ${THE[this.the][0]}` : this.the === THE_DT ? "Hệ thống chưa bày hàng" : `Chưa có món nào ở mục ${THE[this.the][0]}\nBày bán: Hành trang → Định giá → Lời rao → Rao bán (trong thôn / thành)`;
+    this._rong.textContent = this.tim.trim() ? `Không có món nào khớp "${this.tim.trim()}" ở mục ${THE[this.the][0]}` : this.the === THE_DT ? "Hệ thống chưa bày hàng — quay lại sau." : `Chưa có món nào ở mục ${THE[this.the][0]}\nMuốn bày bán: Hành trang → Định giá → Lời rao → Rao bán (trong thôn / thành).`;
   }
 
   // làm mới các khung chợ đang mở (sạp của mình đổi — máy chủ gửi sap)

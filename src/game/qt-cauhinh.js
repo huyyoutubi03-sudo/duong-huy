@@ -298,7 +298,7 @@ export class CauHinhQt {
     }
     if (t.dataset.chJsonMuc) { // cả mục dạng chữ JSON
       if (!xong) return;
-      try { this.dat([t.dataset.chJsonMuc], JSON.parse(t.value)); t.classList.remove("loi"); this.veTren(); this.veTrai(); const n = this.el.querySelector(".qch-nut"); if (n) n.outerHTML = this.nutLuuCho(); } catch { t.classList.add("loi"); this.qt.bao("Chữ JSON chưa đúng — kiểm dấu phẩy, ngoặc", true); } // soát chéo 17/11: nút Lưu bật lại sau khi sửa chữ JSON
+      try { this.dat([t.dataset.chJsonMuc], JSON.parse(t.value)); t.classList.remove("loi"); this.veTren(); this.veTrai(); const n = this.el.querySelector(".qch-nut"); if (n) n.outerHTML = this.nutLuuCho(); } catch { t.classList.add("loi"); this.qt.bao("Chữ JSON sai rồi. Kiểm dấu phẩy, ngoặc cho kỹ.", true); } // soát chéo 17/11: nút Lưu bật lại sau khi sửa chữ JSON
       return;
     }
     if (!t.dataset.chP) return;
@@ -364,21 +364,21 @@ export class CauHinhQt {
       return this.ve();
     }
     if (a === "macDinh") {
-      const id = t.dataset.id; if (!(await hoi(`Đưa mục <color=yellow>${esc(id)}<color> về mặc định (cau-hinh.json)?`))) return;
+      const id = t.dataset.id; if (!(await hoi(`Đưa mục <color=yellow>${esc(id)}<color> về mặc định (cau-hinh.json)? Số đã sửa mất hết.`))) return;
       const j = await this.qt.goi("cau-hinh", { viec: "macDinh", id }); if (j) { delete this.sua[id]; this.d = j; this.qt.bao(j.msg); this.ve(); }
       return;
     }
     if (a === "khoiDong") {
       const g = Math.max(10, Math.min(300, so("kdGiay", 60)));
-      if (Object.keys(this.sua).length && !(await hoi("Còn mục <color=yellow>chưa lưu<color> — khởi động lại sẽ không có các thay đổi đó. Vẫn khởi động lại?"))) return;
-      if (!(await hoi(`Khởi động lại máy chủ sau <color=yellow>${g} giây<color>? Cả máy chủ được báo trước; người chơi mất kết nối vài giây rồi tự nối lại. Đang có / sắp có hoạt động thì máy chủ từ chối.`))) return;
+      if (Object.keys(this.sua).length && !(await hoi("Còn mục <color=yellow>chưa lưu<color>. Khởi động lại là mất các thay đổi đó. Vẫn làm?"))) return;
+      if (!(await hoi(`Khởi động lại máy chủ sau <color=yellow>${g} giây<color>? Cả máy chủ được báo trước. Người chơi mất kết nối vài giây rồi tự nối lại. Đang có hoạt động thì máy chủ không cho làm.`))) return;
       const j = await this.qt.goi("cau-hinh", { viec: "khoiDong", giay: g }); if (j) { this.d = j; this.qt.bao(j.msg); this.ve(); }
       return;
     }
     if (a === "huyHen") { const j = await this.qt.goi("cau-hinh", { viec: "khoiDong", huy: 1 }); if (j) { this.d = j; this.qt.bao(j.msg); this.ve(); } return; }
     if (a === "taiLai") {
       const g = Math.max(10, Math.min(120, so("tlGiay", 30)));
-      if (!(await hoi(`Bắt mọi người đang chơi tải lại trang (F5) sau <color=yellow>${g} giây<color>? Ai cũng thấy đếm ngược rồi tự tải lại, vào lại đúng nhân vật.`))) return;
+      if (!(await hoi(`Bắt cả máy chủ tải lại trang (F5) sau <color=yellow>${g} giây<color>? Mọi người thấy đếm ngược rồi tự tải lại. Vào lại đúng nhân vật.`))) return;
       const j = await this.qt.goi("cau-hinh", { viec: "taiLai", giay: g }); if (j) { this.d = j; this.qt.bao(j.msg); this.ve(); }
     }
   }

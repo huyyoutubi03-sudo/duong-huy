@@ -25,7 +25,7 @@ function ghi() {
 const bat = () => !!S.bat;
 const co = (ten) => Object.prototype.hasOwnProperty.call(S.ds, D.tenTk(ten));
 const duoc = (ten) => !S.bat || co(ten);
-const cau = () => "Tài khoản chưa được quản trị duyệt vào máy chủ — liên hệ quản trị (nhóm Zalo) để được duyệt.";
+const cau = () => "Tài khoản này chưa được duyệt. Muốn vào thì tìm quản trị ở nhóm Zalo mà xin.";
 const tomTat = () => ({ bat: !!S.bat, n: Object.keys(S.ds).length });
 const ds = () => Object.entries(S.ds).map(([ten, v]) => ({ ten, luc: (v && v.luc) || 0, boi: (v && v.boi) || null }));
 function dat(qt, on) {

@@ -3,7 +3,7 @@
 // Say + câu theo kiểu Online nhận thưởng (may-chu/online.js).
 //   - Mốc: cau-hinh.json thuongCap.moc = [{ cap, tien?, xu?, do?: [[mã, số]], chon?: [[mã, số], …] (bốc ngẫu nhiên 1 trong danh sách) }].
 //     Mỗi mốc nhận 1 lần mỗi nhân vật; đủ cấp là nhận (nhân vật đã qua mốc nhận bù). Nhận = nhận mọi mốc đủ mà chưa nhận, theo thứ tự; túi
-//     không đủ chỗ thì dừng ở mốc đó (để lần sau). Thuốc chỉ phát tới đủ số mang tối đa (luật mang 60 bình).
+//     không đủ chỗ thì dừng ở mốc đó (để lần sau). Thuốc mỗi loại chỉ phát tới chongMax của loại đó (bình máu / mana 999).
 // h.thuongCap = [cấp của các mốc đã nhận]
 // Anh 05/11: "các item nhận thưởng từ level và online thì đều sẽ ở trong trạng thái khóa bảo hiểm vĩnh viễn, không giao dịch được" — mọi món của
 // mốc nhận với it.kbh = KBH_VV (may-chu/do.js taoQua kbh); tiền / Xu không phải món nên không khóa
@@ -27,15 +27,15 @@ const say = (text, opts) => ({ say: { text, opts } });
 function khung(h) {
   const MOC = mocs();
   const du = MOC.filter((m) => (h.lvl || 1) >= m.cap && !daNhan(h).includes(m.cap)), ke = MOC.find((m) => (h.lvl || 1) < m.cap);
-  const dong = [`Mỗi mốc cấp nhận 1 lần. Đại hiệp đang ở cấp ${Y(h.lvl || 1)}.`, KHOA_CAU,
-    du.length ? `Có thể nhận: ${Y(du.map((m) => "cấp " + m.cap).join(", "))}.` : "Chưa có mốc nào để nhận.",
-    ...(ke ? [`Mốc kế: cấp ${Y(ke.cap)} — ${tenMoc(ke)}.`] : ["Đại hiệp đã qua mọi mốc thưởng thăng cấp."])];
+  const dong = [`Mỗi mốc cấp nhận 1 lần. Ngươi đang ở cấp ${Y(h.lvl || 1)}.`, KHOA_CAU,
+    du.length ? `Có thể nhận: ${Y(du.map((m) => "cấp " + m.cap).join(", "))}.` : "Chưa có mốc nào để nhận. Luyện thêm đi.",
+    ...(ke ? [`Mốc kế: cấp ${Y(ke.cap)} — ${tenMoc(ke)}.`] : ["Ngươi đã qua mọi mốc thưởng thăng cấp rồi."])];
   return say(dong.join("<enter>"), [...(du.length ? [["Nhận phần thưởng thăng cấp", "nhan"]] : []), ["Xem phần thưởng các mốc", "xem"], ["Kết thúc", null]]);
 }
 // b.viec: "mo" | "xem" (các trang 2 mốc / trang) | "nhan"
 function lam(h, b) {
   const MOC = mocs();
-  if (!bat() || !MOC.length) N.loi("Hiện chưa có thưởng thăng cấp");
+  if (!bat() || !MOC.length) N.loi("Chưa có thưởng thăng cấp. Quay lại sau.");
   if (b.viec === "xem") {
     const trang = [];
     for (let i = 0; i < MOC.length; i += 2) trang.push(MOC.slice(i, i + 2).map((m) => `Cấp ${Y(m.cap)} (${trangThai(h, m)}): ${tenMoc(m)}`).join("<enter>"));
@@ -43,18 +43,16 @@ function lam(h, b) {
   }
   if (b.viec !== "nhan") return khung(h);
   const du = MOC.filter((m) => (h.lvl || 1) >= m.cap && !daNhan(h).includes(m.cap));
-  if (!du.length) return say("Đại hiệp chưa có mốc thưởng thăng cấp nào để nhận!", [["Xem phần thưởng các mốc", "xem"], ["Kết thúc", null]]);
+  if (!du.length) return say("Ngươi chưa có mốc thưởng thăng cấp nào để nhận!", [["Xem phần thưởng các mốc", "xem"], ["Kết thúc", null]]);
   const tin = [];
   for (const m of du) {
-    let conThuoc = Math.max(0, N.mang() - N.soThuoc(h)); // thuốc: tới đủ số mang tối đa (cộng dồn các loại thuốc của mốc)
     const mon = [...(m.do || []), ...(m.chon && m.chon.length ? [m.chon[Math.floor(Math.random() * m.chon.length)]] : [])].map(([k, n]) => {
-      const x = N.BY.get(k), so = Math.min(n | 0 || 1, x && x.thuoc ? conThuoc : Infinity);
-      if (x && x.thuoc) conThuoc -= so;
+      const x = N.BY.get(k), so = x && x.thuoc ? Math.min(n | 0 || 1, Math.max(0, N.chongMax(k) - N.soThuocK(h, k))) : (n | 0 || 1);
       return { k, n: so };
     }).filter((o) => o.n > 0);
     let ds;
     try { ds = DO.taoQua(h, { mon, tien: m.tien, xu: m.xu, kbh: N.KBH_VV }); } // túi không đủ chỗ -> lỗi, túi giữ nguyên; món khóa bảo hiểm vĩnh viễn (anh 05/11)
-    catch { tin.push(`Hành trang không đủ chỗ nhận thưởng cấp ${m.cap} — dọn túi rồi nhận lại.`); break; }
+    catch { tin.push(`Hành trang đầy, chưa nhận được thưởng cấp ${m.cap}. Dọn túi rồi nhận lại.`); break; }
     h.thuongCap = [...daNhan(h), m.cap];
     tin.push(`Thưởng thăng cấp ${m.cap}: nhận được ${ds.join(", ")}`);
   }

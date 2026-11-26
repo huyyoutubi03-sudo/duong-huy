@@ -119,7 +119,7 @@ const tron = (L) => { const a = L.slice(); for (let i = a.length - 1; i > 0; i--
 // gọi boss: opt.so (số boss — mặc định CF.so mỗi khung giờ), opt.tpl (mẫu), opt.tai { bai, x, y, X, Y } (quản trị gọi 1 boss ở chỗ mình — thử), opt.mau.
 // Nhiều boss: mỗi con 1 chỗ khác nhau (xoay vòng qua các bản đồ — Ba Lăng / Biện Kinh — rồi bốc chỗ chưa dùng), mẫu khác nhau nếu đủ
 function goi(opt = {}) {
-  if (BS.some((b) => !b.sk)) N.loi(`Đang có boss thế giới: ${BS.filter((b) => !b.sk).map((b) => b.ten).join(", ")}`);
+  if (BS.some((b) => !b.sk)) N.loi(`Đang có boss thế giới: ${BS.filter((b) => !b.sk).map((b) => b.ten).join(", ")}. Đánh xong rồi hãy gọi.`);
   const L = Array.isArray(CF.cho) && CF.cho.length ? CF.cho : BTG.cho;
   if (!BTG.ds.length || !L.length) N.loi("Chưa dựng assets/data/boss-tg.json (node cong-cu/dung-boss-tg.mjs)");
   const n = opt.tai ? 1 : Math.max(1, Math.min(10, Math.round(+(opt.so ?? CF.so) || 1)));
@@ -143,17 +143,17 @@ function goi(opt = {}) {
   // câu của client (functions_boss.lua PickBoss): "<tên> đã xuất hiện tại <bản đồ> (x,y)" — hiện giữa màn hình như thông báo quản trị; + chỗ
   // (ngoài cổng nào — người chơi chưa quen bản đồ thôn / thành)
   const cau = (b) => `${b.ten} tại ${tenBai(b.bai)} (${b.X}/${b.Y})${b.noi ? ` — ${b.noi}` : ""}`;
-  TG().thongBao(moi.length > 1 ? `${moi.length} Boss Hoàng Kim đã xuất hiện: ${moi.map(cau).join("; ")}!` : `${moi[0].ten} đã xuất hiện tại ${tenBai(moi[0].bai)} (${moi[0].X}/${moi[0].Y})${moi[0].noi ? ` — ${moi[0].noi}` : ""}!`, true);
+  TG().thongBao(moi.length > 1 ? `${moi.length} Boss Hoàng Kim xuất hiện: ${moi.map(cau).join("; ")}!` : `${moi[0].ten} xuất hiện tại ${tenBai(moi[0].bai)} (${moi[0].X}/${moi[0].Y})${moi[0].noi ? ` — ${moi[0].noi}` : ""}!`, true);
   return trangThai("");
 }
 // gọi siêu boss (anh 18/11): opt.tai { bai, x, y, X, Y } (quản trị gọi ở chỗ mình — thử), opt.song (giây — thử), opt.mau, opt.mauNguoi (thử)
-function goiSk() { N.loi("Không có trong bản này"); 
+function goiSk() { N.loi("Không có trong bản này. Đừng bấm nữa."); 
 }
 // boss b rời đi khi hết giờ / quản trị hủy (không thưởng)
 function roi(b, huy) {
   const i = BS.indexOf(b); if (i < 0) return null;
   BS.splice(i, 1); b.ket = "roi"; b.luc = Date.now(); XONG.push(b); doi = true;
-  TG().thongBao(huy ? `${b.ten} đã bị gọi về.` : `${b.ten} đã rời khỏi ${tenBai(b.bai)}.`);
+  TG().thongBao(huy ? `${b.ten} bị gọi về rồi.` : `${b.ten} rời khỏi ${tenBai(b.bai)} rồi.`);
   return true;
 }
 // sách võ công 90 của Kỳ Trân Các (mọi phái — như bảng rơi client: quyển nào cũng được, người chơi đổi / giao dịch)
@@ -189,7 +189,7 @@ function ghiVang(ten, tenNv, r, tenBoss) {
     if ((r.tg | 0) > 0) DO.choRuongXanh(h, r.tg | 0);
     if ((r.xu | 0) > 0) h.xu = (h.xu | 0) + (r.xu | 0);
     const goi = [r.mon || [], (r.kich && r.kich.mon) || []].flatMap((L) => { const ra = []; for (let i = 0; i < L.length; i += 20) ra.push(L.slice(i, i + 20).map((m) => ({ k: m.k, n: m.n }))); return ra; });
-    if (goi.length) h.quaCho = [...(Array.isArray(h.quaCho) ? h.quaCho : []), ...goi.map((mon) => ({ mon, luc: Date.now(), he: 1, loi: `${r.sk ? "Siêu boss" : "Boss Hoàng Kim"}${tenBoss ? ` ${tenBoss}` : ""}: phần thưởng lúc đại hiệp vắng mặt` }))]; // he: quà hệ thống (không phải quản trị gửi — khung báo khác)
+    if (goi.length) h.quaCho = [...(Array.isArray(h.quaCho) ? h.quaCho : []), ...goi.map((mon) => ({ mon, luc: Date.now(), he: 1, loi: `${r.sk ? "Siêu boss" : "Boss Hoàng Kim"}${tenBoss ? ` ${tenBoss}` : ""}: phần thưởng lúc ngươi vắng mặt` }))]; // he: quà hệ thống (không phải quản trị gửi — khung báo khác)
     DL.ghiTk(acc);
     if (goi.length) { r.monGhi = r.mon || []; r.mon = []; if (r.kich) r.kich = { ...r.kich, monGhi: r.kich.mon || [], mon: [] }; }
     return 1;
@@ -242,7 +242,7 @@ function chet(b, keKich) {
   for (const p of TG().dsDangChoi()) if (p.zone === b.bai && !b.dmg.has(p.tk)) day(p.tk, { hang: 0, pct: 0, tenNv: p.name, kn: 0, mon: [], chiXem: 1 });
   // tin hệ thống như Săn Nhím (anh 13/11 lượt 86 "thông báo tương tự nhím béo phì"): ai phát hiện (đánh đầu tiên), ai kích sát, người tham gia may mắn nhận 1 Xu
   const nhat = xep[0] && xep[0][1].ten;
-  TG().thongBao(nhat ? `${b.ten} tại ${tenBai(b.bai)}${b.phat ? ` (phát hiện bởi ${MT.ten(b.phat)})` : ""} đã bị tiêu diệt${kich ? ` do ${MT.ten(kich.tenNv)} kích sát` : ""} — ${xep.length} người tham gia, ${MT.ten(nhat)} gây sát thương nhiều nhất!${mayMan.length ? ` Người tham gia ${mayMan.map(MT.ten).join(", ")} may mắn nhận được ${MT.thuong("1 Xu")}.` : ""}` : `${b.ten} đã bị tiêu diệt!`);
+  TG().thongBao(nhat ? `${b.ten} tại ${tenBai(b.bai)}${b.phat ? ` (phát hiện bởi ${MT.ten(b.phat)})` : ""} bị tiêu diệt${kich ? ` do ${MT.ten(kich.tenNv)} kích sát` : ""} — ${xep.length} người tham gia, ${MT.ten(nhat)} gây sát thương nhiều nhất!${mayMan.length ? ` Người tham gia ${mayMan.map(MT.ten).join(", ")} may mắn nhận được ${MT.thuong("1 Xu")}.` : ""}` : `${b.ten} bị tiêu diệt rồi!`);
 }
 
 // sát thương người chơi (tài khoản ten) gây cho boss u: phần mới d. Chỉ tính khi người đó đang ở bãi của boss (nhịp gần nhất) và trong hạn mức;
@@ -260,7 +260,7 @@ function canhQt(B, ten, d) {
   if (!qt) return;
   B.canhQt.add(ten);
   console.log(`[một đòn chết] ${ten} gửi ${Math.round(d)} lên ${B.ten} nhưng khóa an toàn chưa mở -> máy chủ cắt theo giây`);
-  try { TG().thongBaoTk(`Một đòn chết chưa có tác dụng với ${B.ten}: cần mở khóa an toàn (biểu tượng ổ khóa cạnh bản đồ nhỏ) rồi đánh lại.`, ten, true); } catch {}
+  try { TG().thongBaoTk(`Một đòn chết chưa có tác dụng với ${B.ten}. Mở khóa an toàn (biểu tượng ổ khóa cạnh bản đồ nhỏ) rồi đánh lại.`, ten, true); } catch {}
 }
 function danh(ten, u, d) {
   const B = BS.find((x) => x.u === +u); if (!B || B.mau <= 0) return false;
@@ -273,7 +273,7 @@ function danh(ten, u, d) {
   const ST = stGiay(), t = Date.now(), moi = !B.dmg.has(ten), x = B.dmg.get(ten) || { ten: p.name, d: 0, han: ST * 3, luc: t, dau: t, gui: 0, dinh: 0, g1: 0, g1t: t };
   if (moi) {
     const them = B.sk ? B.mauNguoi | 0 : Math.max(0, Math.round(+CF.mauNguoi || 0)); B.mauMax += them; B.mau += them; // siêu boss: × hsMau (anh 18/11 — goiSk b.mauNguoi)
-    if (!B.phat) { B.phat = p.name; TG().thongBao(`${B.ten} tại ${tenBai(B.bai)} (${B.X}/${B.Y}) đã bị phát hiện bởi ${MT.ten(p.name)}!`); }
+    if (!B.phat) { B.phat = p.name; TG().thongBao(`${B.ten} tại ${tenBai(B.bai)} (${B.X}/${B.Y}) bị ${MT.ten(p.name)} phát hiện!`); }
   }
   // số liệu soát (anh 15/11 — Thiên Nhẫn Kích 45 % sát thương, nghi lỗi): phần trình duyệt gửi lúc đứng ở bãi boss (gui), cao nhất trong 1 giây (dinh — ô 1 giây
   // từ tin đầu của ô), lúc đánh đầu (dau) / cuối (luc) — chet() ghi vào nhật ký Đổ hiếm cạnh % sát thương
@@ -320,7 +320,7 @@ function nhanThuong(h, ten) {
 // bảng quản trị / công cụ thử: { viec: "goi" (so?, tpl?, tai?, mau?) | "huy" (mọi boss đang sống) | "xem" }
 function quanTri(b) {
   if (b.viec === "goi") return { b: goi({ so: b.so, tpl: b.tpl, tai: b.tai, mau: b.mau }), dsBoss: dsTT("") };
-  if (b.viec === "huy") { if (!BS.length) N.loi("Không có boss thế giới"); for (const x of [...BS]) roi(x, true); return { b: null, dsBoss: dsTT("") }; }
+  if (b.viec === "huy") { if (!BS.length) N.loi("Không có boss thế giới nào đang sống."); for (const x of [...BS]) roi(x, true); return { b: null, dsBoss: dsTT("") }; }
   const B0 = BS[0], xet = B0 ? ungVien(B0, Date.now()).map((x) => ({ ten: x.ten, cach: Math.round(x.d), nhiet: Math.round(x.n) })) : [];
   return { b: trangThai(""), ds: BTG.ds.map((x) => [x.tpl, x.ten]), dsBoss: dsTT(""), lich: CF.gio, bat: !!CF.bat, so: CF.so, xet,
     choi: BS.length ? TG().dsDangChoi().map((p) => ({ ten: p.name, bai: p.zone, x: p.x, y: p.y, hp: p.hp })) : [] };

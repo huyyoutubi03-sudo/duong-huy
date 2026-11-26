@@ -47,53 +47,53 @@ const diaDiem = () => (TT ? { z: TT.bai, at: TT.vao } : null);
 
 // ---------- Xa phu: "Đi đảo Tẩy Tủy" (clearhole.lua CSP_EnterClearMap) ----------
 function xaPhu(h) {
-  if (!TT) return { talk: ["Xa phu: Đảo Tẩy Tủy chưa mở."] };
-  if ((h.lvl || 1) < CF.capToiThieu) return { talk: [`Tráng sĩ chưa đạt cấp ${CF.capToiThieu}, chưa thể vào đảo Tẩy Tủy`] };
-  if (h.fac == null) return { talk: ["Ngươi không có kỹ năng nào, vậy mà cũng muốn đi tẩy tủy ư? "] };
+  if (!TT) return { talk: ["Xa phu: Đảo Tẩy Tủy chưa mở. Quay lại sau."] };
+  if ((h.lvl || 1) < CF.capToiThieu) return { talk: [`Chưa đạt cấp ${CF.capToiThieu} thì chưa vào được đảo Tẩy Tủy.`] };
+  if (h.fac == null) return { talk: ["Ngươi không có kỹ năng nào mà cũng đòi đi tẩy tủy à?"] };
   // đã vào đảo (đã trả / đã dùng lượt miễn phí) mà còn gặp Xa phu Ba Lăng = chưa tới đảo (anh 28/10: bấm đi mà không di chuyển — trình duyệt
   // dùng bản đồ cũ) -> đưa đi lại, không tính thêm
-  if (tt(h).dang) return { tin: ["Xa phu: Ngươi đã trả phí đi đảo Tẩy Tủy rồi, ta đưa ngươi đi tiếp."], di: diaDiem() };
-  if (conMienPhi(h)) return say(`Cơ hội vào đảo tẩy Tủy miễn phí chỉ có ${CF.mienPhi} lần. Tráng sĩ đã suy nghĩ kỹ chưa?`, [["Đi đảo Tẩy Tủy", "vaoMienPhi"], dong("Để nghỉ thêm một chút ")]);
-  return say(`Xa phu: Lần dùng miễn phí đã dùng hết, nhưng các hạ có thể sử dụng ${B("thủy tinh")} hoặc ${B("tinh hồng bảo thạch")} để có thể đi vào đảo tẩy tủy. Ngươi có đồng ý như vậy không?`, [
+  if (tt(h).dang) return { tin: ["Xa phu: Ngươi trả phí đi đảo Tẩy Tủy rồi. Ta đưa ngươi đi tiếp."], di: diaDiem() };
+  if (conMienPhi(h)) return say(`Vào đảo Tẩy Tủy miễn phí chỉ có ${CF.mienPhi} lần. Ngươi nghĩ kỹ chưa?`, [["Đi đảo Tẩy Tủy", "vaoMienPhi"], dong("Để ta nghỉ thêm một chút.")]);
+  return say(`Xa phu: Lượt miễn phí dùng hết rồi. Muốn vào đảo thì dùng ${B("thủy tinh")} hoặc ${B("tinh hồng bảo thạch")}. Ngươi đồng ý không?`, [
     ["Chỉ tẩy điểm kỹ năng [3 viên Thủy Tinh: Lam + Tử + Lục]", "vaoKyNang"],
     [`Chỉ tẩy điểm tiềm năng [${CF.bt} viên Tinh Hồng Bảo Thạch]`, "vaoTiemNang"],
     [`Tẩy cả điểm tiềm năng và kỹ năng [Lam + Tử + Lục Thủy Tinh + ${CF.bt} viên Tinh Hồng Bảo Thạch]`, "vaoCaHai"],
-    dong("Để ra nghĩ lại"),
+    dong("Để ta nghĩ lại đã."),
   ]);
 }
 function vao(h, loai, mienPhi) {
   const S = tt(h);
-  if (!TT) loi("Đảo Tẩy Tủy chưa mở");
+  if (!TT) loi("Đảo Tẩy Tủy chưa mở. Quay lại sau.");
   if ((h.lvl || 1) < CF.capToiThieu || h.fac == null || S.dang) return xaPhu(h);
   if (mienPhi) {
     if (!conMienPhi(h)) return xaPhu(h);
     S.mienPhi = (S.mienPhi | 0) + 1;
   } else {
     const canTT = loai & KY_NANG, canBT = loai & TIEM_NANG ? CF.bt : 0;
-    if (canBT && dem(h, BT) < canBT) return { talk: [`Ngươi không mang ${R(`${CF.bt} viên Tinh Hồng Bảo Thạch`)}. Đừng nóng ruột, tìm đủ rồi hãy quay lại. `] };
-    if (canTT && !duBoTT(h)) return { talk: [`Ngươi không mang ${B("3 viên Thủy Tinh")} (Lam, Tử, Lục Thủy Tinh mỗi loại 1 viên). Đừng nóng ruột tìm đủ rồi hãy quay lại. `] };
+    if (canBT && dem(h, BT) < canBT) return { talk: [`Ngươi không mang ${R(`${CF.bt} viên Tinh Hồng Bảo Thạch`)}. Tìm đủ rồi hãy quay lại.`] };
+    if (canTT && !duBoTT(h)) return { talk: [`Ngươi không mang ${B("3 viên Thủy Tinh")} (Lam, Tử, Lục Thủy Tinh mỗi loại 1 viên). Tìm đủ rồi hãy quay lại.`] };
     if (canTT) for (const k of THUY_TINH) bot(h, k, 1);
     if (canBT) bot(h, BT, canBT);
     S.lan = (S.lan | 0) + 1;
   }
   S.dang = { loai, luc: Date.now() };
-  return { tin: ["Tiến vào đảo Tẩy tủy, bạn có thể có vô số lần tẩy điểm kỹ năng. "], di: diaDiem() };
+  return { tin: ["Vào đảo Tẩy Tủy rồi. Ở trên đảo, tẩy bao nhiêu lần cũng được."], di: diaDiem() };
 }
 
 // ---------- Thích Minh (梦境 路人_叛僧.lua) ----------
 function mo(h) {
-  const D = tt(h).dang, roi = ["Rời khỏi đảo Tẩy Tủy ", "roi"], hd = ["Về việc Tẩy Tủy ", "huongDan"], khong = dong("Không tẩy ");
-  if (!D) return say("Thích Minh: Ngươi không có cơ hội tẩy tủy ở đây.", [hd, roi, dong("Đóng")]);
-  if ((h.lvl || 1) < CF.capToiThieu) return { talk: [`Cấp của ngươi vẫn chưa đạt ${CF.capToiThieu}. Chưa thể rời khỏi đảo Tẩy Tủy. `] };
-  if (D.loai === KY_NANG) return say(`Ngươi chỉ có thể tẩy ${B(" điểm kỹ năng")}. Có đồng ý tẩy không? `, [["Tẩy điểm kỹ năng ", "kyNang"], khong, hd, roi]);
-  if (D.loai === TIEM_NANG) return say(`Ngươi chỉ có thể tẩy ${B(" điểm tiềm năng")}. Có đồng ý tẩy không? `, [["Tẩy điểm tiềm năng", "tiemNang"], khong, hd, roi]);
-  return say("Ngươi có đồng ý tẩy tủy không? ", [["Tẩy điểm kỹ năng ", "kyNang"], ["Tẩy điểm tiềm năng", "tiemNang"], khong, hd, roi]);
+  const D = tt(h).dang, roi = ["Rời khỏi đảo Tẩy Tủy", "roi"], hd = ["Về việc Tẩy Tủy", "huongDan"], khong = dong("Không tẩy");
+  if (!D) return say("Thích Minh: Ngươi không có lượt tẩy tủy ở đây. Đi đi!", [hd, roi, dong("Đóng")]);
+  if ((h.lvl || 1) < CF.capToiThieu) return { talk: [`Cấp của ngươi chưa đạt ${CF.capToiThieu}. Chưa rời khỏi đảo Tẩy Tủy được.`] };
+  if (D.loai === KY_NANG) return say(`Ngươi chỉ được tẩy ${B("điểm kỹ năng")}. Tẩy không?`, [["Tẩy điểm kỹ năng", "kyNang"], khong, hd, roi]);
+  if (D.loai === TIEM_NANG) return say(`Ngươi chỉ được tẩy ${B("điểm tiềm năng")}. Tẩy không?`, [["Tẩy điểm tiềm năng", "tiemNang"], khong, hd, roi]);
+  return say("Ngươi có tẩy tủy không?", [["Tẩy điểm kỹ năng", "kyNang"], ["Tẩy điểm tiềm năng", "tiemNang"], khong, hd, roi]);
 }
 const HUONG_DAN = [
-  "Sau khi Tẩy Tủy, ngươi có thể đi ra ngoài để đánh với mộc nhân, sau đó rời khỏi đảo mới được xem là đã hoàn thành. ",
-  "Chỉ cần ngươi không rời khỏi đảo, ta sẽ giúp ngươi tẩy tủy vừa ý!",
-  "Ngoài kia có Cọc gỗ (3000 Sinh lực) ;  Bao cát (10000 Sinh lực) ; Mộc nhân (30000 Sinh lực) để cho ngươi thử nghiệm hiệu quả tẩy tủy!",
-  "Cuối cùng, khi nào ngươi cảm thấy điểm kỹ năng đã đủ hãy đến tìm ta, ta sẽ đưa ngươi trở về chỗ cũ ",
+  "Tẩy Tủy xong thì ra ngoài đánh với mộc nhân thử, rồi rời đảo mới tính là xong.",
+  "Chưa rời đảo thì ta tẩy cho ngươi tới khi vừa ý mới thôi!",
+  "Ngoài kia có Cọc gỗ (3000 Sinh lực), Bao cát (10000 Sinh lực), Mộc nhân (30000 Sinh lực) để ngươi thử hiệu quả tẩy tủy!",
+  "Khi nào thấy điểm đã đủ thì tới tìm ta. Ta đưa ngươi về chỗ cũ.",
 ];
 const tongKn = (sk) => Object.values(sk || {}).reduce((t, v) => t + (v | 0), 0);
 // tẩy kỹ năng: về cấp sách / Đại Thành (skMin), điểm tự cộng trả hết; chiêu luyện giữ nguyên
@@ -104,7 +104,7 @@ function tayKyNang(h) {
   const cu = tongKn(h.skills), moi = Object.fromEntries([...Object.entries(h.skMin || {}).filter(([, v]) => (v | 0) > 0).map(([k, v]) => [k, v | 0]),
     ...Object.entries(h.skills || {}).filter(([id, v]) => DO.laLuyen(id) && (v | 0) > 0)]);
   h.skills = moi;
-  const tra = Math.max(0, cu - tongKn(moi)), cau = `Tẩy Tủy thành công! ngươi đã có thể phân phối điểm ${tra} điểm kỹ năng có thể phân phối lại. `;
+  const tra = Math.max(0, cu - tongKn(moi)), cau = `Tẩy Tủy xong! Ngươi có ${tra} điểm kỹ năng để phân phối lại.`;
   return { tay: { skills: h.skills }, tin: [cau], talk: [cau] };
 }
 // tẩy tiềm năng: Sức mạnh / Thân pháp / Ngoại công / Nội công về số gốc theo hệ (điểm đã cộng trả hết)
@@ -113,7 +113,7 @@ function tayTiemNang(h) {
   if (!D || !(D.loai & TIEM_NANG)) return mo(h);
   const a = h.attr || {}, tra = ["str", "dex", "vit", "eng"].reduce((t, k) => t + (a[k] | 0), 0);
   h.attr = { str: 0, dex: 0, vit: 0, eng: 0 };
-  const cau = `Tẩy Tủy thành công! ngươi có ${tra} điểm tiềm năng có thể phân phối lại. `;
+  const cau = `Tẩy Tủy xong! Ngươi có ${tra} điểm tiềm năng để phân phối lại.`;
   return { tay: { attr: h.attr }, tin: [cau], talk: [cau] };
 }
 function roiDao(h) {
@@ -131,15 +131,15 @@ function lam(h, b) {
     case "vaoTiemNang": return vao(h, TIEM_NANG, false);
     case "vaoCaHai": return vao(h, CA_HAI, false);
     case "mo": return mo(h);
-    case "kyNang": return say("Ngươi đồng ý Tẩy điểm kỹ năng không? ", [["Tẩy điểm kỹ năng ", "kyNangOk"], dong("Không tẩy ")]);
+    case "kyNang": return say("Ngươi tẩy điểm kỹ năng không?", [["Tẩy điểm kỹ năng", "kyNangOk"], dong("Không tẩy")]);
     case "kyNangOk": return tayKyNang(h);
-    case "tiemNang": return say("Ngươi đồng ý tẩy điểm tiềm năng không? ", [["Tẩy điểm tiềm năng", "tiemNangOk"], dong("Không tẩy ")]);
+    case "tiemNang": return say("Ngươi tẩy điểm tiềm năng không?", [["Tẩy điểm tiềm năng", "tiemNangOk"], dong("Không tẩy")]);
     case "tiemNangOk": return tayTiemNang(h);
     case "huongDan": return { talk: HUONG_DAN };
-    case "roi": return say("ngươi cho rằng đã Tẩy Tủy xong rồi ư? Có muốn rời khỏi không? ", [["Muốn rời khỏi ", "roi2"], dong("Để ta suy nghĩ kỹ lại xem")]);
-    case "roi2": return say("Rời khỏi đảo Tẩy Tủy, nếu muốn trở lại sẽ rất khó. ngươi vẫn kiên quyết rời khỏi chứ? ", [["ta thật sự muốn rời khỏi nơi ma quái này ", "roiOk"], dong("ta vẫn muốn ở lại ")]);
+    case "roi": return say("Ngươi tẩy Tủy xong rồi à? Muốn rời khỏi không?", [["Muốn rời khỏi", "roi2"], dong("Để ta suy nghĩ kỹ lại xem")]);
+    case "roi2": return say("Rời khỏi đảo Tẩy Tủy rồi thì muốn trở lại rất khó. Ngươi vẫn quyết rời khỏi chứ?", [["Ta thật sự muốn rời khỏi nơi này.", "roiOk"], dong("Ta vẫn muốn ở lại.")]);
     case "roiOk": return roiDao(h);
-    default: loi("Việc không hợp lệ");
+    default: loi("Không có việc này. Đừng bấm nữa.");
   }
 }
 // gửi trình duyệt kèm nhân vật: còn miễn phí không, đang ở đảo (loại tẩy)

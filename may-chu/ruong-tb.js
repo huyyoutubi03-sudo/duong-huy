@@ -45,8 +45,8 @@ function ra(n = CF.so, tai) {
     for (let i = 0; i < n && bais.length; i++) { const b = bais[i % bais.length], L = CHO[b], c = L[Math.floor(Math.random() * L.length)]; moi.push({ bai: +b, x: c[0], y: c[1], X: c[2], Y: c[3] }); }
   }
   if (!moi.length) loi("Chưa có chỗ ra rương (node cong-cu/dung-ruong-tb.mjs)");
-  TG().thongBao(`${moi.length} Rương Thần Bí đã xuất hiện ở các bãi từ cấp 90 trở lên — xem kênh hệ thống và mau đi tìm!`, true);
-  for (const r of moi) { r.id = ++seq; r.luc = t; r.het = t + CF.song * 60000; ds.push(r); TG().thongBao(`Chú ý: Rương Thần Bí đã xuất hiện tại bản đồ ${tenBai(r.bai)}, hãy mau đi tìm!`); }
+  TG().thongBao(`${moi.length} Rương Thần Bí xuất hiện ở các bãi từ cấp 90 trở lên — xem kênh hệ thống và mau đi tìm!`, true);
+  for (const r of moi) { r.id = ++seq; r.luc = t; r.het = t + CF.song * 60000; ds.push(r); TG().thongBao(`Chú ý: Rương Thần Bí xuất hiện tại bản đồ ${tenBai(r.bai)}. Mau đi tìm!`); }
   phat();
   return moi;
 }
@@ -59,11 +59,11 @@ function boc() {
 }
 // mở rương id (api.js /api/ruong-tb): tk = tài khoản, h = nhân vật -> { msg, len }
 function mo(tk, h, id) {
-  if (!CF.bat) loi("Hoạt động Rương Thần Bí hiện đang tạm dừng");
-  const r = ds.find((x) => x.id === +id); if (!r) loi("Rương Thần Bí đã bị người khác mở mất rồi!");
+  if (!CF.bat) loi("Hoạt động Rương Thần Bí đang tạm dừng. Quay lại sau.");
+  const r = ds.find((x) => x.id === +id); if (!r) loi("Rương Thần Bí bị người khác mở mất rồi!");
   const p = TG().dangChoi(tk);
-  if (!p || p.zone !== r.bai || Math.hypot(p.x - r.x, p.y - r.y) > CF.gan) loi("Các hạ đứng quá xa rương, hãy lại gần hơn");
-  if ((h.lvl || 1) < CF.capMo) loi(`Cần đạt cấp ${CF.capMo} trở lên mới đủ thực lực mở Rương Thần Bí`);
+  if (!p || p.zone !== r.bai || Math.hypot(p.x - r.x, p.y - r.y) > CF.gan) loi("Đứng xa rương quá. Lại gần hơn đi!");
+  if ((h.lvl || 1) < CF.capMo) loi(`Đạt cấp ${CF.capMo} trở lên mới mở được Rương Thần Bí.`);
   // bang hội đợt 2 (cau-hinh.json bangHoi.ruongCanBang — chỉ khi máy đã có ≥ 1 bang qua khảo nghiệm): chỉ thành viên bang mở được; hôm rời bang vẫn mở được
   { let ly = null; try { ly = require("./bang-hoi.js").chanRtb(tk, h); } catch {} if (ly) loi(ly); }
   const [loai, gt] = boc(); let ten;
@@ -72,7 +72,7 @@ function mo(tk, h, id) {
   else { const k = Array.isArray(gt) ? gt[Math.floor(Math.random() * gt.length)] : gt; DO.taoQua(h, { mon: [{ k, n: 1 }] }); ten = String((N.BY.get(k) || {}).n || k).trim(); } // túi đầy: lỗi, rương còn nguyên
   ds = ds.filter((x) => x !== r); phat();
   h.lvl = h.lvl || 1; const len = loai === "kn" ? N.lenCap(h) : 0;
-  TG().thongBao(`Chúc mừng ${MT.ten(h.name)} đã nhận được ${MT.thuong(ten)} khi mở Rương Thần Bí tại ${tenBai(r.bai)}!`);
+  TG().thongBao(`${MT.ten(h.name)} mở Rương Thần Bí tại ${tenBai(r.bai)}, nhận được ${MT.thuong(ten)}!`);
   NK().ghi("hiem", tk, h.name, `Rương Thần Bí (${tenBai(r.bai)}): ${ten}`);
   return { msg: `Mở Rương Thần Bí: nhận được ${ten}`, len };
 }

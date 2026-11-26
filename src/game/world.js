@@ -349,6 +349,7 @@ export class World {
     this.mobs = []; this.texts = []; this.fxs = []; this.time = 0; this.kills = 0; this.demTA = 0; this.demBoss = 0; this.nextId = 1;
     this.dongMinh = []; // Phong Hỏa Liên Thành: vệ binh / tướng quân phe mình (src/game/phonghoa.js — không làm mục tiêu, chiêu không trúng)
     this.luyenDem = new Map(); // mã chiêu luyện -> số lần trúng quái chưa gửi (vocong.js misHit, main.js takePending)
+    this.npcHitQ = []; // đòn của mình trúng NPC nhân vật mẫu chưa gửi (vocong.js hit — chỉ sự kiện, KHÔNG số sát thương; main.js takePending gửi kèm nhịp, máy chủ tự tính)
     // tự đánh tắt khi tạo (anh 29/10 "nhân vật lúc mới vào game tự động di chuyển ra ngoài Ba Lăng"): bản trước bật sẵn — vào game, main.js
     // gán world rồi còn chờ tải hình nhân vật / ô bản đồ (qua mạng vài giây tới 20 giây), đồng hồ dự phòng chạy World trong lúc đó nên nhân vật
     // tự nhắm mộc nhân / chạy tới tọa độ Trợ Thủ, tắt tự đánh xong vẫn đi tiếp đường cũ. Đổi bãi: main.js loadZone giữ trạng thái của bãi trước
@@ -601,6 +602,12 @@ export class World {
   }
   // bot Tống Kim dưới chuột / ngón tay (anh 06/11 "cho xem thông tin của bot như xem người chơi khác" — main.js menuNguoi): cả 2 phe, còn sống, vùng
   // bấm như người (cưỡi ngựa cao hơn)
+  npcChoiAt(x, y) { // NPC nhân vật mẫu dưới chuột / ngón tay (may-chu/npc-choi.js): vùng bấm như otherAt, chỉ khi còn sống
+    const e = this._npcChoi;
+    if (!e || !e.alive || e.an) return null;
+    if (Math.abs(x - e.x) < 28 && y < e.y + 12 && y > Math.max(e.top ?? e.y - 95, e.y - 110)) return e;
+    return null;
+  }
   botAt(x, y, rong) { // rong: chạm giữ trên điện thoại — vùng rộng tới tên (như otherAt)
     const T = this.tk; if (!T || !T.bots) return null;
     let best = null, bd = Infinity;
@@ -640,6 +647,12 @@ export class World {
       e.lvl = s.lvl; e.co = !!s.co; e.gd = s.gd | 0; e.cp = s.cp ?? this.campPhai(s.fac); // cp: phe đang theo (máy chủ — màu tên, vòng sáng) // co: đội trưởng của đội đang mở, gd: 1 mở giao dịch / 2 đang giao dịch -> cờ trên đầu
       e.cc = s.cc | 0; // vầng trăng Nhất Kỷ / Càn khôn đang có (anh 16/11 — bit 1 Hồng Nguyệt, 2 Lam Nguyệt: vocong.js TRANG_CC; máy chủ the-gioi.js ccDau)
       e.hp = s.hp ?? 100; e.mp = s.mp ?? 100; e.vs = s.vs || null; e.qt = !!s.qt; // % sinh lực / nội lực (bảng đội ngũ), vòng sáng hỗ trợ đang bật (vongDoi)
+      // NPC nhân vật mẫu (may-chu/npc-choi.js, cờ npc trong snapshot): đánh được như 1 người chơi — các trường
+      // dưới đây để công thức sát thương (skDamage / heroDamage qua mobRes / serK) không vỡ khi đọc e.res / e.def
+      // / e.series; máu thật ở máy chủ, hp% ở đây chỉ để hiện / xét sống-chết. _npcChoi trỏ tới entity bot để
+      // vcDich dùng (vocong.js); rời khỏi tầm nhìn thì xóa trỏ.
+      if (s.npc === 1) { e.npc = 1; e.alive = (s.hp ?? 100) > 0; e.radius = 14; e.def = 0; e.series = 0; e.res = { phys: 0, cold: 0, fire: 0, light: 0, poison: 0 }; this._npcChoi = e; }
+      else if (e.npc) { e.npc = 0; if (this._npcChoi === e) this._npcChoi = null; }
       e.bh = typeof s.bh === "string" && s.bh ? s.bh : null; // dòng bang trên đầu "Tên bang(Chức)" (anh 14/11 — máy chủ dựng 1 lần ở nhịp người đó; Tống Kim / phân thân không có)
       e.bhc = e.bh && typeof s.bhc === "string" ? s.bhc : null; // mã chức (chu / lao / doi / de / an) — màu chức vụ (veDongBang)
       e.an = !!(s.bl && s.bl.includes(AN_BL)); // đang ẩn thân (AN_BL)
@@ -649,7 +662,7 @@ export class World {
       if (e.an && !this.thayAn(e) && this.player && this.player.target === e) this.player.target = null;
       this._moc(e, tr);
     }
-    for (const k of [...this.others.keys()]) if (!seen.has(k)) this.others.delete(k);
+    for (const k of [...this.others.keys()]) if (!seen.has(k)) { const e = this.others.get(k); if (this._npcChoi === e) this._npcChoi = null; this.others.delete(k); }
     for (const k of [...this.ptKhac.keys()]) if (!seen.has(k)) this.ptKhac.delete(k);
   }
   // nối các mốc mới của người khác vào hàng chờ vẽ — từ nhịp (setOthers) hoặc kênh tức thời (themMoc, mốc tới ngay khi họ ghi — anh 01/11 khuya
@@ -943,7 +956,7 @@ export class World {
       // trong tầm là đánh — đạn (võ công, ám khí) bay qua vật cản nên không cần đường thẳng trống (bản trước phải chạy vòng tìm góc trống).
       // Đứng trong khu an toàn: chưa đánh — con ở ngoài thì đi ra khỏi cổng rồi mới đánh (như client: qua trap cổng mới sang trạng thái chiến
       // đấu); con cũng ở trong khu an toàn thì bỏ, báo
-      if (p.an && this.map.an(m.x, m.y)) { p.target = null; p.path = null; this.setAct(p, "stand"); this.skMsg("Khu vực an toàn — không thể chiến đấu"); return; }
+      if (p.an && this.map.an(m.x, m.y)) { p.target = null; p.path = null; this.setAct(p, "stand"); this.skMsg("Khu vực an toàn — cấm đánh nhau. Muốn đánh thì ra ngoài."); return; }
       const inRange = d <= reach + m.radius && !p.an;
       if (inRange && (p.atkT > 0 || (plan && plan.wait))) { p.path = null; p.dir = dirOf(m.x - p.x, (m.y - p.y) * 2); this.setAct(p, "stand"); if (p.atkT > 0) p.atkT -= dt * K; return; }
       if (inRange && plan) { p.path = null; this.castStart(plan.id, plan.lv, m, null); return; }
@@ -1015,6 +1028,7 @@ export class World {
   // KNpcAttribModify gắn độc của đồ N điểm mỗi 10 vòng trong 60 vòng (defPOISON_DAMAGE_INTERVAL / TIME) — bản trước trừ ngay 1 lần N (chỉ 1/6).
   // Mỗi đòn trúng 1 lớp độc như chiêu (vocong.js mobTick); chưa có võ công (P.vc) thì trừ ngay
   docDon(m, v, pt) { // pt: chỉ số phân thân ra đòn (nhanvatmay.js — lớp độc ghi nguồn, vocong.js mobTick)
+    if (m.npc) return; // NPC nhân vật mẫu: độc không mô hình phía máy chủ — không gắn lớp độc (máy chủ không trừ)
     if (!this.P.vc) return this.hit(pt || this.player, m, { v, poison: true });
     const ev = 10 * TICK, layer = { v, until: this.time + 60 * TICK + ev / 2, ...(pt ? { pt } : {}) }, P0 = m.poison && m.poison.until > this.time ? m.poison : null; // dư nửa nhịp: đủ 6 lần (vocong.js)
     m.poison = P0 ? { ...P0, list: [...P0.list, layer], every: Math.min(P0.every, ev), until: Math.max(P0.until, layer.until) } : { list: [layer], every: ev, next: this.time + ev, until: layer.until };
@@ -1181,7 +1195,7 @@ export class World {
     if (this.pkLuiBo && pct >= K.vePct) this.pkLuiBo = false;
     if (!this.pkLuiDang && !this.pkLuiBo && pct < K.vePct) {
       this.pkLuiDang = true; this.pkVe = !an ? [p.x, p.y, this.time] : null;
-      p.target = null; p.path = null; p.goal = null; this.pkLuiRe = 0; this.pkLuiMax = pct; this.pkLuiT = this.pkLuiT0 = this.time; this.skMsg("Sinh lực thấp — về doanh");
+      p.target = null; p.path = null; p.goal = null; this.pkLuiRe = 0; this.pkLuiMax = pct; this.pkLuiT = this.pkLuiT0 = this.time; this.skMsg("Sinh lực thấp rồi — về doanh ngay, đừng cố.");
     } else if (this.pkLuiDang && pct >= Math.max(K.ra, K.vePct + 1)) { this.pkLuiDang = false; p.path = null; if (this.pkVe) this.pkVe[2] = this.time; }
     // đang lui: main.js autoDrink uống tới mức ra lại; máu không lên PK_LUI_CHO giây (hết thuốc…) hoặc cả lần quá PK_LUI_TOI giây (chỉ hồi nhỏ giọt) thì
     // thôi chờ, ra trận lại (soát 06/11: chờ đủ K.ra mà không gì hồi tới đó -> treo máy đứng ở doanh cả trận). Bị đánh tụt máu trên đường về thì mốc so
@@ -1190,7 +1204,7 @@ export class World {
       if (pct < (this.pkLuiMax ?? pct)) this.pkLuiMax = pct;
       if (pct > this.pkLuiMax + 0.5) { this.pkLuiMax = pct; this.pkLuiT = this.time; }
       else if (this.time - (this.pkLuiT ?? this.time) > PK_LUI_CHO || this.time - (this.pkLuiT0 ?? this.time) > PK_LUI_TOI) {
-        this.pkLuiDang = false; this.pkLuiBo = pct < K.vePct; p.path = null; if (this.pkVe) this.pkVe[2] = this.time; this.skMsg("Sinh lực không lên — ra trận lại");
+        this.pkLuiDang = false; this.pkLuiBo = pct < K.vePct; p.path = null; if (this.pkVe) this.pkVe[2] = this.time; this.skMsg("Sinh lực không lên — ra trận lại đi, đứng đây làm gì.");
       }
     }
     if (!this.pkLuiDang) {
@@ -1215,7 +1229,7 @@ export class World {
   neDi(p, pt) {
     const b = this.mobs.find((m) => m.alive && this.neBoss(m) && ldist(p.x, p.y, m.x, m.y) <= (m.vision || 400) + NE_THEM);
     if (!b) return false;
-    const bao = () => { if (this._neBao !== b) { this._neBao = b; this.P.hud.msg(`Trợ Thủ: né ${b.name} — sang chỗ khác đánh quái`); } };
+    const bao = () => { if (this._neBao !== b) { this._neBao = b; this.P.hud.msg(`Trợ Thủ: né ${b.name} — sang chỗ khác mà đánh, đừng đâm đầu vào.`); } };
     if (pt) { this.tdI++; const q = this.diemTd(); if (q && this.walkTo(q[0], q[1])) { bao(); return true; } return false; }
     const A = this.hero.auto.danh, R = (b.vision || 400) + NE_XA, a0 = Math.atan2((p.y - b.y) * 2, p.x - b.x);
     for (const da of [0, 0.5, -0.5, 1, -1, 1.6, -1.6, Math.PI]) {
@@ -1380,7 +1394,7 @@ export class World {
   // anh 16/11 — đánh boss phải đứng gần: người ra đòn là mình / phân thân thì phải cách boss ≤ BOSS_TAM (đơn vị client) + thân + 40 dư (đạn bay, boss chạy);
   // nguồn khác (quái, không rõ) không xét
   ganBoss(src, m) { const a = src && (src === this.player || src.pt) ? src : null; return !a || !Number.isFinite(a.x) || ldist(a.x, a.y, m.x, m.y) <= BOSS_TAM * SCALE + (m.radius || 0) + 40; }
-  hit(src, dst, dmg) {
+  hit(src, dst, dmg, sk) { // sk: mã chiêu của đòn (npcHit) — đòn thường: 0 / không có
     if (dst.coc && !dst.alive) return; // cọc đảo Tẩy Tủy đã vỡ, chờ mọc lại
     // boss (auto.js laBoss): đòn từ xa hơn BOSS_TAM không tính — bắn chiêu vào đất từ xa, vòng sáng hại… (anh 16/11); độc / phản đòn đã dính từ trước vẫn tính
     // quản trị bật "Một đòn chết" (công cụ thử): đánh từ xa cũng tính (anh 18/11 — siêu boss không chết 1 đòn trên máy thật)
@@ -1388,6 +1402,7 @@ export class World {
     // công cụ thử "Một đòn chết" (anh 18/11 "tất cả quái boss admin đều có thể 1 đòn chết"): bot / quân Tống Kim (máu chung máy chủ — người chơi phe kia không tính)
     if (this.dev.oneHit && dst.tkb && src === this.player) dmg = { v: Math.max(1, Math.ceil(Math.max(dst.hp || 0, dst.hpMax || 0) * 2)), crit: true };
     if (dst.tkb || dst.tkn) return this.tkHit(src, dst, dmg); // Tống Kim: bot (máu chung ở máy chủ) / người phe kia (đòn thường gửi thẳng) — tkbot.js
+    if (dst.npc) return this.npcHit(src, dst, dmg, sk); // NPC nhân vật mẫu (may-chu/npc-choi.js): máu thật ở máy chủ — chỉ báo sự kiện, không trừ máu ở máy mình
     // đòn của phân thân (src.pt — nhanvatmay.js, anh 05/11): không đánh mộc nhân / cọc, boss thế giới, nhím, quái canh cây nhiệm vụ, quân Phong Hỏa
     const pt = !!(src && src.pt);
     if (pt && dst.kind === "mob" && (dst.dummy || dst.btg || dst.nhim || dst.mcv || dst.ph)) return;
@@ -1438,13 +1453,28 @@ export class World {
     }
   }
 
+  // đòn của mình trúng NPC nhân vật mẫu (may-chu/npc-choi.js — Huy duyệt móc báo đòn 25/11/2026): máu thật của
+  // bot ở máy chủ, máy mình KHÔNG trừ (hp% lấy từ snapshot ở nhịp sau). Chỉ hiện số xem trước + xếp 1 báo sự
+  // kiện [seq, mã chiêu, x, y, thời điểm] vào npcHitQ để gửi kèm nhịp — KHÔNG gửi số sát thương, máy chủ tự
+  // tính sau khi kiểm tra chống giả. Đòn của phân thân / quái / người khác không báo (máy chủ không kiểm
+  // chứng được); đòn độc / phản đòn không báo (không mô hình phía máy chủ); đòn trượt chỉ hiện "Né".
+  npcHit(src, dst, dmg, sk) {
+    if (src !== this.player) return; // chỉ đòn của chính mình mới báo lên máy chủ
+    if (dmg.none || dmg.poison || dmg.reflect || !(dmg.v > 0) && !dmg.miss) return;
+    // Đòn trượt cũng báo (máy chủ tính là đòn hợp lệ, tốn hồi chiêu) — chỉ khác số hiện trên đầu bot.
+    if (this.npcHitQ.length < 40) this.npcHitQ.push([(this._npcHitSeq = (this._npcHitSeq || 0) + 1), sk | 0, Math.round(this.player.x), Math.round(this.player.y), Date.now()]);
+    if (dmg.miss) { this.text(dst, "Né", "#cfd8dc"); return; }
+    this.text(dst, String(dmg.v), dmg.crit ? "#ffd54a" : "#ffffff", dmg.crit);
+    this.P.audio.missile(1, 1, 0.55);
+  }
+
   // quái chết: kinh nghiệm / ngân lượng / rơi đồ do máy chủ tính (25/10) — onKill(m) để main.js báo lên máy chủ
   kill(m) {
     if (m.tkb || m.tkn) return; // Tống Kim: máy chủ báo bot chết (tongkim.js), người phe kia tự báo
     // boss thế giới: máy chủ báo chết (bosstg.js) — không báo giết như quái thường, không đếm thủ lĩnh / tinh anh
-    if (m.btg) { m.alive = false; m.hp = 0; this.setAct(m, "die"); m.deadT = 0; this.P.audio.npc(m.type, "die", 0.6); if (this.player.target === m) this.player.target = null; this.text(m, "Hạ boss thế giới!", "#ffd54a", true); return; }
+    if (m.btg) { m.alive = false; m.hp = 0; this.setAct(m, "die"); m.deadT = 0; this.P.audio.npc(m.type, "die", 0.6); if (this.player.target === m) this.player.target = null; this.text(m, "Boss thế giới ngã rồi!", "#ffd54a", true); return; }
     // nhím Săn Nhím Béo Phì: máy chủ báo bị bắt (sannhim.js — m.ai = người bắt); thưởng máy chủ phát cho người ra đòn kết liễu
-    if (m.nhim) { m.alive = false; m.hp = 0; this.setAct(m, "die"); m.deadT = 0; this.P.audio.npc(m.type, "die", 0.6); if (this.player.target === m) this.player.target = null; if (m.ai && m.ai === this.hero.name) this.text(m, "Bắt được nhím!", NHIM_MAU, true); return; }
+    if (m.nhim) { m.alive = false; m.hp = 0; this.setAct(m, "die"); m.deadT = 0; this.P.audio.npc(m.type, "die", 0.6); if (this.player.target === m) this.player.target = null; if (m.ai && m.ai === this.hero.name) this.text(m, "Bắt được nhím rồi!", NHIM_MAU, true); return; }
     // quái Vượt Ải tổ đội: máy chủ báo chết (vadoi.js) — thưởng đám / đồ rơi máy chủ phát cho từng người, không báo giết loại 4
     if (m.vaDoi) { m.alive = false; m.hp = 0; this.setAct(m, "die"); m.deadT = 0; this.P.audio.npc(m.type, "die", 0.6); if (this.player.target === m) this.player.target = null; return; }
     // quái canh cây (quaicanh.js): máy chủ báo chết — không kinh nghiệm, không rơi đồ, không báo giết
@@ -1455,17 +1485,17 @@ export class World {
     this.P.audio.npc(m.type, "die", 0.6);
     if (this.onKill) this.onKill(m);
     if (this.player.target === m) this.player.target = null;
-    if (m.boss) this.text(m, "Hạ thủ lĩnh!", "#ffd54a", true);
-    else if (m.ta) this.text(m, "Hạ tinh anh!", TA_MAU, true);
+    if (m.boss) this.text(m, "Thủ lĩnh ngã rồi!", "#ffd54a", true);
+    else if (m.ta) this.text(m, "Tinh anh ngã rồi!", TA_MAU, true);
     const cb = this.canBang || {}, Z = this.zone;
     if (this.suKien) return; // thuyền Phong Lăng Độ: đầu lĩnh ra theo giờ (main.js), không thủ lĩnh / tinh anh
     if (!m.boss && this.demBoss >= (cb.thuLinhMoi || THU_LINH_MOI) && Z.boss != null && !this.mobs.some((x) => x.boss && x.alive)) {
       const b = this.spawnMob(true, 400);
-      if (b) this.text(this.player, `Thủ lĩnh ${b.name} xuất hiện!`, "#ffb74d", true);
+      if (b) this.text(this.player, `Thủ lĩnh ${b.name} ra rồi — tới mà đánh!`, "#ffb74d", true);
     }
     if (!m.ta && this.demTA >= (cb.tinhAnhMoi || TINH_ANH_MOI) && cb.ta && cb.ta[Z.id] && Z.m && Z.m.length && !this.mobs.some((x) => x.ta && x.alive)) {
       const t = this.spawnMob(false, 400, { ta: true });
-      if (t) this.text(this.player, `Tinh anh ${t.name} xuất hiện!`, TA_MAU, true);
+      if (t) this.text(this.player, `Tinh anh ${t.name} ra rồi — tới mà đánh!`, TA_MAU, true);
     }
   }
 
@@ -1581,8 +1611,7 @@ export class World {
     if (N && !N.on) return null;
     let best = null, bd = N ? N.r : LOOT_R;
     const muon = (d) => nhatMon(N, { loai: d.loai, ten: d.name, k: d.k, dong: d.dong, dl: d.dl }, laTrangSuc);
-    const du = this.potFull && this.potFull(); // đã mang đủ 60 bình thuốc: không đi nhặt thuốc
-    for (const d of this.drops) { if (d.picked || d.skip || d.t < R.fallTime(d.id) || !muon(d) || (du && d.loai === "thuoc") || (gan && ldist(gan[0], gan[1], d.x, d.y) > gan[2])) continue; const k = ldist(p.x, p.y, d.x, d.y); if (k < bd) { bd = k; best = d; } }
+    for (const d of this.drops) { if (d.picked || d.skip || d.t < R.fallTime(d.id) || !muon(d) || (d.loai === "thuoc" && this.potFull && this.potFull(d.k)) || (gan && ldist(gan[0], gan[1], d.x, d.y) > gan[2])) continue; const k = ldist(p.x, p.y, d.x, d.y); if (k < bd) { bd = k; best = d; } }
     return best;
   }
   // tự đánh theo tọa độ: tọa độ đang tới (px bản đồ) — chỉ khi danh.td ghi cho bãi này. Tọa độ không còn ở chỗ đi được của bản đồ thì bỏ qua (anh 11/11:
@@ -1606,7 +1635,7 @@ export class World {
       if (this._tdPt[this.tdI]) return this._tdPt[this.tdI];
       this.tdI++;
     }
-    if (!this._tdBao && this.auto && this.P && this.P.hud) { this._tdBao = true; this.P.hud.msg("Trợ Thủ: tọa độ đã lưu không còn ở chỗ đi được của bãi này (bản đồ bãi đã đổi) — đang đánh cả bãi, đặt lại tọa độ trong Trợ Thủ"); }
+    if (!this._tdBao && this.auto && this.P && this.P.hud) { this._tdBao = true; this.P.hud.msg("Trợ Thủ: tọa độ đã lưu không đi được nữa (bãi đã đổi) — đang đánh cả bãi, đặt lại tọa độ trong Trợ Thủ đi."); }
     return null;
   }
   // tự đánh mà không có con nào trong vùng: theo tọa độ -> tới tọa độ, tới rồi vẫn trống thì sang tọa độ kế; quanh chỗ bật -> về chỗ bật
@@ -2209,11 +2238,14 @@ export class World {
     this.pkTam = null;
     if (!A || p.hp <= 0 || this.resting || p.sit) return false;
     const O = (this.hero.oChieu = this.hero.oChieu || {}), H = A.hoi;
+    // cờ "Chiêu hỗ trợ" của bảng Auto nhanh (danh.hoTro, mặc định bật): tắt thì không tự hồi máu / xoay vòng / bùa lợi / bùa đồng đội
+    // khi train quái; đường PK (K.bua / pkHai) không bị chặn, bùa hại vẫn chạy như cũ
     // Nga My (anh 25/10): chiêu hồi máu khi sinh lực dưới x %
-    if (H && H.on && H.id && !(this.P.skillDb[H.id] || {}).aura && this.skLv(H.id) > 0 && p.hp < (p.hpMax * H.pct) / 100 && this.skCan(H.id).ok) return this.castSelf(H.id); // cài cũ chọn nhầm vòng sáng (vocong.js isHeal): bỏ
+    if ((A.hoTro !== 0 || K) && H && H.on && H.id && !(this.P.skillDb[H.id] || {}).aura && this.skLv(H.id) > 0 && p.hp < (p.hpMax * H.pct) / 100 && this.skCan(H.id).ok) return this.castSelf(H.id); // cài cũ chọn nhầm vòng sáng (vocong.js isHeal): bỏ
     if (K && (this.pkLuiDang || (K.ve && !this.pkLuiBo && p.hp * 100 < p.hpMax * K.vePct))) return false; // PK đang / sắp về doanh (pkLuiTick ngay sau): chỉ hồi máu (dòng trên), không ra bùa mới; đã thôi chờ (pkLuiBo) thì dùng bùa lại
-    if (A.vong && O.phai !== A.vong && this.skLv(A.vong) > 0 && this.vongXoay().length < 2) { O.phai = A.vong; this.refreshStats(false); if (this.onSkills) this.onSkills(); } // Nga My xoay ≥ 2 vòng: xoayVong lo
-    for (const id of (K && K.bua.some((x) => x) ? K.bua : A.bua) || []) { // PK: bùa lợi của thẻ PK (chưa chọn bùa nào: của thẻ Kỹ năng)
+    if ((A.hoTro !== 0 || K) && A.vong && O.phai !== A.vong && this.skLv(A.vong) > 0 && this.vongXoay().length < 2) { O.phai = A.vong; this.refreshStats(false); if (this.onSkills) this.onSkills(); } // Nga My xoay ≥ 2 vòng: xoayVong lo
+    const buaList = K && K.bua.some((x) => x) ? K.bua : A.hoTro !== 0 ? A.bua : [];
+    for (const id of buaList || []) { // PK: bùa lợi của thẻ PK (chưa chọn bùa nào: của thẻ Kỹ năng)
       if (!id || this.skLv(id) < 1) continue;
       const b = p.buffs.get(id); if (b && b.until - this.time > 3) continue;
       // chiêu 120 tác dụng vùng (anh 13/11 lượt 88 "auto hỗ trợ dùng 120 thiên nhẫn, võ đang … xem có hoạt động đúng chưa"): Thiên Nhẫn Ma Âm Phệ Phách (hoảng loạn địch
@@ -2224,7 +2256,7 @@ export class World {
       else if (this.buffDur(id) <= 5 && p.hp > p.hpMax * 0.6) continue;
       if (this.skCan(id).ok) return this.castSelf(id);
     }
-    if (this.buaDoi(A, H)) return true;
+    if ((A.hoTro !== 0 || K) && this.buaDoi(A, H)) return true;
     const m = p.target;
     if (K) return this.pkHai(K, m); // PK: bùa hại theo thẻ PK (người chơi phe kia cũng ra — không theo "dùng lên" của thẻ Kỹ năng)
     // mục tiêu của từng bùa hại (anh 03/11 — danh.haiMuc): "db" chỉ tinh anh / thủ lĩnh / Boss Sát thủ / Boss Hoàng Kim / boss khác; "nguoi" người chơi
@@ -2292,9 +2324,9 @@ export class World {
   khinhCong(x, y) {
     const p = this.player, M = this.map;
     if (p.hp <= 0 || p.jump || p.dash) return true;
-    if (this.riding()) { this.skMsg("Đang cưỡi ngựa không dùng được Khinh công"); return true; }
+    if (this.riding()) { this.skMsg("Đang cưỡi ngựa thì Khinh công không dùng được. Xuống ngựa đi!"); return true; }
     if (p.act === "attack" || (p.act === "hurt" && p.t < (p.hurtDur ?? DUR.hurt))) { p.queueAt = { id: KC_ID, pt: [x, y] }; return true; }
-    if (p.st < KC_PHI) { this.skMsg("Không đủ thể lực"); return true; }
+    if (p.st < KC_PHI) { this.skMsg("Thể lực không đủ. Nghỉ đi, đừng cố."); return true; }
     const V = 12 * SCALE, dx = x - p.x, dy = (y - p.y) * 2, L = Math.hypot(dx, dy); if (L < 1) return true;
     const ux = dx / L, uy = dy / L, n = Math.floor(Math.min(L, 400 * SCALE) / V), vung = M.vung(p.x, p.y);
     let ok = 0;
@@ -2303,7 +2335,7 @@ export class World {
       if (!M.nhayQua(tx, ty)) break;
       if (M.walkable(tx, ty) && (vung < 0 || M.vung(tx, ty) === vung)) ok = i;
     }
-    if (ok < 1) { this.skMsg("Không nhảy tới chỗ đó được"); return true; }
+    if (ok < 1) { this.skMsg("Chỗ đó nhảy không tới. Chọn chỗ khác đi."); return true; }
     if (p.sit) this.sit(false);
     p.st = Math.max(0, p.st - KC_PHI);
     p.target = null; p.path = null; p.goal = null; p.talkTo = null; p.loot = null; p.once = null; p.manual = true;
@@ -2324,7 +2356,7 @@ export class World {
   useRight(mob, x, y) {
     const p = this.player, id = this.hero.oChieu && this.hero.oChieu.phai, s = id && this.skDef(id);
     if (!s || p.hp <= 0 || !this.P.vc) return false;
-    if (kindOf(s, this.P.skillDb) === "aura") { this.skMsg(`${s.n}: vòng sáng đang bật (ô tay phải)`); return true; }
+    if (kindOf(s, this.P.skillDb) === "aura") { this.skMsg(`${s.n}: vòng sáng đang bật (ô tay phải) — đừng tắt bừa.`); return true; }
     return this.castAt(id, mob, x, y);
   }
   // Shift + chuột trái (client Mouse_Force0 — anh 26/10): chiêu ô tay trái vào quái dưới chuột hoặc vào khoảng không chỗ trỏ; ô trái trống
@@ -2336,7 +2368,7 @@ export class World {
     if (s && this.P.vc) return this.castAt(id, mob, x, y);
     if (mob) { this.clickMob(mob); return true; }
     if (p.act === "attack" || p.dash) return true;
-    if (p.an) { this.skMsg("Khu vực an toàn — không thể chiến đấu"); return true; } // trong thôn / thành (map.an): không vung đòn
+    if (p.an) { this.skMsg("Khu vực an toàn — cấm đánh nhau. Muốn đánh thì ra ngoài."); return true; } // trong thôn / thành (map.an): không vung đòn
     if (p.sit) this.sit(false);
     p.target = null; p.path = null; p.goal = null; p.manual = true;
     p.dir = dirOf(x - p.x, (y - p.y) * 2); this.setAct(p, "attack"); p.attack = p.attack === "Attack1" ? "Attack2" : "Attack1"; p.atkN = (p.atkN || 0) + 1; p.hitDone = false;
@@ -2358,7 +2390,7 @@ export class World {
     if (kind === "move") { if (p.act === "attack" || p.dash) return true; this.castStart(id, this.skLv(id), null, mob && mob.alive ? [mob.x, mob.y] : [x, y]); return true; }
     if (mob && mob.alive) { this.clickMob(mob); p.once = id; return true; }
     if (p.dash) return true;
-    if (p.an) { this.skMsg("Khu vực an toàn — không thể chiến đấu"); return true; } // trong thôn / thành (map.an): không tung chiêu vào khoảng không
+    if (p.an) { this.skMsg("Khu vực an toàn — cấm đánh nhau. Muốn đánh thì ra ngoài."); return true; } // trong thôn / thành (map.an): không tung chiêu vào khoảng không
     if (p.act === "attack" || (p.act === "hurt" && p.t < (p.hurtDur ?? DUR.hurt))) { p.queueAt = { id, pt: [x, y] }; return true; }
     const lv = this.skLv(id), R = this.skRange(id, lv), d = ldist(p.x, p.y, x, y);
     if (d > R) { x = p.x + ((x - p.x) * R) / d; y = p.y + ((y - p.y) * R) / d; }

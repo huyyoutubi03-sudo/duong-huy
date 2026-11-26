@@ -95,7 +95,7 @@ function ngayMoi(D) { // checkTask_Limit: sang ngày mới thì đếm lại
   if (D.ngay !== d) { D.ngay = d; D.soNgay = 0; D.huyNgay = 0; D.xongNgay = 0; }
 }
 const conNgay = (D) => (ngayMoi(D), (D.soNgay | 0) < GH);
-const HET_NGAY = "Ha! Ha! Vị thiếu hịêp này! Mỗi ngày làm 30 lần là đủ rồi! Ngày mai trở lại nhé!"; // câu client (giới hạn thật 40)
+const HET_NGAY = "Đủ rồi! Mỗi ngày 30 lần là hết. Mai quay lại!"; // câu client (giới hạn thật 40)
 
 // ---------- chọn theo trọng số ----------
 function chonW(ws) { const t = ws.reduce((a, b) => a + b, 0); if (t <= 0) return -1; let r = ri(1, t); for (let i = 0; i < ws.length; i++) { r -= ws[i]; if (r <= 0) return i; } return ws.length - 1; }
@@ -155,13 +155,13 @@ function tenDo(k, s) {
 function loiNv(h, D) {
   const nv = DT.nv[D.loai][D.dong];
   switch (D.loai) {
-    case 1: return `Hãy đi ${Y(nv.cho)} Mua giúp ta ${Y(tenDo(nv.k, nv.s))} về đây!`;
-    case 2: return nv.a ? `Hãy giúp ta đi tìm món này: ${Y(nv.ten)}, ${Y(nv.an)}, nhỏ nhất: ${Y(nv.min)}, lớn nhất: ${Y(nv.max)}.`
-      : `Hãy giúp ta đi tìm món này: ${Y("1 cái " + nv.ten)}.`;
-    case 3: return `Hãy giúp ta đi tìm món này: ${Y(nv.an)}, nhỏ nhất: ${Y(nv.min)}, lớn nhất: ${Y(nv.max)}! Xem xong ta sẽ trả lại cho ngươi (món mua ở sạp Hệ thống thì ta giữ luôn)`;
-    case 4: { const Z = N.ZONES.get(D.bai); return `Ngươi hãy đến ${Y(Z ? Z.n : "?")} tìm giúp ta ${Y(D.can)} quyển ${Y(D.chi === 2 ? "Mật chí" : "Địa Đồ chí")}.${D.co ? ` (đã có ${D.co})` : ""}`; }
-    case 5: return `Hãy đi nâng cấp ${Y("Trị kinh nghiệm " + nv.kn)}.`;
-    case 6: return `Hãy đi tìm giúp ta ${Y(nv.n)} mảnh bản đồ Sơn Hà Xã Tắc`;
+    case 1: return `Đi ${Y(nv.cho)} mua ${Y(tenDo(nv.k, nv.s))} về đây cho ta!`;
+    case 2: return nv.a ? `Tìm cho ta món này: ${Y(nv.ten)}, ${Y(nv.an)}, nhỏ nhất ${Y(nv.min)}, lớn nhất ${Y(nv.max)}.`
+      : `Tìm cho ta: ${Y("1 cái " + nv.ten)}.`;
+    case 3: return `Tìm cho ta món này: ${Y(nv.an)}, nhỏ nhất ${Y(nv.min)}, lớn nhất ${Y(nv.max)}! Xem xong ta trả lại. Món mua ở sạp Hệ thống thì ta giữ luôn.`;
+    case 4: { const Z = N.ZONES.get(D.bai); return `Tới ${Y(Z ? Z.n : "?")} tìm cho ta ${Y(D.can)} quyển ${Y(D.chi === 2 ? "Mật chí" : "Địa Đồ chí")}.${D.co ? ` (đã có ${D.co})` : ""}`; }
+    case 5: return `Kiếm thêm ${Y("Trị kinh nghiệm " + nv.kn)} rồi quay lại.`;
+    case 6: return `Tìm cho ta ${Y(nv.n)} mảnh bản đồ Sơn Hà Xã Tắc.`;
   }
   return "";
 }
@@ -230,8 +230,8 @@ function taoThuong(h, D) {
     } else if (loai === 4) { // thử vận: món / kinh nghiệm / tiền — chưa lộ tới lúc chọn
       const V = vKn * (luck * 0.03 + 1), kn = Math.floor((V / 2) * (ri(80, 120) / 100)), tien = Math.floor((kn / 2) * (ri(80, 120) / 100));
       const o = chonVat([...DT.thuongVat, { k: "kn", v: kn }, { k: "tien", v: tien }], V * 1.2);
-      ds.push({ loai, an: o.k === "kn" ? { kn: Math.floor((vKn / 2) * (ri(80, 120) / 100) * HS_KN) } : o.k === "tien" ? { tien: Math.floor((vKn / 2) * (ri(80, 120) / 100) * HS_TIEN) } : { k: o.k }, ten: "Có muốn thử xem đây là gì không?" });
-    } else ds.push({ loai, ten: "một cơ hội hủy bỏ nhiệm vụ " });
+      ds.push({ loai, an: o.k === "kn" ? { kn: Math.floor((vKn / 2) * (ri(80, 120) / 100) * HS_KN) } : o.k === "tien" ? { tien: Math.floor((vKn / 2) * (ri(80, 120) / 100) * HS_TIEN) } : { k: o.k }, ten: "Thử vận — mở ra mới biết là gì." });
+    } else ds.push({ loai, ten: "1 cơ hội hủy bỏ nhiệm vụ" });
   }
   return ds;
 }
@@ -241,15 +241,15 @@ function taoThuong(h, D) {
 const knGoi = (h, g) => (g.kn || 0) + (g.knCap > 0 && isFinite(N.need(h.lvl || 1)) ? Math.floor(N.need(h.lvl || 1) * g.knCap) : 0);
 function traoGoi(h, D, g, tin) {
   const kn = knGoi(h, g);
-  if (kn > 0) { h.exp = (h.exp || 0) + kn; N.lenCap(h); tin.push(`Bạn nhận được <color=green>${kn}<color> điểm kinh nghiệm`); }
-  if (g.tien > 0) { h.gold = (h.gold || 0) + g.tien; tin.push(`Bạn nhận được <color=green>${N.tien(g.tien)}<color>`); }
-  if (g.xu > 0) { h.xu = (h.xu | 0) + g.xu; tin.push(`Bạn nhận được <color=green>${g.xu} xu<color>`); }
+  if (kn > 0) { h.exp = (h.exp || 0) + kn; N.lenCap(h); tin.push(`Nhận được <color=green>${kn}<color> điểm kinh nghiệm`); }
+  if (g.tien > 0) { h.gold = (h.gold || 0) + g.tien; tin.push(`Nhận được <color=green>${N.tien(g.tien)}<color>`); }
+  if (g.xu > 0) { h.xu = (h.xu | 0) + g.xu; tin.push(`Nhận được <color=green>${g.xu} xu<color>`); }
   for (const [k, n] of g.do || []) traoMon(h, D, k, n | 0 || 1, tin);
 }
 function traoMon(h, D, k, n, tin) {
   const x = N.BY.get(k); if (!x) return;
-  try { N.themChong(h, x, n); tin.push(`Bạn nhận được <color=green>${x.n}${n > 1 ? " × " + n : ""}<color>`); }
-  catch { D.no = [...(D.no || []), [k, n]]; tin.push(`Hành trang không đủ chỗ — Dã Tẩu giữ giúp ${x.n}${n > 1 ? " × " + n : ""}, sắp xếp túi rồi gặp Dã Tẩu để nhận`); }
+  try { N.themChong(h, x, n); tin.push(`Nhận được <color=green>${x.n}${n > 1 ? " × " + n : ""}<color>`); }
+  catch { D.no = [...(D.no || []), [k, n]]; tin.push(`Hành trang đầy. Dã Tẩu giữ giúp ${x.n}${n > 1 ? " × " + n : ""} — dọn túi rồi gặp Dã Tẩu mà nhận.`); }
 }
 function traNo(h, D, tin) { // quà mốc còn giữ: trao lại khi gặp Dã Tẩu
   if (!D.no || !D.no.length) return;
@@ -261,7 +261,7 @@ const tenGoi = (g) => [g.kn > 0 ? `${g.kn.toLocaleString("vi-VN")} kinh nghiệm
 
 // khung chọn thưởng (Prise): lời + 3 ô; h = số hình như script seasonnpc Task_GiveAward gửi ("/3".."/7" — \Ui\PictureList.ini:
 // 3 tiền, 4 kinh nghiệm, 5 vật phẩm, 6 thử vận, 7 hủy nhiệm vụ)
-const khungThuong = (h, D) => ({ text: `Ngươi vất vả quá, xin mời vị ${xung(h)}Chọn món mình thích đi!`,
+const khungThuong = (h, D) => ({ text: `Xong việc rồi. Chọn một món đi, thích món nào lấy món đó!`,
   ds: D.thuong.map((o) => ({ ten: o.loai === 4 ? o.ten : "Nhận được " + o.ten, h: o.loai + 2 })) });
 
 // ---------- hội thoại ----------
@@ -269,27 +269,27 @@ const say = (text, opts) => ({ say: { text, opts } }); // opts: [[nhãn, việc,
 function moDau(h, D) { // tasklink_entence
   if (D.buoc === 2) return { thuong: khungThuong(h, D) };
   if (D.phat === 10) {
-    if (Date.now() - (D.phatLuc || 0) < 605000) return say(`Vị này ${xung(h)}Có phải gấp lắm không, khảo nghiệm của ta sắp xếp khó đến như vậy ư? Lần sau đến vậy!`, []);
+    if (Date.now() - (D.phatLuc || 0) < 605000) return say(`Hủy liền 3 lần rồi. 10 phút nữa ta mới giao nhiệm vụ lại. Đi đi!`, []);
     D.phat = 0; return nhan(h, D);
   }
-  if (!D.buoc) return say(` Vị này ${xung(h)}xem ra đã bôn ba giang hồ được một thời gian dài rồi nhỉ, có muốn tham gia khảo nghiệm nhiệm vụ liên tục của ta không?`,
-    [["Được thôi! Ta không tin có nhiệm vụ nào làm khó dễ được ta", "nhan"], ["Ta muốn biết khảo nghiệm của ngươi nói có nội dung ra sao", "info"], ["Ta bận rồi, không rảnh ngồi tán gẫu với ông", null]]);
+  if (!D.buoc) return say(`Ngươi bôn ba giang hồ cũng lâu rồi. Muốn thử chuỗi nhiệm vụ của ta không?`,
+    [["Được. Nhiệm vụ nào ta cũng làm được.", "nhan"], ["Khảo nghiệm của ngươi là cái gì?", "info"], ["Ta bận. Để lúc khác.", null]]);
   if (D.buoc === 3) {
     if (!conNgay(D)) return say(HET_NGAY, []);
-    return say(`:<enter>Vị ${xung(h)}đã hoàn thành ${Y(tongNv(D))}, nhiệm vụ này ngày hôm nay có thể thực hiện lại${Y(GH - (D.soNgay | 0))}, ngươi có muốn làm nữa không?`,
-      [["Đương nhiên, mau cho ta biết nhiệm vụ tiếp theo là gì ", "tiep"], ["Để ta nghỉ ngơi một lát đã! Ta bận rồi", null]]);
+    return say(`:<enter>Ngươi đã xong ${Y(tongNv(D))} nhiệm vụ. Hôm nay còn làm lại được ${Y(GH - (D.soNgay | 0))} lần. Làm nữa không?`,
+      [["Làm nữa. Nhiệm vụ tiếp theo là gì?", "tiep"], ["Để ta nghỉ một lát.", null]]);
   }
   return bangNv(h, D);
 }
 function bangNv(h, D) { // Task_MainDialog
   D.mo = 1;
   const lenh = demLenh(h);
-  return say(`Dã Tẩu:<enter><enter> Đây là <color=green>${tongNv(D) + 1}<color> nhiệm vụ thứ, ${loiNv(h, D)}`,
-    [["Biết rồi, để ta hoàn thành nhiệm vụ xong mới lại tìm ngươi", null], ["ta đã hoàn thành nhiệm vụ lần này, xin hãy kiểm tra lại!", "xong"],
+  return say(`Dã Tẩu:<enter><enter>Nhiệm vụ thứ <color=green>${tongNv(D) + 1}<color>: ${loiNv(h, D)}`,
+    [["Biết rồi. Xong việc ta quay lại.", null], ["Ta xong nhiệm vụ rồi. Kiểm tra đi!", "xong"],
       // ngắn cho vừa 1 dòng khung Say; nhiệm vụ Sơn Hà Xã Tắc (loại 6) tự nó là nộp mảnh (tới 5000) -> không có lựa chọn này
-      ...(D.loai === 6 ? [] : [[`Nộp ${XN_SHXT} mảnh Sơn Hà Xã Tắc để xong ngay (có ${h.shxt | 0})`, "xongShxt"]]),
-      ...(lenh ? [[`Dùng Lệnh bài làm NV Dã Tẩu để xong ngay (có ${lenh})`, "xongLenh"]] : []),
-      ["Nhiệm vụ lần này khó quá, Ta muốn hủy bỏ không làm nữa", "hoiHuy"], ["Ta muốn biết khảo nghiệm của ngươi nói có nội dung ra sao", "info"]]);
+      ...(D.loai === 6 ? [] : [[`Nộp ${XN_SHXT} mảnh Sơn Hà Xã Tắc để xong ngay (đang có ${h.shxt | 0})`, "xongShxt"]]),
+      ...(lenh ? [[`Dùng Lệnh bài làm NV Dã Tẩu để xong ngay (đang có ${lenh})`, "xongLenh"]] : []),
+      ["Nhiệm vụ này khó quá. Ta muốn hủy.", "hoiHuy"], ["Khảo nghiệm của ngươi là cái gì?", "info"]]);
 }
 // hoàn thành nhanh (anh 10/11: "cho tính năng hoàn thành nhiệm vụ dã tẩu = bản đồ sơn hà xã tắc và vé hoàn thành nhanh"): nộp daTau.xongNhanh.shxt
 // mảnh Sơn Hà Xã Tắc, hoặc 1 Lệnh bài làm NV Dã Tẩu (magicscript 5126 — script\global\gm\dataulenhbai.lua: "Hoàn thành nhiệm vụ được giao ngay lập
@@ -303,22 +303,22 @@ const demLenh = (h) => (h.bag || []).reduce((t, o) => t + (o.k === LENH ? o.n ||
 function xongNhanh(h, D, cach, u) {
   if (D.buoc !== 1) {
     if (D.buoc === 2 && cach === "lenh" && demLenh(h)) D.lenhChon = 1; // xong rồi chưa chọn thưởng: bấm Lệnh bài mở lại khung chọn thưởng tại chỗ
-    return D.buoc === 2 ? moDau(h, D) : say("Hiện không có nhiệm vụ Dã Tẩu đang làm — gặp Dã Tẩu nhận nhiệm vụ trước đã.", []);
+    return D.buoc === 2 ? moDau(h, D) : say("Không có nhiệm vụ Dã Tẩu đang làm. Gặp Dã Tẩu nhận nhiệm vụ trước đã.", []);
   }
-  if (oTrong(h) < 5) return say("Hành trang đã đầy, hãy sắp xếp lại cho ngăn nắp.", []);
+  if (oTrong(h) < 5) return say("Hành trang đầy rồi. Dọn túi cho ngăn nắp rồi hãy quay lại.", []);
   const ten = tomTat(h, D), tin = [];
   if (cach === "shxt") {
     // soát lỗi 10/11: nhiệm vụ loại 6 đòi tới 5000 mảnh — 50 mảnh không được thay (nộp đủ bằng "ta đã hoàn thành…" hoặc dùng Lệnh bài)
-    if (D.loai === 6) return say(" Nhiệm vụ lần này chính là nộp mảnh sơn Hà Xã Tắc — ngươi gom đủ rồi nộp cho ta, hoặc dùng Lệnh bài làm NV Dã Tẩu.", []);
-    if ((h.shxt | 0) < XN_SHXT) return say(` ngươi có đúng đã mang ${Y(XN_SHXT)} mảnh sơn Hà Xã Tắc không? Ta có nhìn lầm không vậy?`, []);
+    if (D.loai === 6) return say("Nhiệm vụ lần này là nộp mảnh Sơn Hà Xã Tắc. Gom đủ rồi nộp cho ta, hoặc dùng Lệnh bài làm NV Dã Tẩu.", []);
+    if ((h.shxt | 0) < XN_SHXT) return say(`Ngươi mang đủ ${Y(XN_SHXT)} mảnh Sơn Hà Xã Tắc chưa? Nhìn lại túi đi!`, []);
     h.shxt -= XN_SHXT;
-    tin.push(`Bạn đã sử dụng ${XN_SHXT} mảnh sơn Hà Xã Tắc để hoàn thành nhiệm vụ này! Mảnh sơn Hà Xã Tắc hiện tại của bạn còn dư ${h.shxt} Tấm!`);
+    tin.push(`Đã dùng ${XN_SHXT} mảnh Sơn Hà Xã Tắc để xong nhiệm vụ này! Còn dư ${h.shxt} mảnh.`);
   } else {
     const ds = (h.bag || []).filter((o) => o.k === LENH);
     const it = (u && ds.find((o) => o.u === (u | 0))) || ds.find((o) => (o.kbh | 0) > 0) || ds[0];
-    if (!it) return say("Ngươi không mang Lệnh bài làm NV Dã Tẩu (mua ở Kỳ Trân Các).", []);
+    if (!it) return say("Ngươi không mang Lệnh bài làm NV Dã Tẩu. Mua ở Kỳ Trân Các.", []);
     if ((it.n || 1) > 1) it.n--; else h.bag.splice(h.bag.indexOf(it), 1);
-    tin.push(`Nhiệm vụ ${ten} đã Hoàn Thành.`); // câu client DaTau_HT
+    tin.push(`Nhiệm vụ ${ten} đã xong.`); // câu client DaTau_HT
   }
   if (D.loai === 4) D.co = 0;
   D.buoc = 2; // như xong(): chờ chọn thưởng
@@ -328,42 +328,42 @@ function xongNhanh(h, D, cach, u) {
 }
 function nhan(h, D) { // Task_Confirm: bắt đầu chuỗi
   // cấp tối thiểu (anh 29/10: cấp 20 — script client có sẵn chỗ chặn này, bản VNG đặt cấp 1; câu của client)
-  if ((h.lvl || 1) < CAP_NHAN) return say(`Đại hiệp hãy tu luyện đến cấp ${CAP_NHAN} rồi đến gặp ta !`, []);
+  if ((h.lvl || 1) < CAP_NHAN) return say(`Luyện tới cấp ${CAP_NHAN} rồi hãy tới gặp ta!`, []);
   if (!conNgay(D)) return say(HET_NGAY, []);
   Object.assign(D, { lan: 0, link: linkDau(h.lvl || 1), vong: 0, huy: 0, chuoi: 0 });
   giao(h, D);
   return bangNv(h, D);
 }
-const INFO = [" Lần này ta đã sắp xếp các loại khảo nghiệm nhiệm vụ nhỏ để thử thách võ thuật cũng như tính kiên nhẫn của các vị anh hùng hào kiệt đây.",
-  " Mỗi lần hoàn thành nhiệm vụ đều có <color=red>phần thưởng tương ứng<color> cho các vị, nếu có thể liên tục hoàn thành nhiệm vụ được đặt ra thì có được <color=red>lễ vật tốt hơn<color>dâng tặng riêng, nếu như ai đó có thể đạt đến <color=red>8000<color> nhiệm vụ sẽ nhận được <color=red>sự đền đáp đến bất ngờ<color>!",
-  " Nếu như ngươi bỏ qua một nhiệm vụ trong số nhiệm vụ thì tính lại từ nhiệm vụ ban đầu. Nhưng mà, ta có lúc cũng cho cơ hội hủy bỏ nhiệm vụ, để xem ngươi nắm bắt ra sao thôi!",
-  " Sao rồi? Người thanh niên có muốn tiếp nhận sự khảo nghiệm của ta không?"];
+const INFO = ["Lần này ta bày ra đủ loại nhiệm vụ nhỏ để thử võ công và tính kiên nhẫn của ngươi.",
+  "Xong một nhiệm vụ thì có <color=red>thưởng<color>. Làm liên tục thì có <color=red>lễ vật tốt hơn<color>. Làm tới <color=red>8000<color> nhiệm vụ thì có <color=red>thưởng bất ngờ<color>!",
+  "Bỏ dở một nhiệm vụ thì tính lại từ đầu. Ta có lúc cho cơ hội hủy — biết nắm thì nắm!",
+  "Sao? Ngươi có dám nhận khảo nghiệm của ta không?"];
 
 // nộp: loại 1–3 qua khung Giao vật phẩm (b.u = [mã món]), loại 4–6 kiểm tra luôn (Task_Accept)
 function xong(h, D, b) {
   if (D.buoc !== 1) return moDau(h, D);
-  if (oTrong(h) < 5) return say("Hành trang đã đầy, hãy sắp xếp lại cho ngăn nắp.", []);
+  if (oTrong(h) < 5) return say("Hành trang đầy rồi. Dọn túi cho ngăn nắp rồi hãy quay lại.", []);
   const nv = DT.nv[D.loai][D.dong];
   let tinMon = null; // Xem vật phẩm: câu báo Dã Tẩu giữ / trả món
   if (D.loai <= 3) {
     // tiêu đề khung: script client ghi ngược (loại 1 Mua -> "tìm", loại 2 Tìm -> "mua") — bản mình ghi đúng loại
-    if (!Array.isArray(b.u)) return { giao: { tieuDe: ["Nhiệm vụ mua vật phẩm", "Nhiệm vụ tìm vật phẩm", "Nhiệm vụ hiển thị vật phẩm"][D.loai - 1], loi: " ủa? Những thứ ta cần ngươi tìm được cho ta chưa?" } };
+    if (!Array.isArray(b.u)) return { giao: { tieuDe: ["Nhiệm vụ mua vật phẩm", "Nhiệm vụ tìm vật phẩm", "Nhiệm vụ hiển thị vật phẩm"][D.loai - 1], loi: "Đồ ta cần đâu? Ngươi tìm được chưa?" } };
     const ds = b.u.map((u) => h.bag.find((o) => o.u === (u | 0))).filter(Boolean);
-    if (ds.length > 1) return say(` Vị này ${xung(h)}, Ngươi bỏ nhiều đồ vô như vậy xem tới ta hoa cả mắt, từ từ thôi nào!`, []);
-    if (!ds.length) return say(` Vị này ${xung(h)}, ngươi có thật đã bỏ vào thứ ta cần không? Không phải lão phu hoa mắt chứ?`, []);
-    if (!hopMon(D, ds[0])) return say(" Những thứ ngươi giao cho ta chưa đạt đúng yêu cầu, cố gắng hơn nhé!", []);
+    if (ds.length > 1) return say(`Bỏ nhiều đồ vô một lúc, ta hoa cả mắt. Đưa từng món một!`, []);
+    if (!ds.length) return say(`Ngươi có bỏ đúng thứ ta cần vào không? Nhìn lại đi!`, []);
+    if (!hopMon(D, ds[0])) return say("Đồ ngươi giao chưa đúng yêu cầu. Tìm lại đi!", []);
     // món xếp chồng (Sát Thủ Giản): lấy 1 trong chồng. Xem vật phẩm: đồ của người chơi xem xong trả lại (như client), món mua ở sạp Hệ thống (dt) Dã
     // Tẩu giữ luôn (anh 04/11: "đồ dã tẩu thu rồi k trả lại")
     const o = ds[0];
     if (D.loai !== 3 || o.dt) { if (N.xepChong(o) && (o.n | 0) > 1) o.n--; else h.bag.splice(h.bag.indexOf(o), 1); }
-    if (D.loai === 3) tinMon = o.dt ? `Dã Tẩu giữ lại ${DO.tenMon(o).trim()} (món sạp Hệ thống)` : `Dã Tẩu xem xong trả lại ${DO.tenMon(o).trim()}`;
+    if (D.loai === 3) tinMon = o.dt ? `Dã Tẩu giữ luôn ${DO.tenMon(o).trim()} (món sạp Hệ thống)` : `Dã Tẩu xem xong trả lại ${DO.tenMon(o).trim()}`;
   } else if (D.loai === 4) {
-    if ((D.co | 0) < D.can) return say(" Những thứ ngươi giao cho ta chưa đạt đúng yêu cầu, cố gắng hơn nhé!", []);
+    if ((D.co | 0) < D.can) return say("Đồ ngươi giao chưa đúng yêu cầu. Tìm lại đi!", []);
     D.co = 0;
   } else if (D.loai === 5) {
-    if (knThem(h, D) < nv.kn) return say(" Những thứ ngươi giao cho ta chưa đạt đúng yêu cầu, cố gắng hơn nhé!", []);
+    if (knThem(h, D) < nv.kn) return say("Đồ ngươi giao chưa đúng yêu cầu. Tìm lại đi!", []);
   } else if (D.loai === 6) {
-    if ((h.shxt | 0) < nv.n) return say(" Những thứ ngươi giao cho ta chưa đạt đúng yêu cầu, cố gắng hơn nhé!", []);
+    if ((h.shxt | 0) < nv.n) return say("Đồ ngươi giao chưa đúng yêu cầu. Tìm lại đi!", []);
     h.shxt -= nv.n;
   }
   D.buoc = 2; // Task_AwardRecord: xong, chờ chọn thưởng
@@ -379,26 +379,26 @@ function ruong10(h, D) {
   const R = CFG.ruong || {}, moi = R.moi ?? 10, tong = tongNv(D), tin = [];
   if (!(moi > 0) || !tong || tong % moi || D.ruongMoc === tong || !N.BY.get(RUONG)) return tin;
   D.ruongMoc = tong;
-  tin.push(`Chúc mừng đại hiệp đã hoàn thành liên tiếp ${moi} nhiệm vụ Dã Tẩu, nhận được phần thưởng Bảo rương thần bí của Dã Tẩu!`);
+  tin.push(`Ngươi làm liên tiếp ${moi} nhiệm vụ Dã Tẩu rồi. Nhận Bảo rương thần bí của Dã Tẩu!`);
   try { N.themChong(h, N.BY.get(RUONG), 1); }
-  catch { D.no = [...(D.no || []), [RUONG, 1]]; tin.push("Hành trang không đủ chỗ — Dã Tẩu giữ giúp Bảo rương thần bí, sắp xếp túi rồi gặp Dã Tẩu để nhận"); }
+  catch { D.no = [...(D.no || []), [RUONG, 1]]; tin.push("Hành trang đầy. Dã Tẩu giữ giúp Bảo rương thần bí — dọn túi rồi gặp Dã Tẩu mà nhận."); }
   return tin;
 }
 
 // chọn phần thưởng b.i (mySG / SelectAward_*) + quà mốc (PayPlayerLinkAward) + thưởng ngày (Task_NewVersionAward)
 function chon(h, D, b) {
-  if (D.buoc === 3) return say("Ngươi đã lãnh thưởng rồi! Định gạt già này à?", []);
-  if (D.buoc !== 2 || !D.thuong) loi("Chưa có phần thưởng");
-  const o = D.thuong[b.i | 0]; if (!o) loi("Không có phần thưởng này");
+  if (D.buoc === 3) return say("Ngươi lãnh thưởng rồi! Định gạt ta à?", []);
+  if (D.buoc !== 2 || !D.thuong) loi("Chưa có phần thưởng. Làm nhiệm vụ trước đã.");
+  const o = D.thuong[b.i | 0]; if (!o) loi("Không có phần thưởng này. Chọn lại.");
   const tin = [];
-  const kn = (n) => { h.exp = (h.exp || 0) + n; N.lenCap(h); tin.push(`Bạn nhận được <color=green>${n}<color> điểm kinh nghiệm`); };
-  const tien = (n) => { h.gold = (h.gold || 0) + n; tin.push(`Bạn nhận được <color=green>${n}<color> lượng  bạc`); };
-  const mon = (k) => { if (oTrong(h) < 5) loi("Hành trang đã đầy, hãy sắp xếp lại cho ngăn nắp."); N.themChong(h, N.BY.get(k), 1); tin.push("Bạn nhận được một phần thưởng nhiệm vụ!"); };
+  const kn = (n) => { h.exp = (h.exp || 0) + n; N.lenCap(h); tin.push(`Nhận được <color=green>${n}<color> điểm kinh nghiệm`); };
+  const tien = (n) => { h.gold = (h.gold || 0) + n; tin.push(`Nhận được <color=green>${n}<color> lượng bạc`); };
+  const mon = (k) => { if (oTrong(h) < 5) loi("Hành trang đầy rồi. Dọn túi cho ngăn nắp rồi hãy quay lại."); N.themChong(h, N.BY.get(k), 1); tin.push("Nhận được một phần thưởng nhiệm vụ!"); };
   if (o.loai === 1) tien(o.tien);
   else if (o.loai === 2) kn(o.kn);
   else if (o.loai === 3) mon(o.k);
   else if (o.loai === 4) { const a = o.an; if (a.k) mon(a.k); else if (a.kn) kn(a.kn); else tien(a.tien); }
-  else { D.huy = Math.min(254, (D.huy | 0) + 1); tin.push("Bạn nhận được <color=green>1 cơ hội hủy bỏ nhiệm vụ<color>!"); }
+  else { D.huy = Math.min(254, (D.huy | 0) + 1); tin.push("Nhận được <color=green>1 cơ hội hủy bỏ nhiệm vụ<color>!"); }
   D.buoc = 3; delete D.thuong; delete D.lenhChon;
   // quà mốc theo tổng nhiệm vụ (PayPlayerLinkAward: tl_counttasklinknum(1) — 100, 200 … 8000). Có daTau.mocChuoi (anh 31/10 khuya lần 2) thì trao
   // gói của số này (goiChuoi — mỗi mốc 1 gói); không có thì bảng award_link của client: bốc 1 món theo trọng số
@@ -406,20 +406,20 @@ function chon(h, D, b) {
   let say2 = null;
   if (goiC.length) {
     const ten = goiC.map(tenGoi).join(", ");
-    tin.push(`Chúc mừng bạn! Hoàn thành nhiệm vụ lần này  ${tong} bạn nhận được ${ten}!!!`);
+    tin.push(`Nhiệm vụ thứ ${tong} xong rồi. Ngươi nhận được ${ten}!`);
     for (const g of goiC) traoGoi(h, D, g, tin);
-    say2 = `Bạn trẻ làm tốt lắm, tặng ngươi ${Y(ten)} này, sau này hãy cố gắng thêm nhé!`;
+    say2 = `Làm tốt lắm. Tặng ngươi ${Y(ten)} — cố gắng thêm nữa!`;
   }
   if (moc.length) {
     const m = moc[chonW(moc.map((x) => Math.max(1, x.v)))];
-    try { N.themChong(h, N.BY.get(m.k), 1); tin.push(`Chúc mừng bạn! Hoàn thành nhiệm vụ lần này  ${tong} bạn nhận được${N.BY.get(m.k).n}!!!`); say2 = `Bạn trẻ làm tốt lắm, tặng ngươi ${Y(N.BY.get(m.k).n)} này, sau này hãy cố gắng thêm nhé!`; } catch { tin.push("Hành trang đã đầy — không nhận được quà mốc"); }
+    try { N.themChong(h, N.BY.get(m.k), 1); tin.push(`Nhiệm vụ thứ ${tong} xong rồi. Ngươi nhận được ${N.BY.get(m.k).n}!`); say2 = `Làm tốt lắm. Tặng ngươi ${Y(N.BY.get(m.k).n)} — cố gắng thêm nữa!`; } catch { tin.push("Hành trang đầy. Không nhận được quà mốc. Dọn túi rồi quay lại."); }
   }
   // mốc ngày (Task_NewVersionAward của client: thứ 30 / 40 trong ngày — anh 28/10: gói quà theo cau-hinh.json daTau.mocNgay) + mốc tổng
   D.xongNgay = (D.xongNgay | 0) + 1; D.tongXong = (D.tongXong ?? Math.max(0, tongNv(D) - 1)) + 1; // buoc đã là 3: tongNv tính cả nhiệm vụ này
   const gN = MOC_NGAY[D.xongNgay], gT = MOC_TONG[D.tongXong];
   if (gN) {
     const chiKn = !gN.tien && !gN.xu && !(gN.do || []).length;
-    tin.push(`Hôm nay hoàn thành${D.xongNgay === GH ? " liên tục" : ""} nhiệm vụ Dã Tẩu lần thứ ${D.xongNgay}, nhận được ${chiKn ? "kinh nghiệm" : "phần thưởng"} thêm!`);
+    tin.push(`Hôm nay xong${D.xongNgay === GH ? " liên tục" : ""} nhiệm vụ Dã Tẩu lần thứ ${D.xongNgay}. Nhận thêm ${chiKn ? "kinh nghiệm" : "phần thưởng"}!`);
     traoGoi(h, D, gN, tin);
   }
   // anh 16/11 — Báo Đáp Ân Sư: mốc 40 nhiệm vụ trong ngày (đúng lần xong thứ 40 — mỗi ngày 1 lần) -> món sự kiện
@@ -427,41 +427,41 @@ function chon(h, D, b) {
   {
     let td = []; try { td = require("./nguon-su-kien.js").daTau(D.xongNgay).filter(([k]) => N.BY.has(k)).map(([k, n]) => ({ k, n })); } catch (e) { console.error("Nguồn sự kiện — Dã Tẩu:", e && e.message); }
     const ev = [...(D.xongNgay === 40 ? bdMon("daTau40") : []), ...td];
-    if (ev.length) { tin.push(`Hoạt động báo đáp ân sư: hoàn thành ${D.xongNgay} nhiệm vụ Dã Tẩu hôm nay, nhận thêm phần thưởng!`); for (const x of ev) traoMon(h, D, x.k, x.n, tin); }
+    if (ev.length) { tin.push(`Báo đáp ân sư: hôm nay xong ${D.xongNgay} nhiệm vụ Dã Tẩu, nhận thêm phần thưởng!`); for (const x of ev) traoMon(h, D, x.k, x.n, tin); }
   }
   if (gT) {
-    tin.push(`Chúc mừng bạn! Đã hoàn thành tổng cộng ${D.tongXong} nhiệm vụ Dã Tẩu, nhận được quà mốc!`);
+    tin.push(`Ngươi đã xong tổng cộng ${D.tongXong} nhiệm vụ Dã Tẩu. Nhận quà mốc!`);
     traoGoi(h, D, gT, tin);
-    say2 = (say2 ? say2 + "<enter>" : "") + `Ngươi đã hoàn thành ${Y(D.tongXong)} nhiệm vụ của ta, quả là người kiên nhẫn hiếm có! Đây là quà mốc của ngươi: ${Y(tenGoi(gT))}.`;
+    say2 = (say2 ? say2 + "<enter>" : "") + `Ngươi xong ${Y(D.tongXong)} nhiệm vụ của ta rồi — kiên nhẫn hiếm có! Quà mốc của ngươi: ${Y(tenGoi(gT))}.`;
   }
   return { tin, ...(say2 ? say(say2, []) : {}) };
 }
 
 // hủy (Task_CancelConfirm / Task_Cancel)
 function hoiHuy(h, D) {
-  if (!(D.huy | 0)) return say(" Hiện tại bạn không có cơ hội nào để hủy bỏ nhiệm vụ, bạn chỉ có thể làm lại từ đầu thôi! Đồng thời phần thưởng tích lũy của bạn lúc trước sẽ được tính lại từ đầu.",
-    [["Đúng, ta không muốn làm nhiệm vụ quỷ quái này đâu", "hoiHuy2"], [`Ta muốn sử dụng ${HUY_SHXT} mảnh sơn Hà Xã Tắc để hủy bỏ nhiệm vụ lần này`, "huy", 2], ["Uhm! Để ta suy nghĩ lại đã", null]]);
-  return say(` Hiện tại bạn còn${D.huy} số lần cơ hội hủy bỏ nhiệm vụ, bạn xác định hủy bỏ nhiệm vụ lần này đúng không?`, [["Đúng, ta không muốn làm nhiệm vụ quỷ quái này đâu", "huy", 1], ["Uhm! Để ta suy nghĩ lại đã", null]]);
+  if (!(D.huy | 0)) return say("Ngươi không còn cơ hội hủy nào. Chỉ còn cách làm lại từ đầu — thưởng tích lũy trước đó tính lại từ đầu.",
+    [["Đúng. Ta không làm nhiệm vụ này nữa.", "hoiHuy2"], [`Ta dùng ${HUY_SHXT} mảnh Sơn Hà Xã Tắc để hủy nhiệm vụ lần này`, "huy", 2], ["Để ta nghĩ lại đã.", null]]);
+  return say(`Ngươi còn ${D.huy} cơ hội hủy. Chắc chắn hủy nhiệm vụ lần này?`, [["Đúng. Ta không làm nhiệm vụ này nữa.", "huy", 1], ["Để ta nghĩ lại đã.", null]]);
 }
 function huy(h, D, cach) {
   if (D.buoc !== 1 || D.mo !== 1) return moDau(h, D);
   if (!conNgay(D)) return say(HET_NGAY, []);
   const tin = [];
   if (cach === 2) {
-    if ((h.shxt | 0) < HUY_SHXT) return say(` ngươi có đúng đã mang ${Y(HUY_SHXT)} mảnh sơn Hà Xã Tắc không? Ta có nhìn lầm không vậy?`, []);
+    if ((h.shxt | 0) < HUY_SHXT) return say(`Ngươi mang đủ ${Y(HUY_SHXT)} mảnh Sơn Hà Xã Tắc chưa? Nhìn lại túi đi!`, []);
     h.shxt -= HUY_SHXT; D.huy = (D.huy | 0) + 1;
-    tin.push(`Bạn đã sử dụng ${HUY_SHXT} mảnh sơn Hà Xã Tắc để hủy bỏ nhiệm vụ này!`, `Mảnh sơn Hà Xã Tắc hiện tại của bạn còn dư ${h.shxt} Tấm!`);
+    tin.push(`Đã dùng ${HUY_SHXT} mảnh Sơn Hà Xã Tắc để hủy nhiệm vụ này!`, `Mảnh Sơn Hà Xã Tắc còn dư ${h.shxt} mảnh.`);
   }
   if (!(D.lan | 0) && D.link === linkDau(h.lvl || 1)) { // nhiệm vụ đầu chuỗi: đổi nhiệm vụ khác (không tốn cơ hội hủy); không còn cơ hội mà hủy liền 3 lần thì phạt 10 phút
     if (!(D.huy | 0)) {
       D.phat = (D.phat | 0) + 1;
-      if (D.phat > 2) { D.phat = 10; D.phatLuc = Date.now(); D.buoc = 0; return { tin, ...say(`Vị này ${xung(h)}Có phải gấp lắm không, khảo nghiệm của ta sắp xếp khó đến như vậy ư? Lần sau đến vậy!`, []) }; }
+      if (D.phat > 2) { D.phat = 10; D.phatLuc = Date.now(); D.buoc = 0; return { tin, ...say(`Hủy liền 3 lần rồi. 10 phút nữa ta mới giao nhiệm vụ lại. Đi đi!`, []) }; }
     }
   } else if ((D.huy | 0) >= 1) D.huy--;
   else {
     // ruongMoc: 0 (anh 05/11 — soát Tra cứu): chuỗi mới đếm lại từ 0, quên số của rương cuối chuỗi cũ (trước đây tới đúng số đó thì mất 1 rương)
     Object.assign(D, { lan: 0, link: linkDau(h.lvl || 1), vong: 0, huy: 0, chuoi: 0, phat: 0, ruongMoc: 0 });
-    tin.push("<color=yellow>Chuỗi nhiệm vụ Dã Tẩu đã xóa bỏ hoàn toàn, bây giờ sẽ phải làm lại từ nhiệm vụ đầu tiên<color>!");
+    tin.push("<color=yellow>Chuỗi nhiệm vụ Dã Tẩu xóa hết rồi. Làm lại từ nhiệm vụ đầu tiên!<color>");
   }
   D.huyNgay = (D.huyNgay | 0) + 1;
   giao(h, D);
@@ -504,25 +504,25 @@ function den(h, D, key, b) {
   const o = noiLam(h, D);
   if (!o) { // trình duyệt còn bản nhiệm vụ cũ (vừa xong / vừa đổi): câu báo theo nhiệm vụ đang có
     const coMon = D.buoc === 1 && D.loai <= 3 && (h.bag || []).some((it) => !it.het && hopMon(D, it));
-    return { canh: D.buoc !== 1 ? (D.buoc === 2 ? "Nhiệm vụ Dã Tẩu đã xong — về gặp Dã Tẩu chọn phần thưởng" : "Chưa nhận nhiệm vụ Dã Tẩu") : D.loai === 4 && (D.co | 0) >= (D.can | 0) ? "Đã đủ Địa Đồ chí — về gặp Dã Tẩu"
-      : coMon ? "Món Dã Tẩu cần đã có trong hành trang — về gặp Dã Tẩu" : D.loai <= 3 ? "Món này không bán ở cửa hàng hay sạp Hệ thống — tự tìm rồi nộp cho Dã Tẩu"
-      : "Nhiệm vụ Dã Tẩu lần này không có nơi làm cố định (đánh quái ở bãi nào cũng được)" };
+    return { canh: D.buoc !== 1 ? (D.buoc === 2 ? "Nhiệm vụ Dã Tẩu xong rồi. Về gặp Dã Tẩu chọn thưởng." : "Chưa nhận nhiệm vụ Dã Tẩu. Nhận rồi hãy bấm.") : D.loai === 4 && (D.co | 0) >= (D.can | 0) ? "Đủ Địa Đồ chí rồi. Về gặp Dã Tẩu."
+      : coMon ? "Món Dã Tẩu cần đã có trong hành trang. Về gặp Dã Tẩu." : D.loai <= 3 ? "Món này không bán ở cửa hàng hay sạp Hệ thống. Tự tìm rồi nộp cho Dã Tẩu."
+      : "Nhiệm vụ lần này không có nơi làm cố định. Đánh quái ở bãi nào cũng được." };
   }
-  if (o.cho) return { canh: "Món này mua ở sạp Hệ thống của Chợ Trời (thẻ Dã Tẩu) — không cần đi đâu" };
+  if (o.cho) return { canh: "Món này mua ở sạp Hệ thống của Chợ Trời (thẻ Dã Tẩu). Không cần đi đâu." };
   const zNay = N.BAI_NAY.get(key), Zn = N.ZONES.get(zNay);
-  if (!Zn) return { canh: "Chưa rõ chỗ đang đứng — chờ giây lát rồi bấm lại" };
+  if (!Zn) return { canh: "Chưa rõ ngươi đang đứng ở đâu. Chờ giây lát rồi bấm lại." };
   const z = o.zs && o.zs.includes(zNay) ? zNay : o.z, Z = N.ZONES.get(z), ten = o.ban ? `${o.ten} ${Z.n}` : Z.n;
   // Điểm báo danh Tống Kim (325, kind "thành" + tkBd) tính như thành: Xa phu ở đó vốn đưa ra bãi luyện công miễn phí (soát 11/11)
   const thanh = N.THANH.has(Zn.kind), bai = N.FARM.has(Zn.kind) && !Zn.chiThuyen;
   if (!thanh && !bai) return { canh: `Không đi tới nơi làm nhiệm vụ Dã Tẩu được: ${Zn.chiThuyen ? "đang ở bờ Bắc Phong Lăng Độ (về bờ Nam bằng Thuyền phu)" : KHONG_DI[Zn.kind] || `đang ở ${Zn.n}`}` };
-  if (N.capVao(Z) > (h.lvl || 1)) return { canh: `Cần đạt cấp ${N.capVao(Z)} mới vào được ${Z.n}` };
+  if (N.capVao(Z) > (h.lvl || 1)) return { canh: `Đạt cấp ${N.capVao(Z)} mới vào được ${Z.n}. Luyện thêm đi!` };
   if (z === zNay) return o.ban ? { di: { z, ban: o.ban } } : { tin: [`Đang ở ${Z.n} rồi`] }; // cửa hàng ngay thành này: chạy tới NPC
   if (thanh) return { di: { z, ...(o.ban ? { ban: o.ban } : {}) } };
   // tấm phù của chuyến trước chưa đi được (bị hủy / tải bản đồ hỏng / hoàn không được vì túi đầy — hoanPhu) còn hạn: đi bằng tấm đó, không hỏi, không trừ thêm
   const cu = PHU_HOAN.get(key);
   if (cu && !cu.toi && Date.now() - cu.t <= HOAN_MS) { cu.z = z; return { di: { z, ...(o.ban ? { ban: o.ban } : {}), phu: 1 }, tin: [`Dùng lại Thổ Địa Phù của chuyến trước (chưa đi được) — đi tới ${ten}`] }; }
   const ds = (h.bag || []).filter(laPhuDt), p = ds.find((x) => (x.kbh | 0) > 0) || ds[0];
-  if (!p) return { canh: `Đang ở bãi luyện công — cần 1 Thổ Địa Phù để đi tới ${ten} (Tạp hóa bán), hoặc về thành rồi bấm lại` };
+  if (!p) return { canh: `Đang ở bãi luyện công. Cần 1 Thổ Địa Phù để đi tới ${ten} (Tạp hóa bán), hoặc về thành rồi bấm lại.` };
   if (!b.phu) return { hoiPhu: { ten, co: ds.reduce((t, x) => t + (x.n || 1), 0) } };
   const r = DO.lam(h, { act: "phu", u: p.u }, key); // trừ 1 tấm như dùng Thổ Địa Phù trong túi (trên thuyền / bờ Bắc: do.js báo không dùng được)
   PHU_HOAN.set(key, { t: Date.now(), z, k: p.k, kbh: p.kbh | 0 });
@@ -536,9 +536,9 @@ const PHU_HOAN = new Map(), HOAN_MS = 120 * 1000; // "tài khoản|ô" -> { t (l
 function hoanPhu(h, key) {
   const r = PHU_HOAN.get(key);
   if (!r || r.toi || Date.now() - r.t > HOAN_MS || N.BAI_NAY.get(key) === r.z) { PHU_HOAN.delete(key); return {}; }
-  try { N.themChong(h, { k: r.k }, 1, r.kbh); } catch { return { tin: ["Hành trang đầy — chưa trả lại được Thổ Địa Phù: bấm lại \"Đưa ta đến\" trong 2 phút thì đi bằng tấm đó, không trừ thêm"] }; } // quyền hoàn còn
+  try { N.themChong(h, { k: r.k }, 1, r.kbh); } catch { return { tin: ["Hành trang đầy, chưa trả lại được Thổ Địa Phù. Bấm lại \"Đưa ta đến\" trong 2 phút thì đi bằng tấm đó, không trừ thêm."] }; } // quyền hoàn còn
   PHU_HOAN.delete(key);
-  return { tin: ["Chưa đi tới nơi làm nhiệm vụ Dã Tẩu — trả lại 1 Thổ Địa Phù"] };
+  return { tin: ["Chưa đi tới nơi làm nhiệm vụ. Trả lại 1 Thổ Địa Phù."] };
 }
 // nhịp báo bãi đang đứng (api.js): tới đúng nơi của chuyến đã trừ phù -> hết quyền hoàn / dùng lại
 function daToi(key, z) { const r = PHU_HOAN.get(key); if (r && r.z === (z | 0)) r.toi = 1; }
@@ -546,14 +546,14 @@ function daToi(key, z) { const r = PHU_HOAN.get(key); if (r && r.z === (z | 0)) 
 // b.viec: "mo" (bấm NPC) | "nhan" | "info" | "tiep" | "xong" (+ b.u) | "chon" (+ b.i) | "hoiHuy" | "hoiHuy2" | "huy" (+ b.cach) | "den" (+ b.phu — Đưa ta đến nơi
 // làm nhiệm vụ, anh 11/11; key = "tài khoản|ô": bãi đang đứng — do.js BAI_NAY) | "hoanPhu" (thôi đi sau khi đã trừ phù — hoanPhu)
 function lam(h, b, key) {
-  if (!DT) loi("Thiếu dữ liệu Dã Tẩu (assets/data/da-tau.json)");
+  if (!DT) loi("Thiếu dữ liệu Dã Tẩu (assets/data/da-tau.json). Báo quản trị đi.");
   const D = (h.daTau = h.daTau || {});
   ngayMoi(D);
   switch (b.viec) {
     case "mo": {
       const tin = []; traNo(h, D, tin);
       // nhiệm vụ đang làm thuộc dòng tạm bỏ (Huyền tinh — nhận trước khi bỏ): giao nhiệm vụ khác cùng chỗ, không tính lượt, không tốn cơ hội hủy
-      if (D.buoc === 1 && D.loai && tamBo(DT.nv[D.loai][D.dong])) { D.soNgay = Math.max(0, (D.soNgay | 0) - 1); giao(h, D); tin.push("Dã Tẩu đổi nhiệm vụ khác: món ngươi đang tìm tạm chưa có trong game (không mất lượt, không tốn cơ hội hủy)"); }
+      if (D.buoc === 1 && D.loai && tamBo(DT.nv[D.loai][D.dong])) { D.soNgay = Math.max(0, (D.soNgay | 0) - 1); giao(h, D); tin.push("Dã Tẩu đổi nhiệm vụ khác: món ngươi đang tìm tạm chưa có trong game. Không mất lượt, không tốn cơ hội hủy."); }
       const r = moDau(h, D); return tin.length ? { ...r, tin: [...tin, ...(r.tin || [])] } : r;
     }
     case "nhan": return D.buoc ? moDau(h, D) : nhan(h, D);
@@ -569,12 +569,12 @@ function lam(h, b, key) {
     case "xongLenh": return xongNhanh(h, D, "lenh", b.u);
     case "chon": return chon(h, D, b);
     case "hoiHuy": return D.buoc === 1 ? hoiHuy(h, D) : moDau(h, D);
-    case "hoiHuy2": return say(" Bạn suy nghĩ kỹ hủy bỏ nhiệm vụ lần này đúng không?", [["Đừng lôi thôi nữa! ta không muốn làm nhiệm vụ quỷ quái này đâu", "huy", 1], ["Thôi để ta suy nghĩ lại đã!", null]]);
+    case "hoiHuy2": return say("Ngươi nghĩ kỹ chưa? Chắc chắn hủy nhiệm vụ lần này?", [["Đừng lôi thôi nữa! Ta không làm nhiệm vụ này đâu!", "huy", 1], ["Thôi, để ta nghĩ lại đã!", null]]);
     case "huy": return huy(h, D, (b.cach | 0) === 2 ? 2 : 1);
     case "den": return den(h, D, key, b);
     case "hoanPhu": return hoanPhu(h, key);
   }
-  loi("Không rõ việc");
+  loi("Không có việc này. Đừng bấm nữa.");
 }
 
 // ---------- Trợ Thủ tự làm Dã Tẩu (anh 03/11 — mở khóa trong ngày bằng Xu: may-chu/tu-lam.js; trình duyệt src/game/tulam.js) ----------
@@ -591,7 +591,7 @@ function lam(h, b, key) {
 // -> { tiep: "lai" (gọi tiếp) | "danh" (+ bai) | "tui" (túi < 5 ô trống — Dã Tẩu không nhận) | "het" (đủ trong ngày) | "cho" (+ giay) | "dung" (+ ly),
 //      tin: [câu], mua?: { ten, gia, yc } }
 function buocTu(h, opt = {}) {
-  if (!DT) loi("Thiếu dữ liệu Dã Tẩu (assets/data/da-tau.json)");
+  if (!DT) loi("Thiếu dữ liệu Dã Tẩu (assets/data/da-tau.json). Báo quản trị đi.");
   const D = (h.daTau = h.daTau || {}), tin = [], ra = (tiep, them) => ({ tiep, tin, ...them });
   const gom = (r) => { for (const t of (r && r.tin) || []) tin.push(t); };
   ngayMoi(D);
@@ -599,13 +599,13 @@ function buocTu(h, opt = {}) {
   // hủy liền 3 lần ở nhiệm vụ đầu chuỗi: Dã Tẩu không giao trong 10 phút
   if (D.phat === 10) {
     const con = 605000 - (Date.now() - (D.phatLuc || 0));
-    if (con > 0) return ra("cho", { giay: Math.ceil(con / 1000), ly: "Dã Tẩu không giao nhiệm vụ trong 10 phút (hủy liền 3 lần ở nhiệm vụ đầu chuỗi)" });
+    if (con > 0) return ra("cho", { giay: Math.ceil(con / 1000), ly: "Dã Tẩu không giao nhiệm vụ trong 10 phút. Hủy liền 3 lần ở nhiệm vụ đầu chuỗi rồi." });
     D.phat = 0;
   }
   const nhanMoi = () => tin.push(`Dã Tẩu giao nhiệm vụ thứ ${tongNv(D) + 1}: ${tomTat(h, D)}`);
   if (D.buoc === 1 && D.loai && tamBo(DT.nv[D.loai][D.dong])) { D.soNgay = Math.max(0, (D.soNgay | 0) - 1); giao(h, D); nhanMoi(); return ra("lai"); }
   if (!D.buoc) {
-    if ((h.lvl || 1) < CAP_NHAN) return ra("dung", { ly: `Cấp ${CAP_NHAN} mới nhận được nhiệm vụ Dã Tẩu` });
+    if ((h.lvl || 1) < CAP_NHAN) return ra("dung", { ly: `Cấp ${CAP_NHAN} mới nhận được nhiệm vụ Dã Tẩu. Luyện thêm đi!` });
     if (!conNgay(D)) return ra("het");
     nhan(h, D); nhanMoi(); return ra("lai");
   }
@@ -638,14 +638,14 @@ function buocTu(h, opt = {}) {
       mua = { ten: DO.tenMon(m).trim(), gia: o.gia, yc: o.yc, noi: o.noi };
       tin.push(`Mua ${mua.ten} (${o.noi}) — ${N.tien(o.gia)}`);
     }
-    if (!it) return khongLam(h, D, opt, tin, ktc ? `Dã Tẩu đòi ${tenDo(nv.k)}` : "Sạp Hệ thống không bán món Dã Tẩu đòi");
+    if (!it) return khongLam(h, D, opt, tin, ktc ? `Dã Tẩu đòi ${tenDo(nv.k)}` : "Sạp Hệ thống không bán món Dã Tẩu đòi. Tự tìm đi.");
     gom(xong(h, D, { u: [it.u] }));
-    return D.buoc === 2 ? ra("lai", mua ? { mua } : {}) : ra("dung", { ly: "Dã Tẩu không nhận món", ...(mua ? { mua } : {}) });
+    return D.buoc === 2 ? ra("lai", mua ? { mua } : {}) : ra("dung", { ly: "Dã Tẩu không nhận món này.", ...(mua ? { mua } : {}) });
   }
   const du = D.loai === 4 ? (D.co | 0) >= D.can : D.loai === 5 ? knThem(h, D) >= nv.kn : (h.shxt | 0) >= nv.n;
   if (!du) return ra("danh", { bai: D.loai === 4 ? D.bai : null });
   gom(xong(h, D, {}));
-  return D.buoc === 2 ? ra("lai") : ra("dung", { ly: "Dã Tẩu chưa nhận nhiệm vụ" });
+  return D.buoc === 2 ? ra("lai") : ra("dung", { ly: "Dã Tẩu chưa nhận nhiệm vụ. Nhận rồi hãy làm." });
 }
 // Mua vật phẩm (loại 1 — món bày ở cửa hàng NPC: Thợ rèn / Tạp hóa Ba Lăng, Mã phu Biện Kinh): Trợ Thủ mua đúng giá cửa hàng (assets/data/vat-pham.json
 // shops — 30 lượng … 10 vạn), như người chơi tới NPC mua; sạp Hệ thống không bày loại này (anh 03/11: người chơi tới Tạp hóa / Thợ rèn mua). Món mang dt
@@ -679,8 +679,8 @@ function khongLam(h, D, opt, tin, ly) {
     tin.unshift(`Trợ Thủ: ${ly} — nộp ${XN_SHXT} mảnh Sơn Hà Xã Tắc để xong ngay`);
     return { tiep: "lai", tin };
   }
-  if (!con) return { tiep: "het", tin, ly: `${ly} — hôm nay đã nhận đủ ${GH} nhiệm vụ, không hủy được` };
-  return { tiep: "dung", tin, ly: `${ly} — hết cơ hội hủy, chưa đủ ${XN_SHXT} mảnh Sơn Hà Xã Tắc để xong ngay: Trợ Thủ dừng Dã Tẩu (không hủy mất chuỗi — tự xử lý rồi bật lại)` };
+  if (!con) return { tiep: "het", tin, ly: `${ly} — hôm nay nhận đủ ${GH} nhiệm vụ rồi, không hủy được` };
+  return { tiep: "dung", tin, ly: `${ly} — hết cơ hội hủy, chưa đủ ${XN_SHXT} mảnh Sơn Hà Xã Tắc để xong ngay: Trợ Thủ dừng Dã Tẩu. Không hủy mất chuỗi — tự xử lý rồi bật lại.` };
 }
 
 // ---------- sạp Hệ thống của Chợ Trời (anh 02/11 khuya: "tạo các item dã tẩu hay yêu cầu, treo lên shop dưới danh nghĩa của hệ thống game, để
@@ -762,7 +762,7 @@ const LOAI = ["", "Mua vật phẩm", "Tìm vật phẩm", "Xem vật phẩm", "
 const devXem = (h, D) => ({ tongXong: tongXong(D), xongNgay: D.xongNgay | 0, bac: bacMoc(D), lk: D.lk | 0, mocTong: mocSau(MOC_TONG, tongXong(D)), mocChuoi: DT ? mocChuoiSau(tongNv(D)) : null, buoc: D.buoc | 0, loai: D.loai ? LOAI[D.loai] : "", nv: tomTat(h, D), tong: DT ? tongNv(D) : 0, soNgay: D.soNgay | 0, gioiHan: GH, lan: D.lan | 0, link: D.link | 0,
   chuoi: D.chuoi | 0, vong: D.vong | 0, huy: D.huy | 0, phat: D.phat | 0, shxt: h.shxt | 0 });
 function dev(h, b) {
-  if (!DT) loi("Thiếu dữ liệu Dã Tẩu (assets/data/da-tau.json)");
+  if (!DT) loi("Thiếu dữ liệu Dã Tẩu (assets/data/da-tau.json). Báo quản trị đi.");
   const D = (h.daTau = h.daTau || {}), n = b.n | 0;
   ngayMoi(D);
   let r = {};
@@ -798,7 +798,7 @@ function dev(h, b) {
     case "lenh": { const tin = []; traoMon(h, D, LENH, 1, tin); r = { tin }; break; } // +1 Lệnh bài làm NV Dã Tẩu (hoàn thành nhanh — anh 10/11)
     case "shxtThem": h.shxt = (h.shxt | 0) + 100; r = { tin: [`Dã Tẩu (thử): +100 mảnh Sơn Hà Xã Tắc (có ${h.shxt})`] }; break;
     case "datLai": delete h.daTau; return { dev: devXem(h, {}), tin: ["Dã Tẩu (thử): đã xóa, nói chuyện với Dã Tẩu để bắt đầu lại"] };
-    default: loi("Việc không rõ");
+    default: loi("Không có việc này. Đừng bấm nữa.");
   }
   return { ...r, dev: devXem(h, D) };
 }
