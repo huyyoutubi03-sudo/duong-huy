@@ -935,14 +935,16 @@ export class Hud {
   // Không bịa địa danh, không vẽ lại art mới. Vẽ lại theo nhịp của drawMinimap (throttle trong _vePanel).
   setTheGioi(ds) {
     this._tg = ds || [];
+    // Điểm neo mỗi bãi: region gốc của client, không có thì tâm rect. rect là ô đánh dấu trên tranh
+    // bản đồ gốc — các ô đè nhau nên KHÔNG dùng rect để đặt ảnh nữa, chỉ neo chấm theo điểm này.
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-    for (const z of this._tg) { const r = z.rect; x0 = Math.min(x0, r[0]); y0 = Math.min(y0, r[1]); x1 = Math.max(x1, r[2]); y1 = Math.max(y1, r[3]); }
+    for (const z of this._tg) {
+      const ax = z.region ? z.region[0] : (z.rect[0] + z.rect[2]) / 2;
+      const ay = z.region ? z.region[1] : (z.rect[1] + z.rect[3]) / 2;
+      z.ax = ax; z.ay = ay;
+      x0 = Math.min(x0, ax); y0 = Math.min(y0, ay); x1 = Math.max(x1, ax); y1 = Math.max(y1, ay);
+    }
     this._tgGioi = { x0, y0, x1, y1 };
-  }
-  _tgImg(z) {
-    let im = this._tgImgs.get(z.map);
-    if (!im) { im = new Image(); im.onload = () => { if (this._panel && this._panel.loai === "tg") this._vePanel(this._sCuoi, true); }; im.src = BASE + z.file; this._tgImgs.set(z.map, im); }
-    return im.complete && im.naturalWidth ? im : null;
   }
   moTheGioi() {
     if (this._panel && this._panel.loai === "tg") return this._dongPanel();
@@ -995,40 +997,77 @@ export class Hud {
     g.setTransform(P.dpr, 0, 0, P.dpr, 0, 0);
     if (P.loai === "tg") this._veTheGioi(g, P, s); else this._veHang(g, P, s);
   }
-  // bản đồ thế giới: ảnh mini từng bãi đặt đúng rect gốc của client, chấm từng bãi ở điểm region, chấm trắng = người chơi
+  // bản đồ thế giới: chấm sơ đồ — mỗi bãi 1 chấm đặt theo điểm neo (region gốc của client),
+  // chuẩn hóa min-max về khung. Ảnh mini từng bãi KHÔNG vẽ nữa: rect gốc là ô đánh dấu trên tranh
+  // gốc, các ô đè nhau nên đặt ảnh theo rect thành cụm lộn xộn. Chấm vàng = bãi, cam vuông = sơn động,
+  // trắng = bãi đang đứng / người chơi. Tên chỉ hiện ở đầu khung (bãi đang đứng + bãi vừa bấm).
   _veTheGioi(g, P, s) {
-    const { W, H } = P, G = this._tgGioi, pad = 8;
+    const { W, H } = P, G = this._tgGioi, pad = 10;
     const k = Math.min((W - pad * 2) / (G.x1 - G.x0), (H - pad * 2) / (G.y1 - G.y0));
     const ox = (W - (G.x1 - G.x0) * k) / 2 - G.x0 * k, oy = (H - (G.y1 - G.y0) * k) / 2 - G.y0 * k;
     const X = (x) => ox + x * k, Y = (y) => oy + y * k;
     g.fillStyle = "#0a0f0b"; g.fillRect(0, 0, W, H);
     const cur = this.mmMap && this.mmMap.key;
+    // Xòe chấm trùng/gần nhau (dữ liệu gốc có bãi trùng điểm neo, vd khu bang hội): đặt đều quanh
+    // điểm gốc theo thứ tự _tg nên vẽ lại vẫn ra y hệt, bấm được từng bãi. Chỉ để nhìn — vị trí thật
+    // vẫn là điểm neo.
+    const dat = [];
     for (const z of this._tg) {
-      const [a, b, c, d] = z.rect, x = X(a), y = Y(b), w = (c - a) * k, h = (d - b) * k;
-      const im = this._tgImg(z);
-      if (im) g.drawImage(im, x, y, w, h); else { g.fillStyle = "#16211a"; g.fillRect(x, y, w, h); }
-      g.lineWidth = z.map === cur ? 2 : 1; g.strokeStyle = z.map === cur ? "#ffe48a" : "rgba(255,216,78,.25)"; g.strokeRect(x + .5, y + .5, w - 1, h - 1);
+      let x = Math.max(6, Math.min(W - 6, X(z.ax))), y = Math.max(6, Math.min(H - 6, Y(z.ay)));
+      const bx = x, by = y;
+      for (const r of [10, 17]) {
+        if (dat.every((d) => (d.x - x) ** 2 + (d.y - y) ** 2 >= 81)) break;
+        let ok = false;
+        for (let a = 0; a < 8 && !ok; a++) {
+          const nx = Math.max(6, Math.min(W - 6, bx + r * Math.cos(a * Math.PI / 4)));
+          const ny = Math.max(6, Math.min(H - 6, by + r * Math.sin(a * Math.PI / 4)));
+          if (dat.every((d) => (d.x - nx) ** 2 + (d.y - ny) ** 2 >= 81)) { x = nx; y = ny; ok = true; }
+        }
+        if (ok) break;
+      }
+      dat.push({ x, y });
     }
-    P.diem = [];
-    g.font = `12px "VK Sans Serif 12", "IBM Plex Mono", monospace`; g.textAlign = "center"; g.textBaseline = "bottom";
-    const ten = (x, y, t, mau) => { g.fillStyle = "#000"; for (const [a, b] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) g.fillText(t, x + a, y + b); g.fillStyle = mau; g.fillText(t, x, y); };
+    // Giãn đều: cụm trung tâm có ~20 bãi dồn trong 50x74px, vòng xòe không đủ chỗ — đẩy nhau
+    // ra cho tới khi cách nhau >= 10px. Xác định (lặp cố định, thứ tự cố định) nên vẽ lại vẫn ra y hệt.
+    for (let it = 0; it < 120; it++) {
+      let doi = false;
+      for (let i = 0; i < dat.length; i++) for (let j = i + 1; j < dat.length; j++) {
+        const dx = dat[j].x - dat[i].x, dy = dat[j].y - dat[i].y;
+        let d = Math.hypot(dx, dy);
+        if (d >= 10) continue;
+        doi = true;
+        let ux, uy;
+        if (d < 0.01) { const a = (i * 7 + j * 13) * 1.7; ux = Math.cos(a); uy = Math.sin(a); d = 0.01; }
+        else { ux = dx / d; uy = dy / d; }
+        const day = (10 - d) / 2;
+        dat[i].x -= ux * day; dat[i].y -= uy * day;
+        dat[j].x += ux * day; dat[j].y += uy * day;
+      }
+      for (const d of dat) { d.x = Math.max(6, Math.min(W - 6, d.x)); d.y = Math.max(6, Math.min(H - 6, d.y)); }
+      if (!doi) break;
+    }
+    P.diem = dat;
     this._tg.forEach((z, i) => {
-      const rg = z.region || [(z.rect[0] + z.rect[2]) / 2, (z.rect[1] + z.rect[3]) / 2];
-      const x = X(rg[0]), y = Y(rg[1]);
-      P.diem.push({ x, y });
+      const { x, y } = dat[i];
       g.fillStyle = "#000"; g.fillRect(x - 3, y - 3, 7, 7);
       g.fillStyle = z.map === cur ? "#ffffff" : z.dong ? "#ff8c42" : "#ffd94e";
       if (z.dong) g.fillRect(x - 2, y - 2, 5, 5); else { g.beginPath(); g.arc(x, y, 2.5, 0, Math.PI * 2); g.fill(); }
-      if (z.map === cur || P.chon === i || z.kind === "thành" || z.kind === "thôn") ten(x, y - 4, z.n, z.map === cur ? "#ffffff" : "#ffe48a");
     });
-    if (s && s.player && cur) {
-      const z = this._tg.find((v) => v.map === cur), im = this.mmImg, sc = this.M.minimap.scale;
-      if (z && im) {
-        const fx = Math.max(0, Math.min(1, s.player.x * sc / im.width)), fy = Math.max(0, Math.min(1, s.player.y * sc / im.height));
-        const x = X(z.rect[0] + fx * (z.rect[2] - z.rect[0])), y = Y(z.rect[1] + fy * (z.rect[3] - z.rect[1]));
-        g.fillStyle = "#000"; g.fillRect(x - 4, y - 4, 9, 9); g.fillStyle = "#fff"; g.fillRect(x - 3, y - 3, 7, 7);
-      }
+    // Chấm trắng người chơi: đè lên chấm bãi đang đứng, to hơn để thấy.
+    if (cur) {
+      const i = this._tg.findIndex((v) => v.map === cur);
+      if (i >= 0) { const { x, y } = dat[i]; g.fillStyle = "#000"; g.fillRect(x - 4, y - 4, 9, 9); g.fillStyle = "#fff"; g.fillRect(x - 3, y - 3, 7, 7); }
     }
+    const span = P.el.querySelector("span");
+    let txt;
+    if (P.chon >= 0) {
+      const z = this._tg[P.chon];
+      txt = `${z.n}${z.lo != null ? ` · cấp ${z.lo}–${z.hi}` : ""}${z.dong ? " · sơn động" : ""}`;
+    } else {
+      const zc = cur && this._tg.find((v) => v.map === cur);
+      txt = zc ? `Đang ở ${zc.n} — chấm trắng là ngươi. Bấm vào chấm vàng mà xem tên bãi.` : "Chấm trắng là ngươi. Bấm vào chấm vàng mà xem tên bãi.";
+    }
+    if (P._spanTxt !== txt) { P._spanTxt = txt; span.textContent = txt; }
   }
   // bản đồ sơn động = toàn bãi đang đứng: ảnh mini vừa khung + chấm quái / NPC / người chơi, vẽ lại theo nhịp bản đồ nhỏ
   _veHang(g, P, s) {
