@@ -380,4 +380,4 @@ function quanTri(h, b) {
   return { mc: P, cf: { cap: CF.cap, giet: CF.giet, thu: CF.thu, hai: CF.hai, ve: CF.ve }, cay: MC.cay.length, nguoi: MC.nguoiNhan.map((o) => o.ten), ve: veTT("") };
 }
 
-module.exports = { lam, giet, nhanDoi, quanTri, tomTat, veTT, danhVe, tt, CF };
+module.exports = { lam, giet, nhanDoi, quanTri, tomTat, veTT, danhVe, traoThu, tt, CF };

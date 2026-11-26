@@ -64,7 +64,7 @@ const capP = (P) => soGoc(P.bai) + Math.min(THEM_MAX, THEM * Math.max(0, P.trong
 function chonChu(P, t) {
   const duoc = (a) => !(P.cu && P.cu.has(a)); // trang có bản đồ bãi cũ không làm chủ bãi (cuBdv)
   const tot = (a) => P.trong.has(a) && duoc(a) && !P.an.has(a) && t - (P.song.get(a) || 0) < CHU_MS;
-  const ds = [...P.trong.keys()].filter(duoc), moi = tot(P.chu) ? P.chu : ds.find(tot) || ds.find((a) => t - (P.song.get(a) || 0) < CHU_MS) || ds[0] || null;
+  const ds = [...P.trong.keys()].filter((a) => duoc(a) && !BOT.has(a)), moi = tot(P.chu) ? P.chu : ds.find(tot) || ds.find((a) => t - (P.song.get(a) || 0) < CHU_MS) || ds[0] || null;
   if (moi !== P.chu) { P.chu = moi; P.doi = true; }
 }
 // Phiên bản bản đồ bãi (assets/web/map/map.json zones bdv — anh 11/11 Thục Cương sơn 92 đổi khung bản đồ): chủ bãi sinh quái theo lưới của máy mình,
@@ -123,6 +123,8 @@ setInterval(() => {
   if (!BAI.size) return;
   const t = Date.now(), co = new Map();
   WS.moi((kn) => { if (bat(kn.zone) && kn.qc === kn.zone && t - (kn.qcLuc || 0) < SONG_MS) (co.get(kn.zone) || co.set(kn.zone, new Map()).get(kn.zone)).set(kn.ten, kn); });
+  // NPC bot không có kênh tức thời: hiện diện ở bản quái chung để Boss Sát thủ chung sinh + QC.danh nhận (móc hoạt động bot 26/11 — bot không làm chủ bãi)
+  for (const [tk, bai] of BOT) { const p = require("./the-gioi.js").dangChoi(tk); if (p && +p.zone === +bai) (co.get(+bai) || co.set(+bai, new Map()).get(+bai)).set(tk, { qcLuc: t, bdv: (N.ZONES.get(+bai) || {}).bdv | 0 }); }
   for (const bai of BAI) {
     const M = co.get(bai) || new Map();
     let P = PH.get(bai);
@@ -157,6 +159,12 @@ function satBai(P, t) {
 }
 // nhiệm vụ Boss Sát thủ đang nhận của tài khoản tk (api.js mỗi nhịp — h.satThu.nv; 0 = không có)
 function nvSat(tk, id) { if (id > 0) NV_SAT.set(tk, id | 0); else NV_SAT.delete(tk); }
+// NPC bot không có kênh tức thời: đăng ký hiện diện ở bãi quái chung (móc hoạt động bot 26/11)
+const BOT = new Map(); // tk -> bai
+function botVao(tk, bai) { if (tk && +bai > 0) BOT.set(tk, +bai); }
+function botRa(tk) { BOT.delete(tk); }
+// danh sách quái chung của bãi (chỉ đọc — bot Boss Sát thủ tìm mục tiêu; trình duyệt nhận qua kênh qc)
+function ds(bai) { const P = PH.get(+bai); return P ? [...P.q.values()].map((m) => [m.uid, m.tpl, m.lv, m.he, Math.max(0, Math.ceil(m.mau)), m.mauMax, m.x, m.y, m.sat || 0, m.boss || 0]) : []; }
 
 // con quái chết (máu chung về 0): thưởng chờ nhịp sau cho từng người có đánh (người nhiều nhất nhận trọn)
 function chet(P, m) {
@@ -290,4 +298,4 @@ function nhanThuong(h, tk, key, admin) {
   return out.kn || out.nhan.length || out.roi.length || out.tin.length ? out : null;
 }
 
-module.exports = { bat, danh, nhanThuong, nvSat, BAI };
+module.exports = { bat, danh, nhanThuong, nvSat, BAI, botVao, botRa, ds };

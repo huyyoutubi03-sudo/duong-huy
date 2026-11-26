@@ -91,6 +91,10 @@ const chon = (a) => a[Math.floor(Math.random() * a.length)];
 const vn = (n) => Math.round(n).toLocaleString("vi-VN");
 
 let D = null;              // trận đang mở / vừa xong
+// NPC bot không có kênh tức thời: hiện diện trong trận để PH.danh nhận (móc hoạt động bot 26/11 — bot không làm chủ bãi)
+const BOTPH = new Set();
+function botVao(tk) { if (tk) BOTPH.add(tk); }
+function botRa(tk) { BOTPH.delete(tk); }
 const CHO = new Map();     // tài khoản -> [thưởng giết quái chờ nhịp sau: { u (mã trận), r, he, top, kn }]
 const KET = new Map();     // tài khoản -> thưởng thắng trận chờ nhịp sau { kn, goc }
 // thời lượng đánh gốc (cau-hinh, 20 phút) — mốc giaiDoan / xe viết cho trận này; GM đổi "Đánh (phút)" ở F10 (lich-hd.js sửa CF.danh sau khi tệp nạp)
@@ -390,8 +394,8 @@ function phat() {
 // ---------- mỗi 100 ms: lịch, người trong trận, chủ bãi, các đợt, kết thúc, gửi trạng thái ----------
 const lui = (hm, p) => { const [h, m] = hm.split(":").map(Number), t = (((h * 60 + m - p) % 1440) + 1440) % 1440; return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`; };
 function chonChu(t) {
-  const tot = (a) => D.trong.has(a) && !D.an.has(a) && t - (D.song.get(a) || 0) < CHU_MS;
-  const ds = [...D.trong.keys()], moi = tot(D.chu) ? D.chu : ds.find(tot) || ds.find((a) => t - (D.song.get(a) || 0) < CHU_MS) || ds[0] || null;
+  const tot = (a) => D.trong.has(a) && !D.an.has(a) && !BOTPH.has(a) && t - (D.song.get(a) || 0) < CHU_MS;
+  const ds = [...D.trong.keys()].filter((a) => !BOTPH.has(a)), moi = tot(D.chu) ? D.chu : ds.find(tot) || ds.find((a) => t - (D.song.get(a) || 0) < CHU_MS) || ds[0] || null;
   if (moi !== D.chu) { D.chu = moi; D.doi = true; }
 }
 setInterval(() => {
@@ -406,6 +410,7 @@ setInterval(() => {
   // người trong trận: kênh tức thời ở bản đồ trận, đã báo danh trận này, còn báo sống
   const co = new Map();
   WS.moi((kn) => { if (kn.zone === BAI && kn.ph === BAI && D.nop.has(kn.ten) && t - (kn.phLuc || 0) < SONG_MS) co.set(kn.ten, kn); });
+  for (const tk of BOTPH) { if (D.nop.has(tk)) { const p = TG().dangChoi(tk); if (p && +p.zone === BAI) co.set(tk, { phLuc: t }); } }
   for (const [tk, kn] of co) { D.song.set(tk, kn.phLuc); if (!D.trong.has(tk)) { const p = TG().dangChoi(tk); if (p) { D.trong.set(tk, p.name); D.doi = true; const v = D.vao.get(tk); if (v) v.vao = t; } } }
   for (const tk of [...D.trong.keys()]) if (!co.has(tk)) { D.trong.delete(tk); D.an.delete(tk); D.daSpec.delete(tk); D.song.delete(tk); D.doi = true; }
   chonChu(t);
@@ -537,4 +542,4 @@ function quanTri(b) {
 // đang có trận ở giai đoạn nào (khoi-dong-s1.sh / bảng quản trị: không khởi động lại máy chủ giữa trận)
 const dangTran = () => !!(D && !D.ket);
 
-module.exports = { BAI, CF, mo, ketThuc, danh, nhanThuong, lam, quanTri, lich, dangTran, heSo };
+module.exports = { BAI, CF, mo, ketThuc, danh, nhanThuong, lam, quanTri, lich, dangTran, heSo, botVao, botRa, _thu: { get D() { return D; } } };

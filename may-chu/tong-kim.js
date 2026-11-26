@@ -150,6 +150,10 @@ const GIAY_VAT = { hoan: 180, doi: 180, hoi: 3 };
 const laBuffTk = (k) => /^tk[A-Z]/.test(k); // trạng thái chiến trường (h.buff tk…)
 
 let D = null;      // phòng đang mở
+// NPC bot không có kênh tức thời: hiện diện trong phòng qua BOT (móc hoạt động bot 26/11 — bot không làm chủ trận,
+// máu người của bot do máy chủ giữ trong mục D.nguoi: hp/hpMax; trình duyệt người thật vẫn tự trừ máu như cũ)
+const BOT = new Map(); // tk -> 1
+const BOT_KN = { gui() {}, tkDt: 0 }; // đầu nối giả cho trong(): chỉ để đếm hiện diện, không gửi tin
 let moCuoi = 0;    // mã lần mở (D.mo) không trùng lần trước — kết nối còn kn.tkVao của phòng cũ không tính là trong phòng mới
 let TD_THU = null; // dữ liệu chiến trường đặt sẵn (bài thử — _thu.datTd)
 const daGoi = new Set(); // "ngày b|giờ" đã báo / đã mở theo lịch
@@ -190,13 +194,14 @@ function trong(t = Date.now()) {
     const m = D.nguoi.get(kn.ten);
     if (m && (D.loai !== "tran" || m.o === kn.o)) M.set(kn.ten, kn);
   });
+  if (D) for (const tk of BOT.keys()) if (D.nguoi.has(tk)) M.set(tk, BOT_KN); // bot trong phòng (không kênh tức thời)
   return M;
 }
 // chủ trận (mỗi 100 ms — như quai-chung.js chonChu): máy tính tab hiện > tab hiện > bất kỳ; giữ chủ cũ nếu còn trong phòng và thuộc hạng tốt nhất
 // đang có, không thì người vào phòng sớm nhất của hạng đó
 function chonChu(on) {
   const hang = (tk) => (D.nguoi.get(tk).an ? 2 : on.get(tk).tkDt ? 1 : 0);
-  const ds = [...D.nguoi.keys()].filter((tk) => on.has(tk)), tot = Math.min(3, ...ds.map(hang));
+  const ds = [...D.nguoi.keys()].filter((tk) => on.has(tk) && !BOT.has(tk)), tot = Math.min(3, ...ds.map(hang));
   const moi = on.has(D.chu) && hang(D.chu) === tot ? D.chu : ds.find((tk) => hang(tk) === tot) || null;
   if (moi !== D.chu) { D.chu = moi; D.doi = true; }
 }
@@ -619,6 +624,7 @@ const VIEC = {
     if (dv > 0) { const dn = Math.floor(Math.min(dv, H.han)); H.han -= dn; if (dn > 0) st.doc[0] = dn; else delete st.doc; }
     if (!(nhan > 0) && !(st && (st.doc || st.bua || st.cg || st.cm))) return; // hết hạn mức
     vk.gui({ t: "tkt", tu: laBinh(A.x) ? tenBinh(A.x.phe, A.x.bac) : A.x.ten, ref: A.ref, v: nhan, crit: tin.crit ? 1 : 0, ...(st && Object.keys(st).length ? { st } : {}) });
+    if (V.bot) botTruMau(V, A, nhan + (st && st.doc ? st.doc[0] : 0), t); // bot bị đánh: máu do máy chủ giữ (không có trình duyệt tự trừ)
   },
   // người gửi chết: tu = "#mã" bot / quân | tên nhân vật | "" — kẻ hạ (người / bot) phe kia thì được điểm; quân hạ: chỉ đếm chết. Trận: kẻ hạ phải vừa
   // đánh / nhắm người này trong GAN_MS (ganDanh), chưa khai chiến / đã xong thì không tính
@@ -666,6 +672,84 @@ const VIEC = {
     for (const [tk, k2] of trong(t)) { const y = D.nguoi.get(tk); if (tk !== kn.ten && y && y.phe === m.phe) k2.gui(ra); }
   },
 };
+// ---------- NPC bot trong phòng (móc hoạt động bot 26/11 — không đổi luật người chơi) ----------
+// Bot không có kênh tức thời: vào phòng qua botVao (sau khi báo danh bằng lam), hiện diện qua BOT/trong(),
+// máu người do máy chủ giữ (hp/hpMax trong mục D.nguoi), đánh bot/quân qua botDanh, bị đánh qua botBiDanh
+// hoặc qua tkn của chủ trận (mục bot trong tkn). Bot không làm chủ trận (chonChu loại BOT).
+function botVao(tk, h, o, hpMax) {
+  if (!D || D.loai !== "tran" || D.ket || !h || h.name == null) return null;
+  const dk = D.dk.get(tk + "|" + (o | 0));
+  if (!dk || h.name !== dk.ten) return null; // phe lấy theo báo danh thật (dk.phe) — đăng ký phe nào thì vào phe đó
+  const phe = dk.phe | 0;
+  let m = D.nguoi.get(tk);
+  if (!m) {
+    let snap = null;
+    try { snap = PTH.chup(h); } catch (e) { console.error("Tống Kim: chụp nhân vật bot", tk, e && e.message); }
+    m = { tk, ten: h.name, o: o | 0, phe: phe | 0, snap, diem: 0, giet: 0, chet: 0, lt: 0, lienMax: 0, binh: 0, chuc: 0, dt: 0, an: false, luc: Date.now(), daSv: -1, daSn: -1, daBsv: -1, gan: new Map() };
+    D.nguoi.set(tk, m); D.tenNg.set(m.ten, m);
+  }
+  m.bot = 1; m.hpMax = Math.max(1, Math.floor(+hpMax || 1)); if (!(m.hp > 0)) m.hp = m.hpMax; m.hoiLuc = 0; m.onl = true; m.luc = Date.now();
+  BOT.set(tk, 1); D.doi = true;
+  return m;
+}
+function botRa(tk) {
+  BOT.delete(tk);
+  if (!D) return;
+  const m = D.nguoi.get(tk); if (m) { m.offLuc = Date.now(); m.onl = false; D.doi = true; }
+}
+function botNguoi(tk) { return D ? D.nguoi.get(tk) || null : null; }
+function botHoiSinh(tk) {
+  const m = D && D.nguoi.get(tk);
+  if (!m || !m.bot || (m.hoiLuc || 0) > Date.now()) return false;
+  m.hp = m.hpMax; m.hoiLuc = 0; D.doi = true; return true;
+}
+// máu người của bot bị trừ (máy chủ giữ thay trình duyệt): chết thì cộng điểm cho kẻ hạ như tkChet
+function botTruMau(V, A, dmg, t) {
+  if (!(dmg > 0) || V.hp == null) return;
+  V.hp = Math.max(0, V.hp - dmg);
+  if (V.hp > 0) { D.doi = true; return; }
+  if (t - (V.chetLuc || 0) < CHET_CACH()) return; // đang chờ hồi sinh: không cộng điểm lại
+  V.chetLuc = t; V.hoanMat = t; V.hoiLuc = t + Math.max(1000, (+CF.hoiSinh || 8) * 1000);
+  if (A && A.x && A.x.phe !== V.phe) cong(A.x, V); else { V.chet++; V.lt = 0; D.doi = true; }
+}
+// bot (người) đánh bot ảo / quân phe địch — như tkd nhưng kẻ đánh là mục D.nguoi của bot
+function botDanh(tk, ds) {
+  if (!D || D.loai !== "tran" || phaCua() !== "danh") return 0;
+  const m = D.nguoi.get(tk);
+  if (!m || !m.bot || !BOT.has(tk) || !(m.hp > 0)) return 0;
+  const A = { ref: m.ten, k: "@" + tk, x: m }, t = Date.now();
+  let coChet = false, n = 0;
+  for (const r of Array.isArray(ds) ? ds.slice(0, 120) : []) {
+    if (!Array.isArray(r)) continue;
+    const id = idCua(r[0]), b = D.bot.get(id) || D.binh.get(id), v = Math.floor(+r[1] || 0);
+    if (!b || b.chet || !(b.mau > 0) || !(v > 0)) continue;
+    if (A.x.phe === b.phe) continue;
+    const H = hanCua(A, t), qt = QT_(tk), nhan = Math.floor(Math.min(v, qt ? Infinity : H.han, b.mau));
+    if (!(nhan > 0)) continue;
+    if (!qt) H.han -= nhan; b.mau -= nhan; b.dan = A.ref; doiHp(b); n++;
+    if (laBinh(b)) {
+      if (b.bac === 5 && A.x.tk) { const S = D.soaiSt[b.phe]; S.set(A.ref, (S.get(A.ref) || 0) + nhan); }
+      if (b.mau <= 0) { chetBinh(b, A.x); coChet = true; }
+    } else if (b.mau <= 0) { chetBot(b, A.x); coChet = true; }
+  }
+  if (coChet) phat(trong());
+  return n;
+}
+// bot (người) bị bot khác đánh — như tkn nhưng sát thương trừ thẳng vào hp máy chủ giữ
+function botBiDanh(tkBi, atkTk, v) {
+  if (!D || D.loai !== "tran" || phaCua() !== "danh") return 0;
+  const V = D.nguoi.get(tkBi), A0 = D.nguoi.get(atkTk);
+  if (!V || !V.bot || !BOT.has(tkBi) || !A0 || !(V.hp > 0)) return 0;
+  const A = { ref: A0.ten, k: "@" + atkTk, x: A0 };
+  if (V.phe === A.x.phe) return 0;
+  const t = Date.now();
+  ganDanh(V.ten, A.ref, t);
+  const H = hanCua(A, t), nhan = Math.floor(Math.min(Math.floor(+v || 0), H.han));
+  if (!(nhan > 0)) return 0;
+  H.han -= nhan;
+  botTruMau(V, A, nhan, t);
+  return nhan;
+}
 // tin tk* chỉ nhận ở bãi phòng; mọi tin làm mới lúc báo sống; ngoài tkVao chỉ nhận từ người đã vào phòng này. Lỗi bất kỳ không ra ngoài
 for (const [loai, fn] of Object.entries(VIEC)) WS.nhan(loai, (kn, tin) => {
   if (!D || kn.zone !== D.bai) { if (loai === "tkVao") kn.gui(moTin()); return; } // phòng đã mất / khác bãi: báo lại trạng thái (trình duyệt bỏ "phòng ma")
@@ -1191,6 +1275,7 @@ function lam(h, b, tk) {
 }
 
 module.exports = { CF, quanTri, pheCua, lam, lich, dangTran, dangDanh, trongTran, boBuffTk, hoanTran, hoanGiay, giaThuocTk, boThuocTk, vatTk, choDoi, giaTk, BIEN_KINH, BAO_DANH, mauBotDs, mauBotThem, mauBotXoa,
+  botVao, botRa, botDanh, botBiDanh, botNguoi, botHoiSinh,
   pvp: { stCua, thung, BUA_GOC, ST_MAX, HS }, // Lôi Đài (anh 15/11 — may-chu/loi-dai.js ldn): dùng chung kiểm đòn PvP, không đổi gì của Tống Kim
   _thu: { get D() { return D; }, vong, trong, chonChu, phat, cong, chetBot, chucCua, diemGiet, LIEN, PHAI, tenBot, themBot, datSoBot, tomTat, stCua, viec: VIEC,
     moTran, batDau, ketThuc, huyTran, lichVong, vongTran, themBinh, chiSoBinh, chetBinh, raSoai, lichDot, laThienTu, traoThuong, ketCua, phaCua, daGoi,

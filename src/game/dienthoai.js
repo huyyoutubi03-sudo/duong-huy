@@ -880,9 +880,10 @@ export class DienThoai {
     // anh 31/10: "text thông báo kia nên hiển thị vài giây rồi mất" — 2 dòng tin cuối hiện TIN_HIEN ms kể từ tin mới nhất rồi mờ dần (vẫn đủ ở
     // khung chat — nút Chat)
     const tinEl = this.el.querySelector(".dt-tin");
-    if (this.sig.tin !== last || this.sig.canh !== canh) {
-      this.sig.tin = last; this.sig.canh = canh; this.tinLuc = performance.now(); tinEl.classList.remove("an");
-      tinEl.innerHTML = M.slice(canh ? -1 : -2).map((m) => m.ch === "TIN" ? `<div class="tin">${esc(m.text)}</div>` : `<div${m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? ' class="ht"' : ""}><b>${esc(m.name || "")}</b>${m.name ? ": " : ""}${m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? chuMau(m.text) : BieuCam.html(m.text)}</div>`).join("")
+    const nTin = this.ngang ? 2 : 3; // doc: 3 tin gan nhat cho khung tin cao hon (Huy 26/11/2026); ngang giu 2
+    if (this.sig.tin !== last || this.sig.canh !== canh || this.sig.tinNg !== this.ngang) {
+      this.sig.tin = last; this.sig.canh = canh; this.sig.tinNg = this.ngang; this.tinLuc = performance.now(); tinEl.classList.remove("an");
+      tinEl.innerHTML = M.slice(canh ? 1 - nTin : -nTin).map((m) => m.ch === "TIN" ? `<div class="tin">${esc(m.text)}</div>` : `<div${m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? ' class="ht"' : ""}><b>${esc(m.name || "")}</b>${m.name ? ": " : ""}${m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? chuMau(m.text) : BieuCam.html(m.text)}</div>`).join("")
         + (canh ? `<div class="canh">${esc(canh[0])}</div>` : "");
     } else if (performance.now() - (this.tinLuc || 0) > TIN_HIEN && !tinEl.classList.contains("an")) tinEl.classList.add("an");
     // nút lời mời tổ đội cạnh nút Chat (anh 06/11 — máy tính: biểu tượng góc phải dưới, hud.js moiDoi): có lời mời thì hiện, chưa xem thì nhấp nháy;

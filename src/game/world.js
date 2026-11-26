@@ -531,13 +531,31 @@ export class World {
     nguaLuc = t; h.rideOff = !on; this.applyLooks();
     return true;
   }
-  clickGround(x, y) {
+  // Bấm đất (chuột trái / chạm): đi tới (x, y). Trả true nếu đặt được đường, false nếu không tới được
+  // (khác vùng liền, đích trong vật cản không có ô gần, hết ngân sách tìm đường) — khi đó xóa sạch đích cũ,
+  // không để nhân vật đứng im lặng như trước (bấm mãi không đi mà không báo gì). heavy: bấm rời thì tìm lại
+  // A* nặng như walkTo/clickNpc; giữ chuột (holdTick) chỉ tìm thường để khỏi giật.
+  clickGround(x, y, heavy = false) {
     const p = this.player;
     p.talkTo = null;
     p.sit = false;
-    if (this.dev.tp) { this.teleport(x, y); return; }
-    if (p.hp <= 0) return;
-    p.target = null; p.loot = null; p.goal = [x, y]; p.path = this.map.path(p.x, p.y, x, y); p.manual = true;
+    if (this.dev.tp) { this.teleport(x, y); return true; }
+    if (p.hp <= 0) return false;
+    p.target = null; p.loot = null;
+    // đứng lọt ô chặn (lạc vào vật cản): kéo về ô đi được gần nhất như unstick/teleport rồi mới tìm đường,
+    // không thì mọi đường từ đây đều trả null và nhân vật dính cứng tại chỗ
+    if (this.map.grid && !this.map.walkable(p.x, p.y)) {
+      const c = this.map.nearestCell(p.x, p.y, 20);
+      if (c >= 0) [p.x, p.y] = this.map.center(c);
+    }
+    // đích trong vật cản: đi tới ô đi được gần đích nhất như walkTo (trước: đường null -> đích vẫn đặt -> tick
+    // xóa ngay, bấm không đi mà không báo)
+    const M = this.map, k = (M.grid && !M.walkable(x, y)) ? M.nearestCell(x, y, 40) : -1, [gx, gy] = k >= 0 ? M.center(k) : [x, y];
+    let path = M.path(p.x, p.y, gx, gy);
+    if (!path && heavy) path = M.path(p.x, p.y, gx, gy, 150000, 2);
+    if (!path || !path.length) { p.goal = null; p.path = null; p.manual = false; return !!path; }
+    p.goal = [gx, gy]; p.path = path; p.manual = true;
+    return true;
   }
   clickMob(m) {
     const p = this.player; if (p.hp <= 0 || !m.alive) return;
@@ -968,7 +986,7 @@ export class World {
         const path = this.map.path(p.x, p.y, m.x, m.y, 6000);
         if (path) p.path = path; else { p.path = []; if (!p.manual) { this.boMuc(m); p.target = null; } }
       }
-    } else if (p.goal && !p.path) p.goal = null;
+    } else if (p.goal && !p.path) { p.goal = null; p.manual = false; } // đích không còn đường: bỏ luôn cờ tay để khỏi kẹt trạng thái
     const x0 = p.x, y0 = p.y;
     if (p.path && p.path.length) {
       if (this.follow(p, p.path, this.tocEp != null ? this.tocEp : RUN * (1 + (p.moveSpeed || 0) / 100) * K, dt)) { p.path = null; if (p.goal) { p.goal = null; p.manual = false; } } // "Tốc độ di chuyển +%": giày, ngựa; đường đua: tốc cố định (tocEp — duangua.js)

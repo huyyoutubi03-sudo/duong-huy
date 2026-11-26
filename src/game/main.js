@@ -5116,7 +5116,7 @@ function mouseAct(e) {
   }
   // chợ trời: bấm thường vào sạp (người ngồi bày bán / NPC trông sạp) = bấm đất (anh 11/11 — trước mở sạp ngay, hay bấm nhầm); lần đầu nhắc Ctrl + chuột trái
   if (!sapNhac && !chamDt && e.pointerType === "mouse" && /^Mouse_Action/.test(cmd) && !n && !m && !d && sapDuoi(x, y)) { sapNhac = true; P.hud.msg("Xem sạp: giữ Ctrl rồi bấm chuột trái vào sạp"); }
-  if (/^Mouse_Action/.test(cmd)) { if (n) world.clickNpc(n); else if (m) world.clickMob(m); else if (d) world.clickDrop(d); else { world.clickGround(x, y); world.clickFx = { x, y, at: world.time }; holdStart(e); } }
+  if (/^Mouse_Action/.test(cmd)) { if (n) world.clickNpc(n); else if (m) world.clickMob(m); else if (d) world.clickDrop(d); else { if (!world.clickGround(x, y, true)) P.hud.msg("Không tới được chỗ đó"); world.clickFx = { x, y, at: world.time }; holdStart(e); } }
   else if (/^Mouse_Force1/.test(cmd)) { if (!world.useRight(m, x, y) && m) world.clickMob(m); } // chiêu tay phải (bùa: lên mình; đánh: quái dưới chuột / điểm)
   else if (/^Mouse_Force0/.test(cmd)) world.useLeft(m, x, y); // Shift + chuột trái: chiêu tay trái vào quái dưới chuột / khoảng không chỗ trỏ
   else if (/^Mouse_Force/.test(cmd)) { if (m) world.clickMob(m); }
@@ -5131,7 +5131,7 @@ function chamNguoiXong(e, keo) {
   if (e.type === "pointercancel") return true;
   if (c.danh && !keo) return true; // đã đánh lúc chạm (bot đó chết trước lúc nhả tay thì thôi, không chạy tới chỗ chạm — soát lần 2 06/11)
   if (c.o.tkb && c.o.alive && world.mobs.includes(c.o) && !keo) { world.clickMob(c.o); return true; } // bot phe kia: chạm nhanh = đánh như quái
-  world.clickGround(c.x, c.y); world.clickFx = { x: c.x, y: c.y, at: world.time };
+  world.clickGround(c.x, c.y, true); world.clickFx = { x: c.x, y: c.y, at: world.time };
   if (keo) holdStart({ button: 0, pointerId: c.id, clientX: e.clientX, clientY: e.clientY });
   return true;
 }

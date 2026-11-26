@@ -6,6 +6,7 @@
 // (tên, phái, nhánh, bãi train, chỗ sạp — sinh bởi kiem-170-2611/gen-config-170.mjs).
 // Chỉ chạy khi VL_NPC_CHOI=1. Mặc định TẮT. VL_NPC_CHOI_SO: số bot tối đa (mặc định 170).
 // VL_NPC_CHOI_HIEN: nhịp hiện diện của mỗi bot, ms (mặc định 1500 — chia lát 500ms).
+// VL_NPC_CHOI_CHAT_CHUNG: tiết lưu trả lời/rao kênh chung cho cả bầy bot, ms (mặc định 30000 — lệnh Huy 12:39 26/11).
 // LUẬT AN TOÀN test1 (sửa 26/11/2026 — trước đây chặn chỉ vì FILE tài khoản test1 tồn tại, nên trên
 // máy chủ live không bao giờ chạy được): chỉ từ chối KHỞI ĐỘNG khi test1 đang có PHIÊN ĐANG CHƠI
 // (hiện diện còn mới trong the-gioi.js). File tồn tại + bật VL_NPC_CHOI=1 tường minh thì KHÔNG chặn.
@@ -42,6 +43,23 @@ const TG = require("./the-gioi");
 const CHO = require("./cho-troi");
 const NK = require("./nhat-ky");
 const BC = require("./npc-bang-chieu");
+// Hoạt động (lệnh Huy 12:29 26/11): nạp lười như các module khác để khỏi vòng require
+const BTG = () => require("./boss-tg");
+const SN = () => require("./san-nhim");
+const RTB = () => require("./ruong-tb");
+const PQ = () => require("./phu-quy");
+const PH = () => require("./phong-hoa");
+const TK = () => require("./tong-kim");
+const PLD = () => require("./phong-lang-do");
+const SAT = () => require("./sat-thu");
+const DT = () => require("./da-tau");
+const VAI = () => require("./vuot-ai");
+const MC = () => require("./minh-chu");
+const QCH = () => require("./quai-chung");
+const ONL = () => require("./online");
+const PD = () => require("./phuc-duyen");
+const TLAM = () => require("./tu-lam");
+const TD = () => require("./to-doi");
 
 const CFG = JSON.parse(fs.readFileSync(path.join(__dirname, "npc-choi-config.json"), "utf8"));
 const Z_TOWN = 37; // Biện Kinh (thành, được bày sạp)
@@ -88,6 +106,7 @@ const LOOK_KEYS = ["helm", "armor", "weapon", "horse", "mantle"];
 // Món rác ở lại túi bot (KHÔNG vứt, KHÔNG bán cho NPC, KHÔNG xóa); chỉ là không bày lên sạp.
 const NGON_DONG = Math.max(1, +process.env.VL_NPC_CHOI_DONG || 3);
 const NGON_CHAT = Math.min(1, Math.max(0, +process.env.VL_NPC_CHOI_CHAT || 0.7));
+const CHAT_CHUNG_MS = Math.max(1000, +process.env.VL_NPC_CHOI_CHAT_CHUNG || 30000); // kênh chung: cả bầy bot gộp lại tối đa 1 tin trả lời / 30 giây (lệnh Huy 12:39 26/11 — không làm loãng kênh)
 const DX_TRAN = (() => { // khóa thuộc tính -> mức cao nhất (chỉ dòng biến thiên: trần > sàn)
   try {
     const rows = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets", "data", "dong-xanh.json"), "utf8")).rows || [];
@@ -121,7 +140,7 @@ const boDau = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").re
 let bots = []; // [{ cfg, tab, tk, h, fakeTk, key, zone, x, y, dir, act, ... }] — bot 0 = Pháp Không
 let timer = null, timerHien = null, timerThu = null, tickN = 0;
 const choDanh = new Map(); // tài khoản người chơi -> [đòn đánh trả đang chờ gửi kèm nhịp sau] (layDanhCho)
-let traLoiChungAll = 0; // chống spam kênh chung: tất cả bot gộp lại tối đa 1 tin trả lời / 5 giây
+let traLoiChungAll = 0; // chống spam kênh chung: tất cả bot gộp lại tối đa 1 tin trả lời / CHAT_CHUNG_MS (mặc định 30 giây)
 const log = (...a) => console.log("[npc-choi]", ...a);
 
 function tenMayChu() {
@@ -190,7 +209,14 @@ function chuanChieu(bot) {
 function snapshot(bot) {
   const hp = bot.hpMax ? Math.max(0, Math.min(100, Math.round((100 * (bot.hpCur ?? bot.hpMax)) / bot.hpMax))) : 100;
   const mp = bot.mpMax ? Math.max(0, Math.min(100, Math.round((100 * (bot.mpCur ?? bot.mpMax)) / bot.mpMax))) : 100;
-  return { zone: bot.zone, lvl: 200, npc: 1, look: { ...bot.look }, tr: [[Date.now(), bot.x, bot.y, bot.dir, bot.act, 0, 1, 0]], hp, mp };
+  // P1 (26/11/2026): 3 mốc nội suy / lần hiện diện + số đòn atkN + cờ fight, để client
+  // vẽ chuyển động mượt và phát lại động tác đánh (world.js updateOther chỉ phát khi atkN đổi).
+  // act suy từ mục tiêu (đường đánh trả không tự đặt act) — sạp / chết / đứng không có mục tiêu nên không ảnh hưởng.
+  const t = Date.now(), px = bot.px ?? bot.x, py = bot.py ?? bot.y;
+  bot.px = bot.x; bot.py = bot.y;
+  const act = bot.mucTieu ? "attack" : bot.act;
+  const moc = (k, w) => [t - (1 - k) * 1000, Math.round(px + (bot.x - px) * w), Math.round(py + (bot.y - py) * w), bot.dir, act, bot.atkN | 0, 1, bot.mucTieu ? 1 : 0];
+  return { zone: bot.zone, lvl: 200, npc: 1, look: { ...bot.look }, tr: [moc(0, 1 / 3), moc(0.5, 2 / 3), moc(1, 1)], hp, mp };
 }
 
 function hienDien(bot) {
@@ -212,6 +238,7 @@ function gietMot(bot, mob, lv) {
   catch (e) { log(`giết quái lỗi (${bot.h.name}):`, e.message); return; }
   if (!kq || !kq.n) { bot.stats.bo += (kq && kq.bo) || 1; return; } // bị luật chặn: đếm để thấy trong kiểm chứng
   bot.kills++; bot.stats.giet++; bot.stats.kn += kq.kn || 0;
+  ghiLuyenGiet(bot);
   const gs = [...(kq.roi || []).map((r) => r[2]), ...(kq.nhan || []).map((m) => m && m.g)].filter((g) => Number.isFinite(+g));
   if (gs.length) {
     try { const n = DO.nhat(bot.h, bot.key, gs); bot.stats.nhat += (n.nhan || []).length; bot.stats.tienNhat += n.tien || 0; }
@@ -267,8 +294,31 @@ function dongSap(bot) {
   if (tin.length) { bot.stats.ban += tin.length; log(`sạp báo (${bot.h.name}):`, tin.join(" · ")); bot.h.choTin = []; }
 }
 
+// Rao BÁN (lệnh Huy 12:39 26/11 — bot được phép rao mua bán): chỉ khi sạp đang mở và có đồ; đi qua CÙNG cửa
+// tiết lưu kênh chung với traLoi (traLoiChungAll / CHAT_CHUNG_MS) nên rao + trả lời gộp lại không vượt trần.
+// Mỗi bot rao thưa: không quá 1 lần / 12 phút (+ jitter), lần đầu sau khi mở sạp 2–6 phút để khỏi dồn.
+// Sạp trống thì không rao. Rao MUA không làm (xem báo cáo đợt việc): giao dịch cần 2 trình duyệt thẩm định
+// lẫn nhau, bot không có cơ chế an toàn để nhận mua đồ người chơi.
+const RAO_BAN_MS = 12 * 60 * 1000;
+function raoBan(bot) {
+  const ds = (bot.h.sap && bot.h.sap.mo && bot.h.sap.ds) || [];
+  if (!ds.length) return; // sạp trống / chưa mở: không rao
+  const t = Date.now();
+  if (t - traLoiChungAll < CHAT_CHUNG_MS) { bot.raoDen = t + CHAT_CHUNG_MS; return; } // cửa chung đang đóng: thử lại sau, không vượt trần
+  const mon = ds.slice(0, 2).map((it) => `${DO.tenMon(it) || "?"} ${giaCua(it)} lượng`).join(", ");
+  traLoiChungAll = t;
+  bot.raoDen = t + RAO_BAN_MS + ri(0, 3 * 60 * 1000);
+  try {
+    TG.chat(bot.fakeTk, { o: 0, ch: "CH_WORLD", t: `Bán đồ ngon ở sạp Biện Kinh: ${mon}. Tới mà xem, đừng hỏi nhiều.` });
+  } catch (e) { log(`rao bán lỗi (${bot.h.name}):`, e.message); }
+}
+
 function tickBot(bot) {
   try {
+    try { ONL().dem(bot.h, bot.key, false); } catch {} // online tích lũy theo nhịp thật (≤90 giây mới tính)
+    if (bot.mode === "hd") { hdTick(bot); return; }
+    if (bot.mode === "luyen" || bot.mode === "cho") hdKiemTra(bot); // hoạt động có giờ: vào đúng cửa, hết thì về train/sạp
+    if (bot.mode === "hd") { hdTick(bot); return; }
     if (bot.mode === "luyen") {
       if (!bot.mucTieu) {
         bot.x = Math.max(bot.cfg.cx - bot.cfg.r, Math.min(bot.cfg.cx + bot.cfg.r, bot.x + ri(-250, 250)));
@@ -278,8 +328,8 @@ function tickBot(bot) {
       // Máu / nội lực thật: hồi theo nhịp từ bình đã uống, uống khi dưới ngưỡng Trợ Thủ, quái có thể đánh trước.
       hoiTheoNhip(bot);
       if (bot.chiSo) {
-        if (bot.hpCur / bot.hpMax < NG_THUOC.hp) uongThat(bot, THUOC_HP);
-        if (bot.mpCur / bot.mpMax < NG_THUOC.mp) uongThat(bot, THUOC_MP);
+        if (bot.hpCur / bot.hpMax < NG_THUOC.hp && !bot.potHp) uongThat(bot, THUOC_HP); // P2: chỉ uống khi chưa có hiệu lực cùng loại — bình cũ còn tác dụng thì không đốt bình mới
+        if (bot.mpCur / bot.mpMax < NG_THUOC.mp && !bot.potMp) uongThat(bot, THUOC_MP);
         if (!bot.mucTieu && Math.random() < QUAI_DANH_XS) quaiTanCong(bot);
       }
       if (bot.mucTieu) vongDanh(bot);
@@ -295,14 +345,18 @@ function tickBot(bot) {
       if (Date.now() - bot.chetLuc >= 3000) { bot.mode = "ve"; hoiDay(bot); log(`hồi sinh ở Biện Kinh (${bot.h.name}), máu / nội lực đầy`); }
     } else if (bot.mode === "ve") {
       bot.zone = Z_TOWN; bot.x = bot.cfg.stalls[0][0]; bot.y = bot.cfg.stalls[0][1]; bot.dir = 2; bot.act = "stand";
-      DO.baiNay(bot.key, Z_TOWN); hienDien(bot); bot.mode = "ban"; bot.kills = 0; luu(bot);
+      // P2: về thành nạp đầy thuốc (20 + 20 như lúc tạo) để không cạn thuốc rồi kẹt vòng lặp ve/ban/luyen
+      const thHp = Math.max(0, 20 - soThuoc(bot, THUOC_HP)); if (thHp > 0) N.themChong(bot.h, BY.get(THUOC_HP), thHp);
+      const thMp = Math.max(0, 20 - soThuoc(bot, THUOC_MP)); if (thMp > 0) N.themChong(bot.h, BY.get(THUOC_MP), thMp);
+      DO.baiNay(bot.key, Z_TOWN); hienDien(bot); viecThanh(bot); bot.mode = "ban"; bot.kills = 0; luu(bot);
     } else if (bot.mode === "ban") {
       bot.mode = moSap(bot) ? "cho" : "luyen";
-      if (bot.mode === "cho") bot.stallDen = Date.now() + STALL_MS;
+      if (bot.mode === "cho") { bot.stallDen = Date.now() + STALL_MS; bot.raoDen = Date.now() + ri(20, 100) * 1000; } // rao đầu PHẢI trong cửa sạp mở (STALL_MS 120s) — hẹn 2–6 phút thì sạp đóng trước khi rao
       else { bot.zone = bot.cfg.zone; bot.x = bot.cfg.cx; bot.y = bot.cfg.cy; DO.baiNay(bot.key, bot.cfg.zone); }
       luu(bot);
     } else if (bot.mode === "cho") {
       bot.act = "sit";
+      if (Date.now() >= (bot.raoDen || 0)) raoBan(bot); // rao bán thưa, qua cửa tiết lưu chung
       if (Date.now() >= bot.stallDen) {
         dongSap(bot);
         bot.mode = "luyen"; bot.zone = bot.cfg.zone; bot.x = bot.cfg.cx; bot.y = bot.cfg.cy; bot.act = "run";
@@ -589,8 +643,11 @@ function chonChieu(bot, muc) {
 }
 function danhBot(bot, muc) {
   const id = chonChieu(bot, muc);
-  if (id) { const kq = donChieu(bot, id, muc); if (kq) return kq; }
-  return danhThuong(bot, muc);
+  let kq = null;
+  if (id) kq = donChieu(bot, id, muc);
+  if (!kq) kq = danhThuong(bot, muc); // donChieu trả null (hết tầm / thiếu nội lực / sai vũ khí) thì đánh thường như cũ; miss/none (sat 0) thì không đánh bù
+  if (kq && kq.sat > 0) bot.atkN = (bot.atkN | 0) + 1; // P1: đòn trúng tăng số đòn để client phát lại động tác đánh
+  return kq;
 }
 function thuKetLieu(bot, m) {
   const C = bot.chiSo;
@@ -809,8 +866,20 @@ function apDungLenMuc(bot, m, kq) {
 function vongDanh(bot) {
   const m = bot.mucTieu;
   if (!m || !bot.chiSo) return;
+  bot.act = "attack";
   if (m.loai === "quai") {
     if (m.hpCur <= 0) { boMucTieu(bot); return; }
+    // P3: 1 trận tối đa 45 giây — đánh mãi không chết (sát thương thấp) thì coi như hạ xong
+    // bằng đòn trừu tượng đúng luật giết quái của con đó, tránh đứng chết cứng 69 giây.
+    if (bot.danhBatDau && Date.now() - bot.danhBatDau > 45000) {
+      if (m.id != null && m.lv != null) { gietMot(bot, m.id, m.lv); bot.stats.gietThat++; }
+      else gietMot(bot);
+      log(`hạ ${m.ten} sau 45 giây kẹt trận (${bot.h.name})`);
+      boMucTieu(bot);
+      return;
+    }
+    bot.x = Math.max(bot.x - 20, Math.min(bot.x + 20, bot.x + ri(-20, 20)));
+    bot.y = Math.max(bot.y - 12, Math.min(bot.y + 12, bot.y + ri(-12, 12)));
     danhBot(bot, m);
     return;
   }
@@ -851,6 +920,9 @@ function chetBot(bot, nguon) {
 // Tin từ TG.nhip có dạng { id, ch, name, text } — ch là kênh (CH_WORLD/PRIVATE/...),
 // text là nội dung. Trả lời qua TG.chat(tk, { o, ch, t, toi? }) — đúng 2 đối số.
 function traLoi(bot, msg) {
+  // Chỉ trả lời tin chat thật của người chơi. Tin hệ thống (CH_SYSTEM) và các kênh khác không
+  // phải lời hỏi — trả lời chúng vừa lỗi kênh, vừa đốt cửa tiết lưu kênh chung (26/11/2026).
+  if (msg.ch !== "CH_WORLD" && msg.ch !== "CH_NEARBY" && msg.ch !== "CH_CITY" && msg.ch !== "CH_TEAM" && msg.ch !== "PRIVATE") return;
   const n = msg.name || "", txt = String(msg.text || "");
   if (n === bot.h.name || !txt.trim()) return;
   if (bot.traLoiDen && Date.now() < bot.traLoiDen) return; // 10 giây mới trả lời cùng người 1 lần
@@ -874,7 +946,7 @@ function traLoi(bot, msg) {
     noi = "Hỏi giá thì gõ 'giá', hỏi chỗ thì gõ 'ở đâu'. Đừng nói nhảm.";
   }
   if (!rieng) {
-    if (Date.now() - traLoiChungAll < 5000) return; // kênh chung: cả 170 bot gộp lại 1 tin / 5 giây
+    if (Date.now() - traLoiChungAll < CHAT_CHUNG_MS) return; // kênh chung: cả 170 bot gộp lại 1 tin / CHAT_CHUNG_MS (tin mật không siết thêm)
     traLoiChungAll = Date.now();
   }
   bot.traLoiDen = Date.now() + 10000;
@@ -891,6 +963,718 @@ function docTin(bot, ds) {
   }
 }
 
+// ---------- hoạt động (lệnh Huy 12:29 26/11: bot tham gia mọi hoạt động; Tống Kim chia 2 phe) ----------
+// Nguyên tắc: chỉ gọi đúng hàm module sẵn có, đúng luật (hạn mức, phí, cấp, số lần/ngày) —
+// không bịa luật riêng. Bot không có trình duyệt nên 3 module có móc hiện diện BOT (quai-chung,
+// phong-hoa, tong-kim). Hết hoạt động thì về train/sạp như cũ. Mọi lỗi đều bắt, không kẹt.
+const ngayVN = () => new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
+function dichChuyen(bot, zone, x, y) {
+  bot.zone = zone; bot.x = x; bot.y = y; bot.mucTieu = null;
+  try { DO.baiNay(bot.key, zone); } catch {}
+  hienDien(bot);
+}
+function napLai(bot) { // module khác ghi thẳng tệp tài khoản (thưởng Tống Kim / phí Vượt Ải): nạp lại, khỏi bị luu() ghi đè mất
+  try {
+    const tk = D.docTk(bot.cfg.acct), h = tk && Array.isArray(tk.nv) ? tk.nv[0] : null;
+    if (h && h.name === bot.h.name) { bot.h = h; bot.fakeTk.nv[0] = h; bot.tk = tk; tinhChiSo(bot); return true; }
+  } catch (e) { log(`nạp lại lỗi (${bot.h.name}):`, e.message); }
+  return false;
+}
+function buocToi(bot, x, y, buoc = 160) {
+  const dx = x - bot.x, dy = (y - bot.y) * 2, d = Math.hypot(dx, dy);
+  if (d <= buoc) { bot.x = x; bot.y = y; return true; }
+  bot.x += (dx / d) * buoc; bot.y += ((dy / d) * buoc) / 2; return false;
+}
+function donHoatDong(bot) { // 1 đòn đánh hoạt động: chiêu xoay + sát thương đúng công thức client (tinhSatThuong)
+  const id = chonChieu(bot, null), C = bot.chiSo;
+  if (!id || !C) return 0;
+  const lv = C.H.skills[id] | 0; if (lv <= 0) return 0;
+  try {
+    const { vocong } = napDuLieuBot();
+    const cost = skCost(C.db[id], vocong.lvAttrs(C.db[id], lv));
+    if (bot.mpCur < cost) return 0;
+    const kq = tinhSatThuong(C, id, null, false);
+    if (kq.miss || kq.none || !(kq.v > 0)) return 0;
+    bot.mpCur = Math.max(0, bot.mpCur - cost);
+    bot.atkN = (bot.atkN | 0) + 1;
+    return kq.v;
+  } catch { return 0; }
+}
+function mobCuaBai(zone) {
+  try {
+    const Z = DO.NOI && DO.NOI.ZONES && DO.NOI.ZONES.get(+zone);
+    if (!Z || !Array.isArray(Z.m) || !Z.m.length) return null;
+    return { mob: Z.m[Math.floor(Math.random() * Z.m.length)], lv: Z.hi || Z.lo || 1 };
+  } catch { return null; }
+}
+function gietTaiBai(bot, zone, mob, lv, r3 = 0, he = 0) { // giết 1 con ở bãi bất kỳ qua đúng DO.gietQuai + nhặt đồ
+  let kq;
+  try { kq = DO.gietQuai(bot.h, [[zone, mob, lv, r3, he, Math.round(bot.x), Math.round(bot.y)]], { ten: bot.cfg.acct, admin: false, key: bot.key }); }
+  catch (e) { return 0; }
+  if (!kq || !kq.n) return 0;
+  bot.kills++; bot.stats.giet++; bot.stats.kn += kq.kn || 0;
+  const gs = [...(kq.roi || []).map((r) => r[2]), ...(kq.nhan || []).map((m) => m && m.g)].filter((g) => Number.isFinite(+g));
+  if (gs.length) { try { DO.nhat(bot.h, bot.key, gs); } catch {} }
+  ghiLuyenGiet(bot);
+  return kq.n;
+}
+function ghiLuyenGiet(bot) { // luyện chiêu kết liễu: ~6 đòn trúng / con (trừu tượng như gietMot) — flush ở thành
+  const fin = (bot.tab.finishers || []).find((id) => (bot.h.skills[id] | 0) > 0);
+  if (fin) bot.luyenDem[fin] = (bot.luyenDem[fin] | 0) + 6;
+}
+function ketThucHd(bot, lyDo) { // dọn móc hiện diện, về bãi train, ghi log
+  const hd = bot.hd; bot.hd = null;
+  // Bỏ chuyến thuyền giữa chừng (hết giờ/nhường): xóa trạng thái thuyền kẻo kẹt ở bờ Bắc chuyến sau.
+  if (hd && hd.loai === "pld" && bot.h && bot.h.pld) { try { delete bot.h.pld; } catch {} }
+  // Hết giờ (45 phút) mà chưa xong việc ngày: nghỉ hoạt động đó 5 phút để hoạt động cày khác tới lượt, khỏi vào lại ngay rồi kẹt cả ngày.
+  if (hd && lyDo === "quá giờ" && (hd.loai === "sat" || hd.loai === "dt" || hd.loai === "mc")) bot.hdNghi[hd.loai] = Date.now() + 5 * 60 * 1000;
+  try {
+    if (hd) {
+      if (hd.loai === "tk") TK().botRa(bot.cfg.acct);
+      if (hd.loai === "ph") PH().botRa(bot.cfg.acct);
+      if (hd.loai === "sat" || hd.loai === "dt") QCH().botRa(bot.cfg.acct);
+      if (hd.loai === "va" && hd.doi) { try { TD().raDoi(bot.cfg.acct, ""); } catch {} }
+    }
+  } catch {}
+  if (hd && hd.loai === "tk") { try { napLai(bot); } catch {} }
+  bot.mode = "luyen"; bot.zone = bot.cfg.zone; bot.x = bot.cfg.cx; bot.y = bot.cfg.cy; bot.act = "run";
+  try { DO.baiNay(bot.key, bot.cfg.zone); } catch {}
+  hienDien(bot); luu(bot);
+  log(`hết hoạt động ${hd ? hd.loai : "?"} (${bot.h.name}): ${lyDo}`);
+}
+function batDauHd(bot, loai, them = {}) { // vào mode hoạt động (đóng sạp trước nếu đang bày)
+  if (bot.h.sap && bot.h.sap.mo) { try { dongSap(bot); } catch {} }
+  bot.hd = { loai, batDau: Date.now(), ...them };
+  bot.mode = "hd"; bot.mucTieu = null; bot.act = "stand";
+  log(`vào hoạt động ${loai} (${bot.h.name})`);
+}
+
+// ----- Tống Kim: phe ổn định = chỉ số bot % 2 (0 Tống / 1 Kim); đăng ký phe ít người hơn nếu phe ưu tiên đầy -----
+function hdTkVao(bot) {
+  const L = TK().lich();
+  if (!L || (L.pha !== "bd" && L.pha !== "danh") || Date.now() >= (L.het || 0)) return false;
+  const key = `${L.gio || ""}|${L.kc || 0}`;
+  if (bot.hdNgay.tk === key) return false;
+  const pheUu = bot.idx % 2;
+  dichChuyen(bot, 37, bot.cfg.stalls[0][0], bot.cfg.stalls[0][1]); // phải ở Biện Kinh / Điểm báo danh mới báo danh được
+  tinhChiSo(bot);
+  let dk = null;
+  for (const x of [pheUu, 1 - pheUu]) {
+    try {
+      const r = TK().lam(bot.h, { viec: "phe", x, o: 0 }, bot.cfg.acct);
+      const D = TK()._thu.D;
+      dk = D && D.dk.get(bot.cfg.acct + "|0");
+      if (dk) { bot.hdDi = r && r.vao; break; }
+    } catch (e) { log(`Tống Kim báo danh lỗi (${bot.h.name}):`, e.message); }
+  }
+  if (!dk) return false;
+  const D = TK()._thu.D;
+  const vao = bot.hdDi;
+  const trai = D.trai[dk.phe];
+  dichChuyen(bot, vao ? vao.zone : D.bai, vao && vao.at ? vao.at[0] : trai[0], vao && vao.at ? vao.at[1] : trai[1]);
+  const m = TK().botVao(bot.cfg.acct, bot.h, 0, bot.hpMax);
+  if (!m) return false;
+  bot.hdNgay.tk = key;
+  batDauHd(bot, "tk", { phe: dk.phe });
+  return true;
+}
+function hdTkTick(bot) {
+  const D = TK()._thu.D;
+  if (!D || D.ket) return ketThucHd(bot, "trận xong");
+  const m = TK().botNguoi(bot.cfg.acct);
+  if (!m) return ketThucHd(bot, "không còn trong phòng");
+  if ((m.hp | 0) <= 0) { // chờ hồi sinh ở hậu doanh
+    if (Date.now() >= (m.hoiLuc || 0)) { TK().botHoiSinh(bot.cfg.acct); const tr = D.trai[m.phe]; dichChuyen(bot, D.bai, tr[0], tr[1]); }
+    bot.act = "stand"; return;
+  }
+  const phe = m.phe, dmg = donHoatDong(bot);
+  // mục tiêu: Nguyên Soái địch > người địch gần nhất > bot/quân địch
+  let muc = null, loai = "";
+  for (const e of D.binh.values()) {
+    if (e.phe === phe || e.bac !== 5 || !(e.mau > 0)) continue;
+    muc = { id: e.id, x: e.x, y: e.y, binh: true }; loai = "soai"; break;
+  }
+  if (!muc) {
+    let gan = 1e12;
+    for (const x of D.nguoi.values()) {
+      if (x.phe === phe || x.tk === bot.cfg.acct) continue;
+      if (!x.bot) continue; // người thật: máu do trình duyệt họ tự trừ, bot không có đường gửi đòn tới — chỉ đánh được bot/người-máy khác
+      const mm = TK().botNguoi(x.tk); if (!mm || !(mm.hp > 0)) continue;
+      const p = TG.dangChoi(x.tk);
+      if (!p || p.zone !== D.bai) continue;
+      const d = Math.hypot(p.x - bot.x, (p.y - bot.y) * 2);
+      if (d < gan) { gan = d; muc = { tk: x.tk, x: p.x, y: p.y, nguoi: true }; }
+    }
+    if (muc && gan > 400) muc = null;
+    if (muc) loai = "nguoi";
+  }
+  if (!muc) {
+    let gan = 1e12;
+    const vt = D.vt;
+    for (const b of [...D.bot.values(), ...D.binh.values()]) {
+      if (b.phe === phe || b.chet || !(b.mau > 0)) continue;
+      const v = vt.get(b.id), bx = v ? v[0] : null, by = v ? v[1] : null;
+      const d = bx == null ? 1e9 : Math.hypot(bx - bot.x, (by - bot.y) * 2);
+      if (d < gan) { gan = d; muc = { id: b.id, x: bx, y: by, binh: !!b.bac }; }
+    }
+    if (muc && muc.x == null) { // không có vị trí từ chủ trận: tiến về doanh địch, đánh mù trong giới hạn phe/hạn mức
+      const tr = D.trai[1 - phe];
+      buocToi(bot, tr[0], tr[1], 200); bot.act = "run";
+      if (dmg > 0) TK().botDanh(bot.cfg.acct, [[muc.id, dmg]]);
+      return;
+    }
+    if (muc) loai = "bot";
+  }
+  if (!muc) { const tr = D.trai[1 - phe]; buocToi(bot, tr[0], tr[1], 200); bot.act = "run"; return; }
+  const toi = buocToi(bot, muc.x, muc.y, 200);
+  bot.act = toi ? "attack" : "run";
+  if (dmg <= 0) return;
+  if (loai === "nguoi") TK().botBiDanh(muc.tk, bot.cfg.acct, dmg);
+  else TK().botDanh(bot.cfg.acct, [[muc.id, dmg]]);
+}
+
+// ----- Phong Hỏa Liên Thành: 40 bot, đánh quân Tống (phe falsy) -----
+function hdPhVao(bot) {
+  const L = PH().lich();
+  if (!L || !L.mo || Date.now() >= (L.kc || 0)) return false;
+  if (bot.hdNgay.ph === String(L.u)) return false;
+  dichChuyen(bot, 37, bot.cfg.stalls[0][0], bot.cfg.stalls[0][1]);
+  let r;
+  try { r = PH().lam(bot.h, { viec: "vao" }, bot.cfg.acct); } catch (e) { log(`Phong Hỏa báo danh lỗi (${bot.h.name}):`, e.message); return false; }
+  if (!r || !r.vao) return false;
+  dichChuyen(bot, r.vao.zone, r.vao.at ? r.vao.at[0] : 0, r.vao.at ? r.vao.at[1] : 0);
+  PH().botVao(bot.cfg.acct);
+  bot.hdNgay.ph = String(L.u);
+  batDauHd(bot, "ph", { dem: 0 });
+  return true;
+}
+function hdPhTick(bot) {
+  const D = PH()._thu.D;
+  if (!D || D.ket) { try { PH().nhanThuong(bot.h, bot.cfg.acct, bot.key, false); } catch {} return ketThucHd(bot, "trận xong"); }
+  bot.hd.dem = (bot.hd.dem | 0) + 1;
+  if (bot.hd.dem % 10 === 0) { try { PH().nhanThuong(bot.h, bot.cfg.acct, bot.key, false); } catch {} }
+  let gan = 1e12, muc = null;
+  for (const e of D.q.values()) {
+    if (e.phe || e.mau <= 0) continue;
+    const d = Math.hypot(e.x - bot.x, (e.y - bot.y) * 2);
+    if (d < gan) { gan = d; muc = e; }
+  }
+  if (!muc) { bot.act = "stand"; return; }
+  const toi = buocToi(bot, muc.x, muc.y, 200);
+  bot.act = toi ? "attack" : "run";
+  const dmg = donHoatDong(bot);
+  if (dmg > 0) { try { PH().danh(bot.cfg.acct, PH().BAI, { s: ++bot.hdSeq, d: [[muc.uid, dmg]] }); } catch {} }
+}
+
+// ----- Boss Hoàng Kim: 20 bot -----
+function hdBtgVao(bot) {
+  if (!BTG().dangCo()) return false;
+  const tt = BTG().trangThai(bot.cfg.acct);
+  if (!tt || tt.ket) return false;
+  if (bot.hdNgay.btg === String(tt.u)) return false;
+  bot.hdNgay.btg = String(tt.u);
+  dichChuyen(bot, tt.bai, tt.x, tt.y);
+  batDauHd(bot, "btg", { u: tt.u, dem: 0 });
+  return true;
+}
+function hdBtgTick(bot) {
+  const tt = BTG().trangThai(bot.cfg.acct);
+  if (!tt || tt.ket || !BTG().dangCo()) { try { BTG().nhanThuong(bot.h, bot.cfg.acct); } catch {} return ketThucHd(bot, "boss xong"); }
+  bot.hd.dem = (bot.hd.dem | 0) + 1;
+  if (bot.hd.dem % 20 === 0) { try { BTG().nhanThuong(bot.h, bot.cfg.acct); } catch {} }
+  if (bot.zone !== tt.bai) dichChuyen(bot, tt.bai, tt.x, tt.y);
+  const toi = buocToi(bot, tt.x, tt.y, 200);
+  bot.act = toi ? "attack" : "run";
+  const dmg = donHoatDong(bot);
+  if (dmg > 0) { try { BTG().danh(bot.cfg.acct, tt.u, dmg); } catch {} }
+}
+
+// ----- Săn Nhím: 30 bot, tối đa 10 con/ngày -----
+function hdSnVao(bot) {
+  if (!SN().dangCo()) return false;
+  if ((SN().demNgay(bot.h.name) | 0) >= 10) return false;
+  const tt = SN().trangThai(bot.cfg.acct);
+  if (!tt || !tt.ds || !tt.ds.some((n) => !n[8] && n[5] > 0)) return false;
+  batDauHd(bot, "sn", {});
+  return true;
+}
+function hdSnTick(bot) {
+  const tt = SN().trangThai(bot.cfg.acct);
+  if (!tt || !tt.ds || !tt.ds.some((n) => !n[8] && n[5] > 0)) { try { SN().nhanThuong(bot.h); } catch {} return ketThucHd(bot, "hết đợt"); }
+  if ((SN().demNgay(bot.h.name) | 0) >= 10) { try { SN().nhanThuong(bot.h); } catch {} return ketThucHd(bot, "đủ 10 con"); }
+  let gan = 1e12, muc = null;
+  for (const n of tt.ds) {
+    if (n[8] || n[5] <= 0) continue;
+    const d = (n[1] === bot.zone ? Math.hypot(n[2] - bot.x, (n[3] - bot.y) * 2) : 1e6 + Math.abs(n[1] - bot.zone));
+    if (d < gan) { gan = d; muc = n; }
+  }
+  if (!muc) return;
+  if (bot.zone !== muc[1]) dichChuyen(bot, muc[1], muc[2], muc[3]);
+  const toi = buocToi(bot, muc[2], muc[3], 200);
+  bot.act = toi ? "attack" : "run";
+  const dmg = donHoatDong(bot);
+  if (dmg > 0) { try { SN().danh(bot.cfg.acct, muc[0], dmg); } catch {} }
+}
+
+// ----- Rương Thần Bí: 10 bot -----
+function hdRtbVao(bot) {
+  if ((bot.h.lvl | 0) < 120) return false;
+  const ds = RTB().dong();
+  if (!ds.length) return false;
+  const r = ds[0];
+  dichChuyen(bot, r[1], r[2], r[3]);
+  batDauHd(bot, "rtb", { id: r[0], bai: r[1], x: r[2], y: r[3] });
+  return true;
+}
+function hdRtbTick(bot) {
+  const ds = RTB().dong(), r = ds.find((x) => x[0] === bot.hd.id);
+  if (!r) return ketThucHd(bot, "rương đã mất");
+  if (bot.zone !== r[1]) dichChuyen(bot, r[1], r[2], r[3]);
+  const toi = buocToi(bot, r[2], r[3], 200);
+  bot.act = toi ? "attack" : "run";
+  if (!toi) return;
+  try { RTB().mo(bot.cfg.acct, bot.h, r[0]); bot.stats.ruong = (bot.stats.ruong | 0) + 1; }
+  catch (e) { log(`mở rương lỗi (${bot.h.name}):`, e.message); }
+  return ketThucHd(bot, "đã mở rương");
+}
+
+// ----- Phong Lăng Độ: 20 bot/chuyến, vé Kỳ Trân Các 5 Xu -----
+function hdPldVao(bot) {
+  let L;
+  try { L = PLD().lich(); } catch { return false; }
+  if (!L || L.nghi) return false;
+  const t = L.t | 0, baoDanh = (PLD().CF && PLD().CF.baoDanh) || 10;
+  if (t < 0 || t >= baoDanh) return false; // chỉ lên thuyền trong 10 phút báo danh đầu giờ chẵn
+  const key = `${L.chuyen}|${bot.idx % 3}`;
+  if (bot.hdNgay.pld === key) return false;
+  const CF = PLD().CF, veKey = CF.lenhBai;
+  dichChuyen(bot, 37, bot.cfg.stalls[0][0], bot.cfg.stalls[0][1]); // mua vé ở thành
+  let ve = bot.h.bag.find((o) => o.k === veKey && (o.n || 1) <= 1);
+  if (!ve) {
+    try { DO.lam(bot.h, { act: "muaKtc", k: veKey, n: 1 }, bot.key, bot.fakeTk); } catch (e) { log(`mua vé PLĐ lỗi (${bot.h.name}):`, e.message); return false; }
+    ve = bot.h.bag.find((o) => o.k === veKey && (o.n || 1) <= 1);
+    if (!ve) return false;
+  }
+  const ben = (bot.idx % 3) + 1, NAM = PLD().NAM;
+  dichChuyen(bot, NAM, bot.x, bot.y);
+  let r;
+  try { r = PLD().lam(bot.h, { viec: "lenhBai", ben, u: [ve.u] }, bot.cfg.acct, 0); } catch (e) { log(`lên thuyền lỗi (${bot.h.name}):`, e.message); return false; }
+  if (!r || !r.di) return false;
+  bot.hdNgay.pld = key;
+  dichChuyen(bot, r.di.z, r.di.at ? r.di.at[0] : bot.x, r.di.at ? r.di.at[1] : bot.y);
+  batDauHd(bot, "pld", { ben, gd: "thuyen" });
+  return true;
+}
+function hdPldTick(bot) {
+  const P = bot.h.pld;
+  // Sau cập bờ, h.pld = {bac:1} không còn `chuyen` — vẫn ở pha bờ Bắc, phải đi veNam, không được thoát.
+  if (!P || (!P.chuyen && !P.bac)) return ketThucHd(bot, "không còn trên thuyền");
+  let L;
+  try { L = PLD().lam(bot.h, { viec: "lich" }, bot.cfg.acct, 0); } catch { return ketThucHd(bot, "không đọc được lịch thuyền"); }
+  const t = L && L.lich ? L.lich.t : 99, capBo = (PLD().CF && PLD().CF.capBo) || 39;
+  if (bot.hd.gd === "thuyen") {
+    if (t >= capBo) {
+      let r;
+      try { r = PLD().lam(bot.h, { viec: "cap" }, bot.cfg.acct, 0); } catch { return ketThucHd(bot, "cập bờ lỗi"); }
+      if (r && r.di) dichChuyen(bot, r.di.z, r.di.at ? r.di.at[0] : bot.x, r.di.at ? r.di.at[1] : bot.y);
+      bot.hd.gd = "bac"; bot.hd.bacDen = Date.now() + 3000;
+      return;
+    }
+    const mz = mobCuaBai(bot.zone);
+    if (mz) gietTaiBai(bot, bot.zone, mz.mob, mz.lv, 0, 0);
+    bot.act = "attack";
+    return;
+  }
+  if (Date.now() < (bot.hd.bacDen || 0)) { bot.act = "stand"; return; }
+  try { const r = PLD().lam(bot.h, { viec: "veNam", ben: bot.hd.ben }, bot.cfg.acct, 0); if (r && r.di) dichChuyen(bot, r.di.z, r.di.at ? r.di.at[0] : bot.x, r.di.at ? r.di.at[1] : bot.y); } catch {}
+  return ketThucHd(bot, "đi thuyền xong");
+}
+
+// ----- Boss Sát thủ: toàn bộ bot, tối đa 8 boss/ngày, gộp giản sau khi xong -----
+function hdSatVao(bot) {
+  if (bot.hdNgay.sat === ngayVN()) return false;
+  if (Date.now() < (bot.hdNghi.sat || 0)) return false;
+  try { TLAM().lam(bot.h, { viec: "mo", loai: "st" }, bot.cfg.acct); }
+  catch (e) { log(`mở khóa Sát thủ lỗi (${bot.h.name}):`, e.message); return false; }
+  batDauHd(bot, "sat", { dem: 0 });
+  return true;
+}
+function hdSatTick(bot) {
+  bot.hd.dem = (bot.hd.dem | 0) + 1;
+  if (bot.hd.dem > 900) { hdSatGop(bot); return ketThucHd(bot, "quá giờ"); }
+  let r;
+  try { r = SAT().buocTu(bot.h); } catch (e) { log(`Sát thủ lỗi (${bot.h.name}):`, e.message); return ketThucHd(bot, "lỗi buocTu"); }
+  if (!r) return ketThucHd(bot, "không có bước");
+  if (r.tiep === "het" || r.tiep === "dung") { hdSatGop(bot); bot.hdNgay.sat = ngayVN(); return ketThucHd(bot, r.tiep === "het" ? "đủ 8 boss" : `dừng: ${r.ly || ""}`); }
+  if (r.tiep !== "danh" || !r.boss) return;
+  const B = r.boss, S = SAT().ST.boss[B.id] || {};
+  const bai = B.bai;
+  if (bot.zone !== bai) { dichChuyen(bot, bai, B.x, B.y); if (QCH().bat(bai)) QCH().botVao(bot.cfg.acct, bai); return; }
+  if (QCH().bat(bai)) {
+    QCH().botVao(bot.cfg.acct, bai); // đăng ký mỗi nhịp: bot train sẵn ở đúng bãi thì nhánh "vừa tới" không chạy, không có hiện diện thì boss không sinh
+    try { QCH().nvSat(bot.cfg.acct, B.id); } catch {}
+    const ds = QCH().ds(bai).filter((m) => m[8] === B.id && m[4] > 0);
+    if (!ds.length) { bot.act = "stand"; return; }
+    const m = ds[0];
+    const toi = buocToi(bot, m[6], m[7], 200);
+    bot.act = toi ? "attack" : "run";
+    const dmg = donHoatDong(bot);
+    if (dmg > 0) { try { QCH().danh(bot.cfg.acct, bai, { s: ++bot.hdSeq, d: [[m[0], dmg]] }); } catch {} }
+    try { QCH().nhanThuong(bot.h, bot.cfg.acct, bot.key, false); } catch {}
+    return;
+  }
+  const he = (bot.h.satThu && bot.h.satThu.he) | 0;
+  const n = gietTaiBai(bot, bai, S.tpl || B.id, S.lv || 200, 3, he);
+  bot.act = n ? "attack" : "stand";
+}
+function hdSatGop(bot) { // 5 Sát Thủ lệnh -> 1 giản (đúng luật gop, dùng lệnh của chính bot)
+  try {
+    const uids = bot.h.bag.filter((o) => { try { return (DO.NOI.BY.get(o.k) || {}).satThu === "lenh"; } catch { return false; } }).map((o) => o.u);
+    if (uids.length) SAT().lam(bot.h, { viec: "gop", u: uids }, bot.cfg.acct);
+  } catch (e) { log(`gộp giản lỗi (${bot.h.name}):`, e.message); }
+}
+
+// ----- Dã Tẩu: toàn bộ bot, theo đúng buocTu (không hủy dồn dập) -----
+function hdDtVao(bot) {
+  if (bot.hdNgay.dt === ngayVN()) return false;
+  if (Date.now() < (bot.hdNghi.dt || 0)) return false;
+  try { TLAM().lam(bot.h, { viec: "mo", loai: "dt" }, bot.cfg.acct); }
+  catch (e) { log(`mở khóa Dã Tẩu lỗi (${bot.h.name}):`, e.message); return false; }
+  batDauHd(bot, "dt", { dem: 0, choDen: 0 });
+  return true;
+}
+function hdDtTick(bot) {
+  bot.hd.dem = (bot.hd.dem | 0) + 1;
+  if (bot.hd.dem > 900) { bot.hdNgay.dt = ngayVN(); return ketThucHd(bot, "quá giờ"); }
+  if (Date.now() < (bot.hd.choDen || 0)) { bot.act = "stand"; return; }
+  for (let k = 0; k < 3; k++) {
+    let r;
+    try { r = DT().buocTu(bot.h, { thuong: "kn", giuHuy: 2, gian: 0, huy: "dung" }); } catch (e) { log(`Dã Tẩu lỗi (${bot.h.name}):`, e.message); return ketThucHd(bot, "lỗi buocTu"); }
+    if (!r) return ketThucHd(bot, "không có bước");
+    if (r.tiep === "het" || r.tiep === "dung" || r.tiep === "tui") { bot.hdNgay.dt = ngayVN(); return ketThucHd(bot, `${r.tiep}${r.ly ? ": " + r.ly : ""}`); }
+    if (r.tiep === "cho") { bot.hd.choDen = Date.now() + ((r.giay | 0) || 60) * 1000; return; }
+    if (r.tiep === "danh") {
+      const bai = r.bai || bot.cfg.zone;
+      if (bot.zone !== bai) { const mz = mobCuaBai(bai); dichChuyen(bot, bai, bot.cfg.cx, bot.cfg.cy); if (!mz) return; }
+      const mz = mobCuaBai(bai);
+      if (!mz) return;
+      for (let i = 0; i < 5; i++) gietTaiBai(bot, bai, mz.mob, mz.lv, 0, 0);
+      bot.act = "attack";
+      return;
+    }
+    // "lai": buocTu đã tiến bước — gọi tiếp trong cùng nhịp (tối đa 3 lần)
+  }
+}
+
+// ----- Võ Lâm Minh Chủ: giết + giao thư + hái (theo đúng MC.lam) -----
+let MC_JSON = null;
+function mcJson() {
+  if (!MC_JSON) { try { MC_JSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets", "data", "minh-chu.json"), "utf8")); } catch { MC_JSON = {}; } }
+  return MC_JSON;
+}
+function hdMcVao(bot) {
+  if (bot.hdNgay.mc === ngayVN()) return false;
+  if (Date.now() < (bot.hdNghi.mc || 0)) return false;
+  const tt = MC().tomTat(bot.h);
+  if (tt && tt.xong && tt.xong.giet && tt.xong.thu && tt.xong.hai) { bot.hdNgay.mc = ngayVN(); return false; }
+  batDauHd(bot, "mc", { buoc: "giet", dem: 0 });
+  return true;
+}
+function hdMcTick(bot) {
+  bot.hd.dem = (bot.hd.dem | 0) + 1;
+  if (bot.hd.dem > 900) { bot.hdNgay.mc = ngayVN(); return ketThucHd(bot, "quá giờ"); }
+  if (bot.hd.buoc === "giet") {
+    let G = bot.h && bot.h.mc && bot.h.mc.giet;
+    if (!G) { try { MC().lam(bot.h, { viec: "nhanGiet" }, bot.cfg.acct); } catch (e) { log(`Minh Chủ nhận giết lỗi (${bot.h.name}):`, e.message); bot.hd.buoc = "thu"; return; } G = bot.h.mc.giet; }
+    if (!G) { bot.hd.buoc = "thu"; return; }
+    const bai = G.bai || G.zone, mob = G.mob || G.tpl || G.id || G.quai, can = G.can | 0, n = G.n | 0;
+    if (!bai || !mob || !can) { bot.hd.buoc = "thu"; return; }
+    if (n >= can) { try { MC().lam(bot.h, { viec: "xongGiet" }, bot.cfg.acct); } catch {} bot.hd.buoc = "thu"; return; }
+    if (bot.zone !== bai) dichChuyen(bot, bai, bot.cfg.cx, bot.cfg.cy);
+    const mz = mobCuaBai(bai);
+    gietTaiBai(bot, bai, mob, (mz && mz.lv) || 200, 0, 0);
+    bot.act = "attack";
+    return;
+  }
+  if (bot.hd.buoc === "thu") {
+    let T = bot.h && bot.h.mc && bot.h.mc.thu;
+    if (!T) { try { MC().lam(bot.h, { viec: "nhanThu" }, bot.cfg.acct); } catch (e) { log(`Minh Chủ nhận thư lỗi (${bot.h.name}):`, e.message); bot.hd.buoc = "hai"; return; } T = bot.h.mc.thu; }
+    if (!T) { bot.hd.buoc = "hai"; return; }
+    const nn = (mcJson().nguoiNhan || []).find((x) => x.ten === T.ai) || (mcJson().nguoiNhan || [])[0];
+    if (!nn) { bot.hd.buoc = "hai"; return; }
+    const bai = Array.isArray(nn.bai) ? nn.bai[0] : nn.bai;
+    if (bot.zone !== bai) { dichChuyen(bot, bai, nn.x || 0, nn.y || 0); return; }
+    buocToi(bot, nn.x || 0, nn.y || 0, 200);
+    let ok = false;
+    try { const r = MC().traoThu(bot.h, bot.cfg.acct, T.ai); ok = !!(r && r.tin && /trao/i.test(r.tin)); } catch {}
+    if (!ok) {
+      try { MC().lam(bot.h, { viec: "matThu" }, bot.cfg.acct); const r = MC().traoThu(bot.h, bot.cfg.acct, T.ai); ok = !!(r && r.tin && /trao/i.test(r.tin)); } catch {}
+    }
+    if (ok) { try { MC().lam(bot.h, { viec: "xongThu" }, bot.cfg.acct); } catch {} }
+    else log(`Minh Chủ giao thư chưa được (${bot.h.name}, ai=${T.ai}) — bỏ bước này hôm nay`);
+    bot.hd.buoc = "hai";
+    return;
+  }
+  // hái: giết hộ vệ cụm cây rồi hái đủ số lượng
+  let H = bot.h && bot.h.mc && bot.h.mc.hai;
+  if (!H) { try { MC().lam(bot.h, { viec: "nhanHai" }, bot.cfg.acct); } catch (e) { log(`Minh Chủ nhận hái lỗi (${bot.h.name}):`, e.message); bot.hdNgay.mc = ngayVN(); return ketThucHd(bot, "không nhận hái được"); } H = bot.h.mc.hai; }
+  if (!H) { bot.hdNgay.mc = ngayVN(); return ketThucHd(bot, "không có nhiệm vụ hái"); }
+  const cay = (mcJson().cay || []).find((c) => c.loai === H.loai && (c.bai === H.bai || (Array.isArray(c.bai) && c.bai.includes(H.bai)))) || (mcJson().cay || []).find((c) => c.loai === H.loai);
+  if (!cay) { log(`Minh Chủ: không thấy cây loại ${H.loai} trong dữ liệu — bỏ hái`); bot.hdNgay.mc = ngayVN(); return ketThucHd(bot, "không có dữ liệu cây"); }
+  const bai = Array.isArray(cay.bai) ? cay.bai[0] : (cay.bai || H.bai);
+  if (bot.zone !== bai) { dichChuyen(bot, bai, cay.x || 0, cay.y || 0); return; }
+  const co = (bot.h.bag || []).filter((o) => o.k === H.mon).reduce((s, o) => s + (o.n || 1), 0);
+  if (co >= (H.can | 0)) { try { MC().lam(bot.h, { viec: "xongHai" }, bot.cfg.acct); } catch {} bot.hdNgay.mc = ngayVN(); return ketThucHd(bot, "xong Minh Chủ"); }
+  let ve = [];
+  try { const s = MC().veTT(bot.cfg.acct); ve = Array.isArray(s) ? s : (s && (s.s || s.ds)) || []; } catch {}
+  // Hộ Vệ canh cây: veTT không trả mã cụm (hàng [u,bai,x,y,mau,...]) — lấy Hộ Vệ còn sống cùng bãi, đứng gần cây.
+  const song = ve.filter((g) => { const gb = g[1] != null ? g[1] : g.bai; const gm = g[4] != null ? g[4] : g.mau; const gx = g[2] != null ? g[2] : g.x, gy = g[3] != null ? g[3] : g.y; return gb === bai && gm > 0 && Math.hypot(gx - (cay.x || 0), (gy - (cay.y || 0)) * 2) < 800; });
+  if (song.length) {
+    const g = song[0], gx = g[2] != null ? g[2] : g.x, gy = g[3] != null ? g[3] : g.y, uid = g[0] != null ? g[0] : g.u;
+    const toi = buocToi(bot, gx, gy, 200);
+    bot.act = toi ? "attack" : "run";
+    const dmg = donHoatDong(bot);
+    if (dmg > 0) { try { MC().danhVe(bot.cfg.acct, uid, dmg); } catch {} }
+    return;
+  }
+  if (!bot.hd.batLuc) { try { const r = MC().lam(bot.h, { viec: "haiBat", cay: cay.id }, bot.cfg.acct); if (r) bot.hd.batLuc = Date.now(); } catch (e) { log(`hái bắt đầu lỗi (${bot.h.name}):`, e.message); } return; }
+  if (Date.now() - bot.hd.batLuc >= 3000) {
+    try { MC().lam(bot.h, { viec: "hai", cay: cay.id }, bot.cfg.acct); } catch (e) { log(`hái lỗi (${bot.h.name}):`, e.message); }
+    bot.hd.batLuc = 0;
+  }
+}
+
+// ----- Vượt Ải: đội 3 bot cùng bộ 3 (đội trưởng idx%3==0) -----
+function hdVaThanhVien(bot) { // thành viên: thấy lời mời của đội trưởng bộ 3 thì nhận + vào mode chờ
+  if (bot.idx % 3 === 0) return false;
+  let c;
+  try { c = TD().cua(bot.cfg.acct); } catch { return false; }
+  if (!c || !c.moi || !c.moi.length) return false;
+  const truong = bots[bot.idx - (bot.idx % 3)];
+  const m = c.moi.find((x) => x.tu === (truong && truong.h.name));
+  if (!m) return false;
+  try { TD().lam(bot.cfg.acct, { viec: "nhan", id: m.id }); } catch { return false; }
+  batDauHd(bot, "va", { doi: truong.cfg.acct, gd: "choVao" });
+  return true;
+}
+function hdVaVao(bot) { // đội trưởng: lập đội + mời 2 thành viên bộ 3
+  if (bot.idx % 3 !== 0 || bot.idx + 2 >= bots.length) return false;
+  if (bot.hdNgay.va === ngayVN()) return false;
+  if (Date.now() < (bot.hdNghi.va || 0)) return false; // vừa bị từ chối: chờ rồi thử lại, khỏi đốt cả ngày
+  const tv = [bots[bot.idx + 1], bots[bot.idx + 2]];
+  if (tv.some((b) => !b || b.mode === "hd" || b.mode === "chet")) return false;
+  try {
+    TD().lam(bot.cfg.acct, { viec: "lap" });
+    for (const b of tv) TD().lam(bot.cfg.acct, { viec: "moi", ten: b.h.name });
+  } catch (e) { log(`Vượt Ải lập đội lỗi (${bot.h.name}):`, e.message); return false; }
+  batDauHd(bot, "va", { doi: 1, gd: "cho", choDen: Date.now() + 20000 });
+  return true;
+}
+function hdVaTick(bot) {
+  if (bot.hd.gd === "cho") {
+    let tv = [];
+    try { const d = TD().thanhVien(bot.cfg.acct); tv = (d && d.tv) || []; } catch {}
+    if (tv.length >= 3) { bot.hd.gd = "vao"; return; }
+    if (Date.now() > (bot.hd.choDen || 0)) return ketThucHd(bot, "đủ đội không kịp");
+    bot.act = "stand"; return;
+  }
+  if (bot.hd.gd === "vao") {
+    let r = null;
+    try { r = VAI().lam(bot.h, { viec: "vao" }, bot.fakeTk); } catch (e) { log(`Vượt Ải vào lỗi (${bot.h.name}):`, e.message); return ketThucHd(bot, "vào ải lỗi"); }
+    // "vao" trả say(...) khi thiếu điều kiện (tiền/giản/lượt) — ghi rõ lý do, nghỉ 10 phút rồi thử lại, khỏi nuốt lặng + đốt cả ngày.
+    if (r && r.say) {
+      const ly = String((r.say.text || r.say) + "").replace(/<[^>]*>/g, "").slice(0, 120);
+      log(`Vượt Ải bị từ chối (${bot.h.name}):`, ly);
+      bot.hdNghi.va = Date.now() + 10 * 60 * 1000;
+      return ketThucHd(bot, "vào ải bị từ chối");
+    }
+    bot.hdNgay.va = ngayVN();
+    bot.hd.gd = "danh"; return;
+  }
+  if (bot.hd.gd === "choVao") { // thành viên chờ đội trưởng kéo vào
+    if (Date.now() - bot.hd.batDau > 30000) return ketThucHd(bot, "chờ vào ải quá lâu");
+    let di = null;
+    try { di = VAI().layDi(bot.cfg.acct); } catch {}
+    if (di && di.di) { dichChuyen(bot, di.di.z, di.di.at ? di.di.at[0] : bot.x, di.di.at ? di.di.at[1] : bot.y); napLai(bot); bot.hd.gd = "danh"; return; }
+    bot.act = "stand"; return;
+  }
+  // danh
+  let tt = null;
+  try { tt = VAI().tomTat(bot.h); } catch {}
+  const dang = tt && tt.dang;
+  if (!dang || dang.ket) {
+    try { VAI().nhanPhong(bot.h, bot.cfg.acct, bot.key); } catch {}
+    try { VAI().lam(bot.h, { viec: "ra" }, bot.fakeTk); } catch {}
+    return ketThucHd(bot, "xong ải");
+  }
+  if (!bot.hd.phong) {
+    let di = null;
+    try { di = VAI().layDi(bot.cfg.acct); } catch {}
+    if (di && di.di) dichChuyen(bot, di.di.z, di.di.at ? di.di.at[0] : bot.x, di.di.at ? di.di.at[1] : bot.y);
+    bot.hd.phong = dang.phong;
+  }
+  let P = null, Pbai = null;
+  try { P = VAI()._thu.PHONG.get(dang.phong); Pbai = P && P.bai; } catch {}
+  if (Pbai && bot.zone !== Pbai) { try { dichChuyen(bot, Pbai, bot.x, bot.y); } catch {} }
+  bot.hd.dem = (bot.hd.dem | 0) + 1;
+  if (bot.hd.dem % 10 === 0) { try { VAI().nhanPhong(bot.h, bot.cfg.acct, bot.key); } catch {} }
+  let gan = 1e12, muc = null;
+  if (P && P.q) for (const e of P.q.values()) {
+    if (!(e.mau > 0)) continue;
+    const d = Math.hypot((e.x || 0) - bot.x, ((e.y || 0) - bot.y) * 2);
+    if (d < gan) { gan = d; muc = e; }
+  }
+  if (!muc) { bot.act = "stand"; return; }
+  const toi = buocToi(bot, muc.x || 0, muc.y || 0, 200);
+  bot.act = toi ? "attack" : "run";
+  const dmg = donHoatDong(bot);
+  if (dmg > 0) { try { VAI().danhP(bot.cfg.acct, { s: ++bot.hdSeq, d: [[muc.uid, dmg]] }); } catch {} }
+}
+
+// ----- điều phối hoạt động: gọi mỗi nhịp khi bot rảnh (train/sạp) -----
+function hdKiemTra(bot) {
+  if (bot.hdNgay.ngay !== ngayVN()) bot.hdNgay = { ngay: ngayVN() };
+  if (hdVaThanhVien(bot)) return;
+  try {
+    // Giới hạn theo idx đã đủ (20 Boss / 30 Nhím / 10 Rương / 40 Phong Hỏa); không bọc thêm
+    // theo tổng số bot — bọc so>=170 làm đợt kiểm ít bot (và live thiếu bot) mất hẳn 4 hoạt động giờ.
+    if (bot.idx < 20 && hdBtgVao(bot)) return;
+    if (bot.idx < 30 && hdSnVao(bot)) return;
+    if (bot.idx < 10 && hdRtbVao(bot)) return;
+    if (bot.idx < 40 && hdPhVao(bot)) return;
+    if (hdTkVao(bot)) return;
+    if (bot.idx < 20 && hdPldVao(bot)) return;
+    if (hdSatVao(bot)) return;
+    if (hdDtVao(bot)) return;
+    if (hdMcVao(bot)) return;
+    if (hdVaVao(bot)) return;
+  } catch (e) { log(`điều phối hoạt động lỗi (${bot.h.name}):`, e.message); }
+}
+function hdCoUuTien(bot) { // rẻ, không tác dụng phụ: có hoạt động THEO GIỜ đang mở mà bot đủ điều kiện + chưa nhường cho đợt này không?
+  try {
+    if (bot.idx < 20 && BTG().dangCo()) {
+      const tt = BTG().trangThai(bot.cfg.acct);
+      if (tt && !tt.ket && bot.hdNgay.btg !== String(tt.u) && bot.hdNhuong !== "btg" + tt.u) return "btg" + tt.u;
+    }
+    if (bot.idx < 30 && SN().dangCo()) {
+      const tt = SN().trangThai(bot.cfg.acct);
+      if (tt && tt.ds && tt.ds.some((n) => !n[8] && n[5] > 0) && (SN().demNgay(bot.h.name) | 0) < 10 && bot.hdNhuong !== "sn" + tt.u) return "sn" + tt.u;
+    }
+    if (bot.idx < 10) {
+      const ds = RTB().dong();
+      if (ds.length && (bot.h.lvl | 0) >= 120 && bot.hdNhuong !== "rtb" + ds[0][0]) return "rtb" + ds[0][0];
+    }
+    if (bot.idx < 40) {
+      const L = PH().lich();
+      if (L && L.mo && Date.now() < (L.kc || 0) && bot.hdNgay.ph !== String(L.u) && bot.hdNhuong !== "ph" + L.u) return "ph" + L.u;
+    }
+    {
+      const L = TK().lich();
+      if (L && (L.pha === "bd" || L.pha === "danh") && Date.now() < (L.het || 0) && bot.hdNgay.tk !== `${L.gio || ""}|${L.kc || 0}` && bot.hdNhuong !== "tk" + L.kc) return "tk" + L.kc;
+    }
+    if (bot.idx < 20) {
+      const L = PLD().lich();
+      if (L && !L.nghi) {
+        const t = L.t | 0, baoDanh = (PLD().CF && PLD().CF.baoDanh) || 10;
+        const key = `${L.chuyen}|${bot.idx % 3}`;
+        if (t >= 0 && t < baoDanh && bot.hdNgay.pld !== key && bot.hdNhuong !== "pld" + L.chuyen) return "pld" + L.chuyen;
+      }
+    }
+  } catch {}
+  return null;
+}
+function hdTick(bot) {
+  try {
+    hoiTheoNhip(bot);
+    if (bot.chiSo) {
+      if (bot.hpCur / bot.hpMax < NG_THUOC.hp && !bot.potHp) uongThat(bot, THUOC_HP);
+      if (bot.mpCur / bot.mpMax < NG_THUOC.mp && !bot.potMp) uongThat(bot, THUOC_MP);
+    }
+    if (bot.hd) {
+      // Nhường hoạt động theo giờ: bot đang cày dài (Sát thủ/Dã Tẩu/Minh Chủ/chờ ải) thì thoát
+      // để tham gia hoạt động có cửa giờ; mỗi đợt chỉ nhường 1 lần (khỏi vào-ra liên tục).
+      if (bot.hd.loai === "sat" || bot.hd.loai === "dt" || bot.hd.loai === "mc" || (bot.hd.loai === "va" && bot.hd.gd !== "danh")) {
+        const k = hdCoUuTien(bot);
+        if (k) { bot.hdNhuong = k; return ketThucHd(bot, "nhường hoạt động giờ"); }
+      }
+      if (Date.now() - bot.hd.batDau > 45 * 60 * 1000) return ketThucHd(bot, "quá giờ");
+      const fn = { tk: hdTkTick, ph: hdPhTick, btg: hdBtgTick, sn: hdSnTick, rtb: hdRtbTick, pld: hdPldTick, sat: hdSatTick, dt: hdDtTick, mc: hdMcTick, va: hdVaTick }[bot.hd.loai];
+      if (fn) fn(bot);
+      else ketThucHd(bot, "loại lạ");
+      hienDien(bot);
+    }
+  } catch (e) { log(`hoạt động lỗi (${bot.h.name}):`, e.message); ketThucHd(bot, "lỗi: " + e.message); }
+}
+
+// ----- việc ở thành: sửa đồ, nâng chiêu, luyện, Phú Quý, online/phúc duyên -----
+function suaDo(bot) { // sửa độ bền <= mốc cảnh báo (LUAT.sua.bao=5) bằng đúng phí của game, chỉ khi về thành
+  const bao = (DO.LUAT && DO.LUAT.sua && DO.LUAT.sua.bao) || 5;
+  for (const slot of Object.keys(bot.h.equip || {})) {
+    const it = bot.h.equip[slot];
+    if (!it || it.ben == null || it.ben > bao) continue;
+    try { DO.lam(bot.h, { act: "sua", slot }, bot.key, bot.fakeTk); log(`sửa đồ ${slot} (${bot.h.name})`); }
+    catch (e) { log(`sửa đồ ${slot} lỗi (${bot.h.name}):`, e.message); }
+  }
+}
+function boSungChieu(bot) { // nâng chiêu ĐÃ CÓ về đúng bảng phái, trong ngân sách điểm còn lại, kẹp trần — không mở chiêu mới, không cho điểm
+  try {
+    const tab = bot.tab, h = bot.h;
+    let dung = 0;
+    try { dung = DO.diemDaDung(h); } catch { dung = 0; }
+    const tong = ((h.lvl | 0) - 1) + (h.mt | 0);
+    let con = Math.max(0, tong - dung);
+    if (con <= 0) return;
+    for (const [idS, cap] of Object.entries(tab.skills || {})) {
+      const id = +idS, co = (h.skills[id] | 0);
+      if (co >= cap || co <= 0) continue;
+      const them = Math.min(cap - co, con);
+      h.skills[id] = co + them; con -= them;
+      if (con <= 0) break;
+    }
+    DO.hamChieu(h);
+    log(`bổ sung chiêu (${bot.h.name}): còn ${con} điểm`);
+  } catch (e) { log(`bổ sung chiêu lỗi (${bot.h.name}):`, e.message); }
+}
+function nopLuyen(bot) { // xả độ luyện đã ghi: luyenDon theo đợt <=150 + luyenKn theo exp tăng
+  try {
+    const zone = bot.cfg.zone;
+    for (const [idS, so] of Object.entries(bot.luyenDem || {})) {
+      const id = +idS;
+      let con = so | 0;
+      while (con > 0) {
+        const don = Math.min(150, con);
+        try { DO.luyenDon(bot.h, [[id, don]], zone); } catch (e) { log(`luyện đơn lỗi (${bot.h.name}):`, e.message); break; }
+        con -= don;
+      }
+      bot.luyenDem[id] = 0;
+    }
+    const kn = (bot.stats.kn | 0) - (bot.knMoc | 0);
+    if (kn > 0) { try { DO.luyenKn(bot.h, kn); } catch {} bot.knMoc = bot.stats.kn | 0; }
+  } catch (e) { log(`nộp luyện lỗi (${bot.h.name}):`, e.message); }
+}
+function phuQuyTown(bot) { // mua hộp ở Thần Tài + dùng + nhận thưởng, đúng luật PQ (1 Xu/hộp, cấp>=60, <10 lần/đợt)
+  try {
+    const CF = PQ().CF;
+    let hop = bot.h.bag.filter((o) => o.k === (CF.mon || "ms:2402")).reduce((s, o) => s + (o.n || 1), 0);
+    const xu = bot.h.xu | 0;
+    if (hop < 1 && xu >= (CF.gia || 1) && (bot.h.lvl | 0) >= (CF.cap || 60)) {
+      try { PQ().lam(bot.h, { viec: "mua", n: 1 }, bot.cfg.acct); hop = 1; } catch (e) { log(`mua Phú Quý lỗi (${bot.h.name}):`, e.message); }
+    }
+    if (hop >= 1) {
+      const o = bot.h.bag.find((x) => x.k === (CF.mon || "ms:2402"));
+      if (o) { try { DO.lam(bot.h, { act: "dung", so: 10 + ri(0, 89), u: o.u }, bot.key, bot.fakeTk); } catch (e) { log(`dùng Phú Quý lỗi (${bot.h.name}):`, e.message); } }
+    }
+    try { PQ().lam(bot.h, { viec: "nhanThuong" }, bot.cfg.acct); } catch {}
+    try { PQ().lam(bot.h, { viec: "nhanDb" }, bot.cfg.acct); } catch {}
+  } catch (e) { log(`Phú Quý lỗi (${bot.h.name}):`, e.message); }
+}
+function viecThanh(bot) { // chạy 1 lần mỗi lần về thành, trước khi lưu
+  try { ONL().dem(bot.h, bot.key, true); } catch {}
+  try { ONL().lam(bot.h, bot.key, { viec: "nhan" }); } catch {}
+  try { PD().lam(bot.h, bot.key, { viec: "nhan" }); } catch {}
+  suaDo(bot); boSungChieu(bot); nopLuyen(bot); phuQuyTown(bot);
+}
+
 // ---------- vòng đời ----------
 function test1DangChoi() {
   try { return !!TG.dangChoi("test1"); }
@@ -901,8 +1685,9 @@ function khoiTaoBot(cfg, idx, nameSet) {
   const { tk, h, moi } = taoBot(cfg, tab, nameSet);
   const bot = { cfg, tab, tk, h, idx, fakeTk: { ten: cfg.acct, admin: false, nv: [h] }, key: cfg.acct + "|0",
     zone: cfg.zone, x: cfg.cx, y: cfg.cy, dir: 2, act: "stand", mode: "luyen", kills: 0, cd: {}, mucTieu: null,
-    vongChieu: 0, danhBatDau: 0, danhTuChoi: 0, gocX: cfg.cx, gocY: cfg.cy, chetLuc: 0, lastTin: null,
+    vongChieu: 0, danhBatDau: 0, danhTuChoi: 0, gocX: cfg.cx, gocY: cfg.cy, chetLuc: 0, lastTin: null, atkN: 0, px: cfg.cx, py: cfg.cy,
     traLoiDen: 0, traLoiChung: 0, stallDen: 0, stallSpot: null, lastDanhNguoi: null, potHp: null, potMp: null,
+    hd: null, hdNgay: {}, luyenDem: {}, knMoc: 0, hdSeq: 0, hdNhuong: "", hdNghi: {},
     stats: { giet: 0, kn: 0, nhat: 0, tienNhat: 0, bo: 0, thuoc: 0, ban: 0, danhThuong: 0, nhanDon: 0, gay: 0, gayNguoi: 0, gietThat: 0 }, moi };
   chuanChieu(bot);
   DO.baiNay(bot.key, bot.zone);

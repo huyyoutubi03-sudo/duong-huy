@@ -2296,3 +2296,67 @@ body.dt.dt-ngang #dt .dt-chidan { left: 6px; right: auto; top: 96px; width: min(
 @media (max-height: 349px) { body.dt.dt-ngang #dt .dt-chidan { top: 130px; } } /* màn cực thấp: hàng nút xuống y 96, chỉ dẫn xuống dưới hàng */
 body.dt.dt-ngang.dt-chat #dt .dt-chatp { left: 50%; right: auto; top: auto; bottom: 0; width: min(360px, 44vw); height: min(300px, 76vh); transform: translateX(-50%); }
 body.dt.dt-ngang .an-panel { left: 50%; right: auto; top: auto; bottom: 8px; width: min(360px, 44vw); max-height: calc(100vh - 110px); transform: translateX(-50%); }
+
+/* ===== Bố cục điện thoại theo ảnh Huy chụp 26/11/2026 (Tets04, Ba Lăng) — lệnh 13:33 (ngang) + 14:39 (dọc) =====
+   Chỉ điện thoại (body.dt); bản web không đổi. Đặt cuối file để thắng các luật màn ngang/dọc ở trên.
+   Nguyên nhân vị trí cũ: joystick nghỉ ở 14% bề ngang + cách đáy 27% bề cao (xa mép trái 66px, cách đáy 44px);
+   chat neo trên vùng cần (góc trái giữa); Zalo/khóa ở hàng nút y 68 (dưới hàng thẻ, trái nút AUTO); khung trái trên
+   để máu/mana song song, kinh nghiệm + tiền xu cùng hàng dưới; bảng Mộc nhân rộng 288, không giới hạn chiều cao. */
+
+/* --- Màn NGANG --- */
+/* 1. Joystick: sát mép trái dưới (hở 6px), không ô nào đè (chat đã dời ra giữa, bảng Mộc nhân gọn lại) */
+body.dt.dt-ngang #dt .dt-can > b { left: 6px; bottom: 6px; }
+/* 2. Chat: giữa-dưới (đúng chỗ Huy ghi "Chat"), hiện 2 dòng gần nhất (JS slice -2 giữ nguyên); nút Chat sát đáy giữa */
+body.dt.dt-ngang #dt .dt-tin { left: 50%; transform: translateX(-50%); bottom: 40px; width: min(400px, 48vw); }
+body.dt.dt-ngang #dt .dt-nutt { left: 50%; transform: translateX(-50%); bottom: 6px; }
+/* Có nút Nói chuyện / Xem sạp / Nhặt (cao 44px, xếp chồng tới 154px): cụm chat dời lên trên, khỏi đè */
+body.dt.dt-ngang.dt-noi-co #dt .dt-tin, body.dt.dt-ngang.dt-sap-co #dt .dt-tin { bottom: 142px; }
+body.dt.dt-ngang.dt-noi-co #dt .dt-nutt, body.dt.dt-ngang.dt-sap-co #dt .dt-nutt { bottom: 108px; }
+body.dt.dt-ngang.dt-noi-co.dt-sap-co #dt .dt-tin { bottom: 192px; }
+body.dt.dt-ngang.dt-noi-co.dt-sap-co #dt .dt-nutt { bottom: 158px; }
+/* 3. Zalo + khóa cấp 2: ngay dưới khung bản đồ nhỏ (bản đồ nhỏ hết y 94); tên bãi xuống dưới hàng đó; Tự đánh + AUTO giữ chỗ cũ */
+body.dt.dt-ngang #dt .dt-zalo { top: 100px; right: 38px; }
+body.dt.dt-ngang #dt .dt-kat { top: 100px; right: 6px; }
+body.dt.dt-ngang #dt .dt-bd { top: 134px; right: 6px; }
+@media (max-height: 349px) { body.dt.dt-ngang #dt .dt-zalo, body.dt.dt-ngang #dt .dt-kat { top: 130px; } body.dt.dt-ngang #dt .dt-bd { top: 164px; } }
+/* 4. Khung nhân vật góc trái trên thu nhỏ: mana NGAY DƯỚI máu (cột dọc), kinh nghiệm DƯỚI CÙNG nhỏ lại */
+body.dt.dt-ngang #dt .dt-tren { width: 264px; height: 62px; }
+body.dt.dt-ngang #dt .dt-chan { width: 40px; height: 40px; }
+body.dt.dt-ngang #dt .dt-ten { left: 52px; }
+body.dt.dt-ngang #dt .dt-h2 { left: 52px; top: 20px; right: 6px; flex-direction: column; gap: 2px; align-items: stretch; }
+body.dt.dt-ngang #dt .dt-h2 .dt-tn { flex: none; height: 12px; } /* flex:1 (basis 0%) xep thanh ve 2px khi xep cot — phai flex:none de height co tac dung */
+body.dt.dt-ngang #dt .dt-h2 .dt-tn b { font-size: 11px; line-height: 12px; }
+body.dt.dt-ngang #dt .dt-h3 { left: 52px; top: 44px; right: 6px; }
+body.dt.dt-ngang #dt .dt-h3 .dt-tn { height: 10px; }
+body.dt.dt-ngang #dt .dt-h3 .dt-tn b { font-size: 11px; line-height: 10px; }
+@media (max-width: 699px) { body.dt.dt-ngang #dt .dt-tren { width: 220px; } }
+/* 5. Bảng Mộc nhân gọn lại + không đè joystick (giới hạn chiều cao theo màn, cuộn trong bảng); bảng nhiệm vụ
+   (.jx-nvbang) vốn đã ẩn ở chế độ điện thoại (luật display:none !important) nên không đè được — không sửa */
+body.dt.dt-ngang .mn { left: 6px; width: 260px; max-height: calc(var(--vh100, 100vh) - 250px); overflow: auto; }
+body.dt.dt-ngang .mn-head { padding: 3px 6px; }
+body.dt.dt-ngang .mn-head b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.dt.dt-ngang .mn-head button { padding: 2px 5px; }
+body.dt.dt-ngang .mn th, body.dt.dt-ngang .mn td { padding: 1px 3px; }
+
+/* --- Màn DỌC (phạm vi body.dt:not(.dt-ngang) — không đụng màn ngang; bản dọc GIỮ theo lệnh Huy 13:37) --- */
+/* 1. Joystick gọn vào: sát góc trái, đáy vòng cách đáy vùng 48px để khỏi đè nút Chat (nút Chat ở đáy vùng, cao 28px) */
+body.dt:not(.dt-ngang) #dt .dt-can > b { left: 8px; top: auto; bottom: 48px; }
+/* 2. Khung góc trái trên gọn: thấp 68 -> 60px, chân dung 46px, thanh 12px; hàng FPS/Mạng gọn + tên bãi + hàng trạng thái dời lên theo, khỏi đè nhau */
+body.dt:not(.dt-ngang) #dt .dt-tren { height: 60px; }
+body.dt:not(.dt-ngang) #dt .dt-chan { width: 46px; height: 46px; }
+body.dt:not(.dt-ngang) #dt .dt-ten { left: 60px; }
+body.dt:not(.dt-ngang) #dt .dt-h2, body.dt:not(.dt-ngang) #dt .dt-h3 { left: 60px; }
+body.dt:not(.dt-ngang) #dt .dt-h2 { top: 22px; }
+body.dt:not(.dt-ngang) #dt .dt-h3 { top: 40px; }
+body.dt:not(.dt-ngang) #dt .dt-tn { height: 12px; }
+body.dt:not(.dt-ngang) #dt .dt-mang { top: 62px; gap: 3px; }
+body.dt:not(.dt-ngang) #dt .dt-mang > b { padding: 0 4px; font-size: 11px; line-height: 14px; }
+body.dt:not(.dt-ngang) #dt .dt-bd { top: 80px; font-size: 14px; }
+body.dt:not(.dt-ngang) #jxhud .jx-stbar { top: 104px !important; }
+/* 3. Bảng Mộc nhân gọn lại (chỉ hẹp ngang; giữ top:152px cũ để khỏi đè hàng trạng thái khi nhiều bùa) */
+body.dt:not(.dt-ngang) .mn { top: 152px; width: 260px; }
+body.dt:not(.dt-ngang) .mn-head { padding: 3px 6px; }
+body.dt:not(.dt-ngang) .mn-head b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.dt:not(.dt-ngang) .mn th, body.dt:not(.dt-ngang) .mn td { padding: 1px 3px; }
+/* 4. Khung tin dọc cao lên: hiện 3 tin gần nhất (dienthoai.js theo chế độ), giới hạn 34vh để khỏi che cảnh */
+body.dt:not(.dt-ngang) #dt .dt-tin { max-height: 34vh; overflow: hidden; }

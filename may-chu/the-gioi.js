@@ -145,7 +145,8 @@ function nhip(tk, b) {
   // co: đội trưởng của đội đang mở -> cờ trên đầu (to-doi.js coMo — engine menu state 队伍开放状态)
   // + phân thân đang theo của họ (pt: 1 — cùng phe người thuê, không qt / cờ)
   // bh: nhãn bang của người đó (đã dựng ở nhịp của họ) — người đang trong Tống Kim không gửi (bot không có bang, anh chốt C4); bhp (phe bang) chỉ để tính cp, không gửi
-  const ai = toi ? [...ben].filter(([k, x]) => k !== tk.ten && x.zone === toi.zone && !x.chung === !toi.chung && VAI().cungCho(k, tk.ten, x.zone)).flatMap(([k, x]) => {
+  // P4 (26/11/2026, Huy chốt): bot NPC (x.npc) hiện ở cả bản riêng lẫn bản quái chung — người chơi thật vẫn chỉ thấy cùng bản.
+  const ai = toi ? [...ben].filter(([k, x]) => k !== tk.ten && x.zone === toi.zone && (!x.chung === !toi.chung || x.npc) && VAI().cungCho(k, tk.ten, x.zone)).flatMap(([k, x]) => {
     const { at, zone, lead, chung, pt, oNv: _o, bh, bhp: _bp, bid: _bi, bhc, ...r } = x, g = GD().co(k), tkp = TKM().pheCua(k, x.zone), cp = pheNay(k, x, tkp);
     // bhc: mã chức của người đó (màu chức vụ ở dòng bang — mẫu 4, anh 14/11)
     return [{ ...r, cp, ...(bh && tkp == null ? { bh, ...(bhc ? { bhc } : {}) } : {}), ...(TD().coMo(k) ? { co: 1 } : {}), ...(g ? { gd: g } : {}) }, ...(pt || []).map(({ i, ...c }) => ({ ...c, cp, hp: 100, mp: 100, pt: 1, chu: x.name }))];
