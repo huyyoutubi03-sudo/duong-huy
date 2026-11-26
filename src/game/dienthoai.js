@@ -40,6 +40,7 @@ import { chuMau } from "./npcdlg.js"; // tin hệ thống có thẻ màu <color=
 import { kindOf } from "./vocong.js";
 import { XUC_XAC, bauCuaChu } from "./baucua.js";
 import { KY_NGAN } from "./an-ky.js"; // chữ ký bản gốc (anh 11/11) — ô nhỏ cùng hàng FPS / mạng / trực tuyến
+import { TDH } from "./thuong-de.js"; // nút Thượng đế / Ghi hình trên điện thoại — chỉ acc test1
 
 const A = "assets/";
 const TREN = 68, TAB = 58; // cao thanh trên / dải thẻ dưới
@@ -356,6 +357,11 @@ export class DienThoai {
     if (k === "tudanh") return this.api.toggleAuto();
     if (k === "autonhanh") return this.api.moAutoNhanh && this.api.moAutoNhanh(); // bảng Auto nhanh (auto-nhanh.js): 6 công tắc to, cả dọc lẫn ngang
     if (k === "zalo") { P.audio.ui("click"); return this.nut("NhomZalo"); } // nút Zalo nhanh màn ngang (cùng hàng AUTO dưới bản đồ nhỏ) — như ô Nhóm Zalo bảng Giang hồ
+    if (k === "thuongde") { P.audio.ui("click"); return TDH.cur && TDH.cur.bamNut(); } // góc nhìn thượng đế — chỉ acc test1 (nút chỉ hiện cho test1)
+    if (k === "ghi") { P.audio.ui("click"); return TDH.cur && TDH.cur.bamNutGhiBat(); } // nút ● Ghi: chỉ bắt đầu ghi — chỉ acc test1
+    if (k === "dung") { P.audio.ui("click"); return TDH.cur && TDH.cur.bamNutGhiDung(); } // nút ■ Dừng: chỉ dừng + tải video — chỉ acc test1
+    if (k === "tdtru") { P.audio.ui("click"); return TDH.cur && TDH.cur.doiZoomNut(-1); } // nút −: thu nhỏ góc thượng đế — chỉ acc test1
+    if (k === "tdcong") { P.audio.ui("click"); return TDH.cur && TDH.cur.doiZoomNut(1); } // nút +: phóng to góc thượng đế — chỉ acc test1
     if (k === "ngua") { P.audio.ui("click"); return this.bat("Horse"); } // lên / xuống ngựa (main.js toggleHorse — như ô Lên ngựa của bảng Giang hồ)
     if (k === "baucua") { P.audio.ui("click"); return this.nut("BauCua"); } // biểu tượng Bầu Cua: bàn cược (anh 10/11 lần 3 "icon đặt mọi nơi")
     if (k === "khoaat") { P.audio.ui("click"); return this.nut("KhoaAnToan"); } // ổ khóa an toàn (anh 10/11 — mật khẩu cấp 2): dọc dưới nút Tự đánh, ngang cạnh nút Mở rộng

@@ -2409,3 +2409,35 @@ body.dt.dt-ngang.dt-chat #dt .dt-chatp { left: 50%; right: auto; top: auto; bott
 
 /* 7. Màn NGANG: joystick (nút di chuyển) ra vị trí khung đỏ Huy đánh dấu — tâm ở 13,0% bề ngang, 75,6% bề cao */
 body.dt.dt-ngang #dt .dt-can > b { left: calc(var(--vw100, 100vw) * 0.13 - 53px * var(--dt-cc, 1)); bottom: calc(var(--vh100, 100vh) * 0.244 - 53px * var(--dt-cc, 1)); }
+
+/* ===== Camera góc nhìn thượng đế + ghi hình — chỉ acc test1 (Huy 26/11/2026) ===== */
+#td-btns { position: fixed; left: 4px; top: 22px; z-index: 9; display: flex; gap: 6px; pointer-events: none; }
+#td-btns button { pointer-events: auto; font: 13px/13px "VK Sans Serif 13", "IBM Plex Mono", monospace; color: #ffe9b0; background: linear-gradient(#3a2f16, #191204); border: 1px solid #8a6d2f; border-radius: 4px; padding: 6px 10px; cursor: pointer; }
+#td-btns button.on { color: #7dff9a; border-color: #3f9a55; }
+#td-btns button:active { filter: brightness(1.4); }
+#td-btns button.mo { opacity: .45; } /* nút ■ Dừng khi chưa ghi: mờ, bấm thì báo "Chưa ghi gì cả" */
+#td-btns button.dang { color: #ff8a8a; border-color: #a33; } /* nút ● Ghi khi đang ghi: đỏ, không ghi chồng */
+#td-btns .td-muc { pointer-events: auto; align-self: center; min-width: 44px; text-align: center; font: 13px/13px "VK Sans Serif 13", "IBM Plex Mono", monospace; color: #ffe9b0; }
+body.dt #td-btns { display: none; } /* điện thoại dùng nút .dt-thuongde / .dt-ghi trong #dt */
+#td-ghi { position: fixed; left: 50%; top: 8px; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 8px; font: 13px/13px "VK Sans Serif 13", "IBM Plex Mono", monospace; color: #fff; background: rgba(20, 4, 4, .82); border: 1px solid #a33; border-radius: 4px; padding: 6px 12px; pointer-events: none; }
+#td-ghi i { width: 10px; height: 10px; border-radius: 50%; background: #ff2d2d; animation: td-nhap 1s infinite; }
+#td-ghi.tam i { background: #ffb02d; animation: none; }
+@keyframes td-nhap { 50% { opacity: .25; } }
+#td-btns-dt { display: none; position: fixed; inset: 0; z-index: 9; pointer-events: none; } /* lớp nút camera riêng trên điện thoại: trên #jxhud (z 3) để vòng chiêu không vẽ đè */
+body.dt #td-btns-dt { display: block; }
+#td-btns-dt .dt-thuongde, #td-btns-dt .dt-ghi, #td-btns-dt .dt-dung { position: absolute; right: 6px; width: 92px; height: 30px; box-sizing: border-box; border: 1px solid #7f9f90; border-radius: 4px; background: linear-gradient(#22302b, #0d1512); color: #ffe9b0; display: grid; place-items: center; font-size: 13px; z-index: 1; touch-action: manipulation; pointer-events: auto; }
+#td-btns-dt .dt-thuongde { top: 294px; }
+#td-btns-dt .dt-ghi { top: 340px; }
+#td-btns-dt .dt-dung { top: 386px; }
+#td-btns-dt .dt-zoomrow { position: absolute; right: 6px; top: 432px; width: 92px; height: 30px; box-sizing: border-box; display: flex; z-index: 1; touch-action: manipulation; pointer-events: auto; }
+#td-btns-dt .dt-zoomrow > div { box-sizing: border-box; display: grid; place-items: center; border: 1px solid #7f9f90; background: linear-gradient(#22302b, #0d1512); color: #ffe9b0; font-size: 15px; }
+#td-btns-dt .dt-zoomrow > div:first-child { border-radius: 4px 0 0 4px; width: 28px; }
+#td-btns-dt .dt-zoomrow > div:last-child { border-radius: 0 4px 4px 0; width: 28px; }
+#td-btns-dt .dt-zoomrow .dt-tdmuc { flex: 1; font-size: 12px; border-left: 0; border-right: 0; }
+#td-btns-dt .dt-thuongde.on, #td-btns-dt .dt-ghi.on { color: #7dff9a; border-color: #3f9a55; }
+#td-btns-dt .dt-ghi.dang { color: #ff8a8a; border-color: #a33; }
+#td-btns-dt .dt-dung.mo { opacity: .45; }
+body.dt.dt-ngang #td-btns-dt .dt-thuongde { top: 194px; width: 96px; }
+body.dt.dt-ngang #td-btns-dt .dt-ghi { top: 230px; width: 96px; }
+body.dt.dt-ngang #td-btns-dt .dt-dung { top: 266px; width: 96px; }
+body.dt.dt-ngang #td-btns-dt .dt-zoomrow { top: 302px; width: 96px; }

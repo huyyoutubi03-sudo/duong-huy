@@ -63,6 +63,7 @@ export class Hotkeys {
       case "MoveTo": return act.move(a[0] / 8); // client: 0, 8, 16 … 56 = 8 hướng × 8 (hướng engine 64 bậc)
       case "TurnTo": return act.turn(a[0] ? 1 : -1);
       case "Zoom": return act.zoom(a[0] === "in" ? 1 : -1);
+      case "Replay": return act.replay(a[0], key); // Ctrl+R/S/P ghi hình của client — chỉ acc test1 (thuong-de.js)
       case "ExitGame": case "Exit": return act.exit();
       case "PrintScreen": return act.screenshot();
       default: return act.todo(`${key}: ${TODO[fn] || TODO[fn.replace(/_\d+$/, "_1")] || fn} — chưa mở, đừng bấm nữa`);

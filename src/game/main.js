@@ -15,6 +15,7 @@ import { DoCongCu } from "./do-cong-cu.js"; // dò công cụ tự động bên 
 import { UiWins } from "./uiwin.js";
 import { GameWindows } from "./windows.js";
 import { Hotkeys } from "./hotkeys.js";
+import { taoThuongDe, TDH } from "./thuong-de.js"; // camera góc thượng đế + ghi hình — chỉ acc test1 (Huy 26/11)
 import { FxPack } from "./fx.js";
 import { RoiPack } from "./roi.js";
 import { ItemDB, looksOf, syncRanged, isPotion, isPhu, benMax, benCua, weaponKind, laVatTk, laHoan } from "./itemdb.js";
@@ -587,6 +588,8 @@ async function vaoGame() {
   const tiepDanh = !!hero.tuDanh && FARM_KINDS.has(world.zone.kind) && world.player.hp > 0;
   if (tiepDanh) { world.auto = true; world.neo = [world.player.x, world.player.y]; }
   mountHud();
+  if (!TDE) { TDE = taoThuongDe({ me: () => Net.me, cv, msg: (t) => P.hud.msg(t), getZoom: () => zoom, setZoom: (z) => { zoom = z; snapCam(); } }); TDH.cur = TDE; }
+  TDE.capNhat(); // camera thượng đế + ghi hình: chỉ acc test1 mới có nút
   if (DT) DT.vaoGame(); // điện thoại: vào game là thu gọn (anh 30/10 — người chơi cần thì mở)
   P.hud.datBoCuc(hero.auto.boCuc); // bố cục màn hình đã lưu của nhân vật này (Trợ Thủ → Khác — boCuc)
   setHudMap();
@@ -642,6 +645,7 @@ function leaveGame() {
 function stopGame() {
   if (KAT) KAT.dongHet(); // khung hỏi mật khẩu cấp 2 đang mở (việc trong game): bỏ — không gửi lại việc đó ở màn chọn nhân vật
   zoom = 1; fpsEl.textContent = "";
+  if (TDE) TDE.thoat(); // góc thượng đế + ghi hình: tắt, gỡ nút (đang ghi thì tải file)
   if (dev) dev.toggle(false);
   qt.toggle(false);
   Net.wsDong(); BossTG.thoat(); SanNhim.thoat(); QuaiCanh.thoat(); VaDoi.thoat(); VdDoi.thoat(); LoiDai.thoat(); DuaNgua.thoat(); // kênh tức thời + bảng boss thế giới + phòng Vượt Ải tổ đội + thanh tỉ số lôi đài + thanh đua ngựa
@@ -4934,7 +4938,7 @@ const OPEN_VI = { battlereport: "Chiến báo", battlestart: "Chiến trường"
   Skill: "Xem võ công người khác", Talk: "Mật đàm", Attack: "Tấn công người chơi", Follow: "Đi theo", Call: "Gọi", Select: "Chọn người chơi", BossFightReport: "Chiến báo trùm" };
 const SWITCH_BTN = { horse: "Horse", sit: "Sit", trade: "Exchange", pk: "PK" };
 const ZOOMS = [1, 1.25, 1.5, 1.75, 2];
-let keys = null, zoom = 1, lastTodo = {};
+let keys = null, zoom = 1, lastTodo = {}, TDE = null; // TDE: camera thượng đế + ghi hình (chỉ test1)
 const todoMsg = (k, t) => { const now = performance.now(); if (now - (lastTodo[k] || 0) > 3000) { lastTodo[k] = now; P.hud.msg(t); } };
 // F1 / Esc → Giúp đỡ (anh 29/10 "bấm vào khá rối, thiết kế lại cho thân thiện"): khung HỖ TRỢ của client (windows.js openGiupDo, nội dung
 // src/game/giupdo.js) — bản trước in 4 dòng phím tắt vào khung chat
@@ -4973,7 +4977,8 @@ const keyAct = {
   // số khóa: đi 1 đoạn theo hướng (client MoveTo: 8 hướng, 0 = xuống, theo chiều kim đồng hồ như src/dir.js)
   move(d) { const p = world.player, a = (d * Math.PI) / 4, R = 160; world.clickGround(p.x - Math.sin(a) * R, p.y + (Math.cos(a) * R) / 2); },
   turn(s) { const p = world.player; if (p.act === "stand" || p.act === "sit") p.dir = (p.dir + s + 8) % 8; },
-  zoom(s) { const i = Math.max(0, Math.min(ZOOMS.length - 1, ZOOMS.indexOf(zoom) + s)); if (ZOOMS[i] !== zoom) { zoom = ZOOMS[i]; snapCam(); P.hud.msg(`Phóng cảnh ×${zoom}`); } },
+  zoom(s) { if (TDE && TDE.doiZoom(s)) return; const i = Math.max(0, Math.min(ZOOMS.length - 1, ZOOMS.indexOf(zoom) + s)); if (ZOOMS[i] !== zoom) { zoom = ZOOMS[i]; snapCam(); P.hud.msg(`Phóng cảnh ×${zoom}`); } },
+  replay(a, key) { if (TDE) return TDE.xuLyReplay(a, key); return todoMsg(key, `${key}: Ghi hình — chưa mở, đừng bấm nữa`); }, // Ctrl+R/S/P của client (Replay) — chỉ test1
   exit: () => leaveGame(),
   // client chụp cả màn hình; game lưu cảnh (canvas) — giao diện là lớp trang web riêng, không nằm trong ảnh
   screenshot() {
@@ -5020,6 +5025,7 @@ addEventListener("keydown", (e) => {
   if (e.code === "Backquote" && plain && devOn()) { e.preventDefault(); return dev.toggle(); }
   if (e.code === "F10" && plain && Net.me && Net.me.admin) { e.preventDefault(); return qt.toggle(); } // bảng quản trị (F9 = PK như client)
   if (e.code === "KeyK" && plain && TT) { e.preventDefault(); return TT.toggle(); } // Trợ Thủ (game thêm — phím K client để trống)
+  if ((e.code === "Digit0" || e.code === "Numpad0") && plain && TDE) { e.preventDefault(); return TDE.bamPhim(); } // góc thượng đế — chỉ test1 (TDE tự chặn acc thường)
   if (e.code === "Escape" && plain && GW) { e.preventDefault(); return GW.esc(); } // client Open([[system]]): đóng cửa sổ trên cùng, không còn thì bảng hệ thống
   if (e.code === "PrintScreen") return; // Windows chỉ gửi keyup cho PrintScreen
   keys.handle(e);
@@ -5395,7 +5401,7 @@ function fixLooks(h) {
 
 // trang kiểm / trình duyệt điều khiển đọc trạng thái khi chạy ở máy dev
 DoCongCu.batDau(); // dò công cụ tự động bên ngoài (anh 13/11 — chỉ báo về máy chủ)
-if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) window.VL = { P, bdas: { fn: (id) => bdasFn(id, null), get tt() { return bdTtCu; }, cc: () => ccCong(hero) }, baoUyThac: (k) => baoUyThac(k), tkChetBox: () => tkChetBox(), get world() { return world; }, get hero() { return hero; }, get cam() { return cam; }, get zoom() { return zoom; }, get npcd() { return NPCD; }, get gw() { return GW; }, get dev() { return dev; }, get dt() { return DT; }, get tt() { return TT; }, get qa() { return QA; }, get bc() { return BC; }, get pt() { return PT; }, get uh() { return UH; }, get va() { return VaDoi; }, get vdd() { return VdDoi; }, get vde() { return ViemDe; }, get sn() { return SanNhim; }, get net() { return Net; }, get tl() { return TuLam; }, get bt() { return BossTG; }, get bd() { return { bossDi, bossTheo, bossVe, bossDaDi, thanh, diXe }; }, satThu: (b) => satThu(b), tayTuy: (b) => tayTuy(b), doi: (b) => doiLam(b), get ph() { return PhongHoa; }, get tk() { return TongKim; }, get ld() { return LoiDai; }, get dn() { return DuaNgua; }, ldChetBox: () => ldChetBox(), ldVe: (ve) => ldVe(ve), phVao: () => phVao(), phongHoaVe: (n) => phongHoaVe(n), phVeThanh: () => phVeThanh(), diBai: (id, at, chung) => gotoZone(P.maps.zones.find((z) => z.id === id), { at, ...(chung ? { chung: true } : {}) }),
+if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) window.VL = { P, bdas: { fn: (id) => bdasFn(id, null), get tt() { return bdTtCu; }, cc: () => ccCong(hero) }, baoUyThac: (k) => baoUyThac(k), tkChetBox: () => tkChetBox(), get world() { return world; }, get hero() { return hero; }, get cam() { return cam; }, get zoom() { return zoom; }, get npcd() { return NPCD; }, get gw() { return GW; }, get dev() { return dev; }, get dt() { return DT; }, get thuongDe() { return TDE; }, get tt() { return TT; }, get qa() { return QA; }, get bc() { return BC; }, get pt() { return PT; }, get uh() { return UH; }, get va() { return VaDoi; }, get vdd() { return VdDoi; }, get vde() { return ViemDe; }, get sn() { return SanNhim; }, get net() { return Net; }, get tl() { return TuLam; }, get bt() { return BossTG; }, get bd() { return { bossDi, bossTheo, bossVe, bossDaDi, thanh, diXe }; }, satThu: (b) => satThu(b), tayTuy: (b) => tayTuy(b), doi: (b) => doiLam(b), get ph() { return PhongHoa; }, get tk() { return TongKim; }, get ld() { return LoiDai; }, get dn() { return DuaNgua; }, ldChetBox: () => ldChetBox(), ldVe: (ve) => ldVe(ve), phVao: () => phVao(), phongHoaVe: (n) => phongHoaVe(n), phVeThanh: () => phVeThanh(), diBai: (id, at, chung) => gotoZone(P.maps.zones.find((z) => z.id === id), { at, ...(chung ? { chung: true } : {}) }),
   // khu vực bang (đợt 4 — bài thử máy thử): KhuXem đang có, vào khu, hội thoại NPC khu, Xa phu khu, việc /api/khu-bang
   kb: { get dl() { return khuDl; }, vao: () => khuVao(), npc: (n) => khuNpc(n), xaPhu: (z) => khuXaPhu(z), lam: (b, im) => khuLam(b, im), chon: () => khuChonMau(), thietLap: () => khuThietLap() },
   // bang hội (anh 14/11 — công cụ thử / bài thử máy thử): áp tin nhịp giả, hội thoại NPC, gọi việc bang
