@@ -231,6 +231,7 @@ export class DienThoai {
 <div class="dt-tmnut" data-a="tumau"><i></i><span>Túi tử mẫu</span></div>
 <div class="dt-tin" data-a="chat"></div>
 <input class="dt-go" maxlength="${H.M.input.max || 80}" spellcheck="false" autocomplete="off" enterkeyhint="send" placeholder="Nói gì thì nói đi…">
+<div class="dt-nv"><div class="dt-nv-dau"><span>Nhiệm vụ</span><i class="dt-nv-nut"></i></div><div class="dt-nv-than"><div class="jx-nv-dong trong">Đang chờ dữ liệu nhiệm vụ…</div></div></div>
 <div class="dt-moidoi" data-a="moidoi" style="display:none"><i style="background-image:url('${A}ui/hud/btn/tin_doi.png')"></i><b></b><div class="dt-moip" data-a="moip" style="display:none"></div></div>
 <div class="dt-can"><b><i></i></b></div>
 <div class="dt-okhoa" data-a="okhoa">${KHOA_SVG}</div>
@@ -266,6 +267,12 @@ export class DienThoai {
     document.body.appendChild(dc);
     this.mmCv = el.querySelector(".dt-mm canvas");
     el.addEventListener("click", (e) => this._bam(e));
+    // bảng nhiệm vụ màn ngang (Huy 16:12 27/11/2026): bấm đầu bảng = thu/mở, bấm thân bảng = mở khung Nhiệm vụ
+    const nvb = el.querySelector(".dt-nv");
+    if (nvb) nvb.addEventListener("click", (e) => {
+      if (e.target.closest(".dt-nv-dau")) { nvb.classList.toggle("dt-nv-gon"); return; }
+      this.mo("Task");
+    });
     el.querySelector(".dt-cgo").addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); this._gui(); } });
     // ô viết chữ nhanh thay nút Chat (Huy 07:31 + 07:32 27/11/2026): bấm vào gõ ngay, Enter là gửi như ô khung chat
     el.querySelector(".dt-go").addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); this._gui(el.querySelector(".dt-go")); } });
@@ -681,6 +688,22 @@ export class DienThoai {
     if (this.ngamTick) this.ngamTick(); // ngắm chiêu: còn giữ ngón thì đánh tiếp khi rảnh tay
     // bảng Mộc nhân luyện công (mocnhan.js — main.js dựng khi vào game): mặc định thu gọn ở điện thoại dọc (mở ra — nút – — thì che nhân vật)
     if (!this.mn) { this.mn = document.querySelector(".mn"); if (this.mn) this.mn.classList.add("thu"); }
+    // bảng nhiệm vụ màn ngang (Huy 16:12 27/11/2026): mirror nội dung THẬT từ bảng nhiệm vụ PC (hud.setNhiemVu) —
+    // chưa có dữ liệu thì giữ dòng chờ trong template, không bịa; bảng Mộc nhân neo ngay dưới bảng nhiệm vụ
+    if (!this.nvEl) this.nvEl = this.el.querySelector(".dt-nv");
+    if (this.ngang && this.nvEl) {
+      const src = this.H && this.H.nvBang && this.H.nvBang.querySelector(".jx-nv-than");
+      const html = src ? src.innerHTML : "";
+      if (html && this.sig.nvHtml !== html) { this.sig.nvHtml = html; this.nvEl.querySelector(".dt-nv-than").innerHTML = html; }
+      if (this.mn && !(this.H.bc && this.H.bc.mn)) {
+        const r = this.nvEl.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0) {
+          const top = Math.round(r.bottom + 6);
+          this.mn.style.top = top + "px";
+          this.mn.style.maxHeight = Math.max(80, H - top - 8) + "px";
+        }
+      }
+    } else if (this.mn && (this.mn.style.top || this.mn.style.maxHeight)) { this.mn.style.top = ""; this.mn.style.maxHeight = ""; }
     const tieuDe = mode === "cs" ? bang[0].def.n || "" : mode === "chat" ? "Chat" : "Giang hồ";
     this._chu(".dt-bien", tieuDe === "Đồ dùng" ? "Hành trang" : tieuDe);
     this._xepCuaSo(ws, bang);
@@ -1109,13 +1132,16 @@ export class DienThoai {
     // Bấm điều khiển game khi ô nhập chat đang focus thì blur ô nhập TRƯỚC (bàn phím xuống) rồi thao tác game mới chạy
     // (Huy 09:05 27/11/2026: bấm nút chiêu lúc bàn phím đang mở thì thao tác dính vào chat — nút chiêu không ăn, bàn phím không xuống).
     // Không blur khi chạm trong khung chat / ô nhập / menu kênh — chỉ bấm đúng ô nhập / dòng tin mới mở chat.
+    // Huy 16:01 27/11/2026: bấm ra bất kỳ chỗ nào ngoài khung chat thì ẩn luôn khung chat + mất focus (bàn phím của hệ điều hành tự xuống
+    // theo blur — code chỉ làm được tới blur + thu khung, không ép được bàn phím). .bc-chon: bảng chọn biểu cảm nằm ngoài khung chat
+    // (bieucam.js gắn vào body) nên cũng phải chừa ra, không thì bấm mặt cười đóng mất khung chat.
     addEventListener("pointerdown", (e) => {
       if (!this.on || e.pointerType !== "touch") return;
-      const a = document.activeElement;
-      if (!a || a === document.body || !a.matches || !a.matches("input, textarea")) return;
       const t = e.target;
-      if (t && t.closest && t.closest("input, textarea, select, .dt-chatp")) return;
-      a.blur();
+      const trongChat = !!(t && t.closest && t.closest("input, textarea, select, .dt-chatp, .bc-chon"));
+      const a = document.activeElement;
+      if (a && a !== document.body && a.matches && a.matches("input, textarea") && !trongChat) a.blur();
+      if (this.chat && !trongChat) { this.chat = false; this.tick(); }
     }, true);
     const tuNhien = (el) => el === cv || !!el.closest("input, select, textarea, option, label, .dt-can, .dt-bdl-cv"); // .dt-bdl-cv: bản đồ lớn tự đọc pointer (kéo / chạm)
     const ev = (el, type, x, y, o = {}) => el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window, clientX: x, clientY: y, button: 0, buttons: 0, ...o }));
