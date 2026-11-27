@@ -3,8 +3,11 @@
 // Nguyên tắc:
 // - Chỉ trả lời KHI ĐƯỢC HỎI. Không tự nói, không rao, không bắt chuyện.
 // - 1 hàng đợi chung cho cả bầy bot, gọi AI bất đồng bộ — KHÔNG chặn vòng lặp bot.
-// - Tiết lưu kênh chung như traLoi: tối đa 1 câu trả lời AI / CACH_MS cho cả bầy
-//   (mặc định 30 giây, giống VL_NPC_CHOI_CHAT_CHUNG). Tin mật không siết thêm.
+// - AI TRẢ LỜI TRỰC TIẾP (Huy 10:18 27/11/2026): câu trả lời cho người hỏi KHÔNG qua
+//   cửa tiết lưu kênh chung 30s nữa (cửa đó chỉ còn giữ cho tin rao/quảng cáo chung,
+//   ở npc-choi.js); chống xả chat bằng: bên gọi nhận 1 câu hỏi cho 1 bot + nhịp
+//   10s/bot (traLoiDen) + hàng đợi tối đa HANG_TOI_DA. CACH_MS chỉ còn để tương
+//   thích cấu hình/trangThai, không siết câu trả lời trực tiếp nữa.
 // - AI lỗi/chậm/mất mạng/hết lượt: trả lời bằng câu mẫu sẵn có (duPhong), không im
 //   lặng, không báo lỗi kỹ thuật cho người chơi. Mọi lỗi đều bắt, không kẹt vòng lặp.
 // - Chuỗi dự phòng 3 nhà (Huy 27/11/2026: "dùng cả 3 được không?"): Pollinations
@@ -23,22 +26,33 @@
 // ---------- cấu hình (biến môi trường, đọc lúc require) ----------
 // Tương thích cũ: VL_AI_QUAN_LY_URL/KEY/MODEL gán cho Pollinations.
 const LEGACY_URL = process.env.VL_AI_QUAN_LY_URL || "";
-const LEGACY_KEY = process.env.VL_AI_QUAN_LY_KEY || "";
+const LEGACY_KEY = String(process.env.VL_AI_QUAN_LY_KEY || "").trim();
 const LEGACY_MODEL = process.env.VL_AI_QUAN_LY_MODEL || "";
+const catKhoa = (v) => String(v || "").trim(); // khóa copy-paste hay dính khoảng trắng/xuống dòng → 401 oan
 
-// Pollinations (OpenAI-compatible). Không khóa = chưa cấu hình → bỏ qua
-// (gọi ẩn danh hay hết lượt do IP dùng chung, không tin cậy).
-const POLL_URL = process.env.VL_AI_QUAN_LY_POLL_URL || LEGACY_URL || "https://text.pollinations.ai/";
-const POLL_KEY = process.env.VL_AI_QUAN_LY_POLL_KEY || LEGACY_KEY || "";
-const POLL_MODEL = process.env.VL_AI_QUAN_LY_POLL_MODEL || LEGACY_MODEL || "openai";
-// Gemini (REST riêng, không phải OpenAI-compatible).
+// Pollinations — nền tảng MỚI gen.pollinations.ai (chẩn đoán log live 27/11/2026, §11):
+// code cũ POST tới text.pollinations.ai/ (trả TEXT THUẦN, không phải JSON) rồi đọc
+// choices[0].message.content → luôn rỗng → tưởng là "câu trả lời bị lọc". Endpoint
+// OpenAI-compatible thật là /v1/chat/completions (mới) hoặc /openai (cũ). Model mặc
+// định lấy từ catalogue công khai ngày 27/11/2026: openai/gpt-5.4-nano (alias
+// "openai", không bắt trả phí, khỏe 99,95%). Đổi URL/model bằng VL_AI_QUAN_LY_POLL_URL/_MODEL.
+const POLL_URL = process.env.VL_AI_QUAN_LY_POLL_URL || LEGACY_URL || "https://gen.pollinations.ai/v1/chat/completions";
+const POLL_KEY = catKhoa(process.env.VL_AI_QUAN_LY_POLL_KEY) || LEGACY_KEY;
+const POLL_MODEL = process.env.VL_AI_QUAN_LY_POLL_MODEL || LEGACY_MODEL || "openai/gpt-5.4-nano";
+// Gemini (REST riêng, không phải OpenAI-compatible). Khóa gửi ĐÚNG chỗ rồi
+// (x-goog-api-key); 401 ở log live là khóa hỏng/hạn chế sai HOẶC model cũ đã gỡ:
+// gemini-2.5-flash bị Google gỡ (báo 404, giai đoạn trước báo 401) → mặc định mới
+// gemini-3.7-flash. Đổi bằng VL_AI_QUAN_LY_GEMINI_MODEL. Khóa hỏng thì chỉ Huy
+// cấp lại trong AI Studio mới hết (xem §11).
 const GEM_GOC = (process.env.VL_AI_QUAN_LY_GEMINI_URL || "https://generativelanguage.googleapis.com/v1beta").replace(/\/$/, "");
-const GEM_KEY = process.env.VL_AI_QUAN_LY_GEMINI_KEY || "";
-const GEM_MODEL = process.env.VL_AI_QUAN_LY_GEMINI_MODEL || "gemini-2.5-flash";
-// Groq (OpenAI-compatible).
+const GEM_KEY = catKhoa(process.env.VL_AI_QUAN_LY_GEMINI_KEY);
+const GEM_MODEL = process.env.VL_AI_QUAN_LY_GEMINI_MODEL || "gemini-3.7-flash";
+// Groq (OpenAI-compatible). llama-3.3-70b-versatile bị Groq NGỪNG PHỤC VỤ từ
+// 16/08/2026 cho gói miễn phí/nhà phát triển → 404; thay thế chính thức là
+// openai/gpt-oss-120b. Đổi bằng VL_AI_QUAN_LY_GROQ_MODEL.
 const GROQ_URL = process.env.VL_AI_QUAN_LY_GROQ_URL || "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_KEY = process.env.VL_AI_QUAN_LY_GROQ_KEY || "";
-const GROQ_MODEL = process.env.VL_AI_QUAN_LY_GROQ_MODEL || "llama-3.3-70b-versatile";
+const GROQ_KEY = catKhoa(process.env.VL_AI_QUAN_LY_GROQ_KEY);
+const GROQ_MODEL = process.env.VL_AI_QUAN_LY_GROQ_MODEL || "openai/gpt-oss-120b";
 
 const NHA = {
   pollinations: { ten: "pollinations", co: !!POLL_KEY },
@@ -61,7 +75,6 @@ const TEN_PHAI = {
 };
 
 // ---------- trạng thái chung ----------
-let lanCuoiChung = 0; // lần gửi kênh chung gần nhất (tiết lưu cả bầy)
 let hangCho = []; // hàng đợi câu hỏi
 let dangChay = false;
 
@@ -143,8 +156,12 @@ async function postJson(url, headers, body, timeoutMs) {
       headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify(body),
     });
-    const data = await res.json().catch(() => null);
-    return { status: res.status, ok: res.ok, data };
+    // Đọc TEXT trước: có nhà trả JSON (chuẩn OpenAI), có nhà trả text thuần
+    // (Pollinations classic POST /) — đọc .json() thẳng sẽ chết im khi gặp text.
+    const text = await res.text().catch(() => "");
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+    return { status: res.status, ok: res.ok, data, text };
   } finally {
     clearTimeout(hen);
   }
@@ -155,22 +172,29 @@ function tinNhan(bot, cauHoi) {
     { role: "user", content: String(cauHoi).slice(0, 300) },
   ];
 }
-function trichOpenAI(data) {
+function trichOpenAI(data, text) {
+  // JSON chuẩn OpenAI: choices[0].message.content (chuỗi hoặc mảng parts).
+  // Text thuần (Pollinations classic): toàn bộ thân trả lời chính là câu trả lời.
+  if (typeof data === "string" && data) return data;
   const nd = data && data.choices && data.choices[0] && data.choices[0].message;
-  const txt = nd && typeof nd.content === "string" ? nd.content : (typeof data === "string" ? data : "");
-  return txt || "";
+  const c = nd && nd.content;
+  if (typeof c === "string") return c;
+  if (Array.isArray(c)) return c.filter((p) => p && typeof p.text === "string").map((p) => p.text).join(" ");
+  if (typeof text === "string" && text && !/^\s*\{/.test(text)) return text;
+  return "";
 }
 
 async function goiPollinations(bot, cauHoi) {
   try {
-    const { status, ok, data } = await postJson(POLL_URL,
+    const { status, ok, data, text } = await postJson(POLL_URL,
       POLL_KEY ? { Authorization: "Bearer " + POLL_KEY } : {},
-      { model: POLL_MODEL, private: true, messages: tinNhan(bot, cauHoi) }, TIMEOUT_MS);
-    if (!ok) { log(`pollinations: HTTP ${status} — chuyen nha tiep theo`); return null; }
-    const txt = trichOpenAI(data);
+      { model: POLL_MODEL, messages: tinNhan(bot, cauHoi), max_tokens: 220, temperature: 0.7 }, TIMEOUT_MS);
+    if (!ok) { log(`pollinations: HTTP ${status}${status === 401 ? " (khoa sai/thieu)" : status === 402 ? " (het Pollen)" : status === 403 ? " (model khong duoc phep)" : ""} — chuyen nha tiep theo`); return null; }
+    const tho = trichOpenAI(data, text);
     // Pollinations khi hết lượt trả về câu chữ "Free limit reached" — coi là lỗi.
-    if (/free limit reached/i.test(txt)) { log("pollinations: het luot mien phi — chuyen nha tiep theo"); return null; }
-    const loc = locCau(txt);
+    if (/free limit reached/i.test(tho)) { log("pollinations: het luot mien phi — chuyen nha tiep theo"); return null; }
+    if (!tho.trim()) { log("pollinations: tra loi rong/khong doc duoc — chuyen nha tiep theo"); return null; }
+    const loc = locCau(tho);
     if (loc === null) log("pollinations: cau tra loi bi loc bo — chuyen nha tiep theo");
     return loc;
   } catch (e) {
@@ -189,7 +213,7 @@ async function goiGemini(bot, cauHoi) {
         contents: [{ role: "user", parts: [{ text: String(cauHoi).slice(0, 300) }] }],
         generationConfig: { maxOutputTokens: 220, temperature: 0.7 },
       }, TIMEOUT_MS);
-    if (!ok) { log(`gemini: HTTP ${status} — chuyen nha tiep theo`); return null; }
+    if (!ok) { log(`gemini: HTTP ${status}${status === 401 ? " (khoa hong/han che — Huy kiem tra khoa, xem KET-QUA §11)" : status === 404 ? " (model khong con)" : ""} — chuyen nha tiep theo`); return null; }
     const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
     const txt = Array.isArray(parts)
       ? parts.filter((p) => typeof p.text === "string" && !p.thought).map((p) => p.text).join(" ")
@@ -206,11 +230,13 @@ async function goiGemini(bot, cauHoi) {
 
 async function goiGroq(bot, cauHoi) {
   try {
-    const { status, ok, data } = await postJson(GROQ_URL,
+    const { status, ok, data, text } = await postJson(GROQ_URL,
       GROQ_KEY ? { Authorization: "Bearer " + GROQ_KEY } : {},
       { model: GROQ_MODEL, messages: tinNhan(bot, cauHoi), max_tokens: 220, temperature: 0.7 }, TIMEOUT_MS);
-    if (!ok) { log(`groq: HTTP ${status} — chuyen nha tiep theo`); return null; }
-    const loc = locCau(trichOpenAI(data));
+    if (!ok) { log(`groq: HTTP ${status}${status === 404 ? " (model khong con/phai doi model)" : status === 401 ? " (khoa sai/thieu)" : ""} — chuyen nha tiep theo`); return null; }
+    const tho = trichOpenAI(data, text);
+    if (!tho.trim()) { log("groq: tra loi rong/khong doc duoc — het chuoi, dung cau mau"); return null; }
+    const loc = locCau(tho);
     if (loc === null) log("groq: cau tra loi bi loc bo — het chuoi, dung cau mau");
     return loc;
   } catch (e) {
@@ -258,18 +284,16 @@ async function chayHang() {
 // - bot: { ten, facKey, zoneTen }
 // - gui(text): gửi câu trả lời (TG.chat...). duPhong(): câu mẫu sẵn có.
 // - Trả về true = câu hỏi đã nhận (module sẽ tự gọi gui với câu AI hoặc câu mẫu).
-//   Trả về false = không nhận (đang tắt / vướng tiết lưu / hàng đợi đầy) — bên gọi
-//   cứ trả lời bằng câu mẫu như cũ, không im lặng.
+//   Trả về false = không nhận (đang tắt / hàng đợi đầy) — bên gọi cứ trả lời bằng
+//   câu mẫu như cũ, không im lặng. KHÔNG siết cửa chung 30s (Huy 10:18 27/11/2026):
+//   bên gọi (traLoi) đã nhận 1 câu hỏi cho 1 bot + giữ nhịp 10s/bot; rieng giữ
+//   nguyên chữ ký để tương thích, không còn ý nghĩa siết.
+// - CACH_MS (VL_AI_QUAN_LY_CACH) giữ lại trong trangThai để tương thích cấu hình.
 function hoi({ bot, cauHoi, rieng, gui, duPhong }) {
   if (!BAT) return false;
   if (typeof gui !== "function" || typeof duPhong !== "function") return false;
   const txt = String(cauHoi || "").trim();
   if (!txt) return false;
-  if (!rieng) {
-    const t = Date.now();
-    if (t - lanCuoiChung < CACH_MS) return false; // cửa chung đang đóng: bên gọi dùng câu mẫu
-    lanCuoiChung = t; // giữ chỗ ngay khi nhận, khỏi dội AI
-  }
   if (hangCho.length >= HANG_TOI_DA) return false;
   // Chụp tọa độ thật NGAY lúc nhận câu hỏi (bot có thể di chuyển trong lúc chờ AI).
   const toaDo = toaDoCua(bot);
@@ -280,6 +304,6 @@ function hoi({ bot, cauHoi, rieng, gui, duPhong }) {
 
 function bat() { return BAT; }
 function trangThai() { return { bat: BAT, dangChay, hangCho: hangCho.length, cachMs: CACH_MS, timeoutMs: TIMEOUT_MS, hangToiDa: HANG_TOI_DA, thuTu: THU_TU.slice(), nha: THU_TU.map((t) => ({ ten: t, co: NHA[t].co })), url: POLL_URL, model: POLL_MODEL, coKhoa: !!POLL_KEY }; }
-function _datLai() { lanCuoiChung = 0; hangCho = []; } // chỉ dùng cho harness kiểm chứng
+function _datLai() { hangCho = []; } // chỉ dùng cho harness kiểm chứng
 
 module.exports = { bat, hoi, locCau, heThong, toaDoCua, kemToaDo, trangThai, _datLai };

@@ -196,7 +196,18 @@ const boDau = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").re
 let bots = []; // [{ cfg, tab, tk, h, fakeTk, key, zone, x, y, dir, act, ... }] — bot 0 = Pháp Không
 let timer = null, timerHien = null, timerThu = null, tickN = 0;
 const choDanh = new Map(); // tài khoản người chơi -> [đòn đánh trả đang chờ gửi kèm nhịp sau] (layDanhCho)
-let traLoiChungAll = 0; // chống spam kênh chung: tất cả bot gộp lại tối đa 1 tin trả lời / CHAT_CHUNG_MS (mặc định 30 giây)
+let traLoiChungAll = 0; // chống spam TIN RAO: chỉ rao dùng (Huy 10:18 27/11/2026: câu trả lời trực tiếp không qua cửa chung 30s nữa)
+const tenBot = new Set(); // tên nhân vật của bầy bot — bot CHỈ trả lời người chơi thật, không trả lời tin của bot khác (khỏi vòng lặp bot tự hỏi tự đáp khi AI không còn qua cửa chung 30s; Huy 10:18 27/11/2026)
+let traLoiNhan = new Map(); // nhận câu hỏi công khai (Huy 10:18 27/11/2026): 1 câu hỏi chỉ 1 bot nhận, khỏi 170 con cùng trả lời; khóa = kênh|người|nội dung, hết hạn sau NHAN_MS (10 giây, bằng traLoiDen)
+const NHAN_MS = 10000;
+function nhanCauHoi(msg) { // true = bot này nhận câu này; false = bot khác đã nhận rồi
+  const khoa = `${msg.ch || ""}|${msg.name || ""}|${String(msg.text || "")}`;
+  const t = Date.now();
+  for (const [k, v] of traLoiNhan) if (t - v > NHAN_MS) traLoiNhan.delete(k); // dọn nhận cũ
+  if (traLoiNhan.has(khoa)) return false;
+  traLoiNhan.set(khoa, t);
+  return true;
+}
 const log = (...a) => console.log("[npc-choi]", ...a);
 
 function tenMayChu() {
@@ -519,8 +530,9 @@ function dongSap(bot) {
   if (tin.length) { bot.stats.ban += tin.length; log(`sạp báo (${bot.h.name}):`, tin.join(" · ")); bot.h.choTin = []; }
 }
 
-// Rao BÁN (lệnh Huy 12:39 26/11 — bot được phép rao mua bán): chỉ khi sạp đang mở và có đồ; đi qua CÙNG cửa
-// tiết lưu kênh chung với traLoi (traLoiChungAll / CHAT_CHUNG_MS) nên rao + trả lời gộp lại không vượt trần.
+// Rao BÁN (lệnh Huy 12:39 26/11 — bot được phép rao mua bán): chỉ khi sạp đang mở và có đồ; đi qua cửa
+// tiết lưu kênh chung RIÊNG cho rao (traLoiChungAll / CHAT_CHUNG_MS) — từ 27/11/2026 câu trả lời trực tiếp
+// không qua cửa này nữa nên cửa này chỉ còn siết rao (cả bầy ≤ ~2 tin rao/phút).
 // ĐX-1 (Huy duyệt 00:42 27/11/2026): rao lần đầu 5–15 giây sau khi mở sạp; còn ngồi bán thì rao lại mỗi ~100 giây (+ jitter).
 // Sạp trống thì không rao. Rao MUA không làm (xem báo cáo đợt việc): giao dịch cần 2 trình duyệt thẩm định
 // lẫn nhau, bot không có cơ chế an toàn để nhận mua đồ người chơi.
@@ -1224,9 +1236,13 @@ function traLoi(bot, msg) {
   if (msg.ch !== "CH_WORLD" && msg.ch !== "CH_NEARBY" && msg.ch !== "CH_CITY" && msg.ch !== "CH_TEAM" && msg.ch !== "PRIVATE") return;
   const n = msg.name || "", txt = String(msg.text || "");
   if (n === bot.h.name || !txt.trim()) return;
+  if (tenBot.has(n)) return; // tin của bot khác trong bầy — chỉ trả lời người chơi thật
   if (bot.traLoiDen && Date.now() < bot.traLoiDen) return; // 10 giây mới trả lời cùng người 1 lần
   const rieng = msg.ch === "PRIVATE";
   const t = boDau(txt);
+  // Kênh công khai: 1 câu hỏi chỉ 1 bot nhận (theo nội dung, hết hạn 10s) — khỏi 170
+  // con cùng trả lời 1 câu. Tin mật chỉ đúng bot nhận nên khỏi nhận.
+  if (!rieng && !nhanCauHoi(msg)) return;
   let noi = null, coToaDo = false; // ĐX-2: nhánh "ở đâu" tự gắn tọa độ đầy đủ, các nhánh khác gắn đuôi sau
   if (/\b(gia|bao nhieu|bao nhiêu)\b/.test(t)) {
     if (bot.h.sap && bot.h.sap.mo) {
@@ -1237,21 +1253,17 @@ function traLoi(bot, msg) {
     const td = toaDoClient(bot); // ĐX-2: câu tọa độ đầy đủ, tính từ vị trí thật lúc trả lời
     if (td) { noi = `Ta đang ở ${DO.tenBai(bot.zone) || "bãi quái"} (${td}). Muốn gặp thì tự tới, đừng hỏi nhiều.`; coToaDo = true; }
     else noi = `Ta đang train ở ${DO.tenBai(bot.zone) || "bãi quái"}. Muốn gặp thì tự tới, đừng hỏi nhiều.`;
-  } else if (/(giup|giúp|huong dan|hướng dẫn|lam gi|làm gì)/.test(t)) {
-    noi = "Muốn mua đồ thì ghé sạp ta ở Biện Kinh. Hỏi giá thì gõ 'giá'. Ta chỉ nói một lần.";
-  } else if (/(xin chao|xin chào|hello|chao|chào)/.test(t)) {
-    noi = "Ờ. Cần gì thì nói mau.";
-  } else if (/(ban co|bạn có|may co|mày có|npc|bot|nguoi may|người máy|ai quan ly|ai quản lý)/.test(t)) {
-    noi = "Ta là nhân vật máy do máy chủ chạy. Train quái, bán đồ, đánh trả như người chơi. Có việc thì nói, không thì tránh ra.";
   } else {
-    // AI cũng tôn trọng cửa tiết lưu kênh chung: bot khác vừa trả lời (từ khóa hay AI)
-    // thì thôi, khỏi 1 câu hỏi 2 trả lời — kiểm tra TRƯỚC khi gọi hoi() vì nhánh AI
-    // return sớm, không đi qua đoạn kiểm cửa chung phía dưới. Tin mật không siết.
-    if (!rieng && Date.now() - traLoiChungAll < CHAT_CHUNG_MS) return;
-    // AI quản lý (Huy chốt 00:11 27/11/2026, đoạn mã KET-QUA.md §4): câu không khớp từ khóa
-    // nào → gửi AI chung; hoi() trả true thì module tự gửi (kèm tọa độ chụp lúc hỏi), traLoi
-    // return ngay, không gửi thêm. Trả false (tắt/hàng đầy/cửa đóng)
-    // thì rơi xuống câu mẫu như cũ. facKey lấy từ cfg/h (bot không có facKey trực tiếp).
+    // Câu hỏi tự do (chào, giúp, hỏi thân phận, mọi câu khác): AI TRẢ LỜI TRỰC TIẾP
+    // (Huy 10:18 27/11/2026 — "cho ai trả luôn trả lời đi"), không qua cửa tiết lưu
+    // kênh chung 30s; cửa đó chỉ còn giữ cho tin rao. Câu mẫu từng
+    // nhánh chỉ dùng khi AI không nhận (tắt/hàng đầy) — không bao giờ im lặng.
+    // Nhánh giá/ở đâu ở trên giữ nguyên (số liệu hệ thống, không qua AI).
+    let mau;
+    if (/(giup|giúp|huong dan|hướng dẫn|lam gi|làm gì)/.test(t)) mau = "Muốn mua đồ thì ghé sạp ta ở Biện Kinh. Hỏi giá thì gõ 'giá'. Ta chỉ nói một lần.";
+    else if (/(xin chao|xin chào|hello|chao|chào)/.test(t)) mau = "Ờ. Cần gì thì nói mau.";
+    else if (/(ban co|bạn có|may co|mày có|npc|bot|nguoi may|người máy|ai quan ly|ai quản lý)/.test(t)) mau = "Ta là nhân vật máy do máy chủ chạy. Train quái, bán đồ, đánh trả như người chơi. Có việc thì nói, không thì tránh ra.";
+    else mau = "Hỏi giá thì gõ 'giá', hỏi chỗ thì gõ 'ở đâu'. Đừng nói nhảm.";
     const guiAI = (t) => { try { TG.chat(bot.fakeTk, { o: 0, ch: msg.ch || "CH_WORLD", t, ...(rieng ? { toi: n } : {}) }); } catch (e) { log(`trả lời AI lỗi (${bot.h.name}):`, e.message); } };
     const nhan = AIQL.hoi({
       // toaDoClient: tọa độ DẠNG CLIENT như ĐX-2, tính từ vị trí thật lúc hỏi (thống nhất
@@ -1259,16 +1271,10 @@ function traLoi(bot, msg) {
       bot: { ten: bot.h.name, facKey: bot.cfg.facKey || bot.h.facKey, zone: bot.zone, zoneTen: DO.tenBai(bot.zone), x: bot.x, y: bot.y, toaDoClient: toaDoClient(bot) },
       cauHoi: txt, rieng,
       gui: guiAI,
-      duPhong: () => "Hỏi giá thì gõ 'giá', hỏi chỗ thì gõ 'ở đâu'. Đừng nói nhảm.",
+      duPhong: () => mau,
     });
-    if (nhan) {
-      // Giữ cửa tiết lưu kênh chung: AI nhận câu này thì chiếm luôn 1 lượt chung
-      // (không thì bot khác thấy cùng tin sẽ gửi thêm câu mẫu — 1 câu hỏi 2 trả lời).
-      // Tin mật không đụng cửa chung, đúng luật cũ.
-      if (!rieng) traLoiChungAll = Date.now();
-      return;
-    }
-    noi = "Hỏi giá thì gõ 'giá', hỏi chỗ thì gõ 'ở đâu'. Đừng nói nhảm.";
+    if (nhan) { bot.traLoiDen = Date.now() + 10000; return; } // AI đã nhận: giữ nhịp 10s/bot như cũ, khỏi nhận thêm câu khác trong lúc chờ AI
+    noi = mau;
   }
   if (!coToaDo) { // ĐX-2: các nhánh khác thêm đuôi tọa độ ngắn; dài quá trần 100 thì rút câu chính, giữ tọa độ
     const duoi = duoiToaDo(bot);
@@ -1282,10 +1288,6 @@ function traLoi(bot, msg) {
     }
   }
   if (noi.length > 100) noi = noi.slice(0, 100);
-  if (!rieng) {
-    if (Date.now() - traLoiChungAll < CHAT_CHUNG_MS) return; // kênh chung: cả 170 bot gộp lại 1 tin / CHAT_CHUNG_MS (tin mật không siết thêm)
-    traLoiChungAll = Date.now();
-  }
   bot.traLoiDen = Date.now() + 10000;
   try {
     TG.chat(bot.fakeTk, { o: 0, ch: msg.ch || "CH_WORLD", t: noi, ...(rieng ? { toi: n } : {}) });
@@ -2208,6 +2210,7 @@ function batDau() {
   }
   if (!bots.length) throw new Error("Không tạo được bot nào: " + loi.join(" | "));
   if (loi.length) log(`cảnh báo: ${loi.length} bot không chạy:`, loi.join(" | "));
+  for (const b of created) if (b.h && b.h.name) tenBot.add(b.h.name);
   // Nhịp chung 1500ms cho tất cả bot (giết quái + trạng thái); hiện diện chia lát theo VL_NPC_CHOI_HIEN.
   timer = setInterval(() => { tickN++; for (const b of bots) tickBot(b); }, 1500);
   let latN = 0;
@@ -2232,6 +2235,7 @@ function dung() {
   }
   log(`đã dừng ${bots.length} NPC`);
   bots = [];
+  tenBot.clear();
 }
 function trangThai() {
   const b0 = bots[0];
