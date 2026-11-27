@@ -51,6 +51,8 @@ const TG = require("./the-gioi");
 const CHO = require("./cho-troi");
 const NK = require("./nhat-ky");
 const BC = require("./npc-bang-chieu");
+const KT = require("./bot-kinh-te"); // vòng kinh tế bot (Huy chốt 00:36 27/11/2026): chấm điểm / giá theo chất / mua ở sạp
+const AIQL = require("./ai-quan-ly"); // AI quản lý trả lời khi được hỏi (Huy chốt 00:11 27/11/2026): chỉ chạy khi có khóa + VL_AI_QUAN_LY_BAT=1, không thì traLoi dùng câu mẫu như cũ
 // Hoạt động (lệnh Huy 12:29 26/11): nạp lười như các module khác để khỏi vòng require
 const BTG = () => require("./boss-tg");
 const SN = () => require("./san-nhim");
@@ -123,6 +125,7 @@ try {
 } catch (e) { console.log("[npc-choi] không đọc được npc-choi-zones.json — dùng bãi cố định trong config:", e.message); }
 const GIET_TRIP = +process.env.VL_NPC_CHOI_GIET || 40;   // giết chừng này con thì về thành 1 chuyến
 const STALL_MS = (+process.env.VL_NPC_CHOI_SAP || 120) * 1000; // sạp mở chừng này rồi đóng, đi train tiếp
+const SAT_NGHI_MS = (+process.env.VL_NPC_CHOI_SAT_NGHI || 600) * 1000; // nghỉ sau mỗi boss Sát thủ xong: về train/bày sạp, khỏi đứng yên cả chuỗi 8 boss
 const ACCT0 = "npcmau1"; // tài khoản bot mẫu đầu tiên (Pháp Không) — giữ để tương thích harness cũ
 const TEN0 = "Pháp Không";
 const FAC_TEN = { shaolin: "Thiếu Lâm", tianwang: "Thiên Vương", tangmen: "Đường Môn", wudu: "Ngũ Độc", emei: "Nga Mi", cuiyan: "Thúy Yên", gaibang: "Cái Bang", tianren: "Thiên Nhẫn", wudang: "Võ Đang", kunlun: "Côn Lôn" };
@@ -471,15 +474,24 @@ function laDoNgon(it) { // chỉ bày đồ ngon: đủ dòng, hoặc 2 dòng m�
 
 function moSap(bot) {
   // Dọn món rác còn nằm trên sạp từ trước (bản cũ bày tất cả): thu về túi; túi đầy thì để lại chuyến sau.
+  // Món ngon còn trên sạp: định giá lại theo chất nếu lệch ≥10% (công thức đổi / đồ đổi tay) — khỏi spam sạp vì lệch nhỏ.
   for (const it of [...((bot.h.sap && bot.h.sap.ds) || [])]) {
-    if (laDoNgon(it)) continue;
+    if (laDoNgon(it)) {
+      try {
+        const moi = KT.giaChat(bot.h, it);
+        if (moi > 0 && (it.gia | 0) > 0 && Math.abs(moi - (it.gia | 0)) / (it.gia | 0) >= 0.10) {
+          CHO.lam(bot.fakeTk, bot.h, 0, { viec: "dinhGia", u: it.u, gia: moi });
+        }
+      } catch (e) { /* dưới cấp 80 / lỗi: giữ giá cũ */ }
+      continue;
+    }
     try { CHO.lam(bot.fakeTk, bot.h, 0, { viec: "thuHoi", u: it.u }); }
     catch (e) { /* túi đầy / món vướng: để lại, không kẹt */ }
   }
   let dinh = 0;
   for (const it of [...bot.h.bag]) {
-    if (!laDoNgon(it)) continue; // đồ rác ở lại túi — không vứt, không bán NPC, không xóa
-    try { CHO.lam(bot.fakeTk, bot.h, 0, { viec: "dinhGia", u: it.u, gia: giaCua(it) }); dinh++; }
+    if (!laDoNgon(it)) continue; // đồ rác không bày (bán cho NPC ở viecThanh — lệnh Huy 01:49 27/11/2026)
+    try { CHO.lam(bot.fakeTk, bot.h, 0, { viec: "dinhGia", u: it.u, gia: KT.giaChat(bot.h, it) }); dinh++; }
     catch (e) { /* món không lên sạp được thì để túi */ }
   }
   if (!dinh && !(bot.h.sap && (bot.h.sap.ds || []).length)) {
@@ -509,20 +521,34 @@ function dongSap(bot) {
 
 // Rao BÁN (lệnh Huy 12:39 26/11 — bot được phép rao mua bán): chỉ khi sạp đang mở và có đồ; đi qua CÙNG cửa
 // tiết lưu kênh chung với traLoi (traLoiChungAll / CHAT_CHUNG_MS) nên rao + trả lời gộp lại không vượt trần.
-// Mỗi bot rao thưa: không quá 1 lần / 12 phút (+ jitter), lần đầu sau khi mở sạp 2–6 phút để khỏi dồn.
+// ĐX-1 (Huy duyệt 00:42 27/11/2026): rao lần đầu 5–15 giây sau khi mở sạp; còn ngồi bán thì rao lại mỗi ~100 giây (+ jitter).
 // Sạp trống thì không rao. Rao MUA không làm (xem báo cáo đợt việc): giao dịch cần 2 trình duyệt thẩm định
 // lẫn nhau, bot không có cơ chế an toàn để nhận mua đồ người chơi.
-const RAO_BAN_MS = 12 * 60 * 1000;
+const RAO_BAN_MS = 100 * 1000; // ĐX-1: còn ngồi bán thì rao lại mỗi ~100 giây (qua cửa chung nên cả bầy ≤ ~2 tin/phút)
+const RAO_MAX = 100; // Huy chốt 01:15 27/11/2026: tin rao ≤100 ký tự (trần TIN_MAX ở the-gioi.js) — rút ở ranh giới từ, giữ nguyên tên + giá cả 2 món
+function rutTinRao(mon, monDau) {
+  // Ưu tiên: giữ nguyên danh sách món → rút khẩu hiệu trước → rút đầu → cuối cùng chỉ còn món đầu (không bao giờ cắt giữa tên/giá)
+  const khauHieu = ["Tới mà xem, đừng hỏi nhiều.", "Tới mà xem.", "Tới xem."];
+  const daus = ["Bán đồ ngon ở sạp Biện Kinh: ", "Sạp Biện Kinh: ", ""];
+  for (const d of daus)
+    for (const kh of khauHieu) {
+      const t = `${d}${mon}. ${kh}`;
+      if (t.length <= RAO_MAX) return t;
+    }
+  for (const d of daus) { const t = d + mon; if (t.length <= RAO_MAX) return t; }
+  return monDau; // tên/giá quá dài: chỉ món đầu nguyên vẹn
+}
 function raoBan(bot) {
   const ds = (bot.h.sap && bot.h.sap.mo && bot.h.sap.ds) || [];
   if (!ds.length) return; // sạp trống / chưa mở: không rao
   const t = Date.now();
-  if (t - traLoiChungAll < CHAT_CHUNG_MS) { bot.raoDen = t + CHAT_CHUNG_MS; return; } // cửa chung đang đóng: thử lại sau, không vượt trần
-  const mon = ds.slice(0, 2).map((it) => `${DO.tenMon(it) || "?"} ${giaCua(it)} lượng`).join(", ");
+  if (t - traLoiChungAll < CHAT_CHUNG_MS) { bot.raoDen = t + 1500; return; } // ĐX-1: cửa chung bận thì thử lại nhịp sau (1,5 giây), khỏi dời +30 giây rồi mất lượt khi sạp đóng
+  const dsMon = ds.slice(0, 2).map((it) => `${DO.tenMon(it) || "?"} ${(it.gia | 0) || giaCua(it)} lượng`); // giá niêm yết thật trên sạp
+  const tin = rutTinRao(dsMon.join(", "), dsMon[0]);
   traLoiChungAll = t;
-  bot.raoDen = t + RAO_BAN_MS + ri(0, 3 * 60 * 1000);
+  bot.raoDen = t + RAO_BAN_MS + ri(0, 20 * 1000);
   try {
-    TG.chat(bot.fakeTk, { o: 0, ch: "CH_WORLD", t: `Bán đồ ngon ở sạp Biện Kinh: ${mon}. Tới mà xem, đừng hỏi nhiều.` });
+    TG.chat(bot.fakeTk, { o: 0, ch: "CH_WORLD", t: tin });
   } catch (e) { log(`rao bán lỗi (${bot.h.name}):`, e.message); }
 }
 
@@ -581,7 +607,7 @@ function tickBot(bot) {
         bot.mode = "luyen"; capNhatBai(bot); veBaiTrain(bot); bot.act = "run"; luu(bot);
       } else {
         bot.mode = moSap(bot) ? "cho" : "luyen";
-        if (bot.mode === "cho") { bot.stallDen = Date.now() + STALL_MS; bot.raoDen = Date.now() + ri(20, 100) * 1000; } // rao đầu PHẢI trong cửa sạp mở (STALL_MS 120s) — hẹn 2–6 phút thì sạp đóng trước khi rao
+        if (bot.mode === "cho") { bot.stallDen = Date.now() + STALL_MS; bot.raoDen = Date.now() + ri(5, 15) * 1000; } // ĐX-1: rao đầu 5–15 giây sau khi mở sạp, trong cửa sạp mở (STALL_MS 120s)
         else { capNhatBai(bot); veBaiTrain(bot); bot.act = "run"; }
         luu(bot);
       }
@@ -601,7 +627,7 @@ function tickBot(bot) {
       if (!(bot.h.sap && bot.h.sap.mo) && !bot.daMoSapNghi) {
         bot.x = bot.cfg.stalls[0][0]; bot.y = bot.cfg.stalls[0][1];
         bot.daMoSapNghi = true;
-        if (moSap(bot)) bot.stallDen = Date.now() + STALL_MS;
+        if (moSap(bot)) { bot.stallDen = Date.now() + STALL_MS; bot.raoDen = Date.now() + ri(5, 15) * 1000; } // ĐX-1: rao lần đầu 5–15 giây sau khi mở sạp
       }
       if (bot.h.sap && bot.h.sap.mo && Date.now() >= (bot.raoDen || 0)) raoBan(bot);
       if (!hetTran(bot)) { // ngày mới: đóng sạp (nếu có), ra train tiếp
@@ -1171,6 +1197,27 @@ function chetBot(bot, nguon) {
 // ---------- chat ----------
 // Tin từ TG.nhip có dạng { id, ch, name, text } — ch là kênh (CH_WORLD/PRIVATE/...),
 // text là nội dung. Trả lời qua TG.chat(tk, { o, ch, t, toi? }) — đúng 2 đối số.
+// ĐX-2 (Huy duyệt 00:42 27/11/2026): tọa độ client (X/Y) từ vị trí thật của bot — đúng công thức
+// main.js setHudMap (toClient): X = floor((reg[0]*512 + x/s)/256), Y = floor((reg[1]*1024 + 2y/s)/512),
+// với reg = client.region của bản đồ chứa bãi, s = scale bản đồ (0,75); dữ liệu lấy đúng chỗ
+// npc-gan.js vẫn dùng (N.ZONES / N.FULL / N.MAPS). Không có region thì trả null (không bịa tọa độ).
+function toaDoClient(bot) {
+  try {
+    const Z = N.ZONES.get(bot.zone | 0);
+    const M = (Z && ((N.FULL && N.FULL.maps && N.FULL.maps[Z.map]) || (N.MAPS && N.MAPS.maps && N.MAPS.maps[Z.map]))) || null;
+    const c = M && M.client;
+    if (!c || !Array.isArray(c.region)) return null;
+    const s = +(N.MAPS && N.MAPS.scale) || 0.75;
+    const X = Math.floor((c.region[0] * 512 + bot.x / s) / 256);
+    const Y = Math.floor((c.region[1] * 1024 + (2 * bot.y) / s) / 512);
+    if (!Number.isFinite(X) || !Number.isFinite(Y)) return null;
+    return `${X}/${Y}`;
+  } catch { return null; }
+}
+function duoiToaDo(bot) { // đuôi tọa độ gắn vào mọi câu trả lời; không có region thì không gắn (không bịa)
+  const td = toaDoClient(bot);
+  return td ? ` Ta đang ở ${DO.tenBai(bot.zone) || "bãi quái"} (${td}).` : "";
+}
 function traLoi(bot, msg) {
   // Chỉ trả lời tin chat thật của người chơi. Tin hệ thống (CH_SYSTEM) và các kênh khác không
   // phải lời hỏi — trả lời chúng vừa lỗi kênh, vừa đốt cửa tiết lưu kênh chung (26/11/2026).
@@ -1180,14 +1227,16 @@ function traLoi(bot, msg) {
   if (bot.traLoiDen && Date.now() < bot.traLoiDen) return; // 10 giây mới trả lời cùng người 1 lần
   const rieng = msg.ch === "PRIVATE";
   const t = boDau(txt);
-  let noi = null;
+  let noi = null, coToaDo = false; // ĐX-2: nhánh "ở đâu" tự gắn tọa độ đầy đủ, các nhánh khác gắn đuôi sau
   if (/\b(gia|bao nhieu|bao nhiêu)\b/.test(t)) {
     if (bot.h.sap && bot.h.sap.mo) {
       const ds = (bot.h.sap.ds || []).slice(0, 2).map((it) => `${DO.tenMon(it) || "?"} ${giaCua(it)} lượng`).join(", ");
       noi = ds ? `Sạp ta ở Biện Kinh đang bán: ${ds}. Muốn mua thì tới mà xem.` : "Sạp ta trống trơn. Đừng hỏi nữa.";
     } else noi = "Chưa mở sạp. Ta đang train. Lát về thành mới bày — chờ đấy.";
   } else if (/(o dau|o đâu|dang o dau|dang o đâu|o cho nao)/.test(t)) {
-    noi = `Ta đang train ở ${DO.tenBai(bot.zone) || "bãi quái"}. Muốn gặp thì tự tới, đừng hỏi nhiều.`;
+    const td = toaDoClient(bot); // ĐX-2: câu tọa độ đầy đủ, tính từ vị trí thật lúc trả lời
+    if (td) { noi = `Ta đang ở ${DO.tenBai(bot.zone) || "bãi quái"} (${td}). Muốn gặp thì tự tới, đừng hỏi nhiều.`; coToaDo = true; }
+    else noi = `Ta đang train ở ${DO.tenBai(bot.zone) || "bãi quái"}. Muốn gặp thì tự tới, đừng hỏi nhiều.`;
   } else if (/(giup|giúp|huong dan|hướng dẫn|lam gi|làm gì)/.test(t)) {
     noi = "Muốn mua đồ thì ghé sạp ta ở Biện Kinh. Hỏi giá thì gõ 'giá'. Ta chỉ nói một lần.";
   } else if (/(xin chao|xin chào|hello|chao|chào)/.test(t)) {
@@ -1195,8 +1244,44 @@ function traLoi(bot, msg) {
   } else if (/(ban co|bạn có|may co|mày có|npc|bot|nguoi may|người máy|ai quan ly|ai quản lý)/.test(t)) {
     noi = "Ta là nhân vật máy do máy chủ chạy. Train quái, bán đồ, đánh trả như người chơi. Có việc thì nói, không thì tránh ra.";
   } else {
+    // AI cũng tôn trọng cửa tiết lưu kênh chung: bot khác vừa trả lời (từ khóa hay AI)
+    // thì thôi, khỏi 1 câu hỏi 2 trả lời — kiểm tra TRƯỚC khi gọi hoi() vì nhánh AI
+    // return sớm, không đi qua đoạn kiểm cửa chung phía dưới. Tin mật không siết.
+    if (!rieng && Date.now() - traLoiChungAll < CHAT_CHUNG_MS) return;
+    // AI quản lý (Huy chốt 00:11 27/11/2026, đoạn mã KET-QUA.md §4): câu không khớp từ khóa
+    // nào → gửi AI chung; hoi() trả true thì module tự gửi (kèm tọa độ chụp lúc hỏi), traLoi
+    // return ngay, không gửi thêm. Trả false (tắt/hàng đầy/cửa đóng)
+    // thì rơi xuống câu mẫu như cũ. facKey lấy từ cfg/h (bot không có facKey trực tiếp).
+    const guiAI = (t) => { try { TG.chat(bot.fakeTk, { o: 0, ch: msg.ch || "CH_WORLD", t, ...(rieng ? { toi: n } : {}) }); } catch (e) { log(`trả lời AI lỗi (${bot.h.name}):`, e.message); } };
+    const nhan = AIQL.hoi({
+      // toaDoClient: tọa độ DẠNG CLIENT như ĐX-2, tính từ vị trí thật lúc hỏi (thống nhất
+      // 27/11/2026 — câu AI không còn kèm tọa độ thô "(x, y)" nữa); null thì ai-quan-ly.js tự rơi về dạng thô.
+      bot: { ten: bot.h.name, facKey: bot.cfg.facKey || bot.h.facKey, zone: bot.zone, zoneTen: DO.tenBai(bot.zone), x: bot.x, y: bot.y, toaDoClient: toaDoClient(bot) },
+      cauHoi: txt, rieng,
+      gui: guiAI,
+      duPhong: () => "Hỏi giá thì gõ 'giá', hỏi chỗ thì gõ 'ở đâu'. Đừng nói nhảm.",
+    });
+    if (nhan) {
+      // Giữ cửa tiết lưu kênh chung: AI nhận câu này thì chiếm luôn 1 lượt chung
+      // (không thì bot khác thấy cùng tin sẽ gửi thêm câu mẫu — 1 câu hỏi 2 trả lời).
+      // Tin mật không đụng cửa chung, đúng luật cũ.
+      if (!rieng) traLoiChungAll = Date.now();
+      return;
+    }
     noi = "Hỏi giá thì gõ 'giá', hỏi chỗ thì gõ 'ở đâu'. Đừng nói nhảm.";
   }
+  if (!coToaDo) { // ĐX-2: các nhánh khác thêm đuôi tọa độ ngắn; dài quá trần 100 thì rút câu chính, giữ tọa độ
+    const duoi = duoiToaDo(bot);
+    if (duoi) {
+      noi += duoi;
+      if (noi.length > 100) { // rút câu chính ở ranh giới từ, giữ nguyên đuôi tọa độ
+        const gioiHan = noi.slice(0, 100 - duoi.length);
+        const cat = gioiHan.lastIndexOf(" ");
+        noi = (cat > 20 ? gioiHan.slice(0, cat) : gioiHan) + duoi;
+      }
+    }
+  }
+  if (noi.length > 100) noi = noi.slice(0, 100);
   if (!rieng) {
     if (Date.now() - traLoiChungAll < CHAT_CHUNG_MS) return; // kênh chung: cả 170 bot gộp lại 1 tin / CHAT_CHUNG_MS (tin mật không siết thêm)
     traLoiChungAll = Date.now();
@@ -1453,6 +1538,34 @@ function hdBtgTick(bot) {
   if (dmg > 0) { try { BTG().danh(bot.cfg.acct, tt.u, dmg); } catch {} }
 }
 
+// ----- Nhường sân boss (Huy duyệt 01:24 27/11/2026, cách 2): có người thật còn sống trong tầm quanh
+// Nhím/Sát thủ thì bot không đánh con đó; người rời/chết thì đánh lại. Chặn theo KHOẢNG CÁCH + còn sống
+// (hp > 0, đúng luật cổng của san-nhim.js), KHÔNG chặn theo "có người trong bãi" (tránh AFK đóng băng bot).
+// Hiện diện lấy 1 lần/giây qua TG.dsDangChoi (có sẵn), gom theo bãi, cả bầy dùng chung — không quét mỗi tick.
+const NHUONG_TAM = Math.max(1, +process.env.VL_NPC_CHOI_NHUONG_TAM || 1200); // cùng CF.gan của Săn Nhím
+const NHUONG_CACHE_MS = 1000;
+const BOT_ACCT = new Set((CFG.bots || []).map((b) => b.acct)); // tài khoản bot — loại khỏi "người thật"
+let nhuongCache = { at: 0, theoBai: new Map() }; // zone -> [[x, y], ...] (chỉ người thật còn sống)
+function nguoiThatGan(bai, x, y) {
+  const t = Date.now();
+  if (t - nhuongCache.at > NHUONG_CACHE_MS) {
+    const theoBai = new Map();
+    try {
+      for (const p of TG.dsDangChoi()) {
+        if (BOT_ACCT.has(p.tk) || !(p.hp > 0)) continue;
+        const L = theoBai.get(p.zone) || [];
+        L.push([p.x, p.y]);
+        theoBai.set(p.zone, L);
+      }
+    } catch {}
+    nhuongCache = { at: t, theoBai };
+  }
+  const L = nhuongCache.theoBai.get(+bai);
+  if (!L) return false;
+  for (const [px, py] of L) if (Math.hypot(px - x, py - y) <= NHUONG_TAM) return true;
+  return false;
+}
+
 // ----- Săn Nhím: 30 bot, tối đa 10 con/ngày -----
 function hdSnVao(bot) {
   if (!SN().dangCo()) return false;
@@ -1469,10 +1582,11 @@ function hdSnTick(bot) {
   let gan = 1e12, muc = null;
   for (const n of tt.ds) {
     if (n[8] || n[5] <= 0) continue;
+    if (nguoiThatGan(n[1], n[2], n[3])) continue; // nhường sân: có người thật gần con này thì không tranh
     const d = (n[1] === bot.zone ? Math.hypot(n[2] - bot.x, (n[3] - bot.y) * 2) : 1e6 + Math.abs(n[1] - bot.zone));
     if (d < gan) { gan = d; muc = n; }
   }
-  if (!muc) return;
+  if (!muc) { bot.act = "stand"; bot.stats.nhuong = (bot.stats.nhuong | 0) + 1; return; } // mọi con đều có người gần: đứng chờ, không rời hoạt động
   if (bot.zone !== muc[1]) dichChuyen(bot, muc[1], muc[2], muc[3]);
   const toi = buocToi(bot, muc[2], muc[3], 200);
   bot.act = toi ? "attack" : "run";
@@ -1560,12 +1674,14 @@ function hdSatVao(bot) {
   if (Date.now() < (bot.hdNghi.sat || 0)) return false;
   try { TLAM().lam(bot.h, { viec: "mo", loai: "st" }, bot.cfg.acct); }
   catch (e) { log(`mở khóa Sát thủ lỗi (${bot.h.name}):`, e.message); bot.hdNghi.sat = Date.now() + 10 * 60 * 1000; return false; }
-  batDauHd(bot, "sat", { dem: 0 });
+  batDauHd(bot, "sat", { dem: 0, dem0: (bot.h.satThu && bot.h.satThu.dem) | 0 });
   return true;
 }
 function hdSatTick(bot) {
   bot.hd.dem = (bot.hd.dem | 0) + 1;
   if (bot.hd.dem > 900) { hdSatGop(bot); return ketThucHd(bot, "quá giờ"); }
+  const demHien = (bot.h.satThu && bot.h.satThu.dem) | 0;
+  if (bot.hd.dem0 != null && demHien > bot.hd.dem0) { bot.hdNghi.sat = Date.now() + SAT_NGHI_MS; return ketThucHd(bot, "xong 1 boss — về train"); }
   let r;
   try { r = SAT().buocTu(bot.h); } catch (e) { log(`Sát thủ lỗi (${bot.h.name}):`, e.message); return ketThucHd(bot, "lỗi buocTu"); }
   if (!r) return ketThucHd(bot, "không có bước");
@@ -1580,6 +1696,7 @@ function hdSatTick(bot) {
     const ds = QCH().ds(bai).filter((m) => m[8] === B.id && m[4] > 0);
     if (!ds.length) { bot.act = "stand"; return; }
     const m = ds[0];
+    if (nguoiThatGan(bai, m[6], m[7])) { bot.act = "stand"; bot.stats.nhuong = (bot.stats.nhuong | 0) + 1; return; } // nhường sân: có người thật gần boss thì không đánh (đánh lại khi người rời/chết)
     const toi = buocToi(bot, m[6], m[7], 200);
     bot.act = toi ? "attack" : "run";
     const dmg = donHoatDong(bot);
@@ -2017,7 +2134,8 @@ function muaNgua(bot) {
     log(`mua ngựa ${khoa} (${h.name}): -${truoc - (h.gold | 0)} lượng`);
   } catch { /* chưa đủ tiền / túi đầy: để chuyến sau, không cấp bù */ }
 }
-// Học sách luyện rơi/mua được (đúng đường đọc sách của người chơi — DO.lam "sach"):
+// Học sách luyện rơi/mua được (đúng đường đọc sách của người chơi — DO.lam "dung" -> dungVat case "sach";
+// gọi thẳng act "sach" thì lam không nhận, rơi "Không rõ việc gì" — lỗi cũ lặng lẽ từ trước, sửa 27/11/2026):
 // đúng phái, đủ cấp, chưa học. Không có sách thì không có chiêu luyện — như người chơi mới.
 function hocSach(bot) {
   const h = bot.h;
@@ -2027,7 +2145,7 @@ function hocSach(bot) {
     if (d.phai !== +h.fac) continue;
     if ((h.lvl | 0) < (d.cap | 0)) continue;
     if ((h.books || []).includes(+d.chieu)) continue;
-    try { DO.lam(h, { act: "sach", u: it.u }, bot.key, bot.fakeTk); log(`học sách chiêu ${d.chieu} (${h.name})`); }
+    try { DO.lam(h, { act: "dung", u: it.u }, bot.key, bot.fakeTk); log(`học sách chiêu ${d.chieu} (${h.name})`); }
     catch (e) { log(`học sách lỗi (${h.name}):`, e.message); }
   }
 }
@@ -2035,7 +2153,16 @@ function viecThanh(bot) { // chạy 1 lần mỗi lần về thành, trước kh
   try { ONL().dem(bot.h, bot.key, true); } catch {}
   try { ONL().lam(bot.h, bot.key, { viec: "nhan" }); } catch {}
   try { PD().lam(bot.h, bot.key, { viec: "nhan" }); } catch {}
-  dongBoCap(bot); suaDo(bot); muaBinh(bot); macDoRoi(bot); muaNgua(bot); hocSach(bot); boSungChieu(bot); nopLuyen(bot); phuQuyTown(bot);
+  dongBoCap(bot); suaDo(bot); muaBinh(bot); macDoRoi(bot); muaNgua(bot); hocSach(bot);
+  // Kinh tế bot (Huy chốt 00:36 27/11/2026): mặc đồ hơn theo S2, bán rác cho NPC (lệnh 01:49 27/11/2026),
+  // quét sạp người khác mua món nâng cấp/sách.
+  // Lỗi kinh tế không được kẹt chuyến về thành: bắt riêng từng bước.
+  let doiKT = 0;
+  try { doiKT += KT.quyetDinh(bot); } catch (e) { log(`quyết định kinh tế lỗi (${bot.h.name}):`, e.message); }
+  try { KT.banRac(bot); } catch (e) { log(`bán rác lỗi (${bot.h.name}):`, e.message); }
+  try { doiKT += KT.quetSapMua(bot); } catch (e) { log(`quét sạp mua lỗi (${bot.h.name}):`, e.message); }
+  if (doiKT) { try { DO.chuan(bot.h); tinhChiSo(bot); } catch (e) { log(`làm mới chỉ số lỗi (${bot.h.name}):`, e.message); } }
+  boSungChieu(bot); nopLuyen(bot); phuQuyTown(bot);
 }
 
 // ---------- vòng đời ----------

@@ -20,6 +20,13 @@ import { itemTipHtml } from "./itemtip.js";
 const UNIT = 28;
 const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const rgb = (c) => `rgb(${c.join(",")})`;
+// Mẫu A (Huy chốt 01:59 ngày 27/11/2026): màu ngũ hành theo tip.json — sạp + bảng chợ tô theo hệ của món thực tế (trường s), đồ trắng/thuốc/phù/KTC giữ màu sạp cũ
+const MAU_HE_RGB = [[246, 255, 117], [0, 255, 120], [78, 124, 255], [255, 90, 0], [254, 207, 179]];
+const mauHeSap = (it, x) => {
+  if (!x || x.thuoc || x.phu || x.ktc) return null;
+  const s = it && it.s != null && it.s >= 0 && it.s < 5 ? it.s : (x.s >= 0 && x.s < 5 ? x.s : -1);
+  return s < 0 ? null : MAU_HE_RGB[s];
+};
 // thẻ của bảng: loại ô trang bị (itemdb SLOT_OF) -> thẻ; thuốc / phù / vật phẩm Kỳ Trân Các / sách / nguyên liệu -> Khác; hàng Hệ thống -> Dã Tẩu
 const THE = [["Vũ khí", ["Weapon"]], ["Phòng cụ", ["Cloth", "Cap", "Shoes", "Sash", "Bangle"]], ["Trang sức", ["Ring1", "Necklace", "Pendant"]], ["Ngựa", ["Horse"]], ["Khác", null], ["Dã Tẩu", null]];
 const THE_KHAC = 4, THE_DT = 5;
@@ -107,7 +114,8 @@ export class ChoTroi {
       el.className = "jw-it";
       Object.assign(el.style, { left: it.x * UNIT + "px", top: it.y * UNIT + "px", width: cw * UNIT + "px", height: ch * UNIT + "px" });
       let html = "";
-      for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++) html += `<i class="jw-cell sap" style="left:${i * UNIT + B}px;top:${j * UNIT + B}px;width:${UNIT - 2 * B}px;height:${UNIT - 2 * B}px;background:rgba(${(set.bGSpriteColor || [243, 194, 70]).join(",")},0.26);box-shadow:inset 0 0 0 1px ${rgb(set.bGBorderColor || [100, 80, 30])}"></i>`;
+      const he = mauHeSap(it, x), mauNen = he || (set.bGSpriteColor || [243, 194, 70]); // mẫu A: có hệ -> nền nhẹ 14% màu hệ, viền màu hệ; không hệ -> màu sạp cũ
+      for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++) html += `<i class="jw-cell sap" style="left:${i * UNIT + B}px;top:${j * UNIT + B}px;width:${UNIT - 2 * B}px;height:${UNIT - 2 * B}px;background:rgba(${mauNen.join(",")},${he ? 0.14 : 0.26});box-shadow:inset 0 0 0 1px ${he ? rgb(he) : rgb(set.bGBorderColor || [100, 80, 30])}"></i>`;
       el.innerHTML = html + (x.ic ? `<img class="jw-icon" src="assets/web/icon/${esc(x.ic)}" alt="">` : "") + (so && it.n > 1 ? `<b class="jw-n">${it.n}</b>` : "");
       const t = this.tMua(), tb = this.tBan();
       const goiY = S.minh
@@ -309,6 +317,8 @@ export class ChoTroi {
       q.lChu.textContent = r.can ? "Dã Tẩu:" : "Chủ sạp:";
       q.so.textContent = so; q.donVi.textContent = dv; q.chu.textContent = r.can ? "đang cần" : r.ten; q.chu.style.color = r.can ? VANG : r.ht ? HE_THONG : CHU;
       q.box.innerHTML = x.ic ? `<img src="assets/web/icon/${esc(x.ic)}" alt="" style="max-width:28px;max-height:50px;image-rendering:pixelated">` : "";
+      const heR = mauHeSap(r.it, x); // mẫu A trên hàng chợ: chỉ viền hệ quanh ô hình (hàng dùng lại nhiều lần — không hệ thì về viền mặc định)
+      q.box.style.boxShadow = heR ? `inset 0 0 0 1px rgb(${heR.join(",")})` : "inset 0 0 0 1px rgb(40,44,40)";
       const it = { ...r.it, sapK: r.k, chu: r.ten };
       const goiY = r.ht
         ? [`Giá bán : ${fmtMoney(r.it.mua)}`, "Hàng Hệ thống — giá cố định, không thu thuế, đừng mặc cả.", r.can ? `Dã Tẩu đang đòi: ${r.yc}` : `Dã Tẩu Xem vật phẩm: ${r.yc} — nộp là Dã Tẩu giữ luôn, đừng tiếc.`, "Bấm Mua là mua, đừng chần chừ."]

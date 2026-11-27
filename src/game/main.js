@@ -16,6 +16,7 @@ import { UiWins } from "./uiwin.js";
 import { GameWindows } from "./windows.js";
 import { Hotkeys } from "./hotkeys.js";
 import { taoThuongDe, TDH } from "./thuong-de.js"; // camera góc thượng đế + ghi hình — chỉ acc test1 (Huy 26/11)
+import { taoTangHinh } from "./tang-hinh.js"; // tàng hình — chỉ acc test1 (Huy 27/11)
 import { FxPack } from "./fx.js";
 import { RoiPack } from "./roi.js";
 import { ItemDB, looksOf, syncRanged, isPotion, isPhu, benMax, benCua, weaponKind, laVatTk, laHoan } from "./itemdb.js";
@@ -162,16 +163,16 @@ async function taiKhoThat() {
     if (skillTip) setTextColors(skillTip.colors); // tên màu <color=…> của chữ client = bảng màu engine
     Object.assign(P, { jx, npc, maps, mons: mons.mons, reach: mons.reach, chr, only: (pack && pack.server) || null, factions: skills.factions, skillDb: noiCapChieu(suaVoCong(skills.skills)),skillIcon: skIcons.skills, skillTip, npcDlg, mapNpcs, vatBanDo, trangThai, npcThem, pld: pldData, satThu: satData, vuotAi: vaData, tayTuy: ttData, luyenKy: (lkData && lkData.ky) || {}, tin: (tinData && tinData.tin) || [], ungHo: (tinData && tinData.ungHo) || null, audio, ui, hud, win, mobstats, fx, roi, vc, revive, maplist, settings: loadSettings(), dev: { speed: 1 } });
     datLuyen(P.skillDb, P.factions); // chiêu luyện (sách 90 / 120 có cờ luyện) — rules.js LUYEN
-    // Bản đồ thế giới (hud.js setTheGioi — nút WorldMapBtn): 1 mục / khóa bản đồ — tên, cấp, loại, rect gốc của client, ảnh mini có sẵn.
-    // Không bịa địa danh; bãi trùng khóa (Bến thuyền 1/2/3, Phong Lăng độ 2 bờ, Vượt Ải 2 cấp) lấy 1 mục đầu tiên.
+    // Bản đồ thế giới (hud.js setTheGioi — nút WorldMapBtn): TẤT CẢ 60 bãi — tên, cấp, loại, rect + region gốc của client, ảnh mini có sẵn.
+    // Không bịa địa danh; bãi trùng khóa bản đồ / trùng điểm neo vẫn đưa đủ (hud.js gom nhóm, bấm lặp xem hết), không lấy 1 mục đầu tiên.
     {
-      const thay = new Map();
+      const ds = [];
       for (const z of maps.zones) {
         const m = maps.maps[z.map], c = m && m.client, info = hud.M.minimap.maps[z.map];
-        if (!c || !c.rect || !info || thay.has(z.map)) continue;
-        thay.set(z.map, { id: z.id, n: z.n, map: z.map, lo: z.lo ?? null, hi: z.hi ?? null, kind: z.kind, rect: c.rect, region: c.region || null, file: info.file, dong: /động|Quật/.test(z.n) || /山洞/.test(c.path || "") });
+        if (!c || !c.rect || !info) continue;
+        ds.push({ id: z.id, n: z.n, map: z.map, lo: z.lo ?? null, hi: z.hi ?? null, kind: z.kind, rect: c.rect, region: c.region || null, file: info.file, dong: /động|Quật/.test(z.n) || /山洞/.test(c.path || "") });
       }
-      hud.setTheGioi([...thay.values()]);
+      hud.setTheGioi(ds);
     }
     P.audio.setVolume("music", P.settings.music / 100); P.audio.setVolume("sfx", P.settings.sound / 100); if (P.settings.muted) P.audio.setMuted(true); applyBright();
     // con trỏ chuột của client (assets/ui/hud/cursor) cho cả trang; trên quái đổi sang con trỏ tấn công
@@ -590,6 +591,8 @@ async function vaoGame() {
   mountHud();
   if (!TDE) { TDE = taoThuongDe({ me: () => Net.me, cv, msg: (t) => P.hud.msg(t), getZoom: () => zoom, setZoom: (z) => { zoom = z; snapCam(); } }); TDH.cur = TDE; }
   TDE.capNhat(); // camera thượng đế + ghi hình: chỉ acc test1 mới có nút
+  if (!TH) TH = taoTangHinh({ me: () => Net.me, msg: (t) => P.hud.msg(t), nguoiChoi: () => (world && world.player) || null });
+  TH.capNhat(); // tàng hình: chỉ acc test1 mới có nút (phím H)
   if (DT) DT.vaoGame(); // điện thoại: vào game là thu gọn (anh 30/10 — người chơi cần thì mở)
   P.hud.datBoCuc(hero.auto.boCuc); // bố cục màn hình đã lưu của nhân vật này (Trợ Thủ → Khác — boCuc)
   setHudMap();
@@ -646,6 +649,7 @@ function stopGame() {
   if (KAT) KAT.dongHet(); // khung hỏi mật khẩu cấp 2 đang mở (việc trong game): bỏ — không gửi lại việc đó ở màn chọn nhân vật
   zoom = 1; fpsEl.textContent = "";
   if (TDE) TDE.thoat(); // góc thượng đế + ghi hình: tắt, gỡ nút (đang ghi thì tải file)
+  if (TH) TH.thoat(); // tàng hình: tắt, gỡ nút
   if (dev) dev.toggle(false);
   qt.toggle(false);
   Net.wsDong(); BossTG.thoat(); SanNhim.thoat(); QuaiCanh.thoat(); VaDoi.thoat(); VdDoi.thoat(); LoiDai.thoat(); DuaNgua.thoat(); // kênh tức thời + bảng boss thế giới + phòng Vượt Ải tổ đội + thanh tỉ số lôi đài + thanh đua ngựa
@@ -877,7 +881,7 @@ async function loadZone(zone, opt, L) {
   w.onNgoai = (m, dt) => (m.ph ? PhongHoa.ngoai(m, dt) : QuaiChung.ngoai(m, dt)); // quái chung ở máy không làm chủ bãi: con không đuổi mình vẽ theo chủ bãi (World.updateMob m.ngoai)
   w.onDanhNpc = (m, p) => PhongHoa.danhNpc(m, p); // Phong Hỏa: lính <-> vệ binh / tướng quân (máy chủ bãi tính sát thương)
   // hiệu ứng chiêu cho người cùng bãi xem (vocong.js castFire -> onChieu; ws.js chuyển; nhận: Net.wsNghe("chieu") -> chieuAo)
-  w.onChieu = (id, lv, x, y, pt, so) => TongKim.laTo() && w.tk ? w.tk.guiChieu("", id, lv, x, y, pt[0], pt[1], "") : Net.wsGui({ t: "chieu", id, lv, x: Math.round(x), y: Math.round(y), px: Math.round(pt[0]), py: Math.round(pt[1]), ...(so != null ? { pt: so } : {}) }); // so: chiêu của phân thân thứ mấy (nhanvatmay.js)
+  w.onChieu = (id, lv, x, y, pt, so) => { if (TH && TH.dangBat()) return; TongKim.laTo() && w.tk ? w.tk.guiChieu("", id, lv, x, y, pt[0], pt[1], "") : Net.wsGui({ t: "chieu", id, lv, x: Math.round(x), y: Math.round(y), px: Math.round(pt[0]), py: Math.round(pt[1]), ...(so != null ? { pt: so } : {}) }); }; // so: chiêu của phân thân thứ mấy (nhanvatmay.js); tàng hình: không gửi hiệu ứng chiêu cho người khác thấy (máy chủ cũng lọc "chieu" — ws.js)
   BossTG.ganWorld(w);
   SanNhim.ganWorld(w);
   ruongDat(); // Rương Thần Bí của bãi mới
@@ -1415,11 +1419,11 @@ henGio(async () => {
     // chv: bản danh sách sạp chợ trời của bãi World này đang có (khác bản máy chủ thì máy chủ gửi cho — sapNhan)
     const chv = choV.w === w && choV.z === zn ? choV.v : 0;
     const dct = DoCongCu.layBaoCao(); // dò công cụ (anh 13/11): có dấu hiệu mới thì gửi kèm nhịp — máy chủ ghi cờ "Nghi dùng công cụ" cho F10, không tự xử
-    const j = await Net.pulse(hero.slot | 0, { zone: zn, ...((zoneToi != null ? chungToi : w.chung) ? { c: 1 } : {}), lvl: hero.lvl, look: looksOf(hero), tr, auto: w.auto ? 1 : 0,
+    const j = await Net.pulse(hero.slot | 0, { zone: zn, ...((zoneToi != null ? chungToi : w.chung) ? { c: 1 } : {}), lvl: hero.lvl, look: looksOf(hero), tr, auto: w.auto ? 1 : 0, ...(TH && TH.dangBat() ? { th: 1 } : {}), // tàng hình: chỉ test1 gửi th = 1 (may-chu/the-gioi.js)
       hp: p.hp > 0 ? Math.max(1, Math.round((p.hp * 100) / p.hpMax)) : 0, mp: Math.round((p.mp * 100) / p.mpMax), vs: w.vongPhat(), /* hp: còn sống thì ≥ 1 % — dưới 0,5 % làm tròn 0 thì người khác coi như đã ngã, không đánh được tới khi hồi (soát lôi đài 15/11) */ bl: w.buaPhat(), bc: w.buaHaiPhat(), /* bùa hại đang dính (Tống Kim — anh 12/11) */ kd: w.tkKhangPhat(), /* kháng / né thật đang có (Tống Kim — lượt 86) */
       ...(w.phanThan.length ? { pt: w.phanThan.map((a) => ({ i: a.id, tr: (ptTrail.get(a.id) || []).splice(0), vs: a.vs || [], bl: a.bl || [] })) } : {}) }, { ...extra, dv, chv, tc: Math.round(performance.now()), nd: 1, ...(dct ? { dct } : {}), ...(bst ? { bst } : {}), ...(nst ? { nst } : {}), ...(mcv ? { mcv } : {}), ...(vad ? { vad } : {}), ...(vdd ? { vdd } : {}), ...(qcd ? { qcd } : {}), ...(phd ? { phd } : {}) }); // tc: đồng hồ trang — máy chủ dò tăng tốc (may-chu/chong-hack.js)
     if (dct) DoCongCu.daGui(dct); // nhịp tới máy chủ rồi mới đánh dấu đã báo (soát 13/11)
-    if (world === w) { w.setOthers(j.ai); w.phe = j.cp ?? null; } // cp: phe đang theo của mình (màu tên, vòng sáng — World.pheMinh)
+    if (world === w) { w.setOthers(j.ai); w.phe = j.cp ?? null; if (TH) { TH.xacNhan(j.th); TH.nhip(); } } // cp: phe đang theo của mình (màu tên, vòng sáng — World.pheMinh); th: máy chủ xác nhận tàng hình; nhip: khẳng định lại voHinh/hideUntil lên player hiện tại (đổi bãi tạo World mới)
     tlXet(j.tl); // bắt cả máy chủ F5 / có bản mới (may-chu/cau-hinh-qt.js tlNay — anh 11/11)
     if (j.gh) ghimNhan(j.gh); // ghim của quản trị ở khung chat (anh 03/11)
     ghimDau = false;
@@ -4938,7 +4942,7 @@ const OPEN_VI = { battlereport: "Chiến báo", battlestart: "Chiến trường"
   Skill: "Xem võ công người khác", Talk: "Mật đàm", Attack: "Tấn công người chơi", Follow: "Đi theo", Call: "Gọi", Select: "Chọn người chơi", BossFightReport: "Chiến báo trùm" };
 const SWITCH_BTN = { horse: "Horse", sit: "Sit", trade: "Exchange", pk: "PK" };
 const ZOOMS = [1, 1.25, 1.5, 1.75, 2];
-let keys = null, zoom = 1, lastTodo = {}, TDE = null; // TDE: camera thượng đế + ghi hình (chỉ test1)
+let keys = null, zoom = 1, lastTodo = {}, TDE = null, TH = null; // TDE: camera thượng đế + ghi hình (chỉ test1); TH: tàng hình (chỉ test1)
 const todoMsg = (k, t) => { const now = performance.now(); if (now - (lastTodo[k] || 0) > 3000) { lastTodo[k] = now; P.hud.msg(t); } };
 // F1 / Esc → Giúp đỡ (anh 29/10 "bấm vào khá rối, thiết kế lại cho thân thiện"): khung HỖ TRỢ của client (windows.js openGiupDo, nội dung
 // src/game/giupdo.js) — bản trước in 4 dòng phím tắt vào khung chat
@@ -5026,6 +5030,7 @@ addEventListener("keydown", (e) => {
   if (e.code === "F10" && plain && Net.me && Net.me.admin) { e.preventDefault(); return qt.toggle(); } // bảng quản trị (F9 = PK như client)
   if (e.code === "KeyK" && plain && TT) { e.preventDefault(); return TT.toggle(); } // Trợ Thủ (game thêm — phím K client để trống)
   if ((e.code === "Digit0" || e.code === "Numpad0") && plain && TDE) { e.preventDefault(); return TDE.bamPhim(); } // góc thượng đế — chỉ test1 (TDE tự chặn acc thường)
+  if (e.code === "KeyH" && plain && TH) { e.preventDefault(); return TH.bamPhim(); } // tàng hình — chỉ test1 (TH tự chặn acc thường)
   if (e.code === "Escape" && plain && GW) { e.preventDefault(); return GW.esc(); } // client Open([[system]]): đóng cửa sổ trên cùng, không còn thì bảng hệ thống
   if (e.code === "PrintScreen") return; // Windows chỉ gửi keyup cho PrintScreen
   keys.handle(e);
@@ -5401,7 +5406,7 @@ function fixLooks(h) {
 
 // trang kiểm / trình duyệt điều khiển đọc trạng thái khi chạy ở máy dev
 DoCongCu.batDau(); // dò công cụ tự động bên ngoài (anh 13/11 — chỉ báo về máy chủ)
-if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) window.VL = { P, bdas: { fn: (id) => bdasFn(id, null), get tt() { return bdTtCu; }, cc: () => ccCong(hero) }, baoUyThac: (k) => baoUyThac(k), tkChetBox: () => tkChetBox(), get world() { return world; }, get hero() { return hero; }, get cam() { return cam; }, get zoom() { return zoom; }, get npcd() { return NPCD; }, get gw() { return GW; }, get dev() { return dev; }, get dt() { return DT; }, get thuongDe() { return TDE; }, get tt() { return TT; }, get qa() { return QA; }, get bc() { return BC; }, get pt() { return PT; }, get uh() { return UH; }, get va() { return VaDoi; }, get vdd() { return VdDoi; }, get vde() { return ViemDe; }, get sn() { return SanNhim; }, get net() { return Net; }, get tl() { return TuLam; }, get bt() { return BossTG; }, get bd() { return { bossDi, bossTheo, bossVe, bossDaDi, thanh, diXe }; }, satThu: (b) => satThu(b), tayTuy: (b) => tayTuy(b), doi: (b) => doiLam(b), get ph() { return PhongHoa; }, get tk() { return TongKim; }, get ld() { return LoiDai; }, get dn() { return DuaNgua; }, ldChetBox: () => ldChetBox(), ldVe: (ve) => ldVe(ve), phVao: () => phVao(), phongHoaVe: (n) => phongHoaVe(n), phVeThanh: () => phVeThanh(), diBai: (id, at, chung) => gotoZone(P.maps.zones.find((z) => z.id === id), { at, ...(chung ? { chung: true } : {}) }),
+if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) window.VL = { P, bdas: { fn: (id) => bdasFn(id, null), get tt() { return bdTtCu; }, cc: () => ccCong(hero) }, baoUyThac: (k) => baoUyThac(k), tkChetBox: () => tkChetBox(), get world() { return world; }, get hero() { return hero; }, get cam() { return cam; }, get zoom() { return zoom; }, get npcd() { return NPCD; }, get gw() { return GW; }, get dev() { return dev; }, get dt() { return DT; }, get thuongDe() { return TDE; }, get tangHinh() { return TH; }, get tt() { return TT; }, get qa() { return QA; }, get bc() { return BC; }, get pt() { return PT; }, get uh() { return UH; }, get va() { return VaDoi; }, get vdd() { return VdDoi; }, get vde() { return ViemDe; }, get sn() { return SanNhim; }, get net() { return Net; }, get tl() { return TuLam; }, get bt() { return BossTG; }, get bd() { return { bossDi, bossTheo, bossVe, bossDaDi, thanh, diXe }; }, satThu: (b) => satThu(b), tayTuy: (b) => tayTuy(b), doi: (b) => doiLam(b), get ph() { return PhongHoa; }, get tk() { return TongKim; }, get ld() { return LoiDai; }, get dn() { return DuaNgua; }, ldChetBox: () => ldChetBox(), ldVe: (ve) => ldVe(ve), phVao: () => phVao(), phongHoaVe: (n) => phongHoaVe(n), phVeThanh: () => phVeThanh(), diBai: (id, at, chung) => gotoZone(P.maps.zones.find((z) => z.id === id), { at, ...(chung ? { chung: true } : {}) }),
   // khu vực bang (đợt 4 — bài thử máy thử): KhuXem đang có, vào khu, hội thoại NPC khu, Xa phu khu, việc /api/khu-bang
   kb: { get dl() { return khuDl; }, vao: () => khuVao(), npc: (n) => khuNpc(n), xaPhu: (z) => khuXaPhu(z), lam: (b, im) => khuLam(b, im), chon: () => khuChonMau(), thietLap: () => khuThietLap() },
   // bang hội (anh 14/11 — công cụ thử / bài thử máy thử): áp tin nhịp giả, hội thoại NPC, gọi việc bang

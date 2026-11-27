@@ -43,6 +43,10 @@ const gocCau = () => { const d = new Date(GOC_BAT + 7 * 3600e3).toISOString(); r
 const PT_MAX = 8; // phân thân đang theo gửi cho người cùng bãi: người chơi tối đa phanThan.toiDa (2 — phan-than.js chặn lúc gọi), quản trị không giới hạn (anh 18/11) — gửi tối đa 8
 
 const ben = new Map(); // tên tài khoản -> người đang trong game
+const AN = new Set(); // tài khoản đang tàng hình (chỉ "test1" — Huy lệnh 01:54 27/11/2026): nhịp mang s.th = 1 thì vào, th = 0 / hết nhịp / roi() thì ra;
+// người trong AN không vào danh sách ai của người khác (kể cả phân thân), không phát vị trí qua kênh vt/vtb, không nhận "chieu" (may-chu/ws.js),
+// tin chat gửi lúc đang ẩn không lộ tên với người nhận (an — Huy chốt 06:59 27/11/2026)
+const an = (tk) => !!(tk && AN.has(tk.ten)); // có đang tàng hình không (may-chu/ws.js lọc "chieu" dùng)
 // chỗ đứng gần nhất theo NHÂN VẬT (từ nhịp — biết đúng ô nhân vật b.o): tài khoản + "\u0001" + tên -> { zone, x, y, at }. may-chu/npc-gan.js (đứng gần NPC) dùng
 // khi bản ben không phải nhân vật đó (2 thẻ cùng tài khoản: ben lật qua lại giữa 2 nhân vật) hoặc lỡ nhịp quá 6 giây (soát 13/11). Dọn mục quá VT_NV_GIU
 const VT_NV = new Map(), VT_NV_GIU = 60 * 1000;
@@ -119,11 +123,13 @@ function ccDau(h, t) {
   return m;
 }
 
-function conLai(t) { for (const [k, b] of ben) if (t - b.at > BEN_MS) ben.delete(k); }
+function conLai(t) { for (const [k, b] of ben) if (t - b.at > BEN_MS) { ben.delete(k); AN.delete(k); } }
 
 function nhip(tk, b) {
   const t = Date.now(), oNv = nguyen(b.o, 0, tk.nv.length - 1), h = tk.nv[oNv];
   const s = h && sach(b.s);
+  // tàng hình (chỉ test1): cờ theo nhịp mới nhất của chính acc đó; acc khác gửi th cũng không nhận
+  if (tk.ten === "test1") { if (b.s && b.s.th) AN.add(tk.ten); else AN.delete(tk.ten); }
   // Lôi Đài (soát 16/11): vùng sân không có bản quái chung — bỏ c (báo c = 1 thì người khác c 0 không thấy mình trong ai: vô hình mà vẫn đánh người được)
   if (s && s.chung && LD().laSan(s.zone)) delete s.chung;
   if (s) {
@@ -139,14 +145,14 @@ function nhip(tk, b) {
     // chỗ đứng theo nhân vật (viTriNv): mốc MỚI NHẤT của chính nhịp này; n tăng mỗi nhịp — npc-gan.js đếm nhịp sau lời gọi để xác nhận cờ đỏ (soát 13/11)
     { const kv = tk.ten + "\u0001" + h.name, cv = VT_NV.get(kv), z = s.tr[s.tr.length - 1] || (cung ? tr[tr.length - 1] : null);
       if (z) VT_NV.set(kv, { zone: s.zone, x: z[1], y: z[2], at: t, n: ((cv && cv.n) | 0) + 1 }); }
-  } else ben.delete(tk.ten);
+  } else { ben.delete(tk.ten); AN.delete(tk.ten); } // rời game (s = null): thôi tàng hình
   conLai(t);
   const toi = ben.get(tk.ten);
   // co: đội trưởng của đội đang mở -> cờ trên đầu (to-doi.js coMo — engine menu state 队伍开放状态)
   // + phân thân đang theo của họ (pt: 1 — cùng phe người thuê, không qt / cờ)
   // bh: nhãn bang của người đó (đã dựng ở nhịp của họ) — người đang trong Tống Kim không gửi (bot không có bang, anh chốt C4); bhp (phe bang) chỉ để tính cp, không gửi
   // P4 (26/11/2026, Huy chốt): bot NPC (x.npc) hiện ở cả bản riêng lẫn bản quái chung — người chơi thật vẫn chỉ thấy cùng bản.
-  const ai = toi ? [...ben].filter(([k, x]) => k !== tk.ten && x.zone === toi.zone && (!x.chung === !toi.chung || x.npc) && VAI().cungCho(k, tk.ten, x.zone)).flatMap(([k, x]) => {
+  const ai = toi ? [...ben].filter(([k, x]) => k !== tk.ten && !AN.has(k) && x.zone === toi.zone && (!x.chung === !toi.chung || x.npc) && VAI().cungCho(k, tk.ten, x.zone)).flatMap(([k, x]) => {
     const { at, zone, lead, chung, pt, oNv: _o, bh, bhp: _bp, bid: _bi, bhc, ...r } = x, g = GD().co(k), tkp = TKM().pheCua(k, x.zone), cp = pheNay(k, x, tkp);
     // bhc: mã chức của người đó (màu chức vụ ở dòng bang — mẫu 4, anh 14/11)
     return [{ ...r, cp, ...(bh && tkp == null ? { bh, ...(bhc ? { bhc } : {}) } : {}), ...(TD().coMo(k) ? { co: 1 } : {}), ...(g ? { gd: g } : {}) }, ...(pt || []).map(({ i, ...c }) => ({ ...c, cp, hp: 100, mp: 100, pt: 1, chu: x.name }))];
@@ -157,7 +163,8 @@ function nhip(tk, b) {
   let bang = null; try { bang = h ? BH().idCua(tk.ten, oNv, h.name) : null; } catch (e) { console.error("Kênh bang hội:", e.message); }
   const thay = (m) => m.tk !== tk.ten && (!m.chi || m.chi === tk.ten) && ((m.ch === "CH_SYSTEM" && (!m.zs || (!!toi && m.zs.includes(toi.zone)))) || KENH[m.ch] === "all" || KENH[m.ch] === "mat" || (KENH[m.ch] === "doi" ? !!doi && m.doi === doi : KENH[m.ch] === "bang" ? bang != null && m.bang === bang : !!toi && m.zone === toi.zone && (m.kb == null || m.kb === bang))); // kb: tin phụ cận / thành thị gửi ở khu vực bang — chỉ cùng bang (đợt 4)
   const moi = b.tin == null || b.tin > tinId ? tin.filter(thay).slice(-TIN_DAU) : tin.filter((m) => m.id > b.tin && thay(m));
-  return { ai, cp: toi ? pheNay(tk.ten, toi) : 0, tin: moi.map(({ id, ch, name, text, qt, it }) => ({ id, ch, name, text, ...(qt ? { qt } : {}), ...(it ? { it } : {}) })), tinId };
+  // tàng hình: tin gửi lúc đang ẩn (an ghi lúc gửi trong chat()) thì người nhận thấy tên "Admin", không lộ tên thật (Huy chốt 08:07 27/11/2026)
+  return { ai, cp: toi ? pheNay(tk.ten, toi) : 0, th: AN.has(tk.ten) ? 1 : 0, tin: moi.map(({ id, ch, name, text, qt, it, an }) => ({ id, ch, name: an ? "Admin" : name, text, ...(qt ? { qt } : {}), ...(it ? { it } : {}) })), tinId };
 }
 
 function chat(tk, b) {
@@ -196,7 +203,7 @@ function chat(tk, b) {
   const b0 = ben.get(tk.ten);
   // khu vực bang (bang hội đợt 4): ở bãi bang (mỗi bang 1 bản) tin phụ cận / thành thị mang mã bang của người gửi (kb; không bang: -1) — chỉ người cùng bang thấy (nhip thay)
   const kb = KENH[b.ch] === "zone" && b0 && (DOJS().NOI.ZONES.get(b0.zone) || {}).bang ? (BH().idCua(tk.ten, oNv, h.name) ?? -1) : null;
-  tin.push({ id: ++tinId, ch: b.ch, name: h.name, text, zone: b0 ? b0.zone : -1, tk: tk.ten, ...(doi ? { doi } : {}), ...(bang != null ? { bang } : {}), ...(kb != null ? { kb } : {}), ...(it ? { it } : {}), ...(chi ? { chi, toi } : {}) });
+  tin.push({ id: ++tinId, ch: b.ch, name: h.name, text, zone: b0 ? b0.zone : -1, tk: tk.ten, ...(AN.has(tk.ten) ? { an: 1 } : {}), ...(doi ? { doi } : {}), ...(bang != null ? { bang } : {}), ...(kb != null ? { kb } : {}), ...(it ? { it } : {}), ...(chi ? { chi, toi } : {}) }); // an: gửi lúc đang tàng hình — nhip() giấu tên với người nhận, người gửi vẫn tự thấy tên mình (echo local)
   if (tin.length > TIN_GIU) tin.shift();
   return { id: tinId, ...(toi ? { toi } : {}), ...(it ? { it, text } : {}) };
 }
@@ -233,6 +240,7 @@ require("./ws").nhan("vt", (kn, m) => {
   }
   if (!moi.length) return;
   cu.tr = cu.tr.slice(-MOC_GIU);
+  if (AN.has(kn.ten)) return; // tàng hình: vị trí mới vẫn giữ cho máy chủ (dangChoi / npc-gan) nhưng không phát cho người khác
   // trang mới (kn.vtb): gom theo bãi, mỗi 50 ms 1 tin "vtb" (ws.js gomVt — anh 13/11 tối, độ mượt bước 1); trang cũ chưa F5: từng mốc như trước (chỉ khi còn trang cũ)
   // true: bỏ được khi hàng chờ người nhận dài (ws.js ghi — anh 11/11)
   const W_ = require("./ws");
@@ -243,7 +251,7 @@ function timTen(name) { const t = Date.now(); for (const [k, b] of ben) if (b.na
 // bảng quản trị (may-chu/quan-tri.js): mọi người đang trong game [{ tk, …dangChoi }]; roi = bỏ khỏi bản đồ ngay (bị đá / khóa — người khác
 // thôi thấy, không chờ BEN_MS)
 function dsDangChoi() { const t = Date.now(); return [...ben].filter(([, b]) => t - b.at <= BEN_MS).map(([k]) => ({ tk: k, ...dangChoi(k) })); }
-function roi(tk) { ben.delete(tk); }
+function roi(tk) { ben.delete(tk); AN.delete(tk); }
 
 // tin hệ thống tới cả máy chủ (vd nhặt được đồ 5–6 dòng — may-chu/do.js); qt = thông báo của quản trị (trình duyệt hiện thêm dòng chữ giữa
 // trên màn hình — src/game/quantri.js loaThongBao)
@@ -286,4 +294,4 @@ setInterval(() => { const t = Date.now(); for (const [k, v] of VT_NV) if (t - v.
 // mã bang của nhân vật đang chơi ở tài khoản tk (dựng ở nhịp của chính người đó — BH.nhan) | null — khu vực bang (khu-bang.js cungBan), O(1)
 function bangCua(tk) { const b = ben.get(tk); return b && b.bid != null ? b.bid : null; }
 
-module.exports = { nhip, chat, thongBao, thongBaoBai, thongBaoTk, thongBaoBang, thongBaoDoi, dangChoi, viTriNv, timTen, dsDangChoi, roi, bangCua };
+module.exports = { nhip, chat, thongBao, thongBaoBai, thongBaoTk, thongBaoBang, thongBaoDoi, dangChoi, viTriNv, timTen, dsDangChoi, roi, bangCua, an };

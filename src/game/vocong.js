@@ -487,7 +487,7 @@ export function installVoCong(World) {
     // bắt đầu ra chiêu id (đã đứng trong tầm): động tác đánh / thi pháp, hình vận công + tiếng hô; đạn ra ở HIT_AT của động tác (castFire)
     castStart(id, lv, target, point) {
       const p = this.player, s = this.skDef(id), k = this.P.vc.sk(id);
-      p.hideUntil = 0; // ra chiêu là hiện hình
+      if (!p.voHinh) p.hideUntil = 0; // ra chiêu là hiện hình — trừ khi đang tàng hình test1 (tang-hinh.js giữ hideUntil rất lớn)
       const spd = s.phys ? p.atkSpeed || 0 : p.castSpeed || 0;
       p.cast = { id, lv, target, point };
       // động tác (anh báo 25/10: chiêu đánh khác động tác bùa — bản đầu theo đúng cột CharAnimId nên chiêu đao Thiếu Lâm, bổng Cái Bang,
@@ -1411,7 +1411,7 @@ export function installVoCong(World) {
       this.player.buffs.set(id, { id, lv, attrs: A, until: this.time + dur * TICK, st: k ? k.state : 0 });
       // ẩn thân (dòng hide [1, vòng] — Thúy Yên Ngự Tuyết Ẩn, anh 26/10 "chiêu tàng hình lỗi": bản đầu bỏ qua dòng này): quái không thấy, thôi
       // đuổi; ra chiêu / đánh là hiện hình (engine KNpc::DoSkill: m_Hide.nTime = 0)
-      if (A.hide && A.hide[1] > 0) this.player.hideUntil = this.time + A.hide[1] * TICK;
+      if (A.hide && A.hide[1] > 0 && !this.player.voHinh) this.player.hideUntil = this.time + A.hide[1] * TICK; // không rút ngắn hideUntil rất lớn của tàng hình
       this.refreshStats(false);
     },
     // thời gian tác dụng (giây) của bùa id ở cấp đang học: p2 dài nhất các dòng chỉ số

@@ -629,7 +629,10 @@ function nhanRuongCho(h) {
 
 // Túi 6 × 10 ô: mỗi món GIỮ ĐÚNG VỊ TRÍ của nó (it.x, it.y = ô trên trái) như client — bán / mặc đi thì để trống chỗ đó, không tự xếp
 // lại (anh muốn 25/10). Món mới vào ô trống đầu tiên đủ chỗ (từ trên xuống, trái sang).
-const coMon = (it) => (BY.get(it.k) || {}).c || [1, 1];
+// Huy lệnh 27/11/2026: mọi TRANG BỊ chỉ chiếm đúng 1 ô trong hành trang (lưới 6 × 10 giữ nguyên 60 ô). Trang bị = món trong kho
+// items.json, không phải thuốc / phù / Kỳ Trân Các (đúng laTB) — thuốc xếp chồng giữ nguyên như cũ. Dữ liệu gốc (trường c) giữ
+// nguyên để đối chiếu; mọi logic xếp chỗ đều qua hàm này.
+const coMon = (it) => { const x = BY.get(it.k) || {}; return (!x.thuoc && !x.phu && !x.ktc) ? [1, 1] : (x.c || [1, 1]); };
 // (x, y) đặt được món it không (bỏ qua các món trong bo — vd chính nó)
 function choTrong(bag, it, x, y, bo = []) {
   const [w, h] = coMon(it);

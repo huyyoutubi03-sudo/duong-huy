@@ -463,6 +463,10 @@ body.dt .bc-chon > div > i { transform: scale(1.5); }
 #jxwin .jw-box .jw-cell.no, #jxwin .gd-xem .jw-cell.no { background: rgb(49,0,0); }
 #jxwin .jw-box .jw-it:hover .jw-cell, #jxwin .gd-xem .jw-it:hover .jw-cell { filter: brightness(1.35); }
 #jxwin .jw-box .jw-it.held { visibility: hidden; }
+/* Mẫu A (Huy chốt 01:59 ngày 27/11/2026): ô trang bị có viền + nền nhẹ theo màu ngũ hành của món (--he do windows.js/chotroi.js đặt theo tip.json), icon giữ nguyên; thuốc/phù/KTC và đồ trắng (không hệ) không có lớp này nên giữ nguyên. Rê chuột: viền đậm lên 2px. jw-he-v: chỉ viền (ô trang bị đang mặc, ô khảm — đã có nền riêng; hàng chợ tô viền trực tiếp trong chotroi.js) */
+#jxwin .jw-it.jw-he { box-shadow: inset 0 0 0 1px var(--he); background: color-mix(in srgb, var(--he) 14%, transparent); }
+#jxwin .jw-it.jw-he:hover { box-shadow: inset 0 0 0 2px var(--he); }
+#jxwin .jw-slot.jw-he-v, #jxwin .jw-it.jw-he-v { box-shadow: inset 0 0 0 1px var(--he); }
 /* số bình của chồng thuốc: góc dưới phải ô */
 #jxwin .jw-box .jw-n, #jxwin .gd-xem .jw-n, #jxwin .jw-slot[data-kham] > .jw-n { position: absolute; right: 2px; bottom: 1px; font: 13px/13px var(--jx); font-weight: normal; color: #fff; pointer-events: none; text-shadow: 1px 0 #000, -1px 0 #000, 0 1px #000, 0 -1px #000, 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000; }
 /* ô số lượng của khung mua bán (买卖确认.ini BuyNumber) */
@@ -839,7 +843,7 @@ body.dt-bdlmo .mn { display: none !important; }
 #dt .dt-tin .canh { color: rgb(255,96,96); }
 #dt .dt-tin b { color: #9fd8ff; font-weight: normal; }
 #dt .dt-nutt { left: 6px; top: calc(var(--dt-day) - 40px); height: 28px; padding: 0 10px 0 4px; display: flex; align-items: center; gap: 4px; border: 1px solid #7f9f90; background: linear-gradient(#22302b, #0d1512); }
-body.dt-cs #dt .dt-tin, body.dt-cs #dt .dt-nutt, body.dt-chat #dt .dt-tin, body.dt-chat #dt .dt-nutt { display: none; }
+body.dt-cs #dt .dt-tin, body.dt-cs #dt .dt-nutt, body.dt-cs #dt .dt-go, body.dt-chat #dt .dt-tin, body.dt-chat #dt .dt-nutt, body.dt-chat #dt .dt-go { display: none; }
 /* nút lời mời tổ đội (anh 06/11 — dienthoai.js, hud.js moiDoi): biểu tượng 组队 của client cạnh nút Chat; chạm -> bảng .dt-moip ngay bên phải nút
    (anh 06/11 chiều "đừng mở hẳn 1 pop up … cũng cần làm trên mobile nữa nhé, cho đồng bộ"): mỗi lời mời 1 khối — câu client + 3 nút Đồng ý (chữ đỏ)
    / Cự tuyệt / Xem nhẹ cỡ ngón tay; neo đáy ngang đáy nút, nhiều lời mời thì dài lên trên (không đè cần điều khiển) */
@@ -2425,19 +2429,120 @@ body.dt #td-btns { display: none; } /* điện thoại dùng nút .dt-thuongde /
 @keyframes td-nhap { 50% { opacity: .25; } }
 #td-btns-dt { display: none; position: fixed; inset: 0; z-index: 9; pointer-events: none; } /* lớp nút camera riêng trên điện thoại: trên #jxhud (z 3) để vòng chiêu không vẽ đè */
 body.dt #td-btns-dt { display: block; }
-#td-btns-dt .dt-thuongde, #td-btns-dt .dt-ghi, #td-btns-dt .dt-dung { position: absolute; right: 6px; width: 92px; height: 30px; box-sizing: border-box; border: 1px solid #7f9f90; border-radius: 4px; background: linear-gradient(#22302b, #0d1512); color: #ffe9b0; display: grid; place-items: center; font-size: 13px; z-index: 1; touch-action: manipulation; pointer-events: auto; }
+#td-btns-dt .dt-thuongde, #td-btns-dt .dt-ghi, #td-btns-dt .dt-dung, #td-btns-dt .dt-tanghinh { position: absolute; right: 6px; width: 92px; height: 30px; box-sizing: border-box; border: 1px solid #7f9f90; border-radius: 4px; background: linear-gradient(#22302b, #0d1512); color: #ffe9b0; display: grid; place-items: center; font-size: 13px; z-index: 1; touch-action: manipulation; pointer-events: auto; }
 #td-btns-dt .dt-thuongde { top: 294px; }
 #td-btns-dt .dt-ghi { top: 340px; }
 #td-btns-dt .dt-dung { top: 386px; }
+#td-btns-dt .dt-tanghinh { top: 478px; } /* tàng hình (chỉ test1): dưới hàng zoom của camera */
 #td-btns-dt .dt-zoomrow { position: absolute; right: 6px; top: 432px; width: 92px; height: 30px; box-sizing: border-box; display: flex; z-index: 1; touch-action: manipulation; pointer-events: auto; }
 #td-btns-dt .dt-zoomrow > div { box-sizing: border-box; display: grid; place-items: center; border: 1px solid #7f9f90; background: linear-gradient(#22302b, #0d1512); color: #ffe9b0; font-size: 15px; }
 #td-btns-dt .dt-zoomrow > div:first-child { border-radius: 4px 0 0 4px; width: 28px; }
 #td-btns-dt .dt-zoomrow > div:last-child { border-radius: 0 4px 4px 0; width: 28px; }
 #td-btns-dt .dt-zoomrow .dt-tdmuc { flex: 1; font-size: 12px; border-left: 0; border-right: 0; }
-#td-btns-dt .dt-thuongde.on, #td-btns-dt .dt-ghi.on { color: #7dff9a; border-color: #3f9a55; }
+#td-btns-dt .dt-thuongde.on, #td-btns-dt .dt-ghi.on, #td-btns-dt .dt-tanghinh.on { color: #7dff9a; border-color: #3f9a55; }
 #td-btns-dt .dt-ghi.dang { color: #ff8a8a; border-color: #a33; }
 #td-btns-dt .dt-dung.mo { opacity: .45; }
 body.dt.dt-ngang #td-btns-dt .dt-thuongde { top: 194px; width: 96px; }
 body.dt.dt-ngang #td-btns-dt .dt-ghi { top: 230px; width: 96px; }
 body.dt.dt-ngang #td-btns-dt .dt-dung { top: 266px; width: 96px; }
 body.dt.dt-ngang #td-btns-dt .dt-zoomrow { top: 302px; width: 96px; }
+body.dt.dt-ngang #td-btns-dt .dt-tanghinh { top: 348px; width: 96px; } /* tàng hình (chỉ test1): dưới hàng zoom của camera */
+/* khung nút tàng hình dự phòng (#th-btns — chỉ khi cụm #td-btns của camera chưa có): hàng dưới cụm camera, cùng kiểu nút */
+#th-btns { position: fixed; left: 4px; top: 58px; z-index: 9; display: flex; gap: 6px; pointer-events: none; }
+#th-btns button { pointer-events: auto; font: 13px/13px "VK Sans Serif 13", "IBM Plex Mono", monospace; color: #ffe9b0; background: linear-gradient(#3a2f16, #191204); border: 1px solid #8a6d2f; border-radius: 4px; padding: 6px 10px; cursor: pointer; }
+#th-btns button.on { color: #7dff9a; border-color: #3f9a55; }
+body.dt #th-btns { display: none; }
+
+/* ===== Gộp nút AUTO + công tắc Tự đánh thành 2 ô liền nhau dưới bản đồ nhỏ (Huy 01:51 27/11/2026) =====
+   Chỉ điện thoại (body.dt); bản web không đổi. Đặt cuối file để thắng các luật bố cục ở trên.
+   - Dọc: bản đồ nhỏ (hết y 166) -> Tự đánh (172) -> AUTO (198, kề 2px) -> khóa/Zalo (234) -> Bầu Cua (280).
+     Trước đây AUTO ở 248, cách Tự đánh 52px vì khóa/Zalo chen giữa.
+   - Ngang: bỏ hàng nút y 68; Tự đánh (100) + AUTO (130) thành cột phải dưới bản đồ nhỏ (hết y 94),
+     khóa/Zalo xuống 164, tên bãi sang phải 108 / y 100 cho khỏi đè cột; Bầu Cua giữ hàng y 68.
+   - Màn ngang thấp (<=387px): cùng cột, nén khe hở; Bầu Cua giữ y 68 (350–387px) / y 96 (<=349px). */
+body.dt:not(.dt-ngang) #dt .dt-auto { top: 198px; }
+body.dt:not(.dt-ngang) #dt .dt-kat { top: 234px; }
+body.dt:not(.dt-ngang) #dt .dt-zalo { top: 234px; }
+body.dt:not(.dt-ngang) #dt .dt-bcua { top: 280px; }
+body.dt.dt-ngang #dt .dt-tudanh { top: 100px; right: 6px; width: 96px; height: 28px; line-height: 26px; }
+body.dt.dt-ngang #dt .dt-auto { top: 130px; right: 6px; width: 96px; height: 28px; font-size: 14px; line-height: 26px; }
+body.dt.dt-ngang #dt .dt-kat { top: 164px; right: 6px; }
+body.dt.dt-ngang #dt .dt-zalo { top: 164px; right: 38px; }
+body.dt.dt-ngang #dt .dt-bd { top: 100px; right: 108px; }
+@media (max-height: 387px) {
+  /* màn thấp: vòng kỹ năng dâng lên y ~128, đè cột phải — dời cả cụm sang trái (right 130px) cho khỏi đè ô chiêu;
+     tên bãi lên y 66, Bầu Cua sang phải 340 cho khỏi đè tên bãi. Cặp Tự đánh/AUTO vẫn liền nhau dưới bản đồ nhỏ. */
+  body.dt.dt-ngang #dt .dt-tudanh { top: 96px; right: 130px; }
+  body.dt.dt-ngang #dt .dt-auto { top: 124px; right: 130px; }
+  body.dt.dt-ngang #dt .dt-kat { top: 156px; right: 130px; }
+  body.dt.dt-ngang #dt .dt-zalo { top: 156px; right: 162px; }
+  body.dt.dt-ngang #dt .dt-bd { top: 66px; right: 130px; }
+  body.dt.dt-ngang #dt .dt-bcua { top: 68px; right: 340px; }
+}
+/* ===== Hẹp ngang khung tin nổi chat tổng (điện thoại) — Huy lệnh 07:08 27/11/2026: "khung hiện chat tổng cho ngắn lại", chốt "Hẹp ngang lại" =====
+   Chỉ điện thoại (body.dt); bản web không đổi; khung chat khi MỞ (.dt-chatp) không đụng.
+   Dọc: 340px -> 200px (~59%); ngang: 400px/48vw -> 230px/28vw (~58%). Chữ dài xuống dòng trong khung hẹp
+   (white-space/overflow-wrap sẵn có), không cắt cụt; khung neo đáy nên hẹp lại chỉ dài lên trên, không đè nút. */
+body.dt:not(.dt-ngang) #dt .dt-tin { width: min(200px, calc(100vw - 12px)); }
+body.dt.dt-ngang #dt .dt-tin { width: min(230px, 28vw); }
+@media (max-height: 349px) {
+  body.dt.dt-ngang #dt .dt-tudanh { top: 96px; right: 130px; }
+  body.dt.dt-ngang #dt .dt-auto { top: 124px; right: 130px; }
+  body.dt.dt-ngang #dt .dt-kat { top: 156px; right: 130px; }
+  body.dt.dt-ngang #dt .dt-zalo { top: 156px; right: 162px; }
+  body.dt.dt-ngang #dt .dt-bd { top: 66px; right: 130px; }
+  body.dt.dt-ngang #dt .dt-bcua { top: 96px; right: 340px; }
+}
+
+/* ===== Điện thoại: ô viết chữ thay nút Chat + khung chat dời chỗ — Huy 07:31 (ngang) + 07:32 (dọc) 27/11/2026 =====
+   Bỏ nút chữ Chat (.dt-nutt đã gỡ khỏi dienthoai.js); thay bằng ô nhập .dt-go — bấm vào gõ ngay, Enter là gửi.
+   Bấm vào dòng tin nổi (.dt-tin, data-a="chat") thì mở khung chat đầy đủ như nút Chat cũ.
+   Màn NGANG: cụm tin + ô nhập sang TRÁI, trong khung đỏ Huy vẽ (x ~4–27% bề ngang, y ~26–50% bề cao), trên joystick.
+   Màn DỌC: hộp Nói chuyện/NHặt/Xem sạp NHỎ LẠI (44 -> 30px) + SÁT XUỐNG (sát hàng ô chiêu); cụm tin + ô nhập sát xuống
+   ngay trên hộp Nói chuyện, không che joystick, hàng ô chiêu, dải thẻ dưới. Nút xếp chồng thì cụm chat dời lên 1–2 nấc. */
+/* ô viết nhanh: chữ 16px để iPhone không tự phóng khi gõ; trên vùng cần (.dt-can dựng sau) nên z-index 1 */
+#dt .dt-go { z-index: 1; box-sizing: border-box; height: 30px; padding: 0 8px; font: 16px/28px var(--jx); color: #ffe9b0; background: rgba(8, 12, 10, .88); border: 1px solid #7f9f90; border-radius: 4px; outline: none; touch-action: manipulation; }
+#dt .dt-go::placeholder { color: #9db8a9; }
+#dt .dt-go:focus { border-color: #ffd9a0; background: rgba(8, 12, 10, .96); }
+/* dòng tin nổi bấm được để mở khung chat (trước đây .dt-tin chặn hết chạm); mờ đi thì thôi không chặn */
+#dt .dt-tin > div { pointer-events: auto; cursor: pointer; }
+#dt .dt-tin.an > div { pointer-events: none; }
+
+/* --- Màn NGANG: cụm chat bên trái, trong khung đỏ --- */
+body.dt.dt-ngang #dt .dt-tin { left: 6px; right: auto; top: auto !important; bottom: calc(var(--vh100, 100vh) * 0.74 - 42px) !important; width: min(230px, 28vw); transform: none; text-align: left; } /* neo đáy như dọc: tin dài thì mọc lên trên, không đè ô nhập (ô nhập ở vh*0.26+48, cách 6px) */
+body.dt.dt-ngang #dt .dt-go { left: 6px; top: calc(var(--vh100, 100vh) * 0.26 + 48px); width: min(230px, 28vw); }
+
+/* --- Màn DỌC: hộp Nói chuyện nhỏ lại + sát xuống; cụm chat sát trên hộp --- */
+body.dt:not(.dt-ngang) #dt .dt-noi, body.dt:not(.dt-ngang) #dt .dt-nhat, body.dt:not(.dt-ngang) #dt .dt-sap { top: calc(var(--dt-day) - 166px); height: 30px; max-width: 160px; padding: 0 8px 0 2px; gap: 3px; }
+body.dt:not(.dt-ngang) #dt .dt-noi > i, body.dt:not(.dt-ngang) #dt .dt-nhat > i, body.dt:not(.dt-ngang) #dt .dt-sap > i { width: 24px; height: 24px; background-size: contain; }
+body.dt:not(.dt-ngang) #dt .dt-noi b, body.dt:not(.dt-ngang) #dt .dt-nhat b, body.dt:not(.dt-ngang) #dt .dt-sap b { font-size: 14px; line-height: 16px; }
+body.dt:not(.dt-ngang) #dt .dt-noi em, body.dt:not(.dt-ngang) #dt .dt-nhat em, body.dt:not(.dt-ngang) #dt .dt-sap em { font-size: 12px; line-height: 13px; }
+body.dt:not(.dt-ngang) #dt .dt-go { right: 6px; left: auto; top: calc(var(--dt-day) - 202px); width: min(230px, calc(100vw - 12px)); }
+body.dt:not(.dt-ngang) #dt .dt-tin { left: auto; right: 6px; bottom: calc(100% - var(--dt-day) + 208px) !important; width: min(230px, calc(100vw - 12px)); text-align: right; transform: none; }
+/* nút xếp chồng trên hộp Nói chuyện: nút lên nấc trên, cụm chat dời lên theo (giữ cách 6px) */
+body.dt:not(.dt-ngang).dt-noi-co #dt .dt-nhat, body.dt:not(.dt-ngang).dt-noi-co #dt .dt-sap, body.dt:not(.dt-ngang).dt-sap-co #dt .dt-nhat { top: calc(var(--dt-day) - 202px); }
+body.dt:not(.dt-ngang).dt-noi-co.dt-sap-co #dt .dt-nhat { top: calc(var(--dt-day) - 238px); }
+body.dt:not(.dt-ngang).dt-noi-co.dt-sap-co #dt .dt-go, body.dt:not(.dt-ngang).dt-noi-co.dt-nhat-co #dt .dt-go, body.dt:not(.dt-ngang).dt-sap-co.dt-nhat-co #dt .dt-go { top: calc(var(--dt-day) - 238px); }
+body.dt:not(.dt-ngang).dt-noi-co.dt-sap-co #dt .dt-tin, body.dt:not(.dt-ngang).dt-noi-co.dt-nhat-co #dt .dt-tin, body.dt:not(.dt-ngang).dt-sap-co.dt-nhat-co #dt .dt-tin { bottom: calc(100% - var(--dt-day) + 244px) !important; }
+body.dt:not(.dt-ngang).dt-noi-co.dt-sap-co.dt-nhat-co #dt .dt-go { top: calc(var(--dt-day) - 274px); }
+body.dt:not(.dt-ngang).dt-noi-co.dt-sap-co.dt-nhat-co #dt .dt-tin { bottom: calc(100% - var(--dt-day) + 280px) !important; }
+/* bảng Giang hồ mở (hàng ô chiêu trên ẩn): cả cụm xuống thấp hơn, vẫn trên hàng vật phẩm */
+body.dt:not(.dt-ngang).dt-luoi #dt .dt-noi, body.dt:not(.dt-ngang).dt-thap #dt .dt-noi, body.dt:not(.dt-ngang).dt-luoi #dt .dt-nhat, body.dt:not(.dt-ngang).dt-thap #dt .dt-nhat, body.dt:not(.dt-ngang).dt-luoi #dt .dt-sap, body.dt:not(.dt-ngang).dt-thap #dt .dt-sap { top: calc(var(--dt-day) - 104px); }
+body.dt:not(.dt-ngang).dt-luoi #dt .dt-go, body.dt:not(.dt-ngang).dt-thap #dt .dt-go { top: calc(var(--dt-day) - 140px); }
+body.dt:not(.dt-ngang).dt-luoi #dt .dt-tin, body.dt:not(.dt-ngang).dt-thap #dt .dt-tin { bottom: calc(100% - var(--dt-day) + 146px) !important; }
+body.dt:not(.dt-ngang).dt-luoi.dt-noi-co #dt .dt-nhat, body.dt:not(.dt-ngang).dt-thap.dt-noi-co #dt .dt-nhat, body.dt:not(.dt-ngang).dt-luoi.dt-noi-co #dt .dt-sap, body.dt:not(.dt-ngang).dt-thap.dt-noi-co #dt .dt-sap, body.dt:not(.dt-ngang).dt-luoi.dt-sap-co #dt .dt-nhat, body.dt:not(.dt-ngang).dt-thap.dt-sap-co #dt .dt-nhat { top: calc(var(--dt-day) - 140px); }
+body.dt:not(.dt-ngang).dt-luoi.dt-noi-co.dt-sap-co #dt .dt-nhat, body.dt:not(.dt-ngang).dt-thap.dt-noi-co.dt-sap-co #dt .dt-nhat { top: calc(var(--dt-day) - 176px); }
+body.dt:not(.dt-ngang).dt-luoi.dt-noi-co.dt-sap-co #dt .dt-go, body.dt:not(.dt-ngang).dt-thap.dt-noi-co.dt-sap-co #dt .dt-go, body.dt:not(.dt-ngang).dt-luoi.dt-noi-co.dt-nhat-co #dt .dt-go, body.dt:not(.dt-ngang).dt-thap.dt-noi-co.dt-nhat-co #dt .dt-go, body.dt:not(.dt-ngang).dt-luoi.dt-sap-co.dt-nhat-co #dt .dt-go, body.dt:not(.dt-ngang).dt-thap.dt-sap-co.dt-nhat-co #dt .dt-go { top: calc(var(--dt-day) - 176px); }
+body.dt:not(.dt-ngang).dt-luoi.dt-noi-co.dt-sap-co #dt .dt-tin, body.dt:not(.dt-ngang).dt-thap.dt-noi-co.dt-sap-co #dt .dt-tin, body.dt:not(.dt-ngang).dt-luoi.dt-noi-co.dt-nhat-co #dt .dt-tin, body.dt:not(.dt-ngang).dt-thap.dt-noi-co.dt-nhat-co #dt .dt-tin, body.dt:not(.dt-ngang).dt-luoi.dt-sap-co.dt-nhat-co #dt .dt-tin, body.dt:not(.dt-ngang).dt-thap.dt-sap-co.dt-nhat-co #dt .dt-tin { bottom: calc(100% - var(--dt-day) + 182px) !important; }
+body.dt:not(.dt-ngang).dt-luoi.dt-noi-co.dt-sap-co.dt-nhat-co #dt .dt-go, body.dt:not(.dt-ngang).dt-thap.dt-noi-co.dt-sap-co.dt-nhat-co #dt .dt-go { top: calc(var(--dt-day) - 212px); }
+body.dt:not(.dt-ngang).dt-luoi.dt-noi-co.dt-sap-co.dt-nhat-co #dt .dt-tin, body.dt:not(.dt-ngang).dt-thap.dt-noi-co.dt-sap-co.dt-nhat-co #dt .dt-tin { bottom: calc(100% - var(--dt-day) + 218px) !important; }
+
+/* ===== Khoa cap 2: chi 1 hinh khoa (Huy 07:50 27/11/2026) =====
+   Anh goc khoa_mo.png/khoa_dong.png 38x23 chua 2 o khoa giong nhau canh nhau;
+   background-size: contain (luat cuoi cu) hien ca 2 o trong 1 nut. Chi lay nua
+   trai cua anh: phong anh gap doi be ngang hop, giu ti le, neo trai + giua doc
+   -> dung 1 o khoa, trang thai dong/mo van doi anh nhu cu, cham do "chua" giu
+   nguyen. Chi nut #dt (dien thoai); nut ban web (.jx-katbtn 19x23, position 0 0)
+   von chi hien 1 o nen khong dung toi. */
+#dt .dt-kat { background-size: 200% auto !important; background-position: 0 50% !important; }
+body.dt:not(.dt-ngang) #dt .dt-kat { background-size: 200% auto, auto !important; background-position: 0 50%, 0 0 !important; }

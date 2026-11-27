@@ -978,7 +978,7 @@ export class World {
       const inRange = d <= reach + m.radius && !p.an;
       if (inRange && (p.atkT > 0 || (plan && plan.wait))) { p.path = null; p.dir = dirOf(m.x - p.x, (m.y - p.y) * 2); this.setAct(p, "stand"); if (p.atkT > 0) p.atkT -= dt * K; return; }
       if (inRange && plan) { p.path = null; this.castStart(plan.id, plan.lv, m, null); return; }
-      if (inRange) { p.hideUntil = 0; p.path = null; p.blur = false; p.dir = dirOf(m.x - p.x, (m.y - p.y) * 2); this.setAct(p, "attack"); p.attack = p.attack === "Attack1" ? "Attack2" : "Attack1"; p.atkN = (p.atkN || 0) + 1; p.hitDone = false; this.P.audio.missile(1, 0, 0.5); return; }
+      if (inRange) { if (!p.voHinh) p.hideUntil = 0; p.path = null; p.blur = false; p.dir = dirOf(m.x - p.x, (m.y - p.y) * 2); this.setAct(p, "attack"); p.attack = p.attack === "Attack1" ? "Attack2" : "Attack1"; p.atkN = (p.atkN || 0) + 1; p.hitDone = false; this.P.audio.missile(1, 0, 0.5); return; }
       // tìm lại đường theo nhịp 0,4 s (quái di chuyển) hoặc ngay khi đã đi hết đường mà chưa tới tầm đánh
       p.repath = (p.repath || 0) - dt;
       if (p.repath <= 0 || !p.path || !p.path.length) {
@@ -1285,7 +1285,7 @@ export class World {
     // đội (m.vaDoi — vadoi.js, anh 31/10) cũng vậy: máy chủ bãi chọn mục tiêu từng con, chưa có mục tiêu thì đứng (máy chủ bãi báo vị trí)
     const p = m.btg || m.vaDoi ? m.muc || BTG_TRONG : this.player, minh = p === this.player;
     // ẩn thân / đứng trong khu an toàn của thôn / thành (anh 02/11 — trạng thái phi chiến đấu): quái không thấy, bỏ đuổi về chỗ
-    const alive = p.hp > 0, spk = this.P.vc ? this.mobSpeedK(m) : 1, seen = alive && !(p.hideUntil > this.time) && !this.map.an(p.x, p.y);
+    const alive = p.hp > 0, spk = this.P.vc ? this.mobSpeedK(m) : 1, seen = alive && !p.voHinh && !(p.hideUntil > this.time) && !this.map.an(p.x, p.y);
     // quân Phong Hỏa có chiêu (vocong.js ganChieuDs — anh 04/11 lượt 25): chiêu vào người chơi ở tầm chiêu (m.reach), đánh NPC phe kia đòn thường ở tầm cũ
     const tam = p.kind === "mob" && m.reachNpc ? m.reachNpc : m.reach;
     if (m.vaDoi) { m.aggro = !!m.muc && seen; m.leash = false; }
@@ -1413,6 +1413,9 @@ export class World {
   // nguồn khác (quái, không rõ) không xét
   ganBoss(src, m) { const a = src && (src === this.player || src.pt) ? src : null; return !a || !Number.isFinite(a.x) || ldist(a.x, a.y, m.x, m.y) <= BOSS_TAM * SCALE + (m.radius || 0) + 40; }
   hit(src, dst, dmg, sk) { // sk: mã chiêu của đòn (npcHit) — đòn thường: 0 / không có
+    // tàng hình test1 (tang-hinh.js): đang ẩn thì không nhận bất kỳ sát thương nào, không chết được — kể cả đòn đang bay, độc,
+    // Tống Kim (tkTrungThang cũng qua đây). Mọi sát thương vào mình đều qua hit() nên chặn ở đây là chặn hết.
+    if (dst === this.player && dst.voHinh) return;
     if (dst.coc && !dst.alive) return; // cọc đảo Tẩy Tủy đã vỡ, chờ mọc lại
     // boss (auto.js laBoss): đòn từ xa hơn BOSS_TAM không tính — bắn chiêu vào đất từ xa, vòng sáng hại… (anh 16/11); độc / phản đòn đã dính từ trước vẫn tính
     // quản trị bật "Một đòn chết" (công cụ thử): đánh từ xa cũng tính (anh 18/11 — siêu boss không chết 1 đòn trên máy thật)

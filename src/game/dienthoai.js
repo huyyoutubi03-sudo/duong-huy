@@ -225,8 +225,8 @@ export class DienThoai {
 <div class="dt-bcua" data-a="baucua">${XUC_XAC}<span></span></div>
 <div class="dt-kat" data-a="khoaat"></div>
 <div class="dt-tmnut" data-a="tumau"><i></i><span>Túi tử mẫu</span></div>
-<div class="dt-tin"></div>
-<div class="dt-nutt" data-a="chat">${ic("chat", 20)}Chat</div>
+<div class="dt-tin" data-a="chat"></div>
+<input class="dt-go" maxlength="${H.M.input.max || 80}" spellcheck="false" autocomplete="off" enterkeyhint="send" placeholder="Nói gì thì nói đi…">
 <div class="dt-moidoi" data-a="moidoi" style="display:none"><i style="background-image:url('${A}ui/hud/btn/tin_doi.png')"></i><b></b><div class="dt-moip" data-a="moip" style="display:none"></div></div>
 <div class="dt-can"><b><i></i></b></div>
 <div class="dt-okhoa" data-a="okhoa">${KHOA_SVG}</div>
@@ -263,6 +263,8 @@ export class DienThoai {
     this.mmCv = el.querySelector(".dt-mm canvas");
     el.addEventListener("click", (e) => this._bam(e));
     el.querySelector(".dt-cgo").addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); this._gui(); } });
+    // ô viết chữ nhanh thay nút Chat (Huy 07:31 + 07:32 27/11/2026): bấm vào gõ ngay, Enter là gửi như ô khung chat
+    el.querySelector(".dt-go").addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); this._gui(el.querySelector(".dt-go")); } });
     if (!document.fullscreenEnabled) el.querySelector('[data-a="toan"]').style.display = "none"; // iPhone: trình duyệt không cho toàn màn hình
     // ô dùng nhanh / ô kỹ năng của thanh dưới máy tính: giữ nguyên phần tử (hud.js vẫn vẽ icon, số bình, hồi chiêu), chỉ đặt chỗ mới (game.css .dt-o)
     for (const [sel, chu, , hang] of O_NHANH) {
@@ -523,8 +525,9 @@ export class DienThoai {
     this._chu(".dt-bdl-dau em", H.mm.querySelector(".jx-mm-pos").textContent);
   }
   // gửi chat: chữ qua ô gõ của thanh dưới máy tính rồi hud.send (giới hạn gửi của kênh như client — gửi quá nhanh thì giữ lại chữ)
-  _gui() {
-    const H = this.H, a = this.el.querySelector(".dt-cgo"), b = H.bot.querySelector(".jx-input");
+  // ô nguồn: mặc định ô khung chat (.dt-cgo), ô viết nhanh (.dt-go) thì truyền vào
+  _gui(o) {
+    const H = this.H, a = o || this.el.querySelector(".dt-cgo"), b = H.bot.querySelector(".jx-input");
     if (!a.value.trim()) return;
     b.value = a.value; H.send(); a.value = b.value; b.value = "";
     this.sig.chat = null; this.sig.chatCuoi = true;
@@ -804,6 +807,7 @@ export class DienThoai {
       const c = H.channel === "PRIVATE" ? H.M.chat.stranger : H.M.chat.channels[H.channel], k = this.el.querySelector(".dt-ckenh");
       k.style.backgroundImage = c && c.menuImg ? `url('${A}ui/hud/${c.menuImg.file}')` : "";
       const go = this.el.querySelector(".dt-cgo"); if (go) go.placeholder = H.channel === "PRIVATE" && H.matToi ? `Mật ${H.matToi}: …` : "Nói gì thì nói đi…";
+      const goN = this.el.querySelector(".dt-go"); if (goN) goN.placeholder = go ? go.placeholder : (H.channel === "PRIVATE" && H.matToi ? `Mật ${H.matToi}: …` : "Nói gì thì nói đi…");
       this.el.querySelectorAll(".dt-cmenu > div").forEach((d, i) => d.classList.toggle("on", this.kenhDs[i] === H.channel));
     }
   }
@@ -894,6 +898,12 @@ export class DienThoai {
       tinEl.innerHTML = M.slice(canh ? 1 - nTin : -nTin).map((m) => m.ch === "TIN" ? `<div class="tin">${esc(m.text)}</div>` : `<div${m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? ' class="ht"' : ""}><b>${esc(m.name || "")}</b>${m.name ? ": " : ""}${m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? chuMau(m.text) : BieuCam.html(m.text)}</div>`).join("")
         + (canh ? `<div class="canh">${esc(canh[0])}</div>` : "");
     } else if (performance.now() - (this.tinLuc || 0) > TIN_HIEN && !tinEl.classList.contains("an")) tinEl.classList.add("an");
+    // ô viết nhanh (.dt-go): gợi ý theo kênh đang chọn như ô khung chat (kênh đổi thì đổi theo, kể cả lúc khung chat đóng)
+    const kk2 = H.channel + "|" + (H.matToi || "");
+    if (this.sig.goKenh !== kk2) {
+      this.sig.goKenh = kk2;
+      const go = this.el.querySelector(".dt-go"); if (go) go.placeholder = H.channel === "PRIVATE" && H.matToi ? `Mật ${H.matToi}: …` : "Nói gì thì nói đi…";
+    }
     // nút lời mời tổ đội cạnh nút Chat (anh 06/11 — máy tính: biểu tượng góc phải dưới, hud.js moiDoi): có lời mời thì hiện, chưa xem thì nhấp nháy;
     // bảng mở (chạm nút — anh 06/11 chiều "cho đồng bộ" với máy tính): mỗi lời mời 1 dòng câu client + 3 nút Đồng ý / Cự tuyệt / Xem nhẹ bên phải nút
     const mt = H.moiTrangThai(), mSig = mt.n + "|" + mt.nhay + "|" + (mt.mo ? mt.ds.map((m) => m.id).join(",") : "");

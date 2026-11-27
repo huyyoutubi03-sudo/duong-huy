@@ -59,6 +59,8 @@ function khangO(w, ten, A, v, c) {
 }
 
 const SERIES = ["Kim", "Mộc", "Thủy", "Hỏa", "Thổ"];
+// Mẫu A (Huy chốt 01:59 ngày 27/11/2026): viền + nền nhẹ theo màu ngũ hành của món — đúng màu tip.json (Metal/Wood/Water/Fire/Earth), icon giữ nguyên
+const MAU_HE = ["rgb(246,255,117)", "rgb(0,255,120)", "rgb(78,124,255)", "rgb(255,90,0)", "rgb(254,207,179)"];
 const fmt = (n) => Math.round(n).toLocaleString("vi-VN");
 // mua lại đồ đã bán cho NPC (anh 13/11 lượt 88 — may-chu/do.js act muaLai): câu khịa của chủ tiệm; danh sách hero.muaLai [{ it: món, gia, het: giờ máy chủ }] còn hạn —
 // now = giờ máy chủ ước tính (lech: GameWindows.mlLech — main.js applyServer)
@@ -262,6 +264,7 @@ export class GameWindows {
       const x = eq[s] && s !== held && ItemDB.item(eq[s].k); // món đang cầm trên tay: ô để trống
       el.querySelector("img")?.remove();
       if (x && x.ic) { const im = document.createElement("img"); im.src = "assets/web/icon/" + x.ic; im.className = "jw-icon"; el.appendChild(im); }
+      this._toHe(el, eq[s], x, true); // mẫu A trên ô trang bị đang mặc: chỉ viền hệ (ô đã có nền riêng của khung)
     }
   }
 
@@ -327,6 +330,7 @@ export class GameWindows {
       const x = w.soi.equip[s] && ItemDB.item(w.soi.equip[s].k);
       el.querySelector("img")?.remove();
       if (x && x.ic) { const im = document.createElement("img"); im.src = "assets/web/icon/" + x.ic; im.className = "jw-icon"; el.appendChild(im); }
+      this._toHe(el, w.soi.equip[s], x, true); // mẫu A trên ô trang bị của người được xem: chỉ viền hệ
     }
     // thẻ Thuộc tính (mẫu B)
     this._suaNen(w, "Thông tin nhân vật");
@@ -766,11 +770,29 @@ export class GameWindows {
     }
   }
 
+  // Mẫu A (Huy chốt 27/11/2026): hệ của món lấy từ món thực tế (trường s do máy chủ gieo — như ô xem món itemtip.js), dự phòng kho đồ.
+  // Không hệ (s = -1 / vắng) hoặc thuốc / phù / Kỳ Trân Các: -1 = giữ nguyên như cũ, không tô.
+  _heCua(inst, pack) {
+    const x = pack || {};
+    if (x.thuoc || x.phu || x.ktc) return -1;
+    if (inst && inst.s != null && inst.s >= 0 && inst.s < 5) return inst.s;
+    return x.s >= 0 && x.s < 5 ? x.s : -1;
+  }
+  // Tô ô theo mẫu A: lưới (chiVien = 0: viền + nền nhẹ) hoặc ô cố định / hàng danh sách (chiVien = 1: chỉ viền). Không hệ: gỡ sạch để ô dùng lại không dính màu cũ.
+  _toHe(el, inst, pack, chiVien) {
+    const s = this._heCua(inst, pack);
+    el.classList.remove("jw-he", "jw-he-v"); el.style.removeProperty("--he");
+    if (s < 0) return;
+    el.style.setProperty("--he", MAU_HE[s]);
+    el.classList.add(chiVien ? "jw-he-v" : "jw-he");
+  }
+
   // 1 món của lưới (túi / rương): nền từng ô (trang bị: xanh mặc được / đỏ sậm không mặc được), icon, số bình (món xếp chồng)
-  _itemEl(h, b, x, B, held) {
+  _itemEl(h, b, x, B, held, plain) {
     const [cw, ch] = x.c || [1, 1], bg = canWear(h, b) ? "ok" : "no", pot = x.thuoc || x.phu || x.ktc; // món Kỳ Trân Các: số chồng (lễ bao: số viên còn)
     const el = document.createElement("div");
     el.className = "jw-it" + (b.u === held ? " held" : "");
+    if (!plain) this._toHe(el, b, x); // mẫu A — khung giao dịch 2 bên (plain) giữ nguyên như cũ
     Object.assign(el.style, { left: b.x * UNIT + "px", top: b.y * UNIT + "px", width: cw * UNIT + "px", height: ch * UNIT + "px" });
     let html = "";
     if (!pot) for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++) html += `<i class="jw-cell ${bg}" style="left:${i * UNIT + B}px;top:${j * UNIT + B}px;width:${UNIT - 2 * B}px;height:${UNIT - 2 * B}px"></i>`;
@@ -1106,6 +1128,7 @@ export class GameWindows {
     for (const { e: ml, x, eq, at, cw, ch } of this.mlPages[this.mlPage] || []) {
       const e = ml.it; // món (giữ nguyên trường của món — hạn sử dụng riêng của ngựa…); giá / hạn mua lại ở ml
       const el = document.createElement("div"); el.className = "jw-it";
+      if (eq) this._toHe(el, e, x); // mẫu A — chỉ trang bị; thuốc/phù giữ nguyên
       Object.assign(el.style, { left: at[0] * UNIT + "px", top: at[1] * UNIT + "px", width: cw * UNIT + "px", height: ch * UNIT + "px" });
       el.innerHTML = (x.ic ? `<img class="jw-icon" src="assets/web/icon/${esc(x.ic)}" alt="">` : "") + (!eq && (e.n | 0) > 1 ? `<b class="jw-n">${e.n}</b>` : "");
       const con = () => { const s = Math.max(0, Math.round((ml.het - Date.now() - (this.mlLech || 0)) / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
@@ -1130,6 +1153,7 @@ export class GameWindows {
       const tk = this.shopTk && x.thuoc, k = o.k, gia = o.gia ?? (tk ? TK_GIA_THUOC : x.gia);
       const el = document.createElement("div"), it = { k, gia, ...(eq ? { s: o.s, d: [] } : {}), ...(tk ? { tk: 1 } : {}), ...(o.lpCon != null ? { lpCon: o.lpCon } : {}) };
       el.className = "jw-it" + (o.mo ? " bh-lp-mo" : ""); // Lễ phẩm chưa đổi được (cấp Khu Lễ vật / hết lượt tuần): mờ
+      if (eq) this._toHe(el, it, x); // mẫu A — chỉ trang bị; thuốc: không tô nền (như client)
       Object.assign(el.style, { left: at[0] * UNIT + "px", top: at[1] * UNIT + "px", width: cw * UNIT + "px", height: ch * UNIT + "px" });
       el.innerHTML = x.ic ? `<img class="jw-icon" src="assets/web/icon/${esc(x.ic)}" alt="">` : ""; // thuốc: không tô nền (như client)
       // điện thoại (anh 30/10 lần 2 "mua 1 món đồ mà phải bấm 2 lần, khá là nhọc nhằn"): hàng nút dưới ô xem — "Mua" mua ngay 1 món (đồ chỉ
@@ -1869,6 +1893,7 @@ export class GameWindows {
       const el = w.node(ten); if (!el) continue;
       el.querySelectorAll("img.jw-icon, b.jw-n").forEach((e) => e.remove());
       const b = this._khamMon(o), x = b && ItemDB.item(b.k);
+      if (o === "mon") this._toHe(el, b, x, true); // mẫu A trên ô món khảm: chỉ viền hệ (ô đá khảm không tô — không phải trang bị)
       if (b) delete el.dataset.tip; else el.dataset.tip = this._khamGoiY(o);
       if (!x || !x.ic) continue;
       const im = document.createElement("img");
@@ -2114,7 +2139,7 @@ export class GameWindows {
       box.querySelectorAll(".jw-it").forEach((e) => e.remove());
       for (const b of list) {
         const x = ItemDB.item(b.k); if (!x) continue;
-        const el = this._itemEl(h, b, x, B, tay);
+        const el = this._itemEl(h, b, x, B, tay, true); // khung giao dịch 2 bên: đã rà — giữ nguyên như cũ (khung thương lượng, màu trạng thái khóa/xác nhận riêng), không tô mẫu A
         el.onmousemove = (e) => { if (!this.hand) this._showTip(b, e, xem ? undefined : xem === false ? "Bấm: cầm lên · Chuột phải: trả về hành trang" : "Bấm: cầm lên (đặt vào ô giao dịch) · Chuột phải: đặt vào ô giao dịch"); };
         el.onmouseleave = () => this._hideTip();
         box.appendChild(el);

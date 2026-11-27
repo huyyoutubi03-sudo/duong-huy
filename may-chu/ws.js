@@ -172,7 +172,9 @@ const coCu = () => soCu > 0;
 nhan("chieu", (kn, m) => {
   const t = Date.now(), lk = m.pt === 0 || m.pt === 1 ? "chieuLuc" + m.pt : "chieuLuc"; // phân thân: lượt riêng (soát 05/11)
   if (kn.zone == null || t - (kn[lk] || 0) < 60) return; kn[lk] = t;
-  const p = require("./the-gioi.js").dangChoi(kn.ten); if (!p) return;
+  const TG = require("./the-gioi.js");
+  const p = TG.dangChoi(kn.ten); if (!p) return;
+  if (TG.an(kn.ten)) return; // tàng hình: không phát hiệu ứng chiêu cho người khác thấy (vị trí + chiêu đều lộ)
   const so = (v) => Math.max(0, Math.min(1e6, Math.round(+v || 0)));
   guiBai(kn.zone, { t: "chieu", ten: p.name, id: so(m.id), lv: Math.min(99, so(m.lv)), x: so(m.x), y: so(m.y), px: so(m.px), py: so(m.py), ...(m.pt === 0 || m.pt === 1 ? { pt: m.pt } : {}) }, kn, true);
 });

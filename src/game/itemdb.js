@@ -47,6 +47,7 @@ export const ItemDB = {
     return (this._p = this._p || Promise.all([json(BASE + "items.json"), json("assets/data/do-goc.json"), json("assets/data/attr.json"), json("assets/data/thuoc.json"), json("assets/data/vat-pham.json").catch(() => ({ items: {}, shops: {} })),
       json("assets/data/ky-tran-cac.json").catch(() => ({ items: {}, the: [], buff: {} }))]).then(([p, g, attr, th, vp, ktc]) => {
       this.pack = p; this.by = new Map(p.items.map((x) => [x.k, x]));
+      for (const x of p.items) x.c = [1, 1]; // Huy lệnh 27/11/2026: mọi trang bị chỉ chiếm 1 ô trong hành trang (lưới 6×10 giữ nguyên 60 ô) — mọi chỗ vẽ lưới client đều đọc x.c; thuốc / phù / Kỳ Trân Các không nằm trong p.items nên giữ nguyên
       for (const [k, x] of Object.entries(th.items)) this.by.set(k, { ...x, k, thuoc: 1 });
       for (const [k, x] of Object.entries(vp.items)) this.by.set(k, { ...x, k });
       // Kỳ Trân Các (anh 27/10 — cong-cu/dung-ky-tran-cac.js): món (ktc: 1, dung = công dụng | null) + thẻ hàng (Xu) + trạng thái vật phẩm

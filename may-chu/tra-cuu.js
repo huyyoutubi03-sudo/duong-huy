@@ -1438,7 +1438,7 @@ function rgHoiThien() {
 }
 function rgNhacVuong() {
   return rgLeBaoMot("nhacVuongLeBao", "leBaoMon", (k, D) => {
-    const m = BY(D.mon) || {}, c = m.c || [1, 1];
+    const m = BY(D.mon) || {}, c = (C.N.coMon ? C.N.coMon({ k: D.mon }) : m.c) || [1, 1];
     nguon(D.mon, `${ten(k)}: mở ra`, ten(k));
     return { tom: `Mở ra ${ten(D.mon)}`, tim: ten(D.mon), noi: [{ p: `Bấm chuột phải: nhận <g>${ten(D.mon)}</g> (cần ${c[0]} × ${c[1]} ô trống).` }, m.goiY ? { p: chuClient(m.goiY) } : { p: chuClient(m.intro) }] };
   });
