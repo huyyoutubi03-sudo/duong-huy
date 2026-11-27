@@ -1418,6 +1418,34 @@ function hdTkVao(bot) {
   batDauHd(bot, "tk", { phe: dk.phe });
   return true;
 }
+// Tản ra trong Tống Kim (27/11/2026): trước đây mọi bot áp sát đúng điểm mục tiêu nên chồng lên nhau (đo thật: 148/170 bot trong vòng R=300, khoảng cách gần nhất ~0).
+// Mỗi bot giữ 1 góc + bán kính riêng quanh mục tiêu + bị đẩy khỏi bot cùng phe gần đó. Sát thương không đổi (botDanh/botBiDanh không xét khoảng cách).
+function gocTan(bot) { let h = 0; const s = String((bot.cfg && bot.cfg.acct) || ""); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
+function diemTan(bot, x, y, phe) {
+  const h = gocTan(bot), g = (h % 360) * Math.PI / 180, R = 120 + (h % 60);
+  let nx = x + R * Math.cos(g), ny = y + (R / 2) * Math.sin(g);
+  for (const o of bots) {
+    if (o === bot || !o.hd || o.hd.loai !== "tk" || o.hd.phe !== phe) continue;
+    const d = Math.hypot(o.x - nx, (o.y - ny) * 2);
+    if (d < 60) {
+      if (d > 0.01) { const k = (60 - d) / d; nx += (nx - o.x) * k; ny += ((ny - o.y) * k) / 2; }
+      else { nx += 60 * Math.cos(g + 1); ny += 30 * Math.sin(g + 1); }
+    }
+  }
+  return [nx, ny];
+}
+// dem bot cung phe dang nham moi muc tieu — tinh 1 lan moi nhip 1500ms, chon muc tieu tan ra (toi da 3 bot/muc tieu, het thi lay gan nhat)
+let demMucTick = -1, demMuc = new Map();
+function demMucLuc() {
+  if (demMucTick === tickN) return demMuc;
+  demMucTick = tickN; demMuc = new Map();
+  for (const o of bots) {
+    if (!o.hd || o.hd.loai !== "tk" || !o.hd.mucTk) continue;
+    const k = o.hd.phe + "|" + o.hd.mucTk;
+    demMuc.set(k, (demMuc.get(k) || 0) + 1);
+  }
+  return demMuc;
+}
 function hdTkTick(bot) {
   const D = TK()._thu.D;
   if (!D || D.ket) return ketThucHd(bot, "trận xong");
@@ -1432,50 +1460,56 @@ function hdTkTick(bot) {
   let muc = null, loai = "";
   for (const e of D.binh.values()) {
     if (e.phe === phe || e.bac !== 5 || !(e.mau > 0)) continue;
-    muc = { id: e.id, x: e.x, y: e.y, binh: true }; loai = "soai"; break;
+    muc = { id: e.id, x: e.x, y: e.y, binh: true }; loai = "soai"; bot.hd.mucTk = "soai" + e.id; break;
   }
   if (!muc) {
     let gan = 1e12;
+    const ds = [];
     for (const x of D.nguoi.values()) {
       if (x.phe === phe || x.tk === bot.cfg.acct) continue;
       if (!x.bot) continue; // người thật: máu do trình duyệt họ tự trừ, bot không có đường gửi đòn tới — chỉ đánh được bot/người-máy khác
       const mm = TK().botNguoi(x.tk); if (!mm || !(mm.hp > 0)) continue;
       const p = TG.dangChoi(x.tk);
       if (!p || p.zone !== D.bai) continue;
-      const d = Math.hypot(p.x - bot.x, (p.y - bot.y) * 2);
-      if (d < gan) { gan = d; muc = { tk: x.tk, x: p.x, y: p.y, nguoi: true }; }
+      ds.push({ d: Math.hypot(p.x - bot.x, (p.y - bot.y) * 2), tk: x.tk, x: p.x, y: p.y });
     }
+    ds.sort((a, b) => a.d - b.d);
+    const dem = demMucLuc();
+    const chon = ds.find((c) => (dem.get(phe + "|" + c.tk) || 0) < 3) || ds[0];
+    if (chon) { muc = { tk: chon.tk, x: chon.x, y: chon.y, nguoi: true }; gan = chon.d; bot.hd.mucTk = chon.tk; }
     if (muc) {
       loai = "nguoi";
       if (gan > 400) {
         // SỬA 26/11/2026 (bot Tống Kim không đánh nhau): trước đây người địch xa hơn 400 thì
         // bỏ mục tiêu, rẽ sang đánh mù quân — quân hồi vô hạn nên bot mài quân cả trận, gần như
         // không chạm mặt nhau. Nay: còn người địch sống thì áp sát đúng người đó, không rẽ sang quân.
-        buocToi(bot, muc.x, muc.y, 200); bot.act = "run";
+        buocToi(bot, ...diemTan(bot, muc.x, muc.y, phe), 200); bot.act = "run";
         return;
       }
     }
   }
   if (!muc) {
-    let gan = 1e12;
-    const vt = D.vt;
+    const vt = D.vt, ds = [];
     for (const b of [...D.bot.values(), ...D.binh.values()]) {
       if (b.phe === phe || b.chet || !(b.mau > 0)) continue;
       const v = vt.get(b.id), bx = v ? v[0] : null, by = v ? v[1] : null;
-      const d = bx == null ? 1e9 : Math.hypot(bx - bot.x, (by - bot.y) * 2);
-      if (d < gan) { gan = d; muc = { id: b.id, x: bx, y: by, binh: !!b.bac }; }
+      ds.push({ d: bx == null ? 1e9 : Math.hypot(bx - bot.x, (by - bot.y) * 2), id: b.id, x: bx, y: by, binh: !!b.bac });
     }
+    ds.sort((a, b) => a.d - b.d);
+    const dem = demMucLuc();
+    const chon = ds.find((c) => (dem.get(phe + "|b" + c.id) || 0) < 3) || ds[0];
+    if (chon) { muc = { id: chon.id, x: chon.x, y: chon.y, binh: chon.binh }; bot.hd.mucTk = "b" + chon.id; }
     if (muc && muc.x == null) { // không có vị trí từ chủ trận: tiến về doanh địch, đánh mù trong giới hạn phe/hạn mức
       const tr = D.trai[1 - phe];
-      buocToi(bot, tr[0], tr[1], 200); bot.act = "run";
+      buocToi(bot, ...diemTan(bot, tr[0], tr[1], phe), 200); bot.act = "run";
       const dmg = donHoatDong(bot);
       if (dmg > 0) TK().botDanh(bot.cfg.acct, [[muc.id, dmg]]);
       return;
     }
     if (muc) loai = "bot";
   }
-  if (!muc) { const tr = D.trai[1 - phe]; buocToi(bot, tr[0], tr[1], 200); bot.act = "run"; return; }
-  const toi = buocToi(bot, muc.x, muc.y, 200);
+  if (!muc) { bot.hd.mucTk = null; const tr = D.trai[1 - phe]; buocToi(bot, ...diemTan(bot, tr[0], tr[1], phe), 200); bot.act = "run"; return; }
+  const toi = buocToi(bot, ...diemTan(bot, muc.x, muc.y, phe), 200);
   bot.act = toi ? "attack" : "run";
   const dmg = donHoatDong(bot);
   if (dmg <= 0) return;

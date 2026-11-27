@@ -135,6 +135,55 @@ function soaiChu(p, now, ngan) {
 // giờ: báo danh -> khai chiến sau; đánh -> còn lại; xong -> đã kết thúc
 const gioTran = (p, now) => (p.pha === "bd" ? ["Khai chiến:", mmss((+p.kc || 0) - now)] : p.pha === "xong" ? ["Đã kết thúc", ""] : ["Còn lại:", mmss((+p.het || 0) - now)]);
 
+// ---------- bảng xếp hạng (27/11/2026 — Huy lệnh 10:59 + 11:26) ----------
+// Dữ liệu sẵn có, không thêm nhịp máy chủ: trong trận gộp p.top (10 đầu, cả bot) + p.ng (mọi người trong phòng); xong trận lấy ket.bang (30 đầu) + ket.me.
+// Sắp: điểm giảm dần, giết giảm dần, tên tăng dần. Trả { rows, meHang, tong, diem }; hàng của mình mang r.hang = hạng thật của máy chủ (khi có).
+export function bangXepHang(p, ket, ctx) {
+  const ten = String((ctx && ctx.ten) || "");
+  const xem = new Map();
+  const them = (r) => {
+    if (!Array.isArray(r)) return;
+    const t = String(r[0] || ""); if (!t || xem.has(t)) return;
+    xem.set(t, { ten: t, phe: p01(r[1]), diem: +r[2] || 0, giet: +r[3] || 0, chet: +r[4] || 0 });
+  };
+  let diem = [0, 0];
+  if (ket && typeof ket === "object") {
+    dsDong(ket.bang).forEach(them);
+    diem = diemPhe(ket.diem);
+    const me = ket.me && typeof ket.me === "object" ? ket.me : null;
+    if (me && String(me.ten || ten)) them([me.ten || ten, me.phe, me.diem, me.giet, me.chet]);
+  } else if (p && typeof p === "object") {
+    dsDong(p.top).forEach(them);
+    dsDong(p.ng).forEach(them);
+    diem = diemPhe(p.diem);
+  }
+  const rows = [...xem.values()].sort((a, b) => b.diem - a.diem || b.giet - a.giet || (a.ten < b.ten ? -1 : a.ten > b.ten ? 1 : 0));
+  let meHang = 0;
+  if (ten) { const i = rows.findIndex((r) => r.ten === ten); meHang = i >= 0 ? i + 1 : 0; }
+  if (ket && ket.me && (ket.me.hang | 0) > 0) {
+    meHang = ket.me.hang | 0;
+    const me = rows.find((r) => r.ten === String(ket.me.ten || ten));
+    if (me) me.hang = meHang;
+  }
+  return { rows, meHang, tong: rows.length, diem };
+}
+// HTML bảng: gọn = 10 đầu + dòng của mình (nếu ngoài 10); rộng = tất cả, cuộn. Bấm đầu khung thì đổi cỡ (xem ChienBao.taoBxh).
+function htmlBxh(b, ctx, rong) {
+  const ten = String((ctx && ctx.ten) || "");
+  const hang = (r, i) => `<div class="r${r.ten === ten ? " toi" : ""}"><span class="h">${r.hang || i + 1}</span><span class="t">${esc(r.ten)}</span><span class="p">${tenP(PHE[r.phe], r.phe)}</span><span class="n">${so(r.diem)}</span><span class="n">${so(r.giet)}</span><span class="n">${so(r.chet)}</span></div>`;
+  const hien = rong ? b.rows : b.rows.slice(0, 10);
+  let than = `<div class="r tieude"><span class="h">Hạng</span><span class="t">Tên</span><span class="p">Phe</span><span class="n">Điểm</span><span class="n">Giết</span><span class="n">Chết</span></div>`
+    + hien.map(hang).join("");
+  if (!rong && ten) {
+    const me = b.rows.find((r) => r.ten === ten);
+    if (me && !hien.includes(me)) than += `<div class="r cach"><span>…</span></div>` + hang(me, b.rows.indexOf(me));
+  }
+  if (!b.rows.length) than += `<div class="r cach"><span>Chưa có ai lập công.</span></div>`;
+  return `<div class="dau"><span class="mo">${rong ? "Thu gọn ▴" : "Mở rộng ▾"}</span><span class="tieu">Bảng xếp hạng Tống Kim</span><span class="x">✕</span></div>`
+    + `<div class="than">${than}</div>`
+    + `<div class="chan">${tenP("Tống " + so(b.diem[0]), 0)} — ${tenP(so(b.diem[1]) + " Kim", 1)} · ${b.tong} người</div>`;
+}
+
 // ---------- HTML ----------
 // A — chiến báo tức thời (bố cục 即时战报界面.ini)
 function htmlCbA(p, ctx) {
@@ -189,7 +238,7 @@ function htmlKqA(ket, ctx, p) {
     h += `<div class="o ten${t.length > 18 ? " hep" : ""}" style="left:${KQA.tenX}px;top:${y}px">${esc(t)}</div>`
       + `<div class="o${c ? " " + c : ""}${String(v).length > 18 ? " hep" : ""}" style="left:${KQA.giaTriX}px;top:${y}px">${esc(v)}</div>`;
   });
-  return h + `<div class="dong"></div>`;
+  return h + `<div class="bxh-mo">Bảng xếp hạng</div><div class="dong"></div>`;
 }
 // B — kết quả khung 排名 "Xếp hạng": cột trái bảng điểm, cột phải phe thắng / mình / 4 ô thưởng / vinh danh
 function htmlKqB(ket, ctx, p, dem) {
@@ -214,7 +263,8 @@ function htmlKqB(ket, ctx, p, dem) {
     + `<div class="h">Phần thưởng${th ? ` <span class="xanh">${so(th.kn)} kinh nghiệm</span>` : ""}${ket.x2 ? ` <span class="toi">(Thiên Tử ×${HS_X2})</span>` : ""}</div>` + qua
     + `<div class="h">Vinh danh</div>`
     + `<div class="dg"><span class="xam">Phong Vân</span> ${ten2(V.phongVan)} · <span class="xam">PK</span> ${ten2(V.pk)}${V.pk ? " " + V.pk.v : ""}</div>`
-    + `<div class="dg"><span class="xam">NPC Thiên Địch</span> ${ten2(V.npc)}${V.npc ? " " + V.npc.v : ""}</div>`;
+    + `<div class="dg"><span class="xam">NPC Thiên Địch</span> ${ten2(V.npc)}${V.npc ? " " + V.npc.v : ""}</div>`
+    + `<div class="bxh-mo">Bảng xếp hạng</div>`;
   return `<div class="cot1">${trai}</div><div class="cot2">${phai}</div><div class="dong"></div>`;
 }
 
@@ -222,6 +272,7 @@ function htmlKqB(ket, ctx, p, dem) {
 export const ChienBao = {
   p: null, ctx: null, dt: null, ket: null, ketKhoa: "", nut: null, cb: null, kq: null, cbMo: false, kqMo: false,
   dem: [0, 0], _cbP: null, _cbLuc: 0, _nutLuc: 0, _day: 0, _dayLuc: 0, _man: "", _phim: null, _phimOn: false,
+  bxh: null, bxhMo: false, bxhRong: false, bxhNut: null, _bxhSig: "", _bxhLuc: 0,
 
   // mỗi khung (tongkim.js tick) lúc ở trận thật
   ve(p, ctx) {
@@ -232,6 +283,7 @@ export const ChienBao = {
     this.demNguoi(p);
     this.veNut();
     if (this.cbMo) this.veCb();
+    if (this.bxhMo) this.veBxh();
     if (this.kqMo && this.kq) this.datCho(this.kq, this.dt ? "kqB" : "kqA");
   },
   // xong trận (1 lần): đóng chiến báo, mở bảng kết thúc; máy tính: phần thưởng của mình thành dòng tin
@@ -242,6 +294,7 @@ export const ChienBao = {
     this.ket = ket;
     if (this.cbMo) this.dongCb();
     this.moKq();
+    if (this.bxhMo) this.veBxh(true);
     const k = [ket.ra, diemPhe(ket.diem).join(":"), ket.thang].join("|");
     if (k !== this.ketKhoa) { this.ketKhoa = k; if (!this.dt) this.baoThuong(ket); }
     if (this.nut) { this._nutLuc = 0; this.veNut(); }
@@ -270,7 +323,7 @@ export const ChienBao = {
     if (t - this._nutLuc < CHO_MS && b.style.display !== "none") return;
     this._nutLuc = t;
     const tt = document.getElementById("tktt"), r = tt && tt.style.display !== "none" ? tt.getBoundingClientRect() : null;
-    if (!r || !r.height) { if (b.style.display !== "none") b.style.display = "none"; return; }
+    if (!r || !r.height) { if (b.style.display !== "none") b.style.display = "none"; if (this.bxhNut && this.bxhNut.style.display !== "none") this.bxhNut.style.display = "none"; return; }
     let day = Math.round(r.bottom + (this.dt ? 2 : 3)), man = innerWidth + "x" + innerHeight;
     if (man !== this._man) { this._man = man; this._day = 0; } // đổi cỡ màn: đặt lại ngay
     if (day >= this._day || t - this._dayLuc > 10000) { this._day = day; this._dayLuc = t; } else day = this._day;
@@ -279,6 +332,17 @@ export const ChienBao = {
     if (S.right !== phai) S.right = phai;
     if (S.width !== rong) S.width = rong;
     if (S.display === "none") S.display = "";
+    // nút bảng xếp hạng: ngay dưới nút chiến báo
+    if (!this.bxhNut) {
+      const n = (this.bxhNut = document.createElement("div")); n.id = "tkbxh-nut"; n.style.display = "none";
+      n.addEventListener("click", (e) => { e.stopPropagation(); if (this.bxhMo) this.dongBxh(); else this.moBxh(); this._nutLuc = 0; this.veNut(); });
+      document.body.appendChild(n);
+    }
+    const nb = this.bxhNut, chuB = `Bảng xếp hạng ${this.bxhMo ? "▴" : "▾"}`;
+    if (nb._chu !== chuB) { nb._chu = chuB; nb.textContent = chuB; }
+    const rn = b.getBoundingClientRect();
+    nb.style.top = Math.round(rn.bottom + 2) + "px"; nb.style.right = phai; nb.style.width = rong;
+    if (nb.style.display === "none") nb.style.display = "";
   },
   bam() {
     if (this.ket) { if (this.kqMo) this.dongKq(); else this.moKq(); }
@@ -287,7 +351,7 @@ export const ChienBao = {
   },
   taoEl(id) {
     const el = document.createElement("div"); el.id = id; el.style.display = "none";
-    el.addEventListener("click", (e) => { if (e.target.closest(".dong")) { e.stopPropagation(); if (id === "tkkq") this.dongKq(); else this.dongCb(); this._nutLuc = 0; this.veNut(); } });
+    el.addEventListener("click", (e) => { if (e.target.closest(".dong")) { e.stopPropagation(); if (id === "tkkq") this.dongKq(); else this.dongCb(); this._nutLuc = 0; this.veNut(); } else if (e.target.closest(".bxh-mo")) { e.stopPropagation(); this.moBxh(); } });
     document.body.appendChild(el);
     return el;
   },
@@ -305,6 +369,33 @@ export const ChienBao = {
       if (el._sig !== h) { el._sig = h; el.innerHTML = h; }
     }
     this.datCho(el, this.dt ? "cbB" : "cbA", ngay);
+    if (el.style.display === "none") el.style.display = "";
+  },
+  // ---------- bảng xếp hạng ----------
+  moBxh() {
+    if (!this.p && !this.ket) return;
+    this.bxhMo = true; this.veBxh(true); this.ganPhim();
+  },
+  dongBxh() { this.bxhMo = false; if (this.bxh) this.bxh.style.display = "none"; this.ganPhim(); },
+  taoBxh() {
+    const el = document.createElement("div"); el.id = "tkbxh"; el.style.display = "none";
+    el.addEventListener("click", (e) => {
+      if (e.target.closest(".x")) { e.stopPropagation(); this.dongBxh(); return; }
+      if (e.target.closest(".dau")) { e.stopPropagation(); this.bxhRong = !this.bxhRong; this.veBxh(true); }
+    });
+    document.body.appendChild(el);
+    return el;
+  },
+  veBxh(ngay) {
+    if (!this.bxhMo) return;
+    const t = performance.now();
+    if (!ngay && t - this._bxhLuc < 500) return;
+    this._bxhLuc = t;
+    const el = this.bxh || (this.bxh = this.taoBxh());
+    const h = htmlBxh(bangXepHang(this.p, this.ket, this.ctx || {}), this.ctx || {}, this.bxhRong);
+    if (ngay || el._sig !== h) { el._sig = h; el.innerHTML = h; }
+    const lop = this.bxhRong ? "rong" : "";
+    if (el.className !== lop) el.className = lop;
     if (el.style.display === "none") el.style.display = "";
   },
   // ---------- bảng kết thúc ----------
@@ -362,10 +453,11 @@ export const ChienBao = {
     if (this.nut) this.nut._chu = "";
     if (this.cbMo && this.p) this.veCb(true);
     if (this.kqMo) this.moKq();
+    if (this.bxhMo) this.veBxh(true);
   },
   // Esc (bắt trước main.js — GW.esc mở bảng hệ thống): đóng bảng kết thúc trước, rồi chiến báo; đang gõ chữ / bảng khác giữ phím thì thôi
   ganPhim() {
-    const can = this.cbMo || this.kqMo;
+    const can = this.cbMo || this.kqMo || this.bxhMo;
     if (!this._phim) this._phim = (e) => this.phim(e);
     if (can === this._phimOn) return;
     this._phimOn = can;
@@ -373,22 +465,24 @@ export const ChienBao = {
   },
   phim(e) {
     if (e.key !== "Escape" || e.ctrlKey || e.altKey || e.shiftKey || e.metaKey) return;
-    const t = e.target, cua = t === document.body || t === document.documentElement || (t && t.id === "cv") || (t && t.closest && t.closest("#tkcb, #tkkq, #tkcb-nut"));
+    const t = e.target, cua = t === document.body || t === document.documentElement || (t && t.id === "cv") || (t && t.closest && t.closest("#tkcb, #tkkq, #tkcb-nut, #tkbxh, #tkbxh-nut"));
     if (!cua) return;
-    if (this.kqMo) this.dongKq(); else if (this.cbMo) this.dongCb(); else return;
+    if (this.bxhMo) this.dongBxh(); else if (this.kqMo) this.dongKq(); else if (this.cbMo) this.dongCb(); else return;
     e.preventDefault(); e.stopPropagation();
     this._nutLuc = 0; if (this.p) this.veNut();
   },
   // tạm mất trạng thái: ẩn nút + chiến báo (giữ cờ mở — có trạng thái lại thì hiện lại); bảng kết thúc giữ nguyên
   an() {
     if (this.nut && this.nut.style.display !== "none") this.nut.style.display = "none";
+    if (this.bxhNut && this.bxhNut.style.display !== "none") this.bxhNut.style.display = "none";
     if (this.cb && this.cb.style.display !== "none") this.cb.style.display = "none";
+    if (this.bxh && this.bxh.style.display !== "none") this.bxh.style.display = "none";
     this.p = null;
   },
   // rời trận: bỏ hết
   boHet() {
-    for (const el of [this.nut, this.cb, this.kq]) if (el) el.style.display = "none";
-    this.cbMo = false; this.kqMo = false; this.ganPhim();
+    for (const el of [this.nut, this.cb, this.kq, this.bxh, this.bxhNut]) if (el) el.style.display = "none";
+    this.cbMo = false; this.kqMo = false; this.bxhMo = false; this.bxhRong = false; this.ganPhim();
     this.p = null; this.ket = null; this._cbP = null; this._day = 0; this.dem = [0, 0];
   },
 };

@@ -240,7 +240,7 @@ export const TongKim = {
       ttBot: (id, cg, cm, hl) => this.gui.st.push(hl > 0 ? [id, cg, cm, hl] : [id, cg, cm]),
       danhNguoi: (ten, d, ref, st) => Net.wsGui({ t: "tkn", ai: ten, v: so(d.v), crit: d.crit ? 1 : 0, ...(st ? { st } : d.cold > 0 ? { st: { cm: 27 } } : {}), src: ref || "" }),
       hoiNguoi: (ten, id, lv, bot) => Net.wsGui({ t: "tkHoiNg", b: "#" + bot, ai: ten, id, lv }) }; // chủ trận: bot hồi máu người cùng phe máy khác
-    this.st = st; this.p = null; this.vaoLuc0 = performance.now(); this.tinLuc = 0; this.rows = new Map(); this.cho = []; this.snap = new Map(); this.pheNguoi = new Map(); this.snKey = ""; this.hoiSinhLuc = 0; this.kk = [];
+    this.st = st; this.p = null; this.vaoLuc0 = performance.now(); this.tinLuc = 0; this.rows = new Map(); this.cho = []; this.snap = new Map(); this._snapQ = null; this._snapDang = false; this.pheNguoi = new Map(); this.snKey = ""; this.hoiSinhLuc = 0; this.kk = [];
     this.kqKhoa = null; this.raLuc = 0; this.daRa = false; this.raKhoa = 0; this.bayKhoa = 0; this.bayTrong = false; this.hot = null; this.buffs.clear(); this._cbCho = null; this.tinDa = 0;
     w.tk = st; w.tkBuffs = this.buffs; w.suKien = true; w.phanThan = [];
     w.mobs = w.mobs.filter((m) => m.tkb || m.tkn); // quái thường của bãi bỏ (bãi thử)
@@ -382,20 +382,42 @@ export const TongKim = {
       L.forEach((e, i) => { e.doi = Math.floor(i / NHOM); const k = phe * 1000 + e.doi; if (!st.nhom.has(k)) st.nhom.set(k, []); st.nhom.get(k).push(e); });
     }
   },
-  // bản chụp nhân vật người trong trận (may-chu/phan-than.js chup): chỉ số để tính chiêu họ phát lại trúng mình + phòng thủ bản chọn mục tiêu
+  // bản chụp nhân vật người trong trận (may-chu/phan-than.js chup): chỉ số để tính chiêu họ phát lại trúng mình + phòng thủ bản chọn mục tiêu.
+  // Tính tkChiSo theo lát, ngân sách 8ms/lát — vào trận 170 người mà tính 1 lúc trong nhịp WS thì treo màn hình (27/11/2026).
   datSnap(sn) {
-    const w = this.w, P = w.P;
+    if (!this._snapQ) this._snapQ = new Map();
     for (const [ten, S] of Object.entries(sn || {})) {
       if (!S || ten === this.api.ten()) continue;
       const k = JSON.stringify(S).length + "|" + (S.lvl | 0); const cu = this.snap.get(ten); if (cu && cu.k === k) continue;
+      this._snapQ.set(ten, { S, k });
+    }
+    if (!this._snapDang) { this._snapDang = true; this._bomSnap(); }
+  },
+  _bomSnap() {
+    const q = this._snapQ;
+    if (!q || !q.size || q !== this._snapQ) { this._snapDang = false; return; }
+    const w = this.w, P = w.P, t0 = performance.now();
+    for (const [ten, job] of q) {
+      q.delete(ten);
+      const cu = this.snap.get(ten);
+      if (cu && cu.k === job.k) continue;
       try {
+        const S = job.S;
         const sex = S.sex === "f" ? "f" : "m", series = S.series | 0;
         const start = S.start && S.start.str != null ? S.start : (P.chr.start || []).find((s) => s.series === series && s.sex === (sex === "f" ? 1 : 0)) || { str: 0, dex: 0, vit: 0, eng: 0 };
         const H = { name: S.name || ten, lvl: S.lvl || 1, sex, series, fac: S.fac ?? null, start, attr: S.attr || {}, equip: S.equip || {}, skills: S.skills || {}, looks: { ...(S.looks || {}), horse: 0 }, oChieu: S.oChieu || {}, danh: S.danh || {} };
-        const A = w.tkChiSo(H); A.p.tkRef = ten; A.k = k;
+        const A = w.tkChiSo(H); A.p.tkRef = ten; A.k = job.k;
         this.snap.set(ten, A);
       } catch (err) { console.warn("Tống Kim — chỉ số", ten, err); }
+      if (performance.now() - t0 > 8) break;
     }
+    if (q.size && q === this._snapQ) {
+      // Lát kế: rAF (tab đang xem) + hẹn giờ dự phòng 120ms (tab ẩn / rAF không chạy) — chỉ lát mới nhất chạy (mã lần).
+      const id = (this._snapLan = (this._snapLan | 0) + 1);
+      const go = () => { if (id === this._snapLan) this._bomSnap(); };
+      if (typeof requestAnimationFrame === "function" && typeof document !== "undefined" && document.visibilityState === "visible") requestAnimationFrame(go);
+      setTimeout(go, 120);
+    } else this._snapDang = false;
   },
   // máu bot / quân [id, máu, máu tối đa, chết, lần hồi sinh]: chết -> ngã; lần hồi sinh đổi -> sống lại (chủ trận đặt chỗ: bot ở doanh / hậu doanh, lính
   // bậc 1 ở chỗ sinh — dòng "bi" mới nhất). Trận thật: "hp" đủ hoặc "hd" chỉ dòng đổi — cùng dạng

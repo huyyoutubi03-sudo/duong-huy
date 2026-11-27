@@ -1418,6 +1418,39 @@ body.dt #tkcb-nut { z-index: 4; padding: 4px 0; text-align: center; }
 #phkq th:first-child, #phkq td:first-child { text-align: left; }
 #phkq tr.toi td { color: #7dff8a; }
 body.dt #phkq { top: 140px; font-size: 12px; min-width: 0; }
+/* Bảng xếp hạng Tống Kim (27/11/2026 — Huy lệnh 10:59 + 11:26): khung riêng trên cùng mọi giao diện (z-index 100001 — trên cả khung
+   đối thoại 100000), mặc định gọn (10 đầu + dòng của mình), bấm đầu khung thì Mở rộng / Thu gọn như nút Mở rộng */
+#tkbxh-nut { position: fixed; z-index: 3; right: 6px; top: 0; box-sizing: border-box; padding: 1px 8px; background: linear-gradient(#3b3a2c, #1c1b14); border: 1px solid #8a7440;
+  box-shadow: 0 0 0 1px #000; font: 13px/16px var(--jx); color: #ffd54a; text-shadow: 1px 1px 0 #000; white-space: nowrap; cursor: pointer; user-select: none; }
+#tkbxh-nut:hover { color: #fff1a8; border-color: #c9a85a; }
+body.dt #tkbxh-nut { z-index: 4; padding: 4px 0; text-align: center; }
+#tkbxh { position: fixed; z-index: 100001; right: 8px; top: 8px; width: 340px; box-sizing: border-box; background: rgba(8,8,8,.93); border: 1px solid #8a7440;
+  box-shadow: 0 0 0 1px #000, 0 4px 18px rgba(0,0,0,.6); font: 13px/17px var(--jx); color: #e9e3cf; text-shadow: 1px 1px 0 #000; }
+#tkbxh .dau { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-bottom: 1px solid #5a4a26; cursor: pointer; user-select: none; }
+#tkbxh .dau .tieu { flex: 1; text-align: center; color: #ffd54a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#tkbxh .dau .mo { color: #c9b27a; white-space: nowrap; }
+#tkbxh .dau .x { padding: 0 4px; color: #e9e3cf; }
+#tkbxh .dau .x:hover { color: #fff; }
+#tkbxh .than { overflow: hidden; max-height: 224px; }
+#tkbxh.rong .than { overflow-y: auto; max-height: 70vh; }
+#tkbxh .r { display: flex; white-space: nowrap; }
+#tkbxh .r > span { flex: none; overflow: hidden; text-overflow: ellipsis; }
+#tkbxh .r .h { width: 38px; text-align: right; padding-right: 6px; }
+#tkbxh .r .t { flex: 1; padding-left: 2px; }
+#tkbxh .r .p { width: 40px; text-align: center; }
+#tkbxh .r .n { width: 48px; text-align: right; padding-right: 4px; }
+#tkbxh .r.tieude { color: #c9b27a; border-bottom: 1px solid #5a4a26; }
+#tkbxh .r.toi { color: #7dff8a; }
+#tkbxh .r.cach { justify-content: center; color: #a9a39a; }
+#tkbxh .song { color: #ffa85e; }
+#tkbxh .kim { color: #ff92ff; }
+#tkbxh .chan { padding: 3px 8px; border-top: 1px solid #5a4a26; color: #c9b27a; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#tkkq.a .bxh-mo { position: absolute; left: 64px; top: 352px; width: 120px; height: 30px; box-sizing: border-box; padding-top: 6px; background: linear-gradient(#3b3a2c, #1c1b14);
+  border: 1px solid #8a7440; box-shadow: 0 0 0 1px #000; font: 13px/16px var(--jx); color: #ffd54a; text-align: center; text-shadow: 1px 1px 0 #000; cursor: pointer; }
+#tkkq.a .bxh-mo:hover { color: #fff1a8; border-color: #c9a85a; }
+#tkkq.b .bxh-mo { margin: 4px 0 0 4px; display: inline-block; padding: 2px 10px; background: linear-gradient(#3b3a2c, #1c1b14); border: 1px solid #8a7440;
+  box-shadow: 0 0 0 1px #000; color: #ffd54a; cursor: pointer; }
+body.dt #tkbxh { left: 4px; right: 4px; top: 120px; width: auto; }
 /* kết quả boss thế giới (windows.js ketQuaBoss — khung 排名.ini, cửa sổ "btgkq"): cột phải — tên boss, hạng của mình, phần thưởng ô 48 × 48 (kinh
    nghiệm: hình PictureList của client; món: icon + số góc dưới phải như ô dùng nhanh) */
 #jxwin .bk-dau { margin: 2px 0 2px 4px; font: 16px/18px "VK Sans Serif 16", monospace; color: rgb(255,217,78); text-shadow: 1px 1px 0 #000; }
