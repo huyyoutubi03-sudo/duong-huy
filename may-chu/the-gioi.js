@@ -43,7 +43,7 @@ const gocCau = () => { const d = new Date(GOC_BAT + 7 * 3600e3).toISOString(); r
 const PT_MAX = 8; // phân thân đang theo gửi cho người cùng bãi: người chơi tối đa phanThan.toiDa (2 — phan-than.js chặn lúc gọi), quản trị không giới hạn (anh 18/11) — gửi tối đa 8
 
 const ben = new Map(); // tên tài khoản -> người đang trong game
-const AN = new Set(); // tài khoản đang tàng hình (chỉ "test1" — Huy lệnh 01:54 27/11/2026): nhịp mang s.th = 1 thì vào, th = 0 / hết nhịp / roi() thì ra;
+const AN = new Set(); // tài khoản đang tàng hình (chỉ "test1"/"test2" — Huy lệnh 01:54 27/11/2026, mở thêm test2 16:57 27/11/2026): nhịp mang s.th = 1 thì vào, th = 0 / hết nhịp / roi() thì ra;
 // người trong AN không vào danh sách ai của người khác (kể cả phân thân), không phát vị trí qua kênh vt/vtb, không nhận "chieu" (may-chu/ws.js),
 // tin chat gửi lúc đang ẩn không lộ tên với người nhận (an — Huy chốt 06:59 27/11/2026)
 const an = (tk) => !!(tk && AN.has(tk.ten)); // có đang tàng hình không (may-chu/ws.js lọc "chieu" dùng)
@@ -128,8 +128,8 @@ function conLai(t) { for (const [k, b] of ben) if (t - b.at > BEN_MS) { ben.dele
 function nhip(tk, b) {
   const t = Date.now(), oNv = nguyen(b.o, 0, tk.nv.length - 1), h = tk.nv[oNv];
   const s = h && sach(b.s);
-  // tàng hình (chỉ test1): cờ theo nhịp mới nhất của chính acc đó; acc khác gửi th cũng không nhận
-  if (tk.ten === "test1") { if (b.s && b.s.th) AN.add(tk.ten); else AN.delete(tk.ten); }
+  // tàng hình (chỉ test1/test2): cờ theo nhịp mới nhất của chính acc đó; acc khác gửi th cũng không nhận
+  if (tk.ten === "test1" || tk.ten === "test2") { if (b.s && b.s.th) AN.add(tk.ten); else AN.delete(tk.ten); }
   // Lôi Đài (soát 16/11): vùng sân không có bản quái chung — bỏ c (báo c = 1 thì người khác c 0 không thấy mình trong ai: vô hình mà vẫn đánh người được)
   if (s && s.chung && LD().laSan(s.zone)) delete s.chung;
   if (s) {

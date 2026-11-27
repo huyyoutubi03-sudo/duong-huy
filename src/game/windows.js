@@ -119,7 +119,7 @@ export class GameWindows {
   constructor(W, api) {
     this.W = W; this.api = api; this.itTip = null;
     this._status(); this._items(); this._itemex(); this._skills(); this._task(); this._system(); this._options(); this._other();
-    this._portrait(); this._market(); this._cart(); this._team(); this._chatroom(); this._friend(); this._shop(); this._trade();
+    this._portrait(); this._market(); this._cart(); this._team(); this._faction(); this._chatroom(); this._friend(); this._shop(); this._trade();
     this._store(); this._money(); this._loginprize(); this._hoi(); this._xephang(); this._banPhim(); this._mk("datmk"); this._mk("doimk"); this._soLuong(); this._nhapChu(); this._tumau(); this._giao(); this._kham(); this._giaoDich(); this._thuong(); this._giupDo(); this._tin(); this._tipChu();
     // chợ trời — bày bán kiểu client (anh 02/11 — src/game/chotroi.js): nút Lời rao / Định giá / Rao bán của Hành trang, khung RAO BÁN, bảng Chợ Trời
     this.cho = new ChoTroi(this);
@@ -131,7 +131,7 @@ export class GameWindows {
   // nút thanh dưới -> cửa sổ (nút Tùy chỉnh = 系统按钮 của client mở bảng hệ thống như phím Esc)
   toggle(btn) {
     if (btn === "ItemEx") { this.toggleTuMau(); return true; }
-    if (btn === "Faction") { this.api.msg("Bang hội: không có trong bản Chien - Vo Lam Xua"); return true; } // bản chia sẻ: bang hội (làm sau Tống Kim) đã gỡ // túi tử mẫu (khung "Mở rộng rương" giờ mở từ nút Mở rộng của rương)
+    if (btn === "Faction") { this.moBangPhai(); return true; } // Bang phái (khung _faction — may-chu/bang-hoi.js đợt 1)
     const key = { Status: "status", Items: "items", Skills: "skills", Task: "task", Options: "system", Market: "market", Team: "team", Faction: "faction", ChatRoom: "chatroom", Friend: "friend" }[btn];
     if (!key) return false;
     this.W.get(key).toggle();
@@ -622,16 +622,455 @@ export class GameWindows {
   // thoát nhân vật (main.js bhThoat): quên dữ liệu bang của nhân vật cũ
   bangXoa() {
     const st = this._bh; if (!st) return;
-    Object.assign(st, { bh: null, ds: null, coBh: null, chon: null, sua: false, cm: null, cmSua: false, q: null, qSua: false, dsLuc: 0, loi: "", oz: 0, ozChon: null, donChon: null, xin: new Set(), cho: 0 });
+    Object.assign(st, { bh: null, ds: null, coBh: null, chon: null, sua: false, cm: null, cmSua: false, q: null, qSua: false, dsLuc: 0, loi: "", oz: 0, ozChon: null, donChon: null, xin: new Set(), cho: 0, trang: "base", trangTv: 0, donTrang: 0, dsTrang: 0, phe: 0, bnCv: "de", dhTen: "", ccSua: false, cmMo: 1, taiLuc: 0, dsTaiLuc: 0 });
     for (const k of ["faction", "bhTao", "bhDs", "bhBoNhiem", "bhDanhHieu"]) { const x = this.W.M[k] && this.W.get(k); if (x && x.visible) x.hide(); }
     if (this.shopTien === "bh") this.W.get("shop").hide(); // cửa hàng Lễ phẩm của bang cũ (đợt 2)
   }
   // mở khung Bang phái ở 1 trang (main.js — NPC Người hướng dẫn bang hội "Mở giao diện chiêu mộ bang hội": chưa có bang -> chiêu mộ của bang khác, có bang -> Chiêu mộ)
   moBangPhai(trang) {
     const w = this.W.get("faction"), st = this._bh; if (!st) return;
-    if (trang) st.trang = trang;
-    if (!w.visible) { w.show(); this.refresh(true); } else this._bhVe();
+    st.trang = trang === "zhaomu" ? "zhaomu" : trang === "otherzhaomu" ? "otherzhaomu" : trang === "record" ? "record" : trang === "funuse" ? "funuse" : "base";
+    if (st.trang === "zhaomu" && !st.bh && this.api.bhMinh && !this.api.bhMinh()) st.trang = "otherzhaomu"; // chưa có bang: xem chiêu mộ của bang khác
+    if (!w.visible) w.show(); else this._bhVe();
+    if (st.trang === "otherzhaomu") this._bhTaiDs && this._bhTaiDs();
+    else if (!st.bh) this._bhTaiXem && this._bhTaiXem();
+    this.refresh(true);
   }
+  // ---------- Bang phái (khung client 帮会主窗口.ini + bhTao / bhDs / bhBoNhiem / bhDanhHieu — máy chủ may-chu/bang-hoi.js đợt 1) ----------
+  // Trang: base (tin tức + thành viên) · zhaomu (chiêu mộ + đơn xin của bang mình) · otherzhaomu (chiêu mộ của bang khác — ds bang) ·
+  // funuse (chức năng: chuyển vị / đuổi / bổ nhiệm / danh hiệu / rời / ẩn) · record (công cáo). Tác phường / Phân quyền: đợt sau (bấm báo).
+  // Mọi việc qua api.bh (main.js bhLam — đã áp tiền / túi, câu báo, bangFill); lỗi máy chủ hiện 1 lần ở khung chat (goi). Việc cần mật khẩu
+  // cấp 2 (chuyển vị, giải tán, đuổi): Net.call tự hỏi mở khóa rồi gửi lại — khung chỉ gọi API. Trạng thái trong this._bh (bangXoa quên khi
+  // thoát nhân vật). bangFill / bangTai / moTaoBang gắn ở đây như teamFill của _team (main.js bhNhan / bhMinhApply gọi).
+  _faction() {
+    const w = this.W.get("faction"), api = this.api;
+    const st = this._bh = { bh: null, ds: null, coBh: null, chon: null, sua: false, cm: null, cmSua: false, q: null, qSua: false, dsLuc: 0, loi: "", oz: 0, ozChon: null, donChon: null, xin: new Set(), cho: 0,
+      trang: "base", trangTv: 0, onlineFirst: false, sapTv: 0, donTrang: 0, dsTrang: 0, phe: 0, taoCb: null, taoQt: 0, bnCv: "de", dhTen: "", ccSua: false, cmMo: 1, taiLuc: 0, dsTaiLuc: 0 };
+    const PHE = { 1: "Chánh", 2: "Tà", 3: "Trung lập" };
+    const cvCua = (m) => (m && m.an ? "ẩn sỹ" : BH_CV[(m && m.cv) || "de"] || (m && m.cv) || "");
+    const toi = () => (st.bh && st.bh.toi) || {};
+    const cvToi = () => toi().cv || "";
+    const coChu = () => cvToi() === "chu", coDuyet = () => coChu() || cvToi() === "lao", coMoi = () => ["chu", "lao", "doi"].includes(cvToi()),
+      coBoNhiem = () => coChu(), coDanhHieu = () => coDuyet(), coCongCao = () => coDuyet(), coDuoi = () => coChu() || cvToi() === "lao";
+    // việc bang hội (im: khung tự hiện lỗi 1 lần, không để bhLam báo thêm ở khung chat)
+    const goi = async (viec, data = {}, silent = false) => {
+      if (!api.bh) { api.msg("Bang hội: chưa nối được máy chủ."); return null; }
+      const j = await api.bh({ viec, ...data }, { im: true });
+      if (j && j.loi && !j.boQua && !silent) api.msg(j.loi);
+      return j;
+    };
+    const taiXem = (force) => { if (!force && Date.now() - st.taiLuc < 2000) return Promise.resolve(null); st.taiLuc = Date.now(); return goi("xem", {}, true); };
+    const taiDs = (force) => { if (!force && Date.now() - st.dsTaiLuc < 10000) return Promise.resolve(null); st.dsTaiLuc = Date.now(); return goi("ds", {}, true); };
+    this._bhTaiXem = taiXem; this._bhTaiDs = taiDs;
+    // nút chữ tự vẽ (không có trong mẫu ini): div + viền như nút client, bấm là làm
+    const nut = (cha, x, y, wpx, h, text, fn) => {
+      const d = document.createElement("div");
+      d.textContent = text;
+      Object.assign(d.style, { position: "absolute", left: x + "px", top: y + "px", width: wpx + "px", height: h + "px", lineHeight: h + "px", textAlign: "center", cursor: "pointer", color: "rgb(255,253,122)", background: "rgba(0,0,0,.55)", border: "1px solid rgba(255,237,165,.6)", boxSizing: "border-box", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", font: '13px "VK Sans Serif 13", monospace' });
+      d.onclick = (e) => { e.stopPropagation(); api.P.audio.ui("click"); fn(); };
+      cha.appendChild(d);
+      return d;
+    };
+    // ô nhập chữ trong 1 mục ini (như _team gõ tên tìm người): input phủ kín mục
+    const oNhap = (node, maxLen) => {
+      const inp = document.createElement("input");
+      inp.className = "jw-num"; inp.maxLength = maxLen; inp.spellcheck = false; inp.autocomplete = "off"; inp.name = "bh-" + Math.random().toString(36).slice(2);
+      node.appendChild(inp);
+      inp.onkeydown = (e) => e.stopPropagation();
+      return inp;
+    };
+    // ô chữ nhiều dòng trong 1 mục ini (tin chiêu mộ, công cáo — class bh-ta của game.css)
+    const oTa = (node) => {
+      const ta = document.createElement("textarea");
+      ta.className = "bh-ta"; ta.spellcheck = false;
+      Object.assign(ta.style, { position: "absolute", left: "0px", top: "0px", width: "100%", height: "100%", boxSizing: "border-box", background: "transparent", border: "0", outline: "0", color: "rgb(218,255,165)" });
+      const lab = node.querySelector(".jw-t"); if (lab) lab.style.display = "none";
+      node.appendChild(ta);
+      ta.onkeydown = (e) => e.stopPropagation();
+      return ta;
+    };
+    // ---------- khung chính: thẻ trên + nút dưới ----------
+    const TAB = { BtnBaseInfo: "base", BtnZhaoMu: "zhaomu", BtnOtherZhaoMu: "otherzhaomu", BtnWorkshop: "workshop", BtnFunUse: "funuse", BtnRightManage: "right", BtnTongRecord: "record" };
+    const datTrang = (p) => {
+      st.trang = p; w.page(p); ve();
+      if (p === "otherzhaomu") taiDs();
+      else if (p === "base" && !st.bh) taiXem();
+    };
+    for (const [b, p] of Object.entries(TAB)) {
+      if (p === "workshop" || p === "right") { w.on(b, () => api.msg(BH_DOT_SAU)); continue; } // đợt 2: Tác phường / Phân quyền
+      w.on(b, () => { api.P.audio.ui("click"); if (p === "zhaomu" && !st.bh) return datTrang("otherzhaomu"); datTrang(p); });
+    }
+    w.on("BtnTongHelp", () => api.msg("Hỏi Người hướng dẫn bang hội ở Ba Lăng huyện / Biện Kinh để xem giúp đỡ bang hội."));
+    w.on("BtnRefresh", () => { api.P.audio.ui("click"); if (st.trang === "otherzhaomu") taiDs(true); else taiXem(true); });
+    w.on("BtnTongList", () => { api.P.audio.ui("click"); this.moDs(); });
+    w.on("BtnEnterMap", () => { if (api.khuVao) api.khuVao(); else api.msg(BH_DOT_SAU); }); // vào khu vực bang (đợt 4 — api.khuVao đã có ở main.js)
+    w.page("base");
+    w.cb.show = () => ve();
+    // ---------- danh sách thành viên dùng chung (base + funuse): cột Cấp · Tên · Chức · Danh hiệu (game.css .bh-tv) ----------
+    const tvSap = () => {
+      const tv = [...(st.bh ? st.bh.tv : [])];
+      const sap = [(a, b) => (BH_CV_THU[a.cv] ?? 9) - (BH_CV_THU[b.cv] ?? 9) || String(a.ten).localeCompare(String(b.ten)),
+        (a, b) => String(a.ten).localeCompare(String(b.ten)),
+        (a, b) => (b.cap | 0) - (a.cap | 0) || String(a.ten).localeCompare(String(b.ten)),
+        (a, b) => (b.on ? 1 : 0) - (a.on ? 1 : 0) || String(a.ten).localeCompare(String(b.ten))][st.sapTv | 0];
+      tv.sort(sap);
+      if (st.onlineFirst) tv.sort((a, b) => (b.on ? 1 : 0) - (a.on ? 1 : 0));
+      return tv;
+    };
+    const veTv = (box) => {
+      const tv = tvSap(), n = Math.max(1, Math.ceil(tv.length / BH_DONG));
+      st.trangTv = Math.min(st.trangTv, n - 1);
+      const ds = tv.slice(st.trangTv * BH_DONG, st.trangTv * BH_DONG + BH_DONG);
+      const tenToi = (api.hero() || {}).name;
+      box.innerHTML = ds.length ? ds.map((m) => `<div class="bh-tv" data-ten="${esc(m.ten)}" title="${esc(m.ten)}${m.dh ? ` — ${esc(m.dh)}` : ""}" style="${m.ten === st.chon ? "background:rgba(255,255,255,.18);" : ""}${m.on ? "" : "color:#9aa79f;"}"><span>${m.cap | 0}</span><span>${esc(m.ten)}${m.ten === tenToi ? " (ngươi)" : ""}</span><span>${esc(cvCua(m))}${m.dh ? ` · ${esc(m.dh)}` : ""}${m.on ? "" : " · ngoại tuyến"}</span></div>`).join("") : `<div class="bh-trong">Chưa có thành viên nào.</div>`;
+    };
+    const chonTv = (box) => { box.onclick = (e) => { const d = e.target.closest("[data-ten]"); if (!d) return; st.chon = d.dataset.ten; ve(); }; };
+    const vePhanTrang = (pg) => {
+      const tv = tvSap(), n = Math.max(1, Math.ceil(tv.length / BH_DONG));
+      w.set("TitlePage", `${st.trangTv + 1}/${n}`, pg);
+      w.disable("BtnPrevPage", st.trangTv <= 0, pg).disable("BtnNextPage", st.trangTv >= n - 1, pg);
+      w.check("BtnOnlinePriority", st.onlineFirst, pg);
+    };
+    const ganPhanTrang = (pg) => {
+      const box = w.node("MemberList", pg);
+      box.classList.add("jw-list", "bh-tvds"); box.style.overflowY = "auto";
+      chonTv(box);
+      w.on("BtnPrevPage", () => { if (st.trangTv > 0) { st.trangTv--; ve(); } }, pg);
+      w.on("BtnNextPage", () => { st.trangTv++; ve(); }, pg);
+      w.on("BtnJump", () => { const v = parseInt(nhapTrang[pg].value, 10); if (v >= 1) { st.trangTv = v - 1; ve(); } }, pg);
+      w.on("BtnOnlinePriority", () => { st.onlineFirst = !st.onlineFirst; ve(); }, pg);
+      w.on("BtnMemberSortMenu", (__, e) => {
+        const m = document.createElement("div"); m.className = "jx-menu bh-menu";
+        m.innerHTML = [["Chức vụ", 0], ["Tên", 1], ["Cấp", 2], ["Trên mạng trước", 3]].map(([t, i]) => `<div data-i="${i}">${t}${st.sapTv === i ? " ✓" : ""}</div>`).join("");
+        m.onclick = (ev) => { const d = ev.target.closest("[data-i]"); if (!d) return; st.sapTv = +d.dataset.i; m.remove(); ve(); };
+        popup(m, e.target.getBoundingClientRect(), "down");
+      }, pg);
+      if (pg === "funuse") w.on("BtnTongSortMenu", (__, e) => { const b = w.item("BtnMemberSortMenu", pg); if (b) b.fn("BtnMemberSortMenu", e); }, pg);
+    };
+    const nhapTrang = {};
+    for (const pg of ["base", "funuse"]) {
+      const nd = w.node("EditBoxDestPage", pg);
+      if (nd) { nhapTrang[pg] = oNhap(nd, 3); nhapTrang[pg].inputMode = "numeric"; nhapTrang[pg].onkeydown = (e) => { e.stopPropagation(); if (e.key === "Enter") { const v = parseInt(nhapTrang[pg].value, 10); if (v >= 1) { st.trangTv = v - 1; ve(); } } }; }
+      ganPhanTrang(pg);
+    }
+    // ---------- trang Cơ bản: tin tức bang + khảo nghiệm + thành viên ----------
+    // các mục đợt 2 (quỹ / kiến thiết / chiến bị / cống hiến dự trữ / liên minh) chưa có số liệu: ẩn cho khỏi hiện số rỗng
+    for (const k of ["TitleLeague", "TxtLeague", "TitleBuildLevel", "TxtBuildLevel", "TitleServiceFee", "TxtServiceFee", "TitleStandFund", "TxtStandFund", "TitleTongCapital", "TxtTongCapital", "TitleBuildFund", "TxtBuildFund", "TitleBattleFund", "TxtBattleFund", "TitleTotalOffer", "TxtTotalOffer", "TitleStoredBuildFund", "TxtStoredBuildFund", "TitleWeeklyOffer", "TxtWeeklyOffer"]) w.hideItem(k, true, "base");
+    w.set("TxtRank", "Cấp", "base").set("TxtTitle", "Tên", "base").set("TxtType", "Chức · Danh hiệu", "base");
+    { const lh = w.item("TxtHelp", "base"); if (lh) Object.assign(lh.lab.style, { whiteSpace: "normal", lineHeight: "15px" }); } // TxtHelp 250×45: khảo nghiệm xuống dòng, khỏi cắt 1 dòng
+    const ttBase = document.createElement("div");
+    ttBase.className = "bh-cc-xem";
+    Object.assign(ttBase.style, { position: "absolute", left: "2px", top: "78px", width: "250px", height: "148px", overflowY: "auto" });
+    w.pages.base.el.appendChild(ttBase);
+    const nutLap = nut(w.pages.base.el, 2, 232, 122, 20, "Lập bang hội", () => this.moTaoBang());
+    const nutDsBase = nut(w.pages.base.el, 130, 232, 122, 20, "Danh sách bang", () => this.moDs());
+    const khaoChu = (B) => {
+      if (!B) return st.cho ? `Vừa rời bang — chờ ${st.cho} giờ nữa mới lập / xin vào bang khác.` : "Chưa thuộc bang hội nào. Lập bang ở Người hướng dẫn bang hội (Ba Lăng / Biện Kinh): cấp 80+, Nhạc Vương Kiếm, 100 vạn lượng.";
+      if (!B.khao) return "Bang chính thức — đã qua thời kỳ khảo nghiệm.";
+      const con = Math.max(0, B.khao.het - Date.now()), ngay = Math.floor(con / 86400000), gio = Math.floor(con % 86400000 / 3600000);
+      return `Khảo nghiệm: còn ${ngay} ngày ${gio} giờ · đã có ${B.khao.du}/${B.khao.can} người (tính theo tài khoản, không tính bang chủ)${B.khao.du >= B.khao.can ? " — đủ người, chờ hết hạn." : " — chưa đủ thì bang giải tán, kiếm trả lại bang chủ."}`;
+    };
+    const veBase = () => {
+      const B = st.bh;
+      w.set("TxtTongName", B ? B.ten : "—", "base").set("TxtMaster", B ? B.chu : "—", "base")
+        .set("TxtCamp", B ? PHE[B.phe] || "" : "—", "base").set("TxtTongLevel", B ? String(B.cap | 0) : "—", "base")
+        .set("TxtMemberNum", B ? `${B.tv.length} người` : "—", "base").set("TxtPersonalOffer", B ? String(toi().cong | 0) : "—", "base")
+        .set("TxtHelp", khaoChu(B), "base");
+      ttBase.innerHTML = B ? (B.congCao ? richText(B.congCao, (api.hero() || {}).name || "") : "Chưa có công cáo.") + (B.dhChung && (B.dhChung.nam || B.dhChung.nu) ? `<br>Danh hiệu chung: nam “${esc(B.dhChung.nam || "")}” · nữ “${esc(B.dhChung.nu || "")}”` : "") + `<br>Chức của ngươi: ${esc(cvCua({ cv: cvToi(), an: !!toi().an, dh: toi().dh }))}${toi().dh ? ` · danh hiệu “${esc(toi().dh)}”` : ""}` : "Bang hội là nơi anh em cùng chí hướng tụ lại — lập bang rồi chiêu mộ, duyệt đơn, mời người ở các thẻ trên.";
+      nutLap.style.display = B ? "none" : ""; nutDsBase.style.display = B ? "none" : "";
+      veTv(w.node("MemberList", "base")); vePhanTrang("base");
+    };
+    // ---------- trang Chức năng: việc theo quyền, làm trên thành viên đang chọn ----------
+    for (const k of ["TitleTongUnion", "TxtTongUnion", "TitleBuildLevel", "TxtBuildLevel", "BtnUpgradeBuildLevel", "TitleTotalOffer", "TxtTotalOffer", "BtnAssignTongOffer", "TitleTongMoney", "TxtTongMoney", "BtnGetTongMoney", "BtnAssignTongMoney", "BtnTransformMoney", "TitleBuildFund", "TxtBuildFund", "BtnTransformBuildFund", "TitleBattleFund", "TxtBattleFund", "TitleStoredBuildFund", "TxtStoredBuildFund", "BtnSubPage1", "BtnSubPage2", "BtnSubPage3", "BtnSubPage4", "ImgSubPageMask", "BtnRecruit", "BtnChangeCamp", "BtnCreateTongMap", "BtnConfigureTongMap", "BtnTongStunt", "BtnTongChallenge", "BtnTongDetect", "BtnCreateUnion", "BtnApplyJionUnion", "BtnAcceptUnionReq", "BtnLeaveUnion", "BtnKickUnionTong", "BtnAppointMinister", "BtnFireMinister", "Btn_DispenseOffer", "TitleTongMoney2", "TxtTongMoney2", "TitleBuildFund2", "TxtBuildFund2", "BtnStoreBuildFund", "BtnStoreTongMoney", "BtnStorePersonalOffer"]) w.hideItem(k, true, "funuse");
+    w.set("TxtRank", "Cấp", "funuse").set("TxtTitle", "Tên", "funuse").set("TxtType", "Chức · Danh hiệu", "funuse");
+    const nutGiaiTan = nut(w.pages.funuse.el, 234, 355, 98, 20, "Giải tán bang", async () => {
+      if (!coChu()) return api.msg(BH_KHONG_QUYEN);
+      if (!(await this.hoi(`Thật sự giải tán bang hội <color=yellow>${bhTen(st.bh.ten)}<color>?<enter>Nhạc Vương Kiếm trả lại cho ngươi, tiền lập bang không trả.`))) return;
+      await goi("giaiTan");
+    });
+    const canChon = () => { if (!st.bh) { api.msg("Chưa thuộc bang hội nào cả."); return null; } if (!st.chon) { api.msg("Chọn thành viên ở danh sách bên phải trước đã."); return null; } return st.chon; };
+    w.on("BtnDemise", async () => { const ten = canChon(); if (!ten || !coChu()) return coChu() ? null : api.msg(BH_KHONG_QUYEN); if (ten === (api.hero() || {}).name) return api.msg("Chuyển vị cho chính mình làm gì."); if (await this.hoi(`Chuyển vị bang chủ cho <color=yellow>${bhTen(ten)}<color>? Ngươi xuống làm trưởng lão.`)) await goi("chuyenVi", { ten }); }, "funuse");
+    w.on("BtnKickOut", async () => { const ten = canChon(); if (!ten || !coDuoi()) return coDuoi() ? null : api.msg(BH_KHONG_QUYEN); if (await this.hoi(`Trục xuất <color=yellow>${bhTen(ten)}<color> khỏi bang hội?`)) await goi("duoi", { ten }); }, "funuse");
+    w.on("BtnDepose", () => { const ten = canChon(); if (!ten) return; if (!coBoNhiem()) return api.msg(BH_KHONG_QUYEN); this.moBoNhiem(ten); }, "funuse");
+    w.on("BtnForceToRetire", async () => { const ten = canChon(); if (!ten || !coChu()) return coChu() ? null : api.msg(BH_KHONG_QUYEN); if (await this.hoi(`Bắt <color=yellow>${bhTen(ten)}<color> ẩn sỹ (người khác chỉ thấy tên bang, không thấy chức / danh hiệu)?`)) await goi("epAn", { ten }); }, "funuse");
+    w.on("BtnChangeTitle", () => { const ten = canChon(); if (!ten) return; if (!coDanhHieu()) return api.msg(BH_KHONG_QUYEN); this.moDanhHieu(ten); }, "funuse");
+    w.on("BtnChangeMaleTitle", () => { if (!st.bh) return api.msg("Chưa thuộc bang hội nào cả."); if (!coChu()) return api.msg(BH_KHONG_QUYEN); this.moDhChung(); }, "funuse");
+    w.on("BtnChangeFemaleTitle", () => { if (!st.bh) return api.msg("Chưa thuộc bang hội nào cả."); if (!coChu()) return api.msg(BH_KHONG_QUYEN); this.moDhChung(); }, "funuse");
+    w.on("BtnLeaveTong", async () => { if (!st.bh) return api.msg("Chưa thuộc bang hội nào cả."); if (coChu()) return api.msg("Bang chủ phải chuyển vị trước rồi mới rời bang được."); if (await this.hoi(`Thật sự rời khỏi bang hội <color=yellow>${bhTen(st.bh.ten)}<color>? Rời rồi phải chờ ${((api.luat() || {}).bangHoi || {}).roiCho ?? 24} giờ mới lập / vào bang khác.`)) await goi("roi"); }, "funuse");
+    w.set("BtnHelp", "Giúp đỡ", "funuse");
+    w.on("BtnHelp", () => api.msg("Chọn thành viên ở danh sách bên phải rồi bấm nút việc làm. Chuyển vị / Giải tán / Đuổi cần mở khóa an toàn (mật khẩu cấp 2)."), "funuse");
+    const veFunuse = () => {
+      const B = st.bh;
+      w.set("TxtTongName", B ? B.ten : "—", "funuse").set("TxtPersonalOffer", B ? String(toi().cong | 0) : "—", "funuse");
+      w.disable("BtnDemise", !B || !coChu(), "funuse").disable("BtnKickOut", !B || !coDuoi(), "funuse")
+        .disable("BtnDepose", !B || !coBoNhiem(), "funuse").disable("BtnForceToRetire", !B || !coChu(), "funuse")
+        .disable("BtnChangeTitle", !B || !coDanhHieu(), "funuse").disable("BtnChangeMaleTitle", !B || !coChu(), "funuse")
+        .disable("BtnChangeFemaleTitle", !B || !coChu(), "funuse").disable("BtnLeaveTong", !B || coChu(), "funuse")
+        .disable("BtnRetire", !B, "funuse");
+      w.set("BtnRetire", toi().an ? "Hiện thân phận" : "Ẩn sỹ", "funuse");
+      nutGiaiTan.style.display = B && coChu() ? "" : "none";
+      veTv(w.node("MemberList", "funuse")); vePhanTrang("funuse");
+    };
+    w.on("BtnRetire", async () => { if (!st.bh) return api.msg("Chưa thuộc bang hội nào cả."); await goi(toi().an ? "huyAn" : "thoaiAn"); }, "funuse");
+    // ---------- trang Chiêu mộ (bang mình): tin chiêu mộ + đơn xin + mời người ----------
+    for (const k of ["QingXiangBtn", "HuoDongBtn1", "HuoDongBtn2", "HuoDongBtn3", "HuoDongBtn4", "AutoAcceptLevel", "RefuseLevel"]) w.hideItem(k, true, "zhaomu");
+    const taCm = oTa(w.node("Jiyu", "zhaomu"));
+    taCm.style.height = "150px"; // Jiyu ini cao 200 (y 200–400) đè nút Lưu ở y 360: thu lại tới y 350
+    const boxDon = w.node("ApplyerList", "zhaomu");
+    boxDon.classList.add("jw-list", "bh-don"); boxDon.style.overflowY = "auto";
+    boxDon.onclick = (e) => { const d = e.target.closest("[data-ten]"); if (!d) return; st.donChon = d.dataset.ten; ve(); };
+    const ghiChuCm = document.createElement("div");
+    ghiChuCm.className = "bh-note";
+    Object.assign(ghiChuCm.style, { position: "absolute", left: "8px", top: "78px", width: "262px", height: "28px", whiteSpace: "normal" });
+    ghiChuCm.textContent = "Khuynh hướng / hoạt động / mức cấp tự nhận: đợt sau mới mở.";
+    w.pages.zhaomu.el.appendChild(ghiChuCm);
+    const inpMoi = document.createElement("input");
+    inpMoi.className = "jw-num"; inpMoi.maxLength = 16; inpMoi.spellcheck = false; inpMoi.autocomplete = "off"; inpMoi.placeholder = "Tên người muốn mời";
+    Object.assign(inpMoi.style, { position: "absolute", left: "8px", top: "110px", width: "150px", height: "20px", color: "rgb(255,253,122)", border: "1px solid rgba(255,237,165,.45)", background: "rgba(0,0,0,.55)", padding: "0 4px", boxSizing: "border-box" });
+    inpMoi.onkeydown = (e) => e.stopPropagation();
+    w.pages.zhaomu.el.appendChild(inpMoi);
+    const nutMoi = nut(w.pages.zhaomu.el, 166, 110, 90, 20, "Mời vào bang", async () => {
+      const ten = inpMoi.value.trim();
+      if (!ten) return api.msg("Gõ tên người muốn mời vào ô bên cạnh.");
+      if (!coMoi()) return api.msg(BH_KHONG_QUYEN);
+      const j = await goi("moi", { ten });
+      if (j && !j.loi) inpMoi.value = "";
+    });
+    const nutMo = nut(w.pages.zhaomu.el, 8, 136, 150, 20, "Chiêu mộ: Đang mở", () => {
+      if (!st.bh || !coChu()) return api.msg(BH_KHONG_QUYEN);
+      st.cmMo = st.cmMo ? 0 : 1; ve();
+    });
+    const duyet = async (dong) => { if (!st.donChon) return; const j = await goi("duyet", { ten: st.donChon, dong }); if (j && !j.loi) st.donChon = null; ve(); };
+    w.on("AcceptApply", () => duyet(1), "zhaomu").on("RefuseApply", () => duyet(0), "zhaomu");
+    w.on("LastPage", () => { if (st.donTrang > 0) { st.donTrang--; ve(); } }, "zhaomu").on("NextPage", () => { st.donTrang++; ve(); }, "zhaomu");
+    w.on("Save", async () => {
+      if (!st.bh || !coChu()) return api.msg(BH_KHONG_QUYEN);
+      const cm = st.bh.chieuMo || {};
+      const j = await goi("chieuMo", { mo: st.cmMo, hd: cm.hd || "", tin: taCm.value, tuNhan: !!cm.tuNhan, tuChoi: !!cm.tuChoi });
+      if (j && !j.loi) st.cmSua = false;
+    }, "zhaomu");
+    taCm.addEventListener("input", () => { st.cmSua = true; });
+    const veZhaomu = () => {
+      const B = st.bh;
+      if (B && document.activeElement !== taCm && !st.cmSua) taCm.value = (B.chieuMo && B.chieuMo.tin) || "";
+      taCm.disabled = !B;
+      const xin = B ? B.xin : [], n = Math.max(1, Math.ceil(xin.length / 20));
+      st.donTrang = Math.min(st.donTrang, n - 1);
+      const ds = xin.slice(st.donTrang * 20, st.donTrang * 20 + 20);
+      boxDon.innerHTML = ds.length ? ds.map((x) => `<div class="bh-don-d" data-ten="${esc(x.ten)}" style="${x.ten === st.donChon ? "background:rgba(255,255,255,.18);" : ""}"><span>${esc(x.ten)}</span><b>${new Date(x.luc).toLocaleDateString("vi-VN")}</b></div>`).join("") : `<div class="bh-trong">${B ? "Chưa có đơn xin gia nhập nào." : "Chưa thuộc bang hội nào."}</div>`;
+      w.set("ApplyTitle", `Danh sách thành viên xin gia nhập bang hội (${xin.length})`, "zhaomu");
+      w.disable("AcceptApply", !B || !coDuyet() || !st.donChon, "zhaomu").disable("RefuseApply", !B || !coDuyet() || !st.donChon, "zhaomu")
+        .disable("Save", !B || !coChu(), "zhaomu");
+      nutMo.textContent = `Chiêu mộ: ${st.cmMo ? "Đang mở" : "Đang đóng"}`;
+      nutMoi.style.opacity = coMoi() ? "" : ".45"; inpMoi.disabled = !B || !coMoi();
+    };
+    // ---------- trang Chiêu mộ của bang khác: 4 thẻ ds bang, mỗi thẻ có nút Xin gia nhập ----------
+    const choDiv = document.createElement("div");
+    choDiv.className = "bh-cho";
+    Object.assign(choDiv.style, { position: "absolute", left: "8px", top: "366px", width: "110px", height: "14px", overflow: "hidden" });
+    w.pages.otherzhaomu.el.appendChild(choDiv);
+    const ozB = (i) => (st._ozPage || [])[i - 1];
+    for (let i = 1; i <= 4; i++) {
+      w.on("LookBtn" + i, () => { const b = ozB(i); if (b) this.bao(`Bang hội <color=yellow>${bhTen(b.ten)}<color><enter>Phe ${PHE[b.phe] || ""} · ${b.n} người · Bang chủ ${bhTen(b.chu)}${b.khao ? " · đang khảo nghiệm" : ""}${b.chieuMo ? `<enter>Tin chiêu mộ: ${bhTen(b.chieuMo)}` : "<enter>Chưa có tin chiêu mộ."}`); }, "otherzhaomu");
+      w.on("ApplyBtn" + i, async () => {
+        const b = ozB(i); if (!b) return;
+        if (st.bh) return api.msg("Đã ở bang hội rồi thì đừng xin vào bang khác.");
+        if (st.cho) return api.msg(`Vừa rời bang — chờ ${st.cho} giờ nữa mới xin vào bang khác.`);
+        if (st.xin.has(b.id)) {
+          if (await this.hoi(`Rút đơn xin gia nhập bang hội <color=yellow>${bhTen(b.ten)}<color>?`)) { const j = await goi("huyXin", { id: b.id }); if (j && !j.loi) st.xin.delete(b.id); ve(); }
+        } else {
+          const j = await goi("xin", { id: b.id });
+          if (j && !j.loi) { st.xin.add(b.id); ve(); }
+        }
+      }, "otherzhaomu");
+    }
+    w.on("LastPage", () => { if (st.oz > 0) { st.oz--; ve(); } }, "otherzhaomu").on("NextPage", () => { st.oz++; ve(); }, "otherzhaomu");
+    const veOz = () => {
+      const ds = st.ds || [], n = Math.max(1, Math.ceil(ds.length / 4));
+      st.oz = Math.min(st.oz, n - 1);
+      st._ozPage = ds.slice(st.oz * 4, st.oz * 4 + 4);
+      for (let i = 1; i <= 4; i++) {
+        const b = st._ozPage[i - 1];
+        for (const k of ["Name", "Info", "QingXiang", "HuoDong", "JiYu", "LookBtn", "ApplyBtn"]) w.hideItem(k + i, !b, "otherzhaomu");
+        if (!b) continue;
+        w.set("Name" + i, b.ten, "otherzhaomu");
+        w.set("Info" + i, `${PHE[b.phe] || ""} · ${b.n} người · Bang chủ: ${b.chu}${b.khao ? " · đang khảo nghiệm" : ""}`, "otherzhaomu");
+        w.set("QingXiang" + i, "—", "otherzhaomu").set("HuoDong" + i, "—", "otherzhaomu");
+        const jy = w.item("JiYu" + i, "otherzhaomu");
+        if (jy) { jy.lab.textContent = b.chieuMo || "(chưa có tin chiêu mộ)"; jy.el.classList.add("bh-oz-n"); }
+        w.set("ApplyBtn" + i, st.xin.has(b.id) ? "Rút đơn" : "Xin gia nhập bang hội", "otherzhaomu");
+      }
+      choDiv.textContent = st.cho ? `Chờ ${st.cho} giờ nữa.` : "";
+      choDiv.title = st.cho ? "Vừa rời bang — chờ đủ giờ mới xin / vào bang khác." : "";
+    };
+    // ---------- trang Ký lục: công cáo (xem / sửa) ----------
+    for (const k of ["BtnWeekDaily", "BtnTongAffair", "BtnTongHistory", "BtnLeaveWord"]) w.hideItem(k, true, "record");
+    const taCc = oTa(w.node("AnnounceEditor", "record"));
+    const boxCc = w.node("RecordList_List", "record");
+    boxCc.classList.add("jw-list", "bh-kl"); boxCc.style.overflowY = "auto";
+    const veRecord = () => {
+      const B = st.bh;
+      w.node("AnnounceEditor", "record").style.display = st.ccSua ? "" : "none";
+      boxCc.style.display = st.ccSua ? "none" : "";
+      boxCc.innerHTML = B ? `<div class="bh-cc-xem">${B.congCao ? richText(B.congCao, (api.hero() || {}).name || "") : "Chưa có công cáo."}</div>` : `<div class="bh-trong">Chưa thuộc bang hội nào.</div>`;
+      w.set("BtnEditAnnounce", st.ccSua ? "Lưu công cáo" : "Sửa công cáo", "record");
+      w.disable("BtnEditAnnounce", !B || !coCongCao(), "record");
+    };
+    w.on("BtnAnnounce", () => { st.ccSua = false; ve(); }, "record");
+    w.on("BtnEditAnnounce", async () => {
+      if (!st.bh || !coCongCao()) return api.msg(BH_KHONG_QUYEN);
+      if (!st.ccSua) { taCc.value = st.bh.congCao || ""; st.ccSua = true; ve(); taCc.focus(); return; }
+      const j = await goi("congCao", { m: taCc.value });
+      if (j && !j.loi) st.ccSua = false;
+      ve();
+    }, "record");
+    // ---------- vẽ lại theo thẻ đang mở ----------
+    const ve = () => {
+      if (!w.visible) return;
+      for (const [b, p] of Object.entries(TAB)) w.check(b, TAB[b] === st.trang);
+      if (st.trang === "zhaomu") veZhaomu();
+      else if (st.trang === "otherzhaomu") veOz();
+      else if (st.trang === "funuse") veFunuse();
+      else if (st.trang === "record") veRecord();
+      else veBase();
+    };
+    this._bhVe = ve;
+    w.cb.hide = () => { for (const el of [taCm, taCc, inpMoi, inpTao, inpBn, inpDh, inpNu]) if (el) el.blur(); for (const pg of ["base", "funuse"]) if (nhapTrang[pg]) nhapTrang[pg].blur(); };
+    // dữ liệu mới từ máy chủ (main.js bhNhan / bhMinhApply): bh === undefined = chỉ ds / cho mới; bh === null = không còn bang
+    this.bangFill = (bh, ds, cho) => {
+      if (bh !== undefined) {
+        const cu = st.bh;
+        st.bh = bh || null;
+        if (st.bh) { st.cmMo = st.bh.chieuMo && st.bh.chieuMo.mo ? 1 : 0; st.cmSua = false; BH_CONG = () => (st.bh && st.bh.toi ? st.bh.toi.cong | 0 : 0); }
+        else BH_CONG = () => 0;
+        if (!st.bh && cu && w.visible && ["base", "zhaomu", "funuse", "record"].includes(st.trang)) { st.trang = "otherzhaomu"; taiDs(true); }
+        if (st.bh === null) { st.chon = null; st.donChon = null; }
+      }
+      if (Array.isArray(ds)) { st.ds = ds; st.dsLuc = Date.now(); }
+      if (cho != null) st.cho = cho | 0;
+      ve();
+    };
+    // nhịp báo bang đổi (main.js bhMinhApply): khung đang mở thì tải lại
+    this.bangTai = () => { if (!w.visible) return; if (st.trang === "otherzhaomu") taiDs(true); else taiXem(true); };
+    // ---------- khung Lập bang hội (bhTao): tên + phe, mặc định phe theo camp của phái ----------
+    const wTao = this.W.get("bhTao");
+    const inpTao = oNhap(wTao.node("EditTongName"), 14);
+    const pheNut = { 1: "BtnOrder", 2: "BtnChaos", 3: "BtnNatural" };
+    const datPhe = (p) => { st.phe = p; for (const [k, b] of Object.entries(pheNut)) wTao.check(b, +k === p); };
+    for (const [k, b] of Object.entries(pheNut)) wTao.on(b, () => datPhe(+k));
+    wTao.on("BtnCancel", () => { st.taoCb = null; wTao.hide(); });
+    wTao.on("BtnDone", async () => {
+      const ten = bhTen(inpTao.value.trim());
+      if (ten.length < 2 || ten.length > 14) { wTao.set("ErrorBox", "Tên bang hội 2–14 chữ."); return; }
+      if (!st.phe) { wTao.set("ErrorBox", "Chọn phe cho bang hội: Chánh, Tà hay Trung lập."); return; }
+      wTao.set("ErrorBox", "");
+      const j = await goi("lap", { ten, phe: st.phe, ...(st.taoQt ? { qt: 1 } : {}) }, true);
+      if (!j || j.loi) { if (j && j.loi && !j.boQua) wTao.set("ErrorBox", j.loi); return; }
+      const cb = st.taoCb; st.taoCb = null; wTao.hide();
+      if (cb) cb(j);
+    });
+    this.moTaoBang = (xong, qt) => {
+      st.taoCb = typeof xong === "function" ? xong : null; st.taoQt = qt ? 1 : 0;
+      inpTao.value = "";
+      let phe = 0;
+      const h = api.hero();
+      if (h && h.fac != null) { const f = (api.P.factions || []).find((x) => x.id === h.fac); phe = f && f.camp === "C_JUSTICE" ? 1 : f && f.camp === "C_EVIL" ? 2 : f && f.camp === "C_BALANCE" ? 3 : 0; }
+      datPhe(phe); wTao.set("ErrorBox", "");
+      wTao.show(); inpTao.focus();
+    };
+    // ---------- khung Danh sách bang (bhDs): bấm 1 bang -> hỏi xin gia nhập ----------
+    const wDs = this.W.get("bhDs");
+    const boxDs = wDs.node("MemberList");
+    boxDs.classList.add("jw-list", "bh-dsb"); boxDs.style.overflowY = "auto";
+    wDs.set("BtnPrevPage", "Trước").set("BtnNextPage", "Kế");
+    const veDs = () => {
+      const ds = st.ds || [], n = Math.max(1, Math.ceil(ds.length / 23));
+      st.dsTrang = Math.min(st.dsTrang, n - 1);
+      const page = ds.slice(st.dsTrang * 23, st.dsTrang * 23 + 23);
+      boxDs.innerHTML = page.length ? page.map((b) => `<div class="bh-dsb-d" data-id="${b.id}" title="${esc(b.ten)} — bang chủ ${esc(b.chu)}">${esc(b.ten)} · ${PHE[b.phe] || ""} · ${b.n} người${b.khao ? " · khảo nghiệm" : ""}</div>`).join("") : `<div class="bh-trong">Chưa có bang hội nào.</div>`;
+      wDs.disable("BtnPrevPage", st.dsTrang <= 0).disable("BtnNextPage", st.dsTrang >= n - 1);
+    };
+    wDs.on("BtnPrevPage", () => { if (st.dsTrang > 0) { st.dsTrang--; veDs(); } });
+    wDs.on("BtnNextPage", () => { st.dsTrang++; veDs(); });
+    boxDs.onclick = async (e) => {
+      const d = e.target.closest("[data-id]"); if (!d) return;
+      const b = (st.ds || []).find((x) => String(x.id) === d.dataset.id); if (!b) return;
+      if (st.bh) return this.bao(`Bang hội <color=yellow>${bhTen(b.ten)}<color><enter>Phe ${PHE[b.phe] || ""} · ${b.n} người · Bang chủ ${bhTen(b.chu)}${b.chieuMo ? `<enter>Tin chiêu mộ: ${bhTen(b.chieuMo)}` : "<enter>Chưa có tin chiêu mộ."}`);
+      if (st.cho) return api.msg(`Vừa rời bang — chờ ${st.cho} giờ nữa mới xin vào bang khác.`);
+      if (await this.hoi(`Xin gia nhập bang hội <color=yellow>${bhTen(b.ten)}<color>?<enter>Bang chủ / trưởng lão duyệt thì mới vào được.`)) { const j = await goi("xin", { id: b.id }); if (j && !j.loi) st.xin.add(b.id); }
+    };
+    this.moDs = () => { wDs.show(); taiDs(true).then(() => veDs()); veDs(); };
+    // ---------- khung Bổ nhiệm (bhBoNhiem): tên + chức (chỉ bang chủ) ----------
+    const wBn = this.W.get("bhBoNhiem");
+    const inpBn = oNhap(wBn.node("PlayerName"), 16);
+    wBn.set("BtnDirector", "Trưởng lão").set("BtnManager", "Đội trưởng").set("BtnMember", "Đệ tử");
+    for (const k of ["List", "ListScroll", "ListScroll_Btn"]) wBn.hideItem(k, true);
+    const datBnCv = (cv) => { st.bnCv = cv; wBn.check("BtnDirector", cv === "lao").check("BtnManager", cv === "doi").check("BtnMember", cv === "de"); };
+    wBn.on("BtnDirector", () => datBnCv("lao")).on("BtnManager", () => datBnCv("doi")).on("BtnMember", () => datBnCv("de"));
+    wBn.on("BtnCancel", () => wBn.hide());
+    wBn.on("BtnConfirm", async () => {
+      const ten = inpBn.value.trim();
+      if (!ten) { wBn.set("ErrorBox", "Chưa nhập tên thành viên."); return; }
+      wBn.set("ErrorBox", "");
+      const j = await goi("boNhiem", { ten, cv: st.bnCv }, true);
+      if (!j || j.loi) { if (j && j.loi && !j.boQua) wBn.set("ErrorBox", j.loi); return; }
+      wBn.hide();
+    });
+    this.moBoNhiem = (ten) => {
+      inpBn.value = ten || "";
+      const m = st.bh && st.bh.tv.find((x) => x.ten === ten);
+      datBnCv(m && ["lao", "doi", "de"].includes(m.cv) ? m.cv : "de");
+      wBn.set("ErrorBox", ""); wBn.show(); inpBn.focus(); inpBn.select();
+    };
+    // ---------- khung Danh hiệu (bhDanhHieu): 1 người, hoặc danh hiệu chung nam / nữ ----------
+    const wDh = this.W.get("bhDanhHieu");
+    const inpDh = oNhap(wDh.node("EditTitle"), BH_DH_MAX);
+    const labDh = document.createElement("div");
+    Object.assign(labDh.style, { position: "absolute", left: "8px", top: "6px", width: "164px", height: "14px", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", color: "rgb(255,253,122)", font: '13px "VK Sans Serif 13", monospace' });
+    wDh.el.appendChild(labDh);
+    const labNam = document.createElement("div");
+    Object.assign(labNam.style, { position: "absolute", left: "8px", top: "35px", width: "20px", height: "14px", color: "rgb(255,253,122)", font: '13px "VK Sans Serif 13", monospace' });
+    labNam.textContent = "Nam:";
+    wDh.el.appendChild(labNam);
+    const labNu = document.createElement("div");
+    Object.assign(labNu.style, { position: "absolute", left: "8px", top: "56px", width: "20px", height: "14px", color: "rgb(255,253,122)", font: '13px "VK Sans Serif 13", monospace' });
+    labNu.textContent = "Nữ:";
+    wDh.el.appendChild(labNu);
+    const inpNu = document.createElement("input");
+    inpNu.className = "jw-num"; inpNu.maxLength = BH_DH_MAX; inpNu.spellcheck = false; inpNu.autocomplete = "off";
+    Object.assign(inpNu.style, { left: "32px", top: "56px", width: "117px", height: "14px" });
+    inpNu.onkeydown = (e) => e.stopPropagation();
+    wDh.el.appendChild(inpNu);
+    let dhChung = false;
+    const datDhMode = (chung) => {
+      wDh.el.style.height = (chung ? 112 : 84) + "px";
+      labNam.style.display = labNu.style.display = inpNu.style.display = chung ? "" : "none";
+      wDh.node("Confirm").style.top = (chung ? 88 : 62) + "px";
+      wDh.node("Cancel").style.top = (chung ? 88 : 62) + "px";
+    };
+    wDh.on("Cancel", () => wDh.hide());
+    wDh.on("Confirm", async () => {
+      if (dhChung) { const j = await goi("dhChung", { nam: inpDh.value.trim(), nu: inpNu.value.trim() }); if (j && !j.loi) wDh.hide(); }
+      else { const j = await goi("danhHieu", { ten: st.dhTen, dh: inpDh.value.trim() }); if (j && !j.loi) wDh.hide(); }
+    });
+    this.moDanhHieu = (ten) => {
+      dhChung = false; datDhMode(false); st.dhTen = ten;
+      labDh.textContent = `Danh hiệu cho: ${ten}`;
+      const m = st.bh && st.bh.tv.find((x) => x.ten === ten);
+      inpDh.value = (m && m.dh) || "";
+      wDh.show(); inpDh.focus(); inpDh.select();
+    };
+    this.moDhChung = () => {
+      dhChung = true; datDhMode(true);
+      labDh.textContent = "Danh hiệu chung của bang";
+      const dc = (st.bh && st.bh.dhChung) || {};
+      inpDh.value = dc.nam || ""; inpNu.value = dc.nu || "";
+      wDh.show(); inpDh.focus();
+    };
+    // cửa hàng Lễ phẩm (đợt 2 — Tổng quản Lễ phẩm phường): chưa mở
+    this.moLePham = () => api.msg(BH_DOT_SAU);
+  }
+  // ---------- Hảo hữu "LIÊN LẠC" (聊天主窗口.ini, lớp KUiChatCentre của client) ----------
   // ---------- Hảo hữu "LIÊN LẠC" (聊天主窗口.ini, lớp KUiChatCentre của client) ----------
   // Cửa sổ co giãn (ini ghi tọa độ lúc danh sách 0 dòng): phần trên 124×80 (tiêu đề, 4 thẻ — chữ lấy từ bảng chữ client); ROWS dòng
   // danh sách ListBgImg 120×14 từ y 66 (dòng 0: nút cuộn lên ScrollUp y 67, dòng 1: tên nhóm GroupBtn y 81); phần đuôi TailImg 124×76

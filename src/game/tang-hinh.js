@@ -1,9 +1,10 @@
-// Tàng hình — CHỈ tài khoản test1 (Huy lệnh 01:54 ngày 27/11/2026: "tàng hình hoàn toàn không ai nhìn thấy", "không nhận dame và bất tử").
+// Tàng hình — CHỈ tài khoản test1 và test2 (Huy lệnh 01:54 ngày 27/11/2026: "tàng hình hoàn toàn không ai nhìn thấy", "không nhận dame và bất tử";
+// mở thêm cho test2 theo lệnh Huy 16:57 ngày 27/11/2026, y hệt cơ chế test1).
 // Khóa theo TÊN tài khoản đăng nhập (Net.me.ten), như camera thượng đế — không theo cờ admin.
 // Cơ chế (3 lớp, thiếu 1 lớp là lộ / vẫn ăn dame):
 //   1. Máy chủ (may-chu/the-gioi.js): nhịp mang s.th = 1 thì acc vào tập AN — người trong AN không vào danh sách ai của người khác
 //      (kể cả phân thân), không phát vị trí qua kênh tức thời vt/vtb, không phát hiệu ứng chiêu "chieu" (may-chu/ws.js).
-//      Máy chủ chỉ nhận cờ của đúng acc tên "test1"; acc khác gửi th cũng không nhận.
+//      Máy chủ chỉ nhận cờ của đúng acc tên "test1" hoặc "test2"; acc khác gửi th cũng không nhận.
 //   2. Client — ẩn với quái: player.voHinh = true + player.hideUntil = số rất lớn, khẳng định lại mỗi nhịp (TH.nhip — đổi bãi tạo
 //      World/player mới nên phải khẳng định lại). Quái / boss thế giới / bot Tống Kim vốn đã bỏ qua mục tiêu có hideUntil
 //      (world.js updateMob, bosstg.js vong, tkbot.js) nên không đuổi, không đánh. vocong.js + world.js không được xóa hideUntil
@@ -17,7 +18,7 @@
 // được từ máy chủ mà không viết lại cả hệ thống máu (ghi rõ trong KET-QUA.md).
 //
 //   const TH = taoTangHinh({ me, msg, nguoiChoi });
-//   TH.capNhat() — vào game: có nút khi là test1, không thì gỡ hết
+//   TH.capNhat() — vào game: có nút khi là test1/test2, không thì gỡ hết
 //   TH.thoat() — thoát game: tắt tàng hình, gỡ nút
 //   TH.bamNut() / bamPhim() — bật/tắt tàng hình (phím H)
 //   TH.dangBat() — đang tàng hình không
@@ -30,7 +31,8 @@ import { TEN_TEST1 } from "./thuong-de.js";
 const LAU = 1e15;
 
 export function taoTangHinh(api) {
-  const laTest1 = () => { const me = api.me && api.me(); return !!(me && me.ten === TEN_TEST1); };
+  const DUOC_TANG_HINH = new Set([TEN_TEST1, "test2"]);
+  const laDuocTangHinh = () => { const me = api.me && api.me(); return !!(me && DUOC_TANG_HINH.has(me.ten)); };
   let bat = false, echo = 0;
   let elBtn = null, elDt = null;
 
@@ -49,7 +51,7 @@ export function taoTangHinh(api) {
     if (elBtn && elBtn.isConnected) { capNhatNut(); return; }
     elBtn = document.createElement("button");
     elBtn.type = "button";
-    elBtn.title = "Tàng hình — phím H (chỉ test1)";
+    elBtn.title = "Tàng hình — phím H (chỉ test1/test2)";
     elBtn.textContent = "Tàng hình";
     elBtn.addEventListener("click", bamNut);
     const wrap = document.getElementById("td-btns");
@@ -90,16 +92,17 @@ export function taoTangHinh(api) {
     capNhatNut();
   }
   function bamNut() {
-    if (!laTest1()) return;
+    if (!laDuocTangHinh()) return;
     bat ? tatDi() : batLen();
   }
 
   return {
-    laTest1,
+    laDuocTangHinh,
+    laTest1: laDuocTangHinh, // tên cũ — giữ để code nào gọi TH.laTest1 vẫn chạy
     dangBat: () => bat,
     layEcho: () => echo,
     capNhat() {
-      if (laTest1()) { veNut(); veNutDt(); }
+      if (laDuocTangHinh()) { veNut(); veNutDt(); }
       else { if (bat) tatDi(); goNut(); }
       capNhatNut();
     },

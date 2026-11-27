@@ -142,6 +142,7 @@ const TT = require("./ti-thi"); // anh 17/11 — tỉ thí: /api/ti-thi (chiến
 Object.defineProperty(DO.LUAT, "tkHoan", { enumerable: true, configurable: true, get: () => TKM.hoanGiay() }); // anh 17/11: giây tối đa của hoàn trong trận Tống Kim — trình duyệt ghi ở ô xem món
 Object.defineProperty(DO.LUAT, "baoDapAnSu", { enumerable: true, configurable: true, get: () => BD.luat() }); // anh 23/11: luật Báo Đáp Ân Sư gửi lúc vào game — client anOpt hiện lựa chọn ở Võ sư / Cung Nữ khi có key này (bản này vỏ rỗng: {dang:false} — lựa chọn hiện, bấm vào hiện câu trung thực)
 Object.defineProperty(DO.LUAT, "khamNam", { enumerable: true, configurable: true, get: () => KN.luat() }); // anh 23/11: luật khảm nạm — client anOpt hiện lựa chọn ở Thợ rèn khi có key này (bản này vỏ rỗng: {bat:false} — lựa chọn hiện, mở khung được, máy chủ báo chưa có khi Khảm)
+Object.defineProperty(DO.LUAT, "bangHoi", { enumerable: true, configurable: true, get: () => BH.CF }); // khôi phục tối thiểu 27/11/2026: luật bang hội gửi lúc vào game — client bhLuat() đọc capLap / khaoNgay / phiLap / roiCho
 const PACK = require("../assets/server.json");
 
 // name: tên máy chủ hiện ra — VL_TEN_MAY của từng máy (anh 12/11: 2 máy chung mã — S1 Mot Thoi Ky Niem đặt "S1 · Đồ xanh" trong s1.service, S2 Mot Thoi Ky Niem không

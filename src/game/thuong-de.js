@@ -1,12 +1,12 @@
 // Camera góc nhìn thượng đế + ghi hình.
 // KHÓA (Huy 26–27/11/2026):
-//   - Bản WEB: chỉ tài khoản test1 (nút, phím 0, Ctrl+R/S/P) — như cũ.
+//   - Bản WEB: chỉ tài khoản test1 và test2 (nút, phím 0, Ctrl+R/S/P) — test2 mở thêm theo lệnh Huy 17:04 27/11/2026 (quay trận Tống Kim 22:00).
 //   - Bản ĐIỆN THOẠI (cheDo() === "dt"): MỌI tài khoản đều thấy + dùng được nút Thượng đế, +/−, Ghi hình
 //     (Huy 08:55 27/11/2026: mở cho tất cả người chơi trên điện thoại để ghi hình quảng bá). Dừng ghi chỉ qua
 //     chấm đỏ (bấm chấm → popup Dừng/Tắt) — trong hộp mở KHÔNG có nút Dừng riêng (Huy 12:36 27/11/2026).
-//   - Tàng hình vẫn CHỈ test1 ở mọi nơi (tang-hinh.js) — không mở theo.
+//   - Tàng hình vẫn CHỈ test1/test2 ở mọi nơi (tang-hinh.js) — không mở theo.
 // Khóa theo TÊN tài khoản đăng nhập (Net.me.ten), không theo cờ admin: cờ admin là chung, về lý thuyết nhiều acc có thể mang cờ,
-// còn tên "test1" thì duy nhất 1 acc. Mở ở đây là xem/ghi phía client (không đụng máy chủ, không cho lợi thế máy chủ).
+// còn tên "test1"/"test2" thì mỗi tên duy nhất 1 acc. Mở ở đây là xem/ghi phía client (không đụng máy chủ, không cho lợi thế máy chủ).
 // Chặn phía client: acc thường không thấy nút, phím 0 / Ctrl+R không bật được, không có đường gọi qua console ở bản live
 // (window.VL chỉ mở ở localhost). Chặn tuyệt đối (kẻ tự sửa file JS máy mình) thì phải chặn ở máy chủ — không làm được cho
 // tính năng chỉ xem ở client, ghi rõ trong KET-QUA.md nếu Huy muốn chắc thì nói.
@@ -25,16 +25,19 @@
 //   TDE.layBlobGhi() — file video lần ghi cuối (chỉ harness headless qua window.VL ở localhost đọc)
 
 export const TEN_TEST1 = "test1";
+// Huy 17:04 27/11/2026: mở camera web cho thêm "test2" (quay trận Tống Kim 22:00) — giữ nguyên mọi hành vi khác.
+export const TEN_DUOC_CAMERA = new Set([TEN_TEST1, "test2"]);
 // nấc thu nhỏ của góc thượng đế: 0,25 mặc định (màn 1920×1080 thấy ~7680×4320 px bản đồ quanh nhân vật)
 const GOD_ZOOMS = [0.35, 0.25, 0.18, 0.12];
 // holder để dienthoai.js gọi mà không tạo vòng import (main.js gán TDH.cur = TDE)
 export const TDH = { cur: null };
 
 export function taoThuongDe(api) {
-  const laTest1 = () => { const me = api.me && api.me(); return !!(me && me.ten === TEN_TEST1); };
-  // điện thoại thật (DienThoai.cheDo() === "dt") — cửa sổ dọc hẹp của máy tính (mt) vẫn tính là web: chỉ test1
+  // laTest1: tên cũ giữ để API trả về không đổi — thực chất là "được camera web" (test1/test2).
+  const laTest1 = () => { const me = api.me && api.me(); return !!(me && TEN_DUOC_CAMERA.has(me.ten)); };
+  // điện thoại thật (DienThoai.cheDo() === "dt") — cửa sổ dọc hẹp của máy tính (mt) vẫn tính là web: chỉ test1/test2
   const laDt = () => !!(api.laDt && api.laDt());
-  const duocCameraDt = () => laTest1() || laDt(); // khóa cụm nút điện thoại: mọi acc trên điện thoại, chỉ test1 trên web
+  const duocCameraDt = () => laTest1() || laDt(); // khóa cụm nút điện thoại: mọi acc trên điện thoại, chỉ test1/test2 trên web
   let bat = false, chiSo = 1, zoomCu = 1;
   let rec = null, stream = null, chunks = [], blobCuoi = null, batDau = 0, tamDungMs = 0, tamDungTu = 0, henGio = 0, lastTodo = 0, huyBo = false;
   let elBtns = null, elGhi = null, elDtWrap = null, elDtCum = null, elDtBang = null, elDtTd = null, elDtGhi = null, elDtZoom = null;
@@ -53,7 +56,7 @@ export function taoThuongDe(api) {
     // Thượng đế | − | mức zoom | + | ● Ghi (+ Tàng hình do tang-hinh.js gắn vào hộp). KHÔNG có nút Dừng
     // riêng trong hộp (Huy 12:36 27/11/2026): dừng ghi chỉ qua chấm đỏ.
     // Đang ghi: thu thành chấm đỏ hiện giây (.td-dot); bấm chấm hiện popup Dừng/Tắt (.td-pop).
-    elBtns.innerHTML = `<button type="button" class="td-cum" data-td="cum" title="Camera / Ghi hình">CAM</button><div class="td-hop"><button type="button" data-td="god" title="Góc nhìn thượng đế — phím 0 (chỉ test1)">Thượng đế</button><button type="button" data-td="tru" title="Thu nhỏ (rộng hơn)">−</button><span class="td-muc" data-td="muc" title="Mức thu nhỏ hiện tại">×0.25</span><button type="button" data-td="cong" title="Phóng to (gần hơn)">+</button><button type="button" data-td="rec" title="Bắt đầu ghi hình — Ctrl+R (chỉ test1)">● Ghi</button></div><div class="td-dot" data-td="cham" title="Đang ghi — bấm để Dừng / Tắt"><i></i><span>00:00</span></div><div class="td-pop"><button type="button" data-td="pop-dung" title="Dừng ghi + tải video">■ DỪNG + lưu</button><button type="button" data-td="pop-tat" title="Hủy ghi, không lưu video">✕ TẮT (không lưu)</button></div>`;
+    elBtns.innerHTML = `<button type="button" class="td-cum" data-td="cum" title="Camera / Ghi hình">CAM</button><div class="td-hop"><button type="button" data-td="god" title="Góc nhìn thượng đế — phím 0 (chỉ test1/test2)">Thượng đế</button><button type="button" data-td="tru" title="Thu nhỏ (rộng hơn)">−</button><span class="td-muc" data-td="muc" title="Mức thu nhỏ hiện tại">×0.25</span><button type="button" data-td="cong" title="Phóng to (gần hơn)">+</button><button type="button" data-td="rec" title="Bắt đầu ghi hình — Ctrl+R (chỉ test1/test2)">● Ghi</button></div><div class="td-dot" data-td="cham" title="Đang ghi — bấm để Dừng / Tắt"><i></i><span>00:00</span></div><div class="td-pop"><button type="button" data-td="pop-dung" title="Dừng ghi + tải video">■ DỪNG + lưu</button><button type="button" data-td="pop-tat" title="Hủy ghi, không lưu video">✕ TẮT (không lưu)</button></div>`;
     elDot = elBtns.querySelector(".td-dot");
     elPop = elBtns.querySelector(".td-pop");
     elBtns.addEventListener("click", (e) => {
@@ -161,7 +164,7 @@ export function taoThuongDe(api) {
   // #dt và #jxhud cùng z-index 3, #jxhud đứng sau trong DOM nên vòng chiêu vẽ đè lên nút ở màn ngang.
   // Lớp riêng tự nhận click (không qua _bam của dienthoai.js), chỉ hiện khi body.dt.
   // Cụm GỘP (Huy 09:02 27/11/2026): mặc định chỉ 1 nút CAM nhỏ; bấm thì mở bảng điều khiển gọn (.dt-tdbang).
-  // Nút Tàng hình (chỉ test1) do tang-hinh.js gắn thêm vào .dt-tdbang.
+  // Nút Tàng hình (chỉ test1/test2) do tang-hinh.js gắn thêm vào .dt-tdbang.
   function veNutDt() {
     if (!elDtWrap) {
       elDtWrap = document.getElementById("td-btns-dt");
@@ -241,7 +244,7 @@ export function taoThuongDe(api) {
     if (!laTest1()) return;
     bat ? tatGod() : batGod();
   }
-  // nút Thượng đế trên điện thoại: mọi acc (điện thoại thật), chỉ test1 trên web/máy tính
+  // nút Thượng đế trên điện thoại: mọi acc (điện thoại thật), chỉ test1/test2 trên web/máy tính
   function bamNutDt() {
     if (!duocCameraDt()) return;
     bat ? tatGod() : batGod();
@@ -383,7 +386,7 @@ export function taoThuongDe(api) {
     dangGhi: () => !!rec,
     layBlobGhi: () => blobCuoi,
     capNhat() {
-      // web: chỉ test1 mới có cụm nút; điện thoại: cụm nút luôn dựng cho mọi acc (khóa ở từng nút).
+      // web: chỉ test1/test2 mới có cụm nút; điện thoại: cụm nút luôn dựng cho mọi acc (khóa ở từng nút).
       if (laTest1()) veNut();
       else { if (elBtns) { elBtns.remove(); elBtns = null; } if (rec) dungGhi(); if (bat) tatGod(); }
       veNutDt();

@@ -2779,4 +2779,16 @@
       }
     }
   }
+,
+  "bangHoi": {
+    "bat": true,
+    "capLap": 80,
+    "tsLap": null,
+    "khaoNgay": 3,
+    "khaoNguoi": 5,
+    "khaoIp": 1,
+    "phiLap": 1000000,
+    "roiCho": 24
+  },
+  "_bangHoi": "Bang hội đợt 1 (khôi phục tối thiểu 27/11/2026 — may-chu/bang-hoi.js): capLap = cấp tối thiểu để lập bang; tsLap = thống soái tối thiểu (null = không xét); khaoNgay = số ngày khảo nghiệm sau khi lập (0 = thừa nhận ngay); khaoNguoi = số tài khoản khác nhau phải gia nhập trong thời gian khảo nghiệm (khaoIp: 1 tài khoản tính 1 — chưa thi hành, đếm theo tài khoản); phiLap = phí lập bang lượng (null = không thu phí); roiCho = giờ chờ sau khi rời bang mới được lập/vào bang khác."
 }
