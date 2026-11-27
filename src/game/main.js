@@ -56,6 +56,7 @@ import { TongKim, laZoneTk } from "./tongkim.js"; // Tống Kim bãi thử — b
 import { LoiDai, laLd } from "./loidai.js"; // Lôi Đài Công Bình Tử (anh 15/11 — THIET-KE-LOI-DAI.md đợt 1): sân = vùng 2091–2095 (bản đồ c209), PvP theo đường Tống Kim, thanh tỉ số, kết quả
 import { DuaNgua, laDn, phanMau } from "./duangua.js"; // Truy Phong Đại Loạn Đấu — đua ngựa (anh 16/11 — may-chu/dua-ngua.js): đường đua 863, thanh đua, ô đạo cụ 1–3, hộp / bẫy, tốc cố định
 import { moPoster, posterAnHomNay } from "./poster.js"; // poster sự kiện lúc vào game (anh 17/11 — Báo Đáp Ân Sư)
+import * as CapNhat from "./cap-nhat.js"; // bảng "Vừa cập nhật những gì" ở màn chờ / đăng nhập (Huy 09:43 27/11/2026)
 let posterDa = false; // đã xét hiện poster ở trang này (mỗi lần tải trang / đăng nhập 1 lần)
 
 const $ = (s) => document.querySelector(s);
@@ -125,7 +126,7 @@ async function taiKhoThat() {
   const L = LOADING.start(null, "Đang tải kho hình… Đứng yên đấy!");
   try {
     msg("Đang tải kho hình… Đứng yên đấy!");
-    const [jx, npc, maps, mons, chr, skills, audio, ui, hud, win, mobstats, fx, revive, maplist, full, npcDlg, skIcons, mapNpcs, skillTip, pack, , roi, vc, vatBanDo, trangThai, npcThem, pldData, satData, vaData, ttData, lkData, tinData, bcData, btgData, phData] = await Promise.all([
+    const [jx, npc, maps, mons, chr, skills, audio, ui, hud, win, mobstats, fx, revive, maplist, full, npcDlg, skIcons, mapNpcs, skillTip, pack, , roi, vc, vatBanDo, trangThai, npcThem, pldData, satData, vaData, ttData, lkData, tinData, bcData, btgData, phData, cnData] = await Promise.all([
       JxChar.load("assets/web/jxchar/"), NpcPack.load("assets/web/npc/"), j("assets/web/map/map.json"),
       j("assets/data/monsters.json"), j("assets/data/char.json"), j("assets/web/skill/skills.json"), GameAudio.load(), j("assets/ui/ui.json"), Hud.load(), UiWins.load(),
       j("assets/data/mobstats.json"), // chỉ số quái theo cấp — chạy script cấp quái của client (tools/build-mob-stats.mjs)
@@ -153,15 +154,17 @@ async function taiKhoThat() {
       j("assets/ui/bieu-cam.json").catch(() => null), // biểu cảm chat như client (cong-cu/dung-bieu-cam.mjs — anh 31/10)
       j("assets/data/boss-tg.json").catch(() => null), // boss thế giới: danh sách Boss Hoàng Kim (cong-cu/dung-boss-tg.mjs — thẻ Boss TG của công cụ thử)
       j("assets/data/phong-hoa.json").catch(() => null), // Phong Hỏa Liên Thành: 3 đường, chỗ sinh quân, đại doanh (cong-cu/dung-phong-hoa.mjs — anh 04/11)
+      CapNhat.napCapNhat().catch(() => null), // bảng "Vừa cập nhật những gì" (màn đăng nhập + mục đầu Tin cập nhật — Huy 27/11; dùng chung lượt tải đã cache)
     ].map((p) => L.track(p, 1)));
     if (npcThem && npcDlg) Object.assign(npcDlg.scripts, npcThem.scripts || {});
+    const tinDs = (tinData && tinData.tin) || []; const tinCn = CapNhat.mucThanhTin(cnData); if (tinCn) tinDs.unshift(tinCn); // mục đầu Tin cập nhật = bảng cập nhật (mở lại trong game)
     themXaPhuTayTuy(npcDlg); themLeQuan(npcDlg); themBaoDapAnSu(npcDlg); themKhamNam(npcDlg); themBauCua(npcDlg); themThuyenPhu(npcDlg);
     BieuCam.nap(bcData);
     P.bossTg = btgData;
     P.phongHoa = phData; PhongHoa.D = phData;
     if (full) mergeFullMaps(maps, hud, full);
     if (skillTip) setTextColors(skillTip.colors); // tên màu <color=…> của chữ client = bảng màu engine
-    Object.assign(P, { jx, npc, maps, mons: mons.mons, reach: mons.reach, chr, only: (pack && pack.server) || null, factions: skills.factions, skillDb: noiCapChieu(suaVoCong(skills.skills)),skillIcon: skIcons.skills, skillTip, npcDlg, mapNpcs, vatBanDo, trangThai, npcThem, pld: pldData, satThu: satData, vuotAi: vaData, tayTuy: ttData, luyenKy: (lkData && lkData.ky) || {}, tin: (tinData && tinData.tin) || [], ungHo: (tinData && tinData.ungHo) || null, audio, ui, hud, win, mobstats, fx, roi, vc, revive, maplist, settings: loadSettings(), dev: { speed: 1 } });
+    Object.assign(P, { jx, npc, maps, mons: mons.mons, reach: mons.reach, chr, only: (pack && pack.server) || null, factions: skills.factions, skillDb: noiCapChieu(suaVoCong(skills.skills)),skillIcon: skIcons.skills, skillTip, npcDlg, mapNpcs, vatBanDo, trangThai, npcThem, pld: pldData, satThu: satData, vuotAi: vaData, tayTuy: ttData, luyenKy: (lkData && lkData.ky) || {}, tin: tinDs, ungHo: (tinData && tinData.ungHo) || null, audio, ui, hud, win, mobstats, fx, roi, vc, revive, maplist, settings: loadSettings(), dev: { speed: 1 } });
     datLuyen(P.skillDb, P.factions); // chiêu luyện (sách 90 / 120 có cờ luyện) — rules.js LUYEN
     // Bản đồ thế giới (hud.js setTheGioi — nút WorldMapBtn): TẤT CẢ 60 bãi — tên, cấp, loại, rect + region gốc của client, ảnh mini có sẵn.
     // Không bịa địa danh; bãi trùng khóa bản đồ / trùng điểm neo vẫn đưa đủ (hud.js gom nhóm, bấm lặp xem hết), không lấy 1 mục đầu tiên.
@@ -358,6 +361,10 @@ function loginScreen(err = "") {
   // link Fanpage đang là chỗ chờ (#): bấm chưa làm gì, tới khi chủ server thêm link thật
   const _fp = document.querySelector("#lg-form .lg-fanpage");
   if (_fp && !_fp.dataset.gan) { _fp.dataset.gan = "1"; _fp.onclick = (e) => { if (_fp.getAttribute("href") === "#") e.preventDefault(); }; }
+  // bảng "Vừa cập nhật những gì": tự hiện khi có bản mới (màn chờ / đăng nhập, trước khi vào game); nút mở lại
+  const _cn = $("#lg-cn");
+  if (_cn && !_cn.dataset.gan) { _cn.dataset.gan = "1"; _cn.onclick = () => CapNhat.moLaiBangCapNhat(); }
+  CapNhat.kiemTraBangCapNhat();
   ($("#lg-name").value ? $("#lg-pass") : $("#lg-name")).focus();
 }
 // mất phiên (tài khoản vừa đăng nhập ở nơi khác): dừng game, không lưu nữa, về màn đăng nhập
@@ -397,6 +404,7 @@ function selectScreen() {
   });
   show("s-select");
   csPanel();
+  CapNhat.kiemTraBangCapNhat(); // bảng cập nhật: phiên cũ vào thẳng màn chọn nhân vật cũng thấy, trước khi vào game
   // vừa tự tải lại trang lúc đang chơi (lệnh quản trị Bắt cả máy chủ F5 / nút Tải lại ngay — taiLaiNgay): vào lại đúng nhân vật
   let vl = null; try { vl = sessionStorage.getItem("vl_vaoLai"); sessionStorage.removeItem("vl_vaoLai"); } catch {}
   if (vl != null && CS.slots[+vl]) { CS.sel = +vl; CS.del = -1; csPanel(); setTimeout(() => { if (document.querySelector("#s-select.on")) csEnter(); }, 300); }
@@ -559,6 +567,7 @@ const START_ZONE = 53;
 // màn chờ (ảnh + thanh tải) phủ từ lúc bấm vào game tới khi giao diện dựng xong — tải bãi đầu tiên dùng tiếp màn đó (LOADING.giu).
 // Lần đầu vào game (hoặc gói tài nguyên vừa đổi): tải trước giao diện / icon / võ công của phái trên cùng màn chờ (src/game/tai-truoc.js)
 async function enterGame() {
+  CapNhat.anBang(); // vào thế giới game: bảng cập nhật tự ẩn (không ghi đã xem)
   LOADING.start(null, "Đang vào game… Đứng yên đấy!"); LOADING.giu = true;
   try { await taiTruoc(LOADING, P, hero).catch(() => {}); LOADING.start(null, "Đang vào game… Đứng yên đấy!"); await vaoGame(); } finally { LOADING.giu = false; LOADING.end(); }
 }
@@ -589,8 +598,8 @@ async function vaoGame() {
   const tiepDanh = !!hero.tuDanh && FARM_KINDS.has(world.zone.kind) && world.player.hp > 0;
   if (tiepDanh) { world.auto = true; world.neo = [world.player.x, world.player.y]; }
   mountHud();
-  if (!TDE) { TDE = taoThuongDe({ me: () => Net.me, cv, msg: (t) => P.hud.msg(t), getZoom: () => zoom, setZoom: (z) => { zoom = z; snapCam(); } }); TDH.cur = TDE; }
-  TDE.capNhat(); // camera thượng đế + ghi hình: chỉ acc test1 mới có nút
+  if (!TDE) { TDE = taoThuongDe({ me: () => Net.me, cv, msg: (t) => P.hud.msg(t), getZoom: () => zoom, setZoom: (z) => { zoom = z; snapCam(); }, laDt: () => DienThoai.cheDo() === "dt" }); TDH.cur = TDE; }
+  TDE.capNhat(); // camera thượng đế + ghi hình: web chỉ test1, điện thoại mọi acc (tang-hinh vẫn chỉ test1)
   if (!TH) TH = taoTangHinh({ me: () => Net.me, msg: (t) => P.hud.msg(t), nguoiChoi: () => (world && world.player) || null });
   TH.capNhat(); // tàng hình: chỉ acc test1 mới có nút (phím H)
   if (DT) DT.vaoGame(); // điện thoại: vào game là thu gọn (anh 30/10 — người chơi cần thì mở)
@@ -905,11 +914,12 @@ async function loadZone(zone, opt, L) {
   // vào thành / thôn lúc tự đánh đang bật (Thổ Địa Phù, trọng thương, Trợ Thủ về làm việc…): tạm dừng tự đánh — không lao vào đánh mộc nhân
   // (anh 31/10 khuya); ra bãi thì World mới tự đánh tiếp, bấm bật lại (Space 2 lần) thì đánh mộc nhân như thường. Trợ Thủ đang về làm việc ở
   // thành / đi Xa phu thì không báo. Boss thế giới đang ở thôn / thành này (anh 02/11 — ngoài cổng): báo chỗ, tới gần boss là tự đánh boss
-  if (w.auto && TOWN_KINDS.has(zone.kind)) {
+  // Ba Lăng giờ có bãi quái quanh thành: thôn/thành có quái THẬT gần người chơi thì tự đánh tiếp tại chỗ, không tạm dừng.
+  if (w.auto && TOWN_KINDS.has(zone.kind) && !coQuaiThatGan(w)) {
     w.tamDung = true;
     const bt = BossTG.b && !BossTG.b.ket && BossTG.b.bai === zone.id ? BossTG.b : null, sn = SanNhim.s && !SanNhim.s.ket && SanNhim.s.ds.some((r) => r[1] === zone.id && !r[8]);
     if (!thanh && !diXe) P.hud.msg(`Tự đánh tạm dừng ở ${zone.n} (không đánh mộc nhân) — ra bãi luyện công sẽ tự đánh tiếp, tắt rồi bật lại Tự đánh để tự về bãi${bt ? `; boss thế giới ${bt.ten} ${bt.noi || "ngoài thành"} — tới gần boss là tự đánh boss` : ""}${sn ? "; đang có Nhím béo phì ngoài thành — tới gần nhím là tự đánh nhím" : ""}`);
-  }
+  } else if (w.auto && TOWN_KINDS.has(zone.kind)) w.tamDung = false; // có quái thật gần: tự đánh tiếp tại chỗ, không tạm dừng
   hero.zone = zone.id; save();
   const look = world.player.look;
   let nAct = 0;
@@ -1921,7 +1931,15 @@ const DIEM = new Map();
 function diemQuai(zone) {
   if (DIEM.has(zone.id)) return DIEM.get(zone.id);
   const m = P.maps.maps[zone.map], c = m && m.tiles && m.client, L = c && P.mapNpcs && P.mapNpcs.maps[c.id], s = P.maps.scale;
-  const ids = new Set([...(zone.m || []), zone.boss]), out = L && L.mobs ? L.mobs.filter((q) => ids.has(q[0])).map(([, x, y]) => [(x - c.region[0] * 512) * s, ((y - c.region[1] * 1024) / 2) * s]) : null;
+  const ids = new Set([...(zone.m || []), zone.boss]);
+  let out = L && L.mobs ? L.mobs.filter((q) => ids.has(q[0])).map(([, x, y]) => [(x - c.region[0] * 512) * s, ((y - c.region[1] * 1024) / 2) * s]) : null;
+  // vùng cấm đặt quái (zone.cam: [x1, y1, x2, y2] px web — chỉ bãi nào khai mới lọc, bãi khác giữ nguyên): Ba Lăng huyện — trong
+  // thành + 600px đệm (quái đuổi theo, leash 525 theo ldist, không vào được thành) và 400px quanh mọi NPC của bản đồ (kể cả Thuyền phu,
+  // Bao cát / Cọc gỗ / Mộc nhân), tính từ đúng tọa độ NPC trong mapnpcs.json.
+  if (out && Array.isArray(zone.cam) && zone.cam.length) {
+    const npc = c && c.region && L && Array.isArray(L.talk) ? L.talk.map((t) => [(t.x - c.region[0] * 512) * s, ((t.y - c.region[1] * 1024) / 2) * s]) : [];
+    out = out.filter(([x, y]) => !zone.cam.some(([a, b, cc, dd]) => x >= a && x <= cc && y >= b && y <= dd) && !npc.some(([nx, ny]) => Math.hypot(x - nx, y - ny) < 400));
+  }
   DIEM.set(zone.id, out && out.length ? out : null);
   return DIEM.get(zone.id);
 }
@@ -5006,9 +5024,17 @@ function toggleAuto(khongDi) {
 // Trợ Thủ treo máy đang bật -> như nút Bắt đầu treo máy (bán / mua rồi đi); không thì tới Xa phu về bãi vừa đánh, chưa có bãi thì bãi vào được cao nhất (người mới cấp 1: Dược Vương
 // Cốc). Giữ nguyên: đang có việc dở (Trợ Thủ về thành, đi xe, đi boss, tự làm nhiệm vụ), boss thế giới / nhím đứng gần, đứng ngay chỗ mộc nhân (bấm tự đánh để thử chiêu — vùng hiện bảng đo sát thương của mocnhan.js)
 const MOC_GAN = 220;
+// Ba Lăng giờ có bãi quái quanh thành (zone 53, quái cấp 1–10): thôn/thành có quái THẬT còn sống gần người chơi
+// (trong tầm spawn 2100 ldist) thì tự đánh đánh tại chỗ — không tạm dừng (loadZone), không kéo ra Xa phu (tuVeBai).
+// Mộc nhân (dummy) không tính. Ủy thác (boMoc=true) là chủ động muốn ra bãi nên không chặn.
+function coQuaiThatGan(w) {
+  const p = w.player; if (!p || !w.mobs) return false;
+  return w.mobs.some((m) => m.alive && !m.dummy && ldist(p.x, p.y, m.x, m.y) < 2100);
+}
 function tuVeBai(boMoc) { // boMoc: đi luôn dù đứng cạnh mộc nhân (Ủy thác → Ra bãi rồi tự ủy thác — utRaBai)
   const w = world, p = w.player;
   if (!TOWN_KINDS.has(w.zone.kind) || w.zone.id === TK_BD.z || !xaPhuNpc(w) || zoneLoad || p.hp <= 0 || thanh || diXe || bossDi || TuLam.dang || w.bossGan(false) || w.nhimGan(false)) return; // điểm báo danh Tống Kim: không kéo người đang chờ trận đi
+  if (!boMoc && coQuaiThatGan(w)) return; // có quái thật gần: ở lại đánh, không ra Xa phu
   if (!boMoc && w.mobs.some((m) => m.dummy && !m.coc && Math.hypot(m.x - p.x, m.y - p.y) < MOC_GAN)) return P.hud.msg("Đang đứng cạnh mộc nhân: đánh mộc nhân để thử chiêu, không có kinh nghiệm đâu.");
   const T = hero.auto.treo, zt = T.on && T.bai != null && P.maps.zones.find((x) => x.id === T.bai);
   if (zt && moBai(zt)) return treoStart();

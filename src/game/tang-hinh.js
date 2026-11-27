@@ -53,19 +53,23 @@ export function taoTangHinh(api) {
     elBtn.textContent = "Tàng hình";
     elBtn.addEventListener("click", bamNut);
     const wrap = document.getElementById("td-btns");
-    if (wrap) wrap.appendChild(elBtn);
+    const hop = wrap && wrap.querySelector(".td-hop");
+    if (hop) hop.appendChild(elBtn);
+    else if (wrap) wrap.appendChild(elBtn);
     else { const w = document.createElement("div"); w.id = "th-btns"; w.appendChild(elBtn); document.body.appendChild(w); }
     capNhatNut();
   }
-  // Nút điện thoại: gắn vào lớp riêng #td-btns-dt của camera (trên #jxhud, không bị vòng chiêu vẽ đè) — chưa có thì tự tạo lớp.
+  // Nút điện thoại: gắn vào bảng gộp .dt-tdbang trong lớp riêng #td-btns-dt của camera (trên #jxhud, không bị vòng chiêu vẽ đè) —
+  // chưa có thì tự tạo lớp; bảng gộp dựng sau thì dời nút vào bảng.
   function veNutDt() {
-    if (elDt && elDt.isConnected) { capNhatNut(); return; }
+    if (elDt && elDt.isConnected) { const panel = document.querySelector("#td-btns-dt .dt-tdbang"); if (panel && elDt.parentElement !== panel) panel.appendChild(elDt); capNhatNut(); return; }
     let wrap = document.getElementById("td-btns-dt");
     if (!wrap) { wrap = document.createElement("div"); wrap.id = "td-btns-dt"; document.body.appendChild(wrap); }
     elDt = document.createElement("div");
     elDt.className = "dt-tanghinh"; elDt.textContent = "Tàng hình";
     elDt.addEventListener("click", bamNut);
-    wrap.appendChild(elDt);
+    const panel = wrap.querySelector(".dt-tdbang");
+    (panel || wrap).appendChild(elDt);
     capNhatNut();
   }
   function goNut() {

@@ -954,8 +954,8 @@ body.dt.dt-luoi #jxhud .jx-bot > .dt-o[data-hang="1"] { display: none !important
 /* Chat (dienthoai.js _xepChat — anh 29/10 "thiếu nút, bố cục chưa đẹp"): thẻ lọc · tin (vuốt cuộn) · hàng gõ chữ: kênh, ô chữ, biểu cảm, gửi */
 #dt .dt-chatp { left: 0; right: 0; top: calc(var(--dt-day) + 38px); bottom: 58px; display: none; flex-direction: column; padding: 0 6px 6px; }
 body.dt-chat #dt .dt-chatp { display: flex; }
-#dt .dt-ctab { flex: none; display: flex; gap: 2px; }
-#dt .dt-ctab > span { flex: 1; height: 28px; line-height: 27px; text-align: center; white-space: nowrap; border: 1px solid #4e6a5f; border-bottom: 0; background: linear-gradient(#22302b, #0d1512);
+#dt .dt-ctab { flex: none; display: flex; gap: 2px; } /* 9 thẻ kênh (Huy 27/11: thêm Thế giới, Hệ thống): mọi thẻ đều thấy, chia đều chiều ngang, bấm đúng tâm ô */
+#dt .dt-ctab > span { flex: 1 1 0; min-width: 0; overflow: hidden; padding: 0 2px; font-size: 11px; height: 28px; line-height: 27px; text-align: center; white-space: nowrap; border: 1px solid #4e6a5f; border-bottom: 0; background: linear-gradient(#22302b, #0d1512);
   color: rgb(50,220,173); text-shadow: 1px 1px 0 #000; }
 #dt .dt-ctab > span.on { color: #ffe48a; border-color: #8fae9f; background: linear-gradient(#3d564c, #16221d); }
 #dt .dt-clist { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; padding: 4px 6px; border: 1px solid #8fae9f;
@@ -1420,10 +1420,14 @@ body.dt #tkcb-nut { z-index: 4; padding: 4px 0; text-align: center; }
 body.dt #phkq { top: 140px; font-size: 12px; min-width: 0; }
 /* Bảng xếp hạng Tống Kim (27/11/2026 — Huy lệnh 10:59 + 11:26): khung riêng trên cùng mọi giao diện (z-index 100001 — trên cả khung
    đối thoại 100000), mặc định gọn (10 đầu + dòng của mình), bấm đầu khung thì Mở rộng / Thu gọn như nút Mở rộng */
-#tkbxh-nut { position: fixed; z-index: 3; right: 6px; top: 0; box-sizing: border-box; padding: 1px 8px; background: linear-gradient(#3b3a2c, #1c1b14); border: 1px solid #8a7440;
-  box-shadow: 0 0 0 1px #000; font: 13px/16px var(--jx); color: #ffd54a; text-shadow: 1px 1px 0 #000; white-space: nowrap; cursor: pointer; user-select: none; }
-#tkbxh-nut:hover { color: #fff1a8; border-color: #c9a85a; }
-body.dt #tkbxh-nut { z-index: 4; padding: 4px 0; text-align: center; }
+/* Avatar mở bảng xếp hạng (27/11/2026 — Huy lệnh 13:00): tròn, 2 kiếm chéo (SVG nội tuyến trong tkchienbao.js), nhấp nháy liên tục,
+   z-index 100002 — trên cả bảng (100001), khung đối thoại (100000) và lớp camera (z 9); vị trí do tkchienbao.js đo trực tiếp */
+#tkbxh-avt { position: fixed; z-index: 100002; right: 6px; top: 0; width: 46px; height: 46px; box-sizing: border-box; border: 2px solid #c9a85a;
+  border-radius: 50%; background: radial-gradient(circle at 35% 30%, #4a4436, #141109 70%); display: grid; place-items: center;
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; animation: tkbxh-nhay 1.15s ease-in-out infinite; }
+#tkbxh-avt svg { display: block; pointer-events: none; filter: drop-shadow(0 1px 1px #000); }
+#tkbxh-avt.mo { border-color: #ffe48a; }
+@keyframes tkbxh-nhay { 0%, 100% { opacity: 1; box-shadow: 0 0 0 1px #000, 0 0 14px 3px rgba(255,213,74,.55); } 50% { opacity: .55; box-shadow: 0 0 0 1px #000, 0 0 3px 0 rgba(255,213,74,.12); } }
 #tkbxh { position: fixed; z-index: 100001; right: 8px; top: 8px; width: 340px; box-sizing: border-box; background: rgba(8,8,8,.93); border: 1px solid #8a7440;
   box-shadow: 0 0 0 1px #000, 0 4px 18px rgba(0,0,0,.6); font: 13px/17px var(--jx); color: #e9e3cf; text-shadow: 1px 1px 0 #000; }
 #tkbxh .dau { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-bottom: 1px solid #5a4a26; cursor: pointer; user-select: none; }
@@ -1451,6 +1455,12 @@ body.dt #tkbxh-nut { z-index: 4; padding: 4px 0; text-align: center; }
 #tkkq.b .bxh-mo { margin: 4px 0 0 4px; display: inline-block; padding: 2px 10px; background: linear-gradient(#3b3a2c, #1c1b14); border: 1px solid #8a7440;
   box-shadow: 0 0 0 1px #000; color: #ffd54a; cursor: pointer; }
 body.dt #tkbxh { left: 4px; right: 4px; top: 120px; width: auto; }
+body.dt.dt-ngang #tkbxh { top: 100px; right: 56px; font: 12px/15px var(--jx); } /* ngang: dưới bản đồ nhỏ (đáy 94), khỏi lòi khỏi màn thấp; chừa mép phải cho avatar khỏi đè nút ✕ */
+body.dt.dt-ngang #tkbxh .dau { padding: 3px 6px; }
+body.dt.dt-ngang #tkbxh .dau .x { padding: 2px 6px; }
+body.dt.dt-ngang #tkbxh .than { max-height: 90px; overflow: hidden auto; } /* ngang gon: chi hien tieu de + 5 hang, con lai cuon trong bang cho ngan lai */
+body.dt.dt-ngang #tkbxh.rong .than { max-height: calc(100vh - 190px); overflow-y: auto; }
+body.dt.dt-ngang #tkbxh .chan { padding: 2px 8px; }
 /* kết quả boss thế giới (windows.js ketQuaBoss — khung 排名.ini, cửa sổ "btgkq"): cột phải — tên boss, hạng của mình, phần thưởng ô 48 × 48 (kinh
    nghiệm: hình PictureList của client; món: icon + số góc dưới phải như ô dùng nhanh) */
 #jxwin .bk-dau { margin: 2px 0 2px 4px; font: 16px/18px "VK Sans Serif 16", monospace; color: rgb(255,217,78); text-shadow: 1px 1px 0 #000; }
@@ -2455,6 +2465,17 @@ body.dt.dt-ngang #dt .dt-can > b { left: calc(var(--vw100, 100vw) * 0.13 - 53px 
 #td-btns button.mo { opacity: .45; } /* nút ■ Dừng khi chưa ghi: mờ, bấm thì báo "Chưa ghi gì cả" */
 #td-btns button.dang { color: #ff8a8a; border-color: #a33; } /* nút ● Ghi khi đang ghi: đỏ, không ghi chồng */
 #td-btns .td-muc { pointer-events: auto; align-self: center; min-width: 44px; text-align: center; font: 13px/13px "VK Sans Serif 13", "IBM Plex Mono", monospace; color: #ffe9b0; }
+/* Cụm web 1 ô + hộp gọn (Huy 10:03 27/11/2026: cùng mẫu 1 ô như điện thoại): mặc định chỉ nút CAM,
+   bấm thì mở hộp sang phải; đang ghi thì thu thành chấm đỏ hiện giây, bấm chấm hiện Dừng/Tắt. */
+#td-btns .td-hop { display: none; gap: 6px; pointer-events: none; }
+#td-btns.mo .td-hop { display: flex; }
+#td-btns .td-dot { display: none; align-items: center; gap: 6px; font: 13px/13px "VK Sans Serif 13", "IBM Plex Mono", monospace; color: #fff; background: rgba(20, 4, 4, .88); border: 1px solid #a33; border-radius: 14px; padding: 6px 10px; cursor: pointer; pointer-events: auto; }
+#td-btns .td-dot i { width: 10px; height: 10px; border-radius: 50%; background: #ff2d2d; animation: td-nhap 1s infinite; }
+#td-btns .td-dot.tam i { background: #ffb02d; animation: none; }
+#td-btns.dang-ghi .td-cum { display: none; }
+#td-btns.dang-ghi .td-dot { display: flex; }
+#td-btns .td-pop { display: none; gap: 6px; pointer-events: none; }
+#td-btns.pop .td-pop { display: flex; }
 body.dt #td-btns { display: none; } /* điện thoại dùng nút .dt-thuongde / .dt-ghi trong #dt */
 #td-ghi { position: fixed; left: 50%; top: 8px; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 8px; font: 13px/13px "VK Sans Serif 13", "IBM Plex Mono", monospace; color: #fff; background: rgba(20, 4, 4, .82); border: 1px solid #a33; border-radius: 4px; padding: 6px 12px; pointer-events: none; }
 #td-ghi i { width: 10px; height: 10px; border-radius: 50%; background: #ff2d2d; animation: td-nhap 1s infinite; }
@@ -2462,24 +2483,51 @@ body.dt #td-btns { display: none; } /* điện thoại dùng nút .dt-thuongde /
 @keyframes td-nhap { 50% { opacity: .25; } }
 #td-btns-dt { display: none; position: fixed; inset: 0; z-index: 9; pointer-events: none; } /* lớp nút camera riêng trên điện thoại: trên #jxhud (z 3) để vòng chiêu không vẽ đè */
 body.dt #td-btns-dt { display: block; }
-#td-btns-dt .dt-thuongde, #td-btns-dt .dt-ghi, #td-btns-dt .dt-dung, #td-btns-dt .dt-tanghinh { position: absolute; right: 6px; width: 92px; height: 30px; box-sizing: border-box; border: 1px solid #7f9f90; border-radius: 4px; background: linear-gradient(#22302b, #0d1512); color: #ffe9b0; display: grid; place-items: center; font-size: 13px; z-index: 1; touch-action: manipulation; pointer-events: auto; }
-#td-btns-dt .dt-thuongde { top: 294px; }
-#td-btns-dt .dt-ghi { top: 340px; }
-#td-btns-dt .dt-dung { top: 386px; }
-#td-btns-dt .dt-tanghinh { top: 478px; } /* tàng hình (chỉ test1): dưới hàng zoom của camera */
-#td-btns-dt .dt-zoomrow { position: absolute; right: 6px; top: 432px; width: 92px; height: 30px; box-sizing: border-box; display: flex; z-index: 1; touch-action: manipulation; pointer-events: auto; }
-#td-btns-dt .dt-zoomrow > div { box-sizing: border-box; display: grid; place-items: center; border: 1px solid #7f9f90; background: linear-gradient(#22302b, #0d1512); color: #ffe9b0; font-size: 15px; }
-#td-btns-dt .dt-zoomrow > div:first-child { border-radius: 4px 0 0 4px; width: 28px; }
-#td-btns-dt .dt-zoomrow > div:last-child { border-radius: 0 4px 4px 0; width: 28px; }
-#td-btns-dt .dt-zoomrow .dt-tdmuc { flex: 1; font-size: 12px; border-left: 0; border-right: 0; }
-#td-btns-dt .dt-thuongde.on, #td-btns-dt .dt-ghi.on, #td-btns-dt .dt-tanghinh.on { color: #7dff9a; border-color: #3f9a55; }
-#td-btns-dt .dt-ghi.dang { color: #ff8a8a; border-color: #a33; }
-#td-btns-dt .dt-dung.mo { opacity: .45; }
-body.dt.dt-ngang #td-btns-dt .dt-thuongde { top: 194px; width: 96px; }
-body.dt.dt-ngang #td-btns-dt .dt-ghi { top: 230px; width: 96px; }
-body.dt.dt-ngang #td-btns-dt .dt-dung { top: 266px; width: 96px; }
-body.dt.dt-ngang #td-btns-dt .dt-zoomrow { top: 302px; width: 96px; }
-body.dt.dt-ngang #td-btns-dt .dt-tanghinh { top: 348px; width: 96px; } /* tàng hình (chỉ test1): dưới hàng zoom của camera */
+/* ===== Cụm camera gộp 1 nút + mở camera cho mọi acc điện thoại (Huy 08:54, 08:55, 09:02 ngày 27/11/2026) =====
+   Mặc định chỉ 1 nút CAM nhỏ, đặt ở chỗ Huy đánh dấu 13:08 27/11/2026 (neo bằng JS trong thuong-de.js:
+   dọc: ngay dưới hàng khóa/Zalo, đúng vị trí nút "Thượng đế" cũ; ngang: sát bên phải khung trạng thái,
+   cùng hàng trên) — không đè vòng chiêu, không che bản đồ nhỏ / AUTO / Zalo / khung trạng thái / ô nhập chat.
+   Bấm CAM thì mở bảng điều khiển gọn (.dt-tdbang) gồm Thượng đế, Ghi hình, +/− zoom
+   và Tàng hình (chỉ test1, do tang-hinh.js gắn vào bảng). Bảng mở thì chiếm chỗ như cụm cũ — người dùng đã chủ động mở. */
+#td-btns-dt .dt-tdcum { position: absolute; right: 6px; top: var(--td-cam-top, 280px); width: 44px; height: 30px; box-sizing: border-box; border: 1px solid #ffe48a; border-radius: 4px; background: linear-gradient(#22302b, #0d1512); color: #ffe9b0; display: grid; place-items: center; font-size: 12px; z-index: 1; touch-action: manipulation; pointer-events: auto; }
+#td-btns-dt .dt-tdcum.on { color: #7dff9a; border-color: #3f9a55; }
+#td-btns-dt .dt-tdcum.dang { color: #ff8a8a; border-color: #a33; }
+/* Hộp điều khiển 1 khối gọn (Huy 10:02 27/11/2026: bỏ bảng dài 5 hàng đè vòng chiêu ở màn ngang).
+   Dọc: lưới 2 cột ngay dưới nút CAM. Ngang (13:08 27/11/2026): lưới 2 cột ngay dưới nút CAM ở góc trên-trái
+   (sát phải khung trạng thái) — không đè khung trạng thái, hàng icon trên, bản đồ nhỏ, ô nhập chat, vòng chiêu. */
+#td-btns-dt .dt-tdbang { position: absolute; right: 6px; top: calc(var(--td-cam-top, 280px) + 36px); display: none; grid-template-columns: 92px 92px; gap: 6px; z-index: 1; pointer-events: none; }
+#td-btns-dt.mo .dt-tdbang { display: grid; }
+#td-btns-dt .dt-tdbang > div { position: static; width: 92px; height: 30px; box-sizing: border-box; border: 1px solid #7f9f90; border-radius: 4px; background: linear-gradient(#22302b, #0d1512); color: #ffe9b0; display: grid; place-items: center; font-size: 13px; touch-action: manipulation; pointer-events: auto; }
+#td-btns-dt .dt-tdbang .dt-zoomrow { display: flex; padding: 0; }
+#td-btns-dt .dt-tdbang .dt-zoomrow > div { box-sizing: border-box; display: grid; place-items: center; border: 0; border-radius: 0; background: none; color: #ffe9b0; font-size: 15px; }
+#td-btns-dt .dt-tdbang .dt-zoomrow > div:first-child { width: 28px; }
+#td-btns-dt .dt-tdbang .dt-zoomrow > div:last-child { width: 28px; }
+#td-btns-dt .dt-tdbang .dt-zoomrow > div + div { border-left: 1px solid #7f9f90; }
+#td-btns-dt .dt-tdbang .dt-zoomrow .dt-tdmuc { flex: 1; width: auto; font-size: 12px; }
+#td-btns-dt .dt-tdbang .dt-thuongde.on, #td-btns-dt .dt-tdbang .dt-ghi.on, #td-btns-dt .dt-tdbang .dt-tanghinh.on { color: #7dff9a; border-color: #3f9a55; }
+#td-btns-dt .dt-tdbang .dt-ghi.dang { color: #ff8a8a; border-color: #a33; }
+body.dt.dt-ngang #td-btns-dt .dt-tdcum { top: 6px; left: var(--td-cam-left, 276px); right: auto; width: 48px; } /* ngang: sát bên phải khung trạng thái (Huy 13:08 27/11/2026), cùng hàng trên */
+body.dt.dt-ngang #td-btns-dt .dt-tdbang { top: 42px; left: var(--td-cam-left, 276px); right: auto; gap: 6px; } /* ngang: lưới 2 cột ngay dưới nút CAM */
+body.dt.dt-ngang #td-btns-dt .dt-tdbang .dt-ghi { order: -1; } /* Huy 12:37 27/11/2026: màn ngang nút Ghi hình đứng ĐẦU hộp, các nút còn lại ở sau */
+body.dt.dt-ngang #td-btns-dt.mo .dt-tdbang { display: grid; }
+body.dt.dt-ngang #td-btns-dt .dt-tdbang > div { height: 30px; font-size: 12px; white-space: nowrap; }
+/* Chấm đỏ đang ghi + popup Dừng/Tắt (Huy 10:02 27/11/2026): đang ghi thì cụm thu nhỏ thành chấm đỏ hiện số giây
+   đặt đúng chỗ nút CAM; bấm chấm thì hiện 2 nút ở đúng chỗ hộp điều khiển. Sau Dừng/Tắt trở lại nút CAM. */
+#td-btns-dt .dt-tddot { position: absolute; right: 6px; top: var(--td-cam-top, 280px); display: none; align-items: center; gap: 5px; height: 30px; padding: 0 8px; box-sizing: border-box; border: 1px solid #a33; border-radius: 15px; background: rgba(20, 4, 4, .88); color: #fff; font-size: 12px; z-index: 2; touch-action: manipulation; pointer-events: auto; }
+#td-btns-dt .dt-tddot i { width: 10px; height: 10px; flex: none; border-radius: 50%; background: #ff2d2d; animation: td-nhap 1s infinite; }
+#td-btns-dt .dt-tddot.tam i { background: #ffb02d; animation: none; }
+#td-btns-dt.dang-ghi .dt-tdcum { display: none; }
+#td-btns-dt.dang-ghi .dt-tddot { display: flex; }
+body.dt.dt-ngang #td-btns-dt .dt-tddot { top: 6px; left: var(--td-cam-left, 276px); right: auto; } /* ngang: chấm đỏ đúng chỗ nút CAM, góc trên-trái */
+#td-btns-dt .dt-tdpop { position: absolute; right: 6px; top: calc(var(--td-cam-top, 280px) + 36px); display: none; gap: 6px; z-index: 2; pointer-events: none; }
+#td-btns-dt.pop .dt-tdpop { display: flex; }
+#td-btns-dt .dt-tdpop > div { width: 92px; height: 30px; box-sizing: border-box; border: 1px solid #7f9f90; border-radius: 4px; background: linear-gradient(#22302b, #0d1512); color: #ffe9b0; display: grid; place-items: center; font-size: 12px; touch-action: manipulation; pointer-events: auto; }
+#td-btns-dt .dt-tdpop .dt-popdung { color: #ff8a8a; border-color: #a33; }
+body.dt.dt-ngang #td-btns-dt .dt-tdpop { top: 42px; left: var(--td-cam-left, 276px); right: auto; gap: 6px; } /* ngang: popup đúng chỗ hộp điều khiển, dưới nút CAM */
+body.dt.dt-ngang #td-btns-dt .dt-tdpop > div { width: auto; padding: 0 9px; height: 30px; font-size: 12px; white-space: nowrap; }
+/* Cụm camera nhường hẳn khi bản đồ lớn mở (body.dt-bdlmo): không đè bản đồ; đóng bản đồ lớn thì cụm trở lại đúng chỗ neo.
+   Ghi hình vẫn chạy ngầm, chấm đỏ trở lại cùng cụm. */
+body.dt-bdlmo #td-btns-dt { display: none !important; }
 /* khung nút tàng hình dự phòng (#th-btns — chỉ khi cụm #td-btns của camera chưa có): hàng dưới cụm camera, cùng kiểu nút */
 #th-btns { position: fixed; left: 4px; top: 58px; z-index: 9; display: flex; gap: 6px; pointer-events: none; }
 #th-btns button { pointer-events: auto; font: 13px/13px "VK Sans Serif 13", "IBM Plex Mono", monospace; color: #ffe9b0; background: linear-gradient(#3a2f16, #191204); border: 1px solid #8a6d2f; border-radius: 4px; padding: 6px 10px; cursor: pointer; }
@@ -2579,3 +2627,32 @@ body.dt:not(.dt-ngang).dt-luoi.dt-noi-co.dt-sap-co.dt-nhat-co #dt .dt-tin, body.
    von chi hien 1 o nen khong dung toi. */
 #dt .dt-kat { background-size: 200% auto !important; background-position: 0 50% !important; }
 body.dt:not(.dt-ngang) #dt .dt-kat { background-size: 200% auto, auto !important; background-position: 0 50%, 0 0 !important; }
+
+/* ===== Cụm AUTO sát dưới bản đồ nhỏ (Huy 13:03 27/11/2026: "cho cụm auto sát vào nằm dưới bản đồ") =====
+   Chỉ điện thoại (body.dt); bản web không đổi. Đặt cuối file để thắng khối "Gộp nút AUTO" ở trên.
+   - Dọc: bản đồ nhỏ hết y 166 -> Tự đánh 168 (khe 2px) -> AUTO 194 (khe 2px) -> khóa/Zalo 226 (khe 2px).
+   - Ngang thường (cao > 420px): bản đồ nhỏ hết y 94 -> Tự đánh 96 (khe 2px) -> AUTO 126 (khe 2px)
+     -> khóa/Zalo 156 (khe 2px); thẳng mép phải với bản đồ nhỏ (right 6px); tên bãi giữ chỗ cũ.
+   - Ngang thấp (cao <= 420px): vòng chiêu dâng lên tới y = H-232, cột xếp chồng sẽ đè 2 ô chiêu trên
+     (luật cũ dời cả cụm sang right 130px, để lại đúng ô trống Huy thấy) — nên xếp 4 ô thành 1 HÀNG
+     ngay dưới bản đồ nhỏ (y 96, khe 2px): Tự đánh + AUTO + khóa + Zalo kề nhau, mép phải thẳng
+     với bản đồ nhỏ; hàng chỉ cao 28–30px nên không chạm vòng chiêu (trừ <=9px mép trên ô chiêu
+     ở màn cực thấp <=349px, cùng mức tiền lệ ô CAM đã duyệt); tên bãi lên y 66 như luật cũ.
+   Bản đồ nhỏ đứng yên tuyệt đối khi bấm Mở rộng (đo rect trước/sau giống nhau) nên cụm neo CSS
+   là đủ, không cần neo JS. Trạng thái mở bảng chức năng (:not(.dt-gon)) giữ nguyên nhờ luật
+   riêng có độ ưu tiên cao hơn (không đụng tới). Bầu Cua giữ chỗ cũ. */
+body.dt:not(.dt-ngang) #dt .dt-tudanh { top: 168px; }
+body.dt:not(.dt-ngang) #dt .dt-auto { top: 194px; }
+body.dt:not(.dt-ngang) #dt .dt-kat { top: 226px; }
+body.dt:not(.dt-ngang) #dt .dt-zalo { top: 226px; }
+body.dt.dt-ngang #dt .dt-tudanh { top: 96px; right: 6px; }
+body.dt.dt-ngang #dt .dt-auto { top: 126px; right: 6px; }
+body.dt.dt-ngang #dt .dt-kat { top: 156px; right: 6px; }
+body.dt.dt-ngang #dt .dt-zalo { top: 156px; right: 38px; }
+@media (max-height: 420px) {
+  body.dt.dt-ngang #dt .dt-tudanh { top: 96px; right: 6px; }
+  body.dt.dt-ngang #dt .dt-auto { top: 96px; right: 106px; }
+  body.dt.dt-ngang #dt .dt-kat { top: 96px; right: 206px; }
+  body.dt.dt-ngang #dt .dt-zalo { top: 96px; right: 235px; }
+  body.dt.dt-ngang #dt .dt-bd { top: 66px; right: 130px; }
+}

@@ -55,11 +55,13 @@ const THONG_BAO = new Set(["TIN", "CH_SYSTEM"]);
 const MAU_HE_THONG = [243, 194, 90];
 const TAB_FILTER = {
   "Tất cả": (m) => !m.nhan,
+  "Thế giới": (m) => m.ch === "CH_WORLD",
   "Mật": (m) => m.ch === "PRIVATE",
   "Đội ngũ": (m) => m.ch === "CH_TEAM",
   "Phòng": (m) => m.ch === "CH_CHATROOM",
   "Bang hội": (m) => m.ch === "CH_TONG" || m.ch === "CH_TONGUNION",
   "Môn phái": (m) => m.ch === "CH_FACTION",
+  "Hệ thống": (m) => m.ch === "CH_SYSTEM",
   "Khác": (m) => THONG_BAO.has(m.ch),
 };
 

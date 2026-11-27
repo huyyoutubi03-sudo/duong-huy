@@ -207,6 +207,10 @@ export class DienThoai {
     this.oKhoa = true; // ô kỹ năng khóa (chỉ dùng) mỗi lần vào trang (datOKhoa)
     const H = this.H, C = H.M.chat;
     this.kenhDs = Object.keys(C.channels).filter((id) => id !== "CH_SYSTEM");
+    // thẻ lọc chat của điện thoại: thêm "Thế giới" + "Hệ thống" (Huy 08:54 27/11/2026) — chỉ hàng thẻ điện thoại, khung chat máy tính giữ nguyên
+    this.chatTabs = C.tabs.list.map((t) => t.label);
+    if (!this.chatTabs.includes("Thế giới")) this.chatTabs.splice(1, 0, "Thế giới");
+    if (!this.chatTabs.includes("Hệ thống")) { const iK = this.chatTabs.indexOf("Khác"); this.chatTabs.splice(iK < 0 ? this.chatTabs.length : iK, 0, "Hệ thống"); }
     const el = (this.el = document.createElement("div"));
     el.id = "dt";
     el.innerHTML = `
@@ -243,7 +247,7 @@ export class DienThoai {
   <div class="dt-viec"></div>
 </div>
 <div class="dt-chatp">
-  <div class="dt-ctab">${C.tabs.list.map((t, i) => `<span data-a="kt${i}">${esc(t.label)}</span>`).join("")}<span class="dt-cdong" data-a="gon" title="Đóng">✕</span></div>
+  <div class="dt-ctab">${this.chatTabs.map((label, i) => `<span data-a="kt${i}">${esc(label)}</span>`).join("")}<span class="dt-cdong" data-a="gon" title="Đóng">✕</span></div>
   <div class="dt-ghim" style="display:none"></div>
   <div class="dt-clist"></div>
   <div class="dt-cin"><span class="dt-ckenh" data-a="kenh"></span><input class="dt-cgo" maxlength="${H.M.input.max || 80}" spellcheck="false" autocomplete="off" enterkeyhint="send" placeholder="Nói gì thì nói đi…"><span class="dt-cbtn bieucam" data-a="bieucam"></span><span class="dt-cbtn gui" data-a="gui"></span></div>
@@ -265,6 +269,14 @@ export class DienThoai {
     el.querySelector(".dt-cgo").addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); this._gui(); } });
     // ô viết chữ nhanh thay nút Chat (Huy 07:31 + 07:32 27/11/2026): bấm vào gõ ngay, Enter là gửi như ô khung chat
     el.querySelector(".dt-go").addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); this._gui(el.querySelector(".dt-go")); } });
+    // bấm ô viết chữ là mở luôn khung chat đầy đủ kèm hàng thẻ kênh (Huy 09:04 27/11/2026): ô trong khung được focus, bàn phím mở
+    el.querySelector(".dt-go").addEventListener("focus", () => {
+      if (!this.on) return;
+      const go = el.querySelector(".dt-go"), cgo = el.querySelector(".dt-cgo");
+      if (cgo && go.value) { cgo.value = go.value; go.value = ""; }
+      if (!this.chat) { this.chat = true; this.tick(); }
+      if (cgo) cgo.focus();
+    });
     if (!document.fullscreenEnabled) el.querySelector('[data-a="toan"]').style.display = "none"; // iPhone: trình duyệt không cho toàn màn hình
     // ô dùng nhanh / ô kỹ năng của thanh dưới máy tính: giữ nguyên phần tử (hud.js vẫn vẽ icon, số bình, hồi chiêu), chỉ đặt chỗ mới (game.css .dt-o)
     for (const [sel, chu, , hang] of O_NHANH) {
@@ -359,11 +371,11 @@ export class DienThoai {
     if (k === "tudanh") return this.api.toggleAuto();
     if (k === "autonhanh") return this.api.moAutoNhanh && this.api.moAutoNhanh(); // bảng Auto nhanh (auto-nhanh.js): 6 công tắc to, cả dọc lẫn ngang
     if (k === "zalo") { P.audio.ui("click"); return this.nut("NhomZalo"); } // nút Zalo nhanh màn ngang (cùng hàng AUTO dưới bản đồ nhỏ) — như ô Nhóm Zalo bảng Giang hồ
-    if (k === "thuongde") { P.audio.ui("click"); return TDH.cur && TDH.cur.bamNut(); } // góc nhìn thượng đế — chỉ acc test1 (nút chỉ hiện cho test1)
-    if (k === "ghi") { P.audio.ui("click"); return TDH.cur && TDH.cur.bamNutGhiBat(); } // nút ● Ghi: chỉ bắt đầu ghi — chỉ acc test1
-    if (k === "dung") { P.audio.ui("click"); return TDH.cur && TDH.cur.bamNutGhiDung(); } // nút ■ Dừng: chỉ dừng + tải video — chỉ acc test1
-    if (k === "tdtru") { P.audio.ui("click"); return TDH.cur && TDH.cur.doiZoomNut(-1); } // nút −: thu nhỏ góc thượng đế — chỉ acc test1
-    if (k === "tdcong") { P.audio.ui("click"); return TDH.cur && TDH.cur.doiZoomNut(1); } // nút +: phóng to góc thượng đế — chỉ acc test1
+    if (k === "thuongde") { P.audio.ui("click"); return TDH.cur && TDH.cur.bamNut(); } // nút trong #dt (nếu có) — nút điện thoại thật ở #td-btns-dt, khóa trong thuong-de.js
+    if (k === "ghi") { P.audio.ui("click"); return TDH.cur && TDH.cur.bamNutGhiBat(); } // nút ● Ghi trong #dt (nếu có)
+    if (k === "dung") { P.audio.ui("click"); return TDH.cur && TDH.cur.bamNutGhiDung(); } // nút ■ Dừng trong #dt (nếu có)
+    if (k === "tdtru") { P.audio.ui("click"); return TDH.cur && TDH.cur.doiZoomNut(-1); } // nút − trong #dt (nếu có)
+    if (k === "tdcong") { P.audio.ui("click"); return TDH.cur && TDH.cur.doiZoomNut(1); } // nút + trong #dt (nếu có)
     if (k === "ngua") { P.audio.ui("click"); return this.bat("Horse"); } // lên / xuống ngựa (main.js toggleHorse — như ô Lên ngựa của bảng Giang hồ)
     if (k === "baucua") { P.audio.ui("click"); return this.nut("BauCua"); } // biểu tượng Bầu Cua: bàn cược (anh 10/11 lần 3 "icon đặt mọi nơi")
     if (k === "khoaat") { P.audio.ui("click"); return this.nut("KhoaAnToan"); } // ổ khóa an toàn (anh 10/11 — mật khẩu cấp 2): dọc dưới nút Tự đánh, ngang cạnh nút Mở rộng
@@ -406,7 +418,7 @@ export class DienThoai {
     const GW = this.api.GW(), P = this.api.P;
     if (k === "l") { P.audio.ui("click"); return LUOI[i][2](this); }
     if (k === "h") return this._lam(i);
-    if (k === "kt") { P.audio.ui("click"); this.chatTab = this.H.M.chat.tabs.list[i].label; this.sig.chat = null; this.sig.chatCuoi = true; return; }
+    if (k === "kt") { P.audio.ui("click"); this.chatTab = this.chatTabs[i] || this.chatTab; this.sig.chat = null; this.sig.chatCuoi = true; return; }
     if (k === "kn") { P.audio.ui("click"); this.H._setChannel(this.kenhDs[i]); this.el.querySelector(".dt-chatp").classList.remove("mo"); return; }
     if (k !== "t") return;
     const nut = THE[i][3];
@@ -1094,6 +1106,17 @@ export class DienThoai {
   _cham() {
     const GW = () => this.api.GW(), cv = this.api.cv;
     let g = null, luc = 0, nha = 0; // lần chạm đang giữ, lúc chạm / nhả gần nhất
+    // Bấm điều khiển game khi ô nhập chat đang focus thì blur ô nhập TRƯỚC (bàn phím xuống) rồi thao tác game mới chạy
+    // (Huy 09:05 27/11/2026: bấm nút chiêu lúc bàn phím đang mở thì thao tác dính vào chat — nút chiêu không ăn, bàn phím không xuống).
+    // Không blur khi chạm trong khung chat / ô nhập / menu kênh — chỉ bấm đúng ô nhập / dòng tin mới mở chat.
+    addEventListener("pointerdown", (e) => {
+      if (!this.on || e.pointerType !== "touch") return;
+      const a = document.activeElement;
+      if (!a || a === document.body || !a.matches || !a.matches("input, textarea")) return;
+      const t = e.target;
+      if (t && t.closest && t.closest("input, textarea, select, .dt-chatp")) return;
+      a.blur();
+    }, true);
     const tuNhien = (el) => el === cv || !!el.closest("input, select, textarea, option, label, .dt-can, .dt-bdl-cv"); // .dt-bdl-cv: bản đồ lớn tự đọc pointer (kéo / chạm)
     const ev = (el, type, x, y, o = {}) => el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window, clientX: x, clientY: y, button: 0, buttons: 0, ...o }));
     const bam = (el, x, y) => { ev(el, "mousedown", x, y, { buttons: 1 }); ev(el, "mouseup", x, y); ev(el, "click", x, y); };

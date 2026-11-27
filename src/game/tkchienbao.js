@@ -138,6 +138,11 @@ const gioTran = (p, now) => (p.pha === "bd" ? ["Khai chiến:", mmss((+p.kc || 0
 // ---------- bảng xếp hạng (27/11/2026 — Huy lệnh 10:59 + 11:26) ----------
 // Dữ liệu sẵn có, không thêm nhịp máy chủ: trong trận gộp p.top (10 đầu, cả bot) + p.ng (mọi người trong phòng); xong trận lấy ket.bang (30 đầu) + ket.me.
 // Sắp: điểm giảm dần, giết giảm dần, tên tăng dần. Trả { rows, meHang, tong, diem }; hàng của mình mang r.hang = hạng thật của máy chủ (khi có).
+// 27/11/2026 (Huy lệnh 13:00, sau khi test thật trên điện thoại): nút mở cũ (chữ, ngay dưới nút Chiến báo) hay bị cụm camera /
+// khung Chiến báo che khuất -> thu gọn thành 1 avatar TRÒN hình 2 cây kiếm chéo, ĐANG NHẤP NHÁY, luôn nằm trên cùng; bấm avatar
+// thì hiện bảng, bấm lại (hoặc ✕/Esc) thì thu về avatar. Vị trí: ngay dưới nút Chiến báo; màn ngang không đủ chỗ thì neo dưới
+// bản đồ nhỏ. Số liệu vẫn lấy như trên, không thêm nhịp máy chủ.
+const AVT_KIEM = `<svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><g transform="rotate(45 16 16)"><path d="M14.6 2.6h2.8l-.7 12.2h-1.4z" fill="#e9eff7" stroke="#7d90a8" stroke-width=".7"/><rect x="11" y="15" width="10" height="2.6" rx="1" fill="#c9a85a"/><rect x="14.7" y="17.6" width="2.6" height="6.2" rx="1" fill="#8a6d2e"/><circle cx="16" cy="25.4" r="1.7" fill="#c9a85a"/></g><g transform="rotate(-45 16 16)"><path d="M14.6 2.6h2.8l-.7 12.2h-1.4z" fill="#dfe7f2" stroke="#7d90a8" stroke-width=".7"/><rect x="11" y="15" width="10" height="2.6" rx="1" fill="#c9a85a"/><rect x="14.7" y="17.6" width="2.6" height="6.2" rx="1" fill="#8a6d2e"/><circle cx="16" cy="25.4" r="1.7" fill="#c9a85a"/></g></svg>`;
 export function bangXepHang(p, ket, ctx) {
   const ten = String((ctx && ctx.ten) || "");
   const xem = new Map();
@@ -272,7 +277,7 @@ function htmlKqB(ket, ctx, p, dem) {
 export const ChienBao = {
   p: null, ctx: null, dt: null, ket: null, ketKhoa: "", nut: null, cb: null, kq: null, cbMo: false, kqMo: false,
   dem: [0, 0], _cbP: null, _cbLuc: 0, _nutLuc: 0, _day: 0, _dayLuc: 0, _man: "", _phim: null, _phimOn: false,
-  bxh: null, bxhMo: false, bxhRong: false, bxhNut: null, _bxhSig: "", _bxhLuc: 0,
+  bxh: null, bxhMo: false, bxhRong: false, bxhAvt: null, _bxhSig: "", _bxhLuc: 0,
 
   // mỗi khung (tongkim.js tick) lúc ở trận thật
   ve(p, ctx) {
@@ -323,7 +328,7 @@ export const ChienBao = {
     if (t - this._nutLuc < CHO_MS && b.style.display !== "none") return;
     this._nutLuc = t;
     const tt = document.getElementById("tktt"), r = tt && tt.style.display !== "none" ? tt.getBoundingClientRect() : null;
-    if (!r || !r.height) { if (b.style.display !== "none") b.style.display = "none"; if (this.bxhNut && this.bxhNut.style.display !== "none") this.bxhNut.style.display = "none"; return; }
+    if (!r || !r.height) { if (b.style.display !== "none") b.style.display = "none"; if (this.bxhAvt && this.bxhAvt.style.display !== "none") this.bxhAvt.style.display = "none"; return; }
     let day = Math.round(r.bottom + (this.dt ? 2 : 3)), man = innerWidth + "x" + innerHeight;
     if (man !== this._man) { this._man = man; this._day = 0; } // đổi cỡ màn: đặt lại ngay
     if (day >= this._day || t - this._dayLuc > 10000) { this._day = day; this._dayLuc = t; } else day = this._day;
@@ -332,17 +337,24 @@ export const ChienBao = {
     if (S.right !== phai) S.right = phai;
     if (S.width !== rong) S.width = rong;
     if (S.display === "none") S.display = "";
-    // nút bảng xếp hạng: ngay dưới nút chiến báo
-    if (!this.bxhNut) {
-      const n = (this.bxhNut = document.createElement("div")); n.id = "tkbxh-nut"; n.style.display = "none";
+    // avatar bảng xếp hạng: ngay dưới nút chiến báo, cùng mép phải; màn ngang không đủ chỗ thì neo dưới bản đồ nhỏ
+    if (!this.bxhAvt) {
+      const n = (this.bxhAvt = document.createElement("div"));
+      n.id = "tkbxh-avt"; n.style.display = "none"; n.title = "Bảng xếp hạng Tống Kim"; n.setAttribute("aria-label", "Bảng xếp hạng Tống Kim");
+      n.innerHTML = AVT_KIEM;
       n.addEventListener("click", (e) => { e.stopPropagation(); if (this.bxhMo) this.dongBxh(); else this.moBxh(); this._nutLuc = 0; this.veNut(); });
       document.body.appendChild(n);
     }
-    const nb = this.bxhNut, chuB = `Bảng xếp hạng ${this.bxhMo ? "▴" : "▾"}`;
-    if (nb._chu !== chuB) { nb._chu = chuB; nb.textContent = chuB; }
-    const rn = b.getBoundingClientRect();
-    nb.style.top = Math.round(rn.bottom + 2) + "px"; nb.style.right = phai; nb.style.width = rong;
-    if (nb.style.display === "none") nb.style.display = "";
+    const av = this.bxhAvt, rn = b.getBoundingClientRect();
+    let avTop = Math.round(rn.bottom) + 6;
+    if (avTop + 48 > innerHeight - 4) { // màn ngang: cột phải đã hết chỗ — neo dưới bản đồ nhỏ, khỏi đè vòng chiêu / ô nhập
+      const mm = document.querySelector("#dt .dt-mm"), mr = mm ? mm.getBoundingClientRect() : null;
+      avTop = mr && mr.height ? Math.round(mr.bottom) + 6 : 100;
+      if (avTop + 48 > innerHeight - 4) avTop = Math.max(4, innerHeight - 52);
+    }
+    av.style.top = avTop + "px"; av.style.right = phai;
+    if (av.style.display === "none") av.style.display = "";
+    this._avtMo();
   },
   bam() {
     if (this.ket) { if (this.kqMo) this.dongKq(); else this.moKq(); }
@@ -372,11 +384,12 @@ export const ChienBao = {
     if (el.style.display === "none") el.style.display = "";
   },
   // ---------- bảng xếp hạng ----------
+  _avtMo() { if (this.bxhAvt) this.bxhAvt.classList.toggle("mo", this.bxhMo); },
   moBxh() {
     if (!this.p && !this.ket) return;
-    this.bxhMo = true; this.veBxh(true); this.ganPhim();
+    this.bxhMo = true; this.veBxh(true); this.ganPhim(); this._avtMo();
   },
-  dongBxh() { this.bxhMo = false; if (this.bxh) this.bxh.style.display = "none"; this.ganPhim(); },
+  dongBxh() { this.bxhMo = false; if (this.bxh) this.bxh.style.display = "none"; this.ganPhim(); this._avtMo(); },
   taoBxh() {
     const el = document.createElement("div"); el.id = "tkbxh"; el.style.display = "none";
     el.addEventListener("click", (e) => {
@@ -465,7 +478,7 @@ export const ChienBao = {
   },
   phim(e) {
     if (e.key !== "Escape" || e.ctrlKey || e.altKey || e.shiftKey || e.metaKey) return;
-    const t = e.target, cua = t === document.body || t === document.documentElement || (t && t.id === "cv") || (t && t.closest && t.closest("#tkcb, #tkkq, #tkcb-nut, #tkbxh, #tkbxh-nut"));
+    const t = e.target, cua = t === document.body || t === document.documentElement || (t && t.id === "cv") || (t && t.closest && t.closest("#tkcb, #tkkq, #tkcb-nut, #tkbxh, #tkbxh-avt"));
     if (!cua) return;
     if (this.bxhMo) this.dongBxh(); else if (this.kqMo) this.dongKq(); else if (this.cbMo) this.dongCb(); else return;
     e.preventDefault(); e.stopPropagation();
@@ -474,15 +487,15 @@ export const ChienBao = {
   // tạm mất trạng thái: ẩn nút + chiến báo (giữ cờ mở — có trạng thái lại thì hiện lại); bảng kết thúc giữ nguyên
   an() {
     if (this.nut && this.nut.style.display !== "none") this.nut.style.display = "none";
-    if (this.bxhNut && this.bxhNut.style.display !== "none") this.bxhNut.style.display = "none";
+    if (this.bxhAvt && this.bxhAvt.style.display !== "none") this.bxhAvt.style.display = "none";
     if (this.cb && this.cb.style.display !== "none") this.cb.style.display = "none";
     if (this.bxh && this.bxh.style.display !== "none") this.bxh.style.display = "none";
     this.p = null;
   },
   // rời trận: bỏ hết
   boHet() {
-    for (const el of [this.nut, this.cb, this.kq, this.bxh, this.bxhNut]) if (el) el.style.display = "none";
-    this.cbMo = false; this.kqMo = false; this.bxhMo = false; this.bxhRong = false; this.ganPhim();
+    for (const el of [this.nut, this.cb, this.kq, this.bxh, this.bxhAvt]) if (el) el.style.display = "none";
+    this.cbMo = false; this.kqMo = false; this.bxhMo = false; this.bxhRong = false; this.ganPhim(); this._avtMo();
     this.p = null; this.ket = null; this._cbP = null; this._day = 0; this.dem = [0, 0];
   },
 };
