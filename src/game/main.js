@@ -3091,6 +3091,8 @@ async function dungVat(b, them = {}) {
   P.audio.ui("click");
   // anh 16/11 — Báo Đáp Ân Sư: Phong Lăng Truyền Tống Lệnh (pldBac — máy chủ đã đặt h.pld bờ Bắc) -> đi bờ Bắc như Thuyền phu (diPld: đang tải dở thì tải xong rồi đi)
   if (j.di) diPld(j.di);
+  // Thần Hành Phù (anh 28/11 — máy chủ trả diChon): chọn thành muốn tới rồi dùng tiếp (chỉ trừ 1 tấm khi tới nơi)
+  if (j.diChon && NPCD) NPCD.choose("msgsel", "InfoText", richText("Dùng Thần Hành Phù tới đâu? Chọn cho đúng, đừng bấm bừa.", hero.name), [...j.diChon.ds.map(([z, ten]) => [ten, () => dungVat(b, { chon: z })]), ["Hủy bỏ", null]]);
   // Tống Kim trận thật (đặc tả đợt 2 — máy chủ do.js dungVat): Chiến cổ / Lệnh Bài -> buff mình + người cùng phe đứng gần; Càn Khôn Tạo Hóa Đan -> hồi theo nhịp
   if (j.tkDoi) TongKim.dungDoi(j.tkDoi);
   if (j.tkHoi) TongKim.dungHoi(j.tkHoi);

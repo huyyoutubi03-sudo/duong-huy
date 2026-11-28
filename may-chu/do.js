@@ -2186,6 +2186,19 @@ function dungVat(h, it, b, key, qt = false) {
       bot();
       return { msg: `Sử dụng ${x.n.trim()}: ${r.tin.join(" ")}`, di: r.di };
     }
+    case "thanHanh": { // Thần Hành Phù (anh 28/11 — Kỳ Trân Các: chọn Ba Lăng huyện / Biện Kinh rồi tới ngay, như pldBac trả di; chưa chọn thì trả diChon, chưa trừ)
+      const z = BAI_NAY.get(key), zk = (ZONES.get(z | 0) || {}).kind;
+      if (TKM().trongTran(key) || LDA().chan(tkCuaKhoa(key), z, oCuaKhoa(key))) loi(`${x.n.trim()} không dùng được ở đây. Đi chỗ khác đi.`);
+      if (PLD().camPhu(h)) loi(`${x.n.trim()} không dùng được ở đây. Đi chỗ khác đi.`);
+      if (zk === "đua ngựa" || zk === "thuyền" || zk === "ải" || zk === "đảo" || zk === "chiến" || zk === "tongkim" || zk === "viêm đế") loi(`${x.n.trim()} không dùng được ở đây. Đi chỗ khác đi.`);
+      const DIEM = [[53, "Ba Lăng huyện"], [37, "Biện Kinh"]], chon = b.chon | 0;
+      if (!chon) return { diChon: { ds: DIEM } };
+      const den = DIEM.find((d) => d[0] === chon);
+      if (!den) loi("Chưa chọn nơi muốn tới. Chọn lại đi.");
+      if ((z | 0) === chon) loi(`Đang ở ${den[1]} rồi. Đừng dùng nữa.`);
+      bot();
+      return { msg: `Sử dụng ${x.n.trim()}: tới ngay ${den[1]}.`, di: { z: chon } };
+    }
     case "nen": { // Nến Bát Trân Phúc Nguyệt: kinh nghiệm đánh quái × nen.heSo cho mình + đồng đội cùng bản đồ (bao-dap-an-su.js nenDoi — đồng đội nhận ở nhịp của họ)
       bot();
       return { msg: BD().nenDoi(h, key, tkCuaKhoa(key)).msg };
