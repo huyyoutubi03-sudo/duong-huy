@@ -614,12 +614,13 @@ function raoBan(bot) {
   if (!ds.length) return; // sạp trống / chưa mở: không rao
   const t = Date.now();
   if (t - traLoiChungAll < CHAT_CHUNG_MS) { bot.raoDen = t + 1500; return; } // ĐX-1: cửa chung bận thì thử lại nhịp sau (1,5 giây), khỏi dời +30 giây rồi mất lượt khi sạp đóng
-  const dsMon = ds.slice(0, 2).map((it) => `${DO.tenMon(it) || "?"} ${(it.gia | 0) || giaCua(it)} lượng`); // giá niêm yết thật trên sạp
+  const dsMon = ds.slice(0, 2).map((it) => `<${DO.tenMon(it) || "?"}> ${(it.gia | 0) || giaCua(it)} lượng`); // giá niêm yết thật trên sạp; tên trong <> để hiện link món (its theo thứ tự)
   const tin = rutTinRao(dsMon.join(", "), dsMon[0], thanhCua(bot).ten);
   traLoiChungAll = t;
   bot.raoDen = t + RAO_BAN_MS + ri(0, 20 * 1000);
   try {
-    TG.chat(bot.fakeTk, { o: 0, ch: "CH_WORLD", t: tin });
+    const sap = bot.h.sap || {}, its = ds.slice(0, 2).map((it) => { const { x, y, ...r } = it; return JSON.parse(JSON.stringify(r)); });
+    TG.chat(bot.fakeTk, { o: 0, ch: "CH_WORLD", t: tin, its, toas: [{ z: sap.bai || thanhCua(bot).zone, x: Math.round(sap.x != null ? sap.x : bot.x || 0), y: Math.round(sap.y != null ? sap.y : bot.y || 0) }] }, true);
   } catch (e) { log(`rao bán lỗi (${bot.h.name}):`, e.message); }
 }
 

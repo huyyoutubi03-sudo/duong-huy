@@ -535,7 +535,7 @@ export class World {
   teleport(x, y) {
     const p = this.player;
     if (!this.map.walkable(x, y)) { if (!this.map.grid) return false; const c = this.map.nearestCell(x, y, 40); if (c < 0) return false; [x, y] = this.map.center(c); }
-    p.x = x; p.y = y; p.path = null; p.goal = null; p.target = null; p.manual = false; p.stuckT = 0;
+    p.x = x; p.y = y; p.path = null; p.goal = null; p.target = null; p.manual = false; p.stuckT = 0; this._linkDich = false; // dịch chuyển thì thôi đi theo link tọa độ
     // dịch chuyển (hồi sinh hậu doanh Tống Kim, bẫy cổng, Xa phu cùng bản đồ…) chấm dứt khinh công / lướt đang dở — trước đó nhịp sau jumpTick đặt lại
     // chỗ theo đường nhảy cũ (anh 16/11: "bị giết xong có báo về… mà nhân vật vẫn hồi sinh tại chỗ" — chết giữa lúc nhảy khinh công)
     if (p.jump) { p.jump = null; if (p.act === "jump") this.setAct(p, "stand"); }
@@ -580,6 +580,7 @@ export class World {
   // A* nặng như walkTo/clickNpc; giữ chuột (holdTick) chỉ tìm thường để khỏi giật.
   clickGround(x, y, heavy = false) {
     const p = this.player;
+    this._linkDich = false; // lệnh đi theo link tọa độ cũ bị lệnh bấm đất mới thay (link chat 28/11/2026 — diToaDoMo đặt lại sau khi gọi)
     p.talkTo = null;
     p.sit = false;
     if (this.dev.tp) { this.teleport(x, y); return true; }
@@ -622,6 +623,7 @@ export class World {
   }
   clickNpc(n) {
     const p = this.player; if (p.hp <= 0) return;
+    this._linkDich = false; // bấm NPC thì thôi đi theo link tọa độ (link chat 28/11/2026)
     if (p.sit) this.sit(false);
     // NPC đứng trên ô vật cản (sau quầy, sát tường…) -> đi tới ô đi được gần nhất
     const k = this.map.walkable(n.x, n.y) ? -1 : this.map.nearestCell(n.x, n.y, 6), [gx, gy] = k >= 0 ? this.map.center(k) : [n.x, n.y];
@@ -1032,10 +1034,10 @@ export class World {
         const path = this.map.path(p.x, p.y, m.x, m.y, 6000);
         if (path) p.path = path; else { p.path = []; if (!p.manual) { this.boMuc(m); p.target = null; } }
       }
-    } else if (p.goal && !p.path) { p.goal = null; p.manual = false; } // đích không còn đường: bỏ luôn cờ tay để khỏi kẹt trạng thái
+    } else if (p.goal && !p.path) { p.goal = null; p.manual = false; this._linkDich = false; } // đích không còn đường: bỏ luôn cờ tay để khỏi kẹt trạng thái
     const x0 = p.x, y0 = p.y;
     if (p.path && p.path.length) {
-      if (this.follow(p, p.path, this.tocEp != null ? this.tocEp : RUN * (1 + (p.moveSpeed || 0) / 100) * K, dt)) { p.path = null; if (p.goal) { p.goal = null; p.manual = false; } } // tới đích: lệnh đi theo link tọa độ coi như xong
+      if (this.follow(p, p.path, this.tocEp != null ? this.tocEp : RUN * (1 + (p.moveSpeed || 0) / 100) * K, dt)) { p.path = null; if (p.goal) { p.goal = null; p.manual = false; } this._linkDich = false; } // tới đích: lệnh đi theo link tọa độ coi như xong
       this.setAct(p, "run");
     } else this.setAct(p, "stand");
     this.unstick(p, x0, y0, dt);
@@ -1462,6 +1464,11 @@ export class World {
     // tàng hình test1/test2 (tang-hinh.js): đang ẩn thì không nhận bất kỳ sát thương nào, không chết được — kể cả đòn đang bay, độc,
     // Tống Kim (tkTrungThang cũng qua đây). Mọi sát thương vào mình đều qua hit() nên chặn ở đây là chặn hết.
     if (dst === this.player && dst.voHinh) return;
+    // link chat (28/11/2026 — Q6): đang đi theo link tọa độ mà trúng đòn thật (mất máu, không phải độc / phản đòn / né / hụt) thì dừng, không đi tiếp
+    if (dst === this.player && this._linkDich && dmg && dmg.v > 0 && !dmg.poison && !dmg.reflect && !dmg.miss && !dmg.none) {
+      const p = this.player; this._linkDich = false; p.goal = null; p.path = null; p.manual = false;
+      if (this.P && this.P.hud) this.P.hud.msg("Bị đánh trúng — dừng đi theo link tọa độ.");
+    }
     if (dst.coc && !dst.alive) return; // cọc đảo Tẩy Tủy đã vỡ, chờ mọc lại
     // boss (auto.js laBoss): đòn từ xa hơn BOSS_TAM không tính — bắn chiêu vào đất từ xa, vòng sáng hại… (anh 16/11); độc / phản đòn đã dính từ trước vẫn tính
     // quản trị bật "Một đòn chết" (công cụ thử): đánh từ xa cũng tính (anh 18/11 — siêu boss không chết 1 đòn trên máy thật)

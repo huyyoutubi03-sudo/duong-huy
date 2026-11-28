@@ -101,9 +101,9 @@ function nhanDoi(h, id, tk, T) {
   for (const x of ds) {
     Object.assign(x.S, { nv: id | 0, he, luc: t });
     DO.chuan(x.hA); DL.ghiTk(x.tkA);
-    DOI_TIN.set(x.a, [`Đội trưởng ${h.name} đã nhận nhiệm vụ sát thủ cấp ${b.cap} cho cả đội: hạ ${b.ten} ở ${tenBai(b)}${QC().bat(b.bai) ? " (bản quái chung)" : ""} (${b.X}/${b.Y}).`]);
+    DOI_TIN.set(x.a, [{ t: `Đội trưởng ${h.name} đã nhận nhiệm vụ sát thủ cấp ${b.cap} cho cả đội: hạ ${b.ten} ở ${tenBai(b)}${QC().bat(b.bai) ? " (bản quái chung)" : ""} (${b.X}/${b.Y}).`, toas: [{ z: b.bai, x: b.x, y: b.y }] }]);
   }
-  try { TG().thongBaoDoi(`Đội trưởng ${h.name} đã nhận nhiệm vụ sát thủ cho cả đội (${ds.length + 1} người): hạ ${b.ten} ở ${tenBai(b)}.`, doiId); } catch (e) { console.error("Sát thủ — kênh đội:", e.message); }
+  try { TG().thongBaoDoi(`Đội trưởng ${h.name} đã nhận nhiệm vụ sát thủ cho cả đội (${ds.length + 1} người): hạ ${b.ten} ở ${tenBai(b)}.`, doiId, [{ z: b.bai, x: b.x, y: b.y }]); } catch (e) { console.error("Sát thủ — kênh đội:", e.message); }
   return say(`${cho(id)}<enter>Cả đội ${Y(ds.length + 1 + " người")} cùng nhận boss này.`, [dong]);
 }
 // api.js nhip: câu báo nhiệm vụ đội trưởng vừa nhận giùm (lấy 1 lần) | null

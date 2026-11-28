@@ -936,7 +936,7 @@ export class DienThoai {
     const nTin = 2; // Huy 19:31 26/11/2026: chua bam Chat thi chi hien 2 dong noi, khong khung (ca doc lan ngang)
     if (this.sig.tin !== last || this.sig.canh !== canh || this.sig.tinNg !== this.ngang) {
       this.sig.tin = last; this.sig.canh = canh; this.sig.tinNg = this.ngang; this.tinLuc = performance.now(); tinEl.classList.remove("an");
-      tinEl.innerHTML = M.slice(canh ? 1 - nTin : -nTin).map((m) => m.ch === "TIN" ? `<div class="tin">${esc(m.text)}</div>` : `<div${m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? ' class="ht"' : ""}><b>${esc(m.name || "")}</b>${m.name ? ": " : ""}${m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? chuMau(m.text) : BieuCam.html(m.text)}</div>`).join("")
+      tinEl.innerHTML = M.slice(canh ? 1 - nTin : -nTin).map((m) => m.ch === "TIN" ? `<div class="tin">${esc(m.text)}</div>` : `<div${m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? ' class="ht"' : ""}><b>${esc(m.name || "")}</b>${m.name ? ": " : ""}${H._linkHtml(m)}</div>`).join("") // link chat (28/11/2026): dải tin nổi vẽ bằng _linkHtml như khung chat — tên đồ / tọa độ bấm được
         + (canh ? `<div class="canh">${esc(canh[0])}</div>` : "");
     } else if (performance.now() - (this.tinLuc || 0) > TIN_HIEN && !tinEl.classList.contains("an")) tinEl.classList.add("an");
     // ô viết nhanh (.dt-go): gợi ý theo kênh đang chọn như ô khung chat (kênh đổi thì đổi theo, kể cả lúc khung chat đóng)

@@ -255,15 +255,24 @@ export class Hud {
     bot.querySelector(".jx-chbtn").onclick = () => this._channelMenu();
     chat.querySelector(".jx-chat").onwheel = (e) => { e.currentTarget.scrollTop += e.deltaY; };
     // khoe đồ (anh 12/11 — main.js khoeDo): rê chuột (máy tính) / chạm (điện thoại — khung chat dienthoai.js cũng vẽ bằng chatHtml) chữ <tên đồ>
-    // của tin -> ô xem món (cb.onKhoe); rời chữ -> ẩn
+    // của tin -> ô xem món (cb.onKhoe); rời chữ -> ẩn. Link N món (28/11/2026): mỗi <…> có mã riêng, tra trong _khoeByKid (chatHtml dựng lại
+    // mỗi lần vẽ — mã ổn định theo tin, không đổi khi vẽ lại)
     let khoeDang = null;
     const khoeXem = (e, cham) => {
-      const s = e.target && e.target.closest ? e.target.closest(".jx-khoe") : null, m = s && this.msgs.find((x) => x.kid === +s.dataset.kid);
-      if (m && m.it) { khoeDang = s; if (this.cb.onKhoe) this.cb.onKhoe(m.it, e); if (cham) e.stopPropagation(); }
+      const s = e.target && e.target.closest ? e.target.closest(".jx-khoe") : null, it = s ? this._khoeByKid.get(+s.dataset.kid) : null;
+      if (s && it) { khoeDang = s; if (this.cb.onKhoe) this.cb.onKhoe(it, e); if (cham) e.stopPropagation(); }
       else if (khoeDang && !cham) { khoeDang = null; if (this.cb.onKhoe) this.cb.onKhoe(null); }
     };
     addEventListener("mousemove", (e) => khoeXem(e, false), true);
     addEventListener("click", (e) => khoeXem(e, true), true);
+    // link tọa độ trong chat (Huy lệnh 21:35 27/11/2026): bấm (X/Y) / tọa độ -> cb.onToaDo (main.js diToaDoMo); cả trong dải tin nổi .dt-tin (28/11/2026)
+    addEventListener("click", (e) => {
+      const s = e.target && e.target.closest ? e.target.closest(".jx-toa") : null; if (!s) return;
+      const [z, x, y] = String(s.dataset.toa || "").split(":").map(Number);
+      if (!Number.isFinite(z) || !Number.isFinite(x) || !Number.isFinite(y)) return;
+      e.stopPropagation(); e.preventDefault();
+      if (this.cb.onToaDo) this.cb.onToaDo(z, x, y);
+    }, true);
     // nhắn tin mật (anh 13/11 "ctrl + click vào tên người đang rao để nhắn tin với họ"): Ctrl + bấm tên người nói ở khung chat; điện thoại (không có Ctrl):
     // chạm tên ở khung chat
     addEventListener("click", (e) => {
@@ -306,7 +315,14 @@ export class Hud {
     posEl.onclick = () => { posIn.style.display = "block"; posIn.value = ""; posIn.placeholder = posEl.textContent; posIn.focus(); };
     posIn.onkeydown = (e) => {
       e.stopPropagation();
-      if (e.key === "Enter") { const m = /^\s*(\d+)\s*[\/ ,.]\s*(\d+)\s*$/.exec(posIn.value); if (m && cb.onGoto) cb.onGoto(+m[1], +m[2]); else if (posIn.value.trim()) this.msg("Tọa độ ghi dạng 200/200, ghi sai thì tự chịu."); hidePos(); }
+      if (e.key === "Enter") {
+        // Q4 (mặc định 28/11/2026, chờ Huy chốt): "200/200" = bãi đang đứng; "tên bãi 200/200" / "mã bãi 200/200" = bãi khác (thần hành)
+        const m = /^(?:(.+?)\s+)?(\d+)\s*[\/ ,.]\s*(\d+)\s*$/.exec(posIn.value);
+        if (m && m[1] && cb.onGotoMap) cb.onGotoMap(m[1].trim(), +m[2], +m[3]);
+        else if (m && cb.onGoto) cb.onGoto(+m[2], +m[3]);
+        else if (posIn.value.trim()) this.msg("Tọa độ ghi dạng 200/200, ghi sai thì tự chịu.");
+        hidePos();
+      }
       if (e.key === "Escape") hidePos();
     };
     // ẩn ngay (không đợi mất focus — trang ẩn / chưa focus được thì sự kiện blur không tới)
@@ -805,9 +821,9 @@ export class Hud {
     });
   }
   // Tin chat theo kênh (CH_NEARBY, CH_TEAM, CH_WORLD, …, PRIVATE): biểu tượng kênh + tên + chữ, màu / viền của kênh
-  chat(ch, name, text, self = false, them = null) { // them: { parts, mau, nhan } của thông báo (msg); { it, itMau } của tin khoe đồ
+  chat(ch, name, text, self = false, them = null) { // them: { parts, mau, nhan } của thông báo (msg); { it, itMau } của tin khoe đồ; { its, toas } của link chat
     const moi = { ch, name, text, self, ...(them || {}) };
-    if (moi.it) moi.kid = this._kid = (this._kid || 0) + 1; // tin khoe đồ: mã để chữ <tên đồ> tìm lại món (mount — khoeXem)
+    moi._mid = (this._midSeq = (this._midSeq || 0) + 1); // mã ổn định của tin — link món trong tin tra theo mã này, vẽ lại vẫn đúng
     this.msgs.push(moi);
     // tin chat, thông báo (TIN) và dòng nhận kinh nghiệm / tiền (TIN nhan) giữ riêng mỗi loại tối đa list.max dòng — dòng nhận dồn dập khi đánh
     // quái không đẩy mất thông báo nhặt đồ / tin chat
@@ -872,13 +888,15 @@ export class Hud {
   // các dòng tin của thẻ lọc tab: khung chat máy tính + khung chat của giao diện điện thoại dọc (dienthoai.js)
   chatHtml(tab) {
     const C = this.M.chat, f = TAB_FILTER[tab] || TAB_FILTER["Tất cả"];
+    this._khoeByKid = new Map(); // mã link món -> món (dựng lại mỗi lần vẽ — mã ổn định theo _mid của tin)
     return this.msgs.filter(f).map((m) => {
       if (m.ch === "TIN") return `<div style="color:${rgb(m.mau || C.sys.color)};${border([0, 0, 0])}">${m.parts ? m.parts.map(([t, c]) => (c ? `<span style="color:${rgb(c)}">${esc(t)}</span>` : esc(t))).join("") : esc(m.text)}</div>`;
       const c = m.ch === "PRIVATE" ? (m.self ? C.self : C.stranger) : C.channels[m.ch] || C.channels.CH_NEARBY;
       const ic = m.ch === "PRIVATE" ? c.img : m.self && C.self.img && m.ch === "CH_NEARBY" ? C.self.img : c.textImg;
       // chữ chat: mã biểu cảm (":)", "(kl)"…) thành hình động như client (bieucam.js)
       // tin hệ thống: thẻ màu (tên người, phần thưởng — anh 13/11); tin của bang không tên người nói (vào / rời, bổ nhiệm, khảo nghiệm, công cáo — anh 14/11) cũng vậy
-      return `<div style="color:${rgb(m.ch === "CH_SYSTEM" ? MAU_HE_THONG : c.color)};${border(c.border)}">${ic ? `<i style="${css({ "background-image": `url(${BASE}${ic.file})`, width: ic.w, height: ic.h })}"></i>` : ""}${this._dauTin(m)}${m.it ? this._khoeHtml(m) : m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name) ? chuMau(m.text) : BieuCam.html(m.text)}</div>`;
+      // link chat (Huy lệnh 21:35 27/11/2026): tên món + tọa độ thành link — _linkHtml
+      return `<div style="color:${rgb(m.ch === "CH_SYSTEM" ? MAU_HE_THONG : c.color)};${border(c.border)}">${ic ? `<i style="${css({ "background-image": `url(${BASE}${ic.file})`, width: ic.w, height: ic.h })}"></i>` : ""}${this._dauTin(m)}${this._linkHtml(m)}</div>`;
     }).join("");
   }
   // đầu dòng tin: tên người nói — Ctrl + bấm (điện thoại: chạm) để nhắn tin mật (anh 13/11); tin mật: "Bạn nói với X: " / "X nói với bạn: " (GM giữ "GM: ")
@@ -887,15 +905,61 @@ export class Hud {
     if (m.ch === "PRIVATE" && m.name !== "GM") return m.self ? `Ngươi nói với ${m.toi ? ten(m.toi) : "?"}: ` : `${ten(m.name)} nói với ngươi: `;
     return m.name ? `${m.self || m.name === "GM" ? esc(m.name) : ten(m.name)}: ` : "";
   }
-  // tin khoe đồ: chữ <…> đầu tiên = chỗ rê / chạm xem món (màu theo món — main.js khoeThem)
-  _khoeHtml(m) {
-    const t = m.text, r = /<[^<>]{1,80}>/.exec(t); if (!r) return BieuCam.html(t);
-    return BieuCam.html(t.slice(0, r.index)) + `<span class="jx-khoe" data-kid="${m.kid}" style="color:${rgb(m.itMau || [100, 180, 255])}">${esc(r[0])}</span>` + BieuCam.html(t.slice(r.index + r[0].length));
+  // link trong tin chat (Huy lệnh 21:35 + 21:36 27/11/2026, màu #2E6BF0 chốt 21:55): đoạn <tên đồ> theo thứ tự gắn với
+  // món máy chủ đính kèm (its/it — không có món đính kèm thì chỉ là chữ thường, không tự bịa link); đoạn (X/Y) theo thứ tự gắn với
+  // tọa độ máy chủ đính kèm (toas — tọa độ LOGIC). Tin hệ thống chỉ link bằng toas (không đoán tọa độ); tin người chơi gõ tay mà
+  // không có toas thì (X/Y) là tọa độ bãi đang đứng (Q2 — Huy quyết parse text gõ tay). Đoạn thường: tin hệ thống qua chuMau (giữ thẻ
+  // màu), tin người chơi qua BieuCam.html (giữ biểu cảm). Thẻ màu <color> ôm qua đoạn link thì đoạn sau mất màu tới thẻ màu kế — chấp
+  // nhận (tin boss/nhím/sát thủ đặt tọa độ ngoài thẻ màu tên người).
+  _linkHtml(m) {
+    const heThong = m.ch === "CH_SYSTEM" || (m.ch === "CH_TONG" && !m.name);
+    const items = m.its && m.its.length ? m.its.map((w) => w.it || w) : m.it ? [m.it] : [];
+    const toas = Array.isArray(m.toas) ? m.toas.slice(0, 8) : [];
+    let ii = 0, ti = 0;
+    const thuong = (s) => (heThong ? chuMau(s) : BieuCam.html(s));
+    const out = [];
+    const re = /<[^<>]{1,80}>|\(\s*\d{1,4}\s*\/\s*\d{1,4}\s*\)/g, t = String(m.text ?? "");
+    let i = 0;
+    for (const mt of t.matchAll(re)) {
+      if (mt.index > i) out.push(thuong(t.slice(i, mt.index)));
+      const s = mt[0];
+      if (s[0] === "<") {
+        if (ii >= items.length) { out.push(thuong(s)); i = mt.index + s.length; continue; } // <…> không có món đính kèm: chữ thường, không link
+        const kid = (m._mid || 0) * 100 + ii;
+        this._khoeByKid.set(kid, items[ii++]);
+        out.push(`<span class="jx-khoe" data-kid="${kid}" style="color:#2E6BF0">${esc(s)}</span>`);
+        i = mt.index + s.length;
+        continue;
+      }
+      const mm = /\(\s*(\d{1,4})\s*\/\s*(\d{1,4})\s*\)/.exec(s);
+      let z = null, x = null, y = null;
+      const toa = ti < toas.length ? toas[ti++] : null;
+      if (toa && Number.isFinite(+toa.z) && Number.isFinite(+toa.x) && Number.isFinite(+toa.y)) { z = +toa.z; x = Math.round(+toa.x); y = Math.round(+toa.y); }
+      else if (!heThong && this.mmMap && this.mmMap.zone != null && this.mmMap.fromClient) { z = this.mmMap.zone; [x, y] = this.mmMap.fromClient(+mm[1], +mm[2]); x = Math.round(x); y = Math.round(y); }
+      if (z == null) { out.push(thuong(s)); }
+      else out.push(`<span class="jx-toa" data-toa="${z}:${x}:${y}" style="color:#2E6BF0">${esc(s)}</span>`);
+      i = mt.index + s.length;
+    }
+    if (i < t.length) out.push(thuong(t.slice(i)));
+    // tọa độ đính kèm mà text không có đoạn (X/Y) (tin boss / nhím / rao bán — máy chủ chỉ gửi tọa độ logic, không bịa text): hiện thêm link ở cuối
+    while (ti < toas.length) {
+      const toa = toas[ti++];
+      if (!toa || !Number.isFinite(+toa.z) || !Number.isFinite(+toa.x) || !Number.isFinite(+toa.y)) continue;
+      const z = +toa.z, x = Math.round(+toa.x), y = Math.round(+toa.y);
+      const lab = this.cb && this.cb.toaClient ? this.cb.toaClient(z, x, y) : null;
+      out.push(`${out.length ? " " : ""}<span class="jx-toa" data-toa="${z}:${x}:${y}" style="color:#2E6BF0">(${lab ? `${lab[0]}/${lab[1]}` : `${x}/${y}`})</span>`);
+    }
+    return out.join("");
   }
-  // chèn "<tên đồ>" vào ô chat đang dùng (điện thoại dọc: ô gõ của khung chat — dienthoai.js) — mỗi tin 1 món: bỏ <…> đã chèn trước; quá dài -> false
+  // chèn "<tên đồ>" vào ô chat đang dùng (điện thoại dọc: ô gõ của khung chat — dienthoai.js) — tối đa 2 món/tin (link chat
+  // 28/11/2026): đã có 2 đoạn <…> thì bỏ đoạn cũ nhất, giữ đoạn còn lại + đoạn mới; trùng tên thì không chèn thêm; quá dài -> false
   chenKhoe(ten) {
     const dt = document.querySelector("body.dt .dt-cgo"), a = dt || this.bot.querySelector(".jx-input"); if (!a) return false;
-    const the = `<${ten}>`, cu = a.value.replace(/<[^<>]*>/g, "").replace(/\s{2,}/g, " ").trim(), moi = cu ? `${cu} ${the}` : the;
+    const the = `<${ten}>`;
+    if (a.value.includes(the)) { a.focus(); return true; }
+    let v = a.value;
+    if ((v.match(/<[^<>]*>/g) || []).length >= 2) v = v.replace(/<[^<>]*>/, "");
+    const gon = v.replace(/\s{2,}/g, " ").trim(), moi = gon ? `${gon} ${the}` : the;
     if (a.maxLength > 0 && moi.length > a.maxLength) return false;
     a.value = moi; a.focus(); a.setSelectionRange(moi.length, moi.length);
     return true;

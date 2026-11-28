@@ -102,7 +102,7 @@ export const Net = {
     return j;
   },
   leave(o, keepalive, extra) { return this.me ? this.call("POST", "nhip", { o, s: null, tin: this.tinId, ...extra }, { keepalive }).catch(() => null) : Promise.resolve(null); },
-  chat(o, ch, t, u, toi) { return this.call("POST", "chat", { o, ch, t, ...(u != null ? { u } : {}), ...(toi ? { toi } : {}) }); }, // toi: tên người nhận tin mật (anh 13/11) // u: mã món khoe (main.js khoeDo)
+  chat(o, ch, t, us, toi) { const a = Array.isArray(us) ? us : (us != null ? [us] : []); return this.call("POST", "chat", { o, ch, t, ...(a.length ? { us: a } : {}), ...(toi ? { toi } : {}) }); }, // toi: tên người nhận tin mật (anh 13/11) // us: mã các món khoe, tối đa 2 (link chat 28/11/2026 — main.js khoeDo)
   doItem(o, b) { return this.call("POST", "do", { o, ...b }); },
   devSync(o, hero) { return this.call("POST", "quan-tri/nv", { o, hero }); },
   thuongDN(o, b) { return this.call("POST", "thuong-dn", { o, ...b }); }, // đăng nhập nhận thưởng: {} xem | { nhan, chon? } nhận

@@ -209,8 +209,8 @@ async function taiKhoThat() {
     const hien = w.nguoiHien(); if (hien && !hien.has(m.ten)) return; // người đang ẩn (Trợ Thủ → Khác — anh 11/11): không vẽ chiêu của họ / phân thân của họ
     w.chieuAo(m.id, m.lv, e, [m.px - m.x + e.x, m.py - m.y + e.y]);
   });
-  BossTG.api = { msg: (t, k) => (k === "canh" ? P.hud.canh(t) : P.hud.msg(t, MAU_TIN[k])), bao: (h) => GW && GW.bao(h), ketQua: (ds) => GW && GW.ketQuaBoss(ds), tenMon: (k) => (ItemDB.item(k) || {}).n || k, fmt: fmtSo };
-  SanNhim.api = { msg: (t, k) => P.hud.msg(t, MAU_TIN[k]), canh: (t) => P.hud.canh(t), tenMon: (k) => (ItemDB.item(k) || {}).n || k, fmt: fmtSo };
+  BossTG.api = { msg: (t, k) => (k === "canh" ? P.hud.canh(t) : P.hud.msg(t, MAU_TIN[k])), bao: (h) => GW && GW.bao(h), ketQua: (ds) => GW && GW.ketQuaBoss(ds), tenMon: (k) => (ItemDB.item(k) || {}).n || k, fmt: fmtSo, toaClient: toaClientCua };
+  SanNhim.api = { msg: (t, k) => P.hud.msg(t, MAU_TIN[k]), canh: (t) => P.hud.canh(t), tenMon: (k) => (ItemDB.item(k) || {}).n || k, fmt: fmtSo, toaClient: toaClientCua };
   // Trợ Thủ tự làm nhiệm vụ ngày (tulam.js — anh 03/11): đi lại / việc ở thành / Xa phu của Trợ Thủ
   TuLam.api = { hero: () => hero, world: () => world, msg: (t) => P.hud.msg(t), canh: (t) => P.hud.canh(t),
     boKet: () => { if (thanh && performance.now() - thanh.t0 > 20000) { thanh = null; if (world) { world.holdMove = false; world.resting = false; } } }, // bấm Bắt đầu (tulam.js nut): gỡ việc ở thành đang kẹt
@@ -1222,7 +1222,7 @@ function npcApi() {
 function setHudMap() {
   const m = P.maps.maps[world.zone.map], c = m && m.client, reg = c && c.region ? c.region : [0, 0], s = P.maps.scale;
   const fromClient = (X, Y) => [((X + 0.5) * 256 - reg[0] * 512) * s, (((Y + 0.5) * 512 - reg[1] * 1024) / 2) * s];
-  P.hud.setMap({ key: world.zone.map, name: world.zone.n + (world.chung ? " (chung)" : ""), toClient: (x, y) => [Math.floor((reg[0] * 512 + x / s) / 256), Math.floor((reg[1] * 1024 + (2 * y) / s) / 512)], fromClient });
+  P.hud.setMap({ key: world.zone.map, zone: world.zone.id, name: world.zone.n + (world.chung ? " (chung)" : ""), toClient: (x, y) => [Math.floor((reg[0] * 512 + x / s) / 256), Math.floor((reg[1] * 1024 + (2 * y) / s) / 512)], fromClient });
   world.fromClient = fromClient; // Trợ Thủ tự đánh theo tọa độ
 }
 
@@ -1264,7 +1264,8 @@ function mountHud() {
     onKhoe: (it, e) => GW && (it ? GW._showTip(it, e) : GW._hideTip()), // rê / chạm chữ <tên đồ> của tin khoe đồ (khoeDo)
     onMapClick: (x, y) => world && world.clickGround(x, y),
     onMoi: moiTraLoi, // lời mời tổ đội: chữ trong ô tin hệ thống / biểu tượng (hud.js moiDoi)
-    onGoto: diToaDo, onNhiemVu: bamNhiemVu, onDoi: () => { P.audio.ui("click"); P.win.get("team").show(); }, // bảng đội ngũ -> khung Lập nhóm
+    onGoto: diToaDo, onNhiemVu: bamNhiemVu, onToaDo: diToaDoMo, onGotoMap: diToaDoTen, toaClient: toaClientCua, // link chat (28/11/2026): bấm tọa độ trong chat / ô tọa độ bản đồ nhỏ; toaClient: tọa độ logic -> (X/Y) hiện của bãi bất kỳ
+    onDoi: () => { P.audio.ui("click"); P.win.get("team").show(); }, // bảng đội ngũ -> khung Lập nhóm
     onSlot: quickClick, onSlotMenu: quickMenu, onSlotTip: quickTip,
     onSkillSlot: skillPick, onSkillTip: skillSlotTip, onSlotDown: quickDown,
     onBoCuc: (k) => { P.audio.ui("click"); boCuc(k); }, // thanh Lưu bố cục · Mặc định · Hủy lúc kéo thả bảng
@@ -1362,13 +1363,13 @@ const NET_CH = new Set(["CH_WORLD", "CH_NEARBY", "CH_CITY", "CH_TEAM", "CH_TONG"
 function sendChat(ch, t) {
   if (ch === "CH_TEAM" && !doiTt) return P.hud.canh("Chưa có đội ngũ thì nói ở tần số đội ngũ làm gì — lập nhóm hay vào nhóm trước đã.");
   if (ch === "CH_TONG" && !bhMinhCur) return P.hud.canh("Ngươi chưa thuộc bang hội nào cả!"); // tongleavepower.lua :28
-  // khoe đồ (khoeDo): chữ còn <tên đồ> đã chèn -> gửi kèm mã món, máy chủ lấy món thật (may-chu/the-gioi.js monKhoe)
-  const kd = P.hud.khoeDo, u = kd && t.includes(`<${kd.ten}>`) ? kd.u : null;
-  P.hud.khoeDo = null;
+  // khoe đồ (khoeDo — link chat 28/11/2026, tối đa 2 món): chữ còn <tên đồ> đã chèn -> gửi kèm mã món, máy chủ lấy món thật (may-chu/the-gioi.js monKhoe)
+  const kd = P.hud.khoeDs || [], us = kd.filter((k) => k && t.includes(`<${k.ten}>`)).map((k) => k.u);
+  P.hud.khoeDs = [];
   if (!NET_CH.has(ch)) { P.hud.chat(ch, hero.name, t, true); return P.hud.msg("Kênh này máy chủ chưa có — tin chỉ hiện ở máy ngươi. Muốn nói với mọi người thì dùng kênh Phụ cận / Thành thị / Thế giới."); }
   const toi = ch === "PRIVATE" ? P.hud.matToi : null; // nhắn tin mật (anh 13/11): người nhận = tên đã chọn (Ctrl + bấm tên ở khung chat / menu người chơi)
   if (ch === "PRIVATE" && !toi) return P.hud.canh("Chưa chọn người nhận tin mật — Ctrl + bấm tên người đó ở khung chat, hoặc Ctrl + chuột phải vào người chơi → Nhắn tin mật. Chọn đi rồi hãy gửi.");
-  Net.chat(hero.slot | 0, ch, t, u, toi).then((j) => P.hud.chat(ch, hero.name, (j && j.text) || t, true, { ...(j && j.it ? khoeThem(j.it) : {}), ...(toi ? { toi } : {}) }))
+  Net.chat(hero.slot | 0, ch, t, us, toi).then((j) => P.hud.chat(ch, hero.name, (j && j.text) || t, true, { ...(j && j.it ? khoeThem(j.it) : {}), ...(j && j.its ? { its: j.its } : {}), ...(toi ? { toi } : {}) }))
     .catch((e) => { if (e.ma !== "het-phien") P.hud.msg("Chưa gửi được: " + e.message); });
 }
 // khoe đồ lên kênh chat (anh 12/11 "thêm chức năng post đồ trên kênh thế giới"): Ctrl + bấm món ở Hành trang / Trang bị (điện thoại: nút Khoe đồ
@@ -1379,7 +1380,8 @@ function khoeDo(it) {
   const ten = String(x.n).replace(/\s+/g, " ").trim();
   if (DT && DT.on) { if (GW) GW.closeAll(); DT.chat = true; DT.tick(); } // điện thoại: đóng túi, mở khung Chat (ô gõ ở đó)
   if (!P.hud.chenKhoe(ten)) return P.hud.canh("Ô chat đầy chữ rồi — xóa bớt đi rồi hãy khoe đồ.");
-  P.hud.khoeDo = { u: it.u, ten };
+  const ds = P.hud.khoeDs || (P.hud.khoeDs = []); // link chat 28/11/2026: giữ tối đa 2 món đã chèn (lúc gửi chỉ lấy món còn <tên> trong chữ)
+  if (!ds.some((k) => k.u === it.u)) { ds.push({ u: it.u, ten }); if (ds.length > 4) ds.shift(); }
 }
 const khoeThem = (it) => ({ it, itMau: mauMon({ d: (it.d || []).length }) }); // màu chữ <tên đồ> như dòng nhặt đồ (xanh: món có dòng)
 // Hẹn giờ chạy cả khi tab ẩn (anh 01/11: ẩn tab / thu nhỏ / cửa sổ khác che thì nhân vật tự chết): nhịp từ luồng phụ src/game/dong-ho-nen.js —
@@ -1450,7 +1452,7 @@ henGio(async () => {
     if (j.dc && world === w && w.zone.id === zn) { w.datChung(j.dc.ds); Object.assign(datChung, { w, z: zn, v: j.dc.v }); }
     if (j.cho && world === w && w.zone.id === zn) { Object.assign(choV, { w, z: zn, v: j.cho.v }); sapNhan(w, j.cho.ds); }
     if (j.dat && world === w && w.zone.id === bai) for (const v of j.dat) w.drop(v.x, v.y, { g: v.g, tuoi: v.tuoi || 0.01, ...(v.tien ? { gold: v.tien } : { item: v }) });
-    if (hudMounted) for (const m of j.tin) { P.hud.chat(m.ch, m.name, m.text, false, m.it ? khoeThem(m.it) : null); if (m.qt && daNhan) loaThongBao(m.text); } // qt: thông báo của quản trị (bảng quản trị); it: món khoe
+    if (hudMounted) for (const m of j.tin) { P.hud.chat(m.ch, m.name, m.text, false, { ...(m.it ? khoeThem(m.it) : {}), ...(m.its ? { its: m.its } : {}), ...(m.toas ? { toas: m.toas } : {}) }); if (m.qt && daNhan) loaThongBao(m.text); } // qt: thông báo của quản trị (bảng quản trị); it/its/toas: link chat (28/11/2026)
     if (P.hud.setBauCua) P.hud.setBauCua(j.bcua || null); if (DT) DT.setBauCua(j.bcua || null); // biểu tượng Bầu Cua (anh 10/11 lần 3 — may-chu/bau-cua.js nhipCon)
     if (j.km && KAT) KAT.capNhat(j.km); // ổ khóa an toàn: máy chủ khởi động lại / khóa lại ở thẻ khác -> trang này khóa lại (may-chu/bao-mat.js trangThai)
     applyServer(j, extra && extra.at);
@@ -1973,7 +1975,11 @@ function diPld(di) {
   // trình duyệt còn bản danh sách bãi cũ (chưa có bãi máy chủ vừa thêm — vd đảo Tẩy Tủy): báo, không đứng im (anh 28/10)
   if (!z) { P.hud.canh("Bản đồ này trình duyệt chưa có — tải lại trang (F5) rồi hãy nói chuyện lại với NPC"); return; }
   if (NPCD) NPCD.close();
-  const at = Array.isArray(di.at) ? di.at : null, di1 = () => gotoZone(z, di.hoiSinh ? { revive: true, at } : { ...(at ? { at } : {}), ...(di.chung ? { chung: true } : {}) }).catch(fail); // chung: bản quái chung (Boss Sát thủ — công cụ thử)
+  // link chat (28/11/2026): Thần Hành theo link tọa độ thì tới đúng tọa độ đích (không thì về điểm vào bãi như thường); chờ quá 120 giây thì thôi
+  let at = Array.isArray(di.at) ? di.at : null;
+  if (linkDichCho && linkDichCho.z === di.z && Date.now() - linkDichCho.t < 120000) at = [linkDichCho.x, linkDichCho.y];
+  linkDichCho = null;
+  const di1 = () => gotoZone(z, di.hoiSinh ? { revive: true, at } : { ...(at ? { at } : {}), ...(di.chung ? { chung: true } : {}) }).catch(fail); // chung: bản quái chung (Boss Sát thủ — công cụ thử)
   if (zoneLoad) zoneLoad.catch(() => {}).finally(di1); else di1();
 }
 // trên thuyền: báo giờ, sinh Thủy tặc / đầu lĩnh, tới giờ thì cập bờ (mỗi khung hình — chỉ làm khi tới mốc)
@@ -2692,7 +2698,7 @@ function doiVatPhamHK() {
     const o = (hero.bag || []).find((x) => x.u === ds[0]);
     if (!o) return;
     const x = ItemDB.item(o.k) || {};
-    return GW.hoi(`Đổi <color=yellow>${String(x.n || o.k).trim()}${(o.d || []).length ? ` (${(o.d || []).length} dòng)` : ""}<color> lấy đồ Hoàng Kim?<enter>Phí <color=yellow>10.000.000 lượng<color>. Món Hoàng Kim khóa vĩnh viễn, không bán, không giao dịch, không vứt được.`, "Đổi lấy Hoàng Kim", "Để sau đã").then((ok) => {
+    return GW.hoi(`Đổi <color=yellow>${String(x.n || o.k).trim()}${(o.d || []).length ? ` (${(o.d || []).length} dòng)` : ""}<color> lấy đồ Hoàng Kim?<enter>Phí <color=yellow>10.000.000 lượng<color>. Món Hoàng Kim khóa vĩnh viễn, không giao dịch, không vứt được (bán cho cửa hàng được).`, "Đổi lấy Hoàng Kim", "Để sau đã").then((ok) => {
       if (!ok || !hero) return;
       return Net.doItem(hero.slot | 0, { act: "doiHK", u: o.u }).then((j) => {
         applyServer(j);
@@ -3262,6 +3268,47 @@ function doiHud() {
     return { ten: x.ten, truong: x.ten === doiTt.truong, toi, xa: !cung, hp: pc(hp), mp: pc(mp), tip };
   }), doiTt.toiDa);
 }
+// tọa độ client <-> logic của BẤT KỲ bãi nào (link chat 28/11/2026 — cùng công thức setHudMap, theo region của map bãi đó)
+function vungCua(zone) { const m = zone && P.maps.maps[zone.map], c = m && m.client; return { reg: (c && c.region) || [0, 0], s: P.maps.scale || 1 }; }
+function toaClientCua(z, x, y) { const zone = typeof z === "object" ? z : P.maps.zones.find((v) => v.id === +z); if (!zone) return null; const { reg, s } = vungCua(zone); return [Math.floor((reg[0] * 512 + x / s) / 256), Math.floor((reg[1] * 1024 + (2 * y) / s) / 512)]; }
+function fromClientCua(zone, X, Y) { const { reg, s } = vungCua(zone); return [((X + 0.5) * 256 - reg[0] * 512) * s, (((Y + 0.5) * 512 - reg[1] * 1024) / 2) * s]; }
+// Thần Hành Phù trong túi (link chat 28/11/2026): món Kỳ Trân Các có dung.loai "thanHanh", còn số lượng
+function thanHanhTrongTui() { return (hero.bag || []).find((b) => b.n > 0 && ((ItemDB.item(b.k) || {}).dung || {}).loai === "thanHanh") || null; }
+// bấm tọa độ trong chat / bảng boss / săn nhím (link chat 28/11/2026): cùng bãi -> đi bộ A* (Q6: bị đánh trúng đòn thật thì dừng — world.js _linkDich);
+// khác bãi -> Thần Hành Phù thẳng tới đúng tọa độ (luật di chuyển 28/11: Xa phu chỉ liên thành, đi map bắt buộc Thần Hành Phù)
+let linkDichCho = null; // { z, x, y, t } — đích link đang chờ Thần Hành đưa tới (diPld nhận rồi đi đúng tọa độ)
+function diToaDoMo(z, x, y) {
+  if (!world || !Number.isFinite(z) || !Number.isFinite(x) || !Number.isFinite(y)) return;
+  const lab = toaClientCua(z, x, y), hien = lab ? `${lab[0]}/${lab[1]}` : `${x}/${y}`;
+  if (z === world.zone.id) {
+    if (world.map.walkable(x, y) || (world.map.grid && world.map.nearestCell(x, y, 30) >= 0)) { if (world.clickGround(x, y)) { world._linkDich = true; P.hud.msg(`Tìm đường tới ${hien}`); } }
+    else P.hud.msg(`Không tới được ${hien}`);
+    return;
+  }
+  const zone = P.maps.zones.find((v) => v.id === z);
+  if (!zone) return P.hud.msg("Bãi này chưa mở.");
+  const phu = thanHanhTrongTui();
+  if (!phu) return P.hud.canh("Muốn tới bãi khác thì cần Thần Hành Phù — mua ở Kỳ Trân Các (5 Xu).");
+  linkDichCho = { z, x, y, t: Date.now() };
+  Net.doItem(hero.slot | 0, { act: "dung", u: phu.u, chon: z }).then((j) => {
+    if (!j) { linkDichCho = null; return; }
+    applyServer(j);
+    if (j.msg) P.hud.msg(j.msg);
+    if (j.di) diPld(j.di); else linkDichCho = null;
+  }).catch((e) => { linkDichCho = null; if (e.ma !== "het-phien") P.hud.msg(e.message); });
+}
+// ô tọa độ bản đồ nhỏ (Q4 — mặc định 28/11/2026): "200/200" = bãi đang đứng; "tên bãi 200/200" / "mã bãi 200/200" = bãi khác (thần hành)
+function diToaDoTen(ten, X, Y) {
+  if (!world) return;
+  const t = String(ten || "").trim();
+  let zone = null;
+  if (/^\d+$/.test(t)) zone = P.maps.zones.find((v) => v.id === +t);
+  if (!zone) zone = P.maps.zones.find((v) => v.n === t);
+  if (!zone) { const g = P.maps.zones.filter((v) => v.n.startsWith(t)); if (g.length === 1) zone = g[0]; }
+  if (!zone) return P.hud.msg(`Không thấy bãi "${t}" — ghi đúng tên bãi rồi bấm lại.`);
+  const [x, y] = fromClientCua(zone, X, Y);
+  diToaDoMo(zone.id, Math.round(x), Math.round(y));
+}
 // chạy tới tọa độ client X/Y của bãi đang đứng (ô tọa độ bản đồ nhỏ, bảng nhiệm vụ)
 function diToaDo(X, Y) {
   if (!world) return;
@@ -3377,9 +3424,11 @@ function bamNhiemVu(k) {
     return P.hud.msg(`${ten} ở ${(townZone() || {}).n || "thành"} — về thành rồi bấm lại`);
   }
   if (loai === "toa") {
-    if (world.zone.id !== +a) return P.hud.msg(`Boss ở ${tenBaiNv(+a)}${laQc({ id: +a }) ? " bản quái chung" : ""} (${X}/${Y}) — tới bãi đó rồi bấm lại (Xa phu: Đưa ta đến bản đồ nhiệm vụ sát thủ)`);
-    if (laQc(world.zone) && !world.chung) P.hud.msg("Boss Sát thủ chỉ xuất hiện ở bản quái chung — đi Xa phu chọn bản Quái chung");
-    diToaDo(+X, +Y);
+    const zone = P.maps.zones.find((v) => v.id === +a);
+    if (!zone) return P.hud.msg(`Boss ở ${tenBaiNv(+a)} (${X}/${Y}) — bãi này chưa mở.`);
+    if (laQc(zone) && world.zone.id === +a && !world.chung) P.hud.msg("Boss Sát thủ chỉ xuất hiện ở bản quái chung — đi Xa phu chọn bản Quái chung");
+    const [x, y] = fromClientCua(zone, +X, +Y);
+    diToaDoMo(+a, Math.round(x), Math.round(y)); // khác bãi: thần hành thẳng tới đúng tọa độ (link chat 28/11/2026)
   }
 }
 // Vứt món đang cầm trên tay (lấy từ túi) xuống đất cạnh nhân vật (anh muốn 25/10): nhặt lại được trong ~133 giây như vật rơi. Món quý (từ

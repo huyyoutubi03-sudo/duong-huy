@@ -416,7 +416,7 @@ function nhip(res, tk, b, trang) {
     const va = VAI.nhanPhong(h, tk.ten, key);
     if (va) { ket.vaKq = va; ket.nv = nvCua(h); ghi = true; ghiHd("Vượt Ải", tk.ten, h.name, va.kn > 0 ? `+${va.kn} kinh nghiệm` : "", va.tin, va.tinVa || [], va.nhan.length ? `rơi: ${chuMonNk(va.nhan)}` : ""); }
     // Boss Sát thủ (anh 18/11 — sat-thu.js nhanDoi): đội trưởng vừa nhận nhiệm vụ giùm -> câu báo + nhân vật mới (trình duyệt dựng boss)
-    { const sd = SAT.layDoi(tk.ten); if (sd) { for (const t of sd) TG.thongBaoTk(t, tk.ten); ket.nv = nvCua(h); ghiHd("Boss Sát thủ", tk.ten, h.name, sd); } }
+    { const sd = SAT.layDoi(tk.ten); if (sd) { for (const e of sd) TG.thongBaoTk(typeof e === "string" ? e : e.t, tk.ten, false, e && e.toas); ket.nv = nvCua(h); ghiHd("Boss Sát thủ", tk.ten, h.name, sd.map((e) => typeof e === "string" ? e : e.t)); } }
     const vaDi = VAI.layDi(tk.ten);
     if (vaDi) { ket.vaDi = vaDi; ket.tui = tuiCua(h); ket.nv = nvCua(h); ghiHd("Vượt Ải", tk.ten, h.name, vaDi.tin || []); }
     const vaP = VAI.phongNhip(tk.ten, h);

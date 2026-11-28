@@ -1750,7 +1750,7 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
       if (!it) loi("Không có món này trong túi. Tìm lại đi.");
       // it.kbh + món của bảng Kỳ Trân Các: thuốc Hồi Thiên rút từ lễ bao mua bằng Xu (anh 12/11 — "k bán dc, chỉ hủy dc ở lễ quan")
       if (laKtc(it) || it.het || (it.kbh && KTC.items[it.k])) loi("Vật phẩm của Kỳ Trân Các thì đừng bán cho cửa hàng.");
-      if (laHK(it.k) && it.kbh) loi("Đồ Hoàng Kim đang khóa bảo hiểm, không bán cho cửa hàng được đâu."); // Huy chốt 15:47 28/11/2026: đồ HK bán được ở shop — chỉ món đang khóa bảo hiểm thì vẫn chặn (mở khóa rồi hãy bán, như đồ thường)
+      // Huy chốt 19:58 28/11/2026 (ghi đè quyết 15:47): đồ Hoàng Kim KHÓA BẢO HIỂM VĨNH VIỄN vẫn bán được cho cửa hàng theo giá NPC như đồ thường — chỉ món Kỳ Trân Các có kbh mới chặn (dòng trên). Giao dịch/vứt đồ khóa vẫn chặn như cũ.
       if (it.vv) loi("Ngựa vĩnh viễn từ mã bài thì đừng bán cho cửa hàng."); // anh 16/11 — Báo Đáp Ân Sư (Mã bài Bôn Tiêu / Phiên Vũ)
       if (it.tk) loi(CAU_TK);
       const p = giaBan(it); h.bag.splice(i, 1); h.gold = (h.gold || 0) + p;

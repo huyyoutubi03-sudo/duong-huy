@@ -164,10 +164,10 @@ function nhip(tk, b) {
   const thay = (m) => m.tk !== tk.ten && (!m.chi || m.chi === tk.ten) && ((m.ch === "CH_SYSTEM" && (!m.zs || (!!toi && m.zs.includes(toi.zone)))) || KENH[m.ch] === "all" || KENH[m.ch] === "mat" || (KENH[m.ch] === "doi" ? !!doi && m.doi === doi : KENH[m.ch] === "bang" ? bang != null && m.bang === bang : !!toi && m.zone === toi.zone && (m.kb == null || m.kb === bang))); // kb: tin phụ cận / thành thị gửi ở khu vực bang — chỉ cùng bang (đợt 4)
   const moi = b.tin == null || b.tin > tinId ? tin.filter(thay).slice(-TIN_DAU) : tin.filter((m) => m.id > b.tin && thay(m));
   // tàng hình: tin gửi lúc đang ẩn (an ghi lúc gửi trong chat()) thì người nhận thấy tên "Admin", không lộ tên thật (Huy chốt 08:07 27/11/2026)
-  return { ai, cp: toi ? pheNay(tk.ten, toi) : 0, th: AN.has(tk.ten) ? 1 : 0, tin: moi.map(({ id, ch, name, text, qt, it, an }) => ({ id, ch, name: an ? "Admin" : name, text, ...(qt ? { qt } : {}), ...(it ? { it } : {}) })), tinId };
+  return { ai, cp: toi ? pheNay(tk.ten, toi) : 0, th: AN.has(tk.ten) ? 1 : 0, tin: moi.map(({ id, ch, name, text, qt, it, its, toas, an }) => ({ id, ch, name: an ? "Admin" : name, text, ...(qt ? { qt } : {}), ...(it ? { it } : {}), ...(its ? { its } : {}), ...(toas ? { toas } : {}) })), tinId };
 }
 
-function chat(tk, b) {
+function chat(tk, b, noiBo = false) { // noiBo: đường nội bộ trong máy chủ (bot rao bán, AI trả lời…) mới được đính toas/its sẵn — tin từ trình duyệt gửi toas/its lên đều bị bỏ, không tin
   const oNv = nguyen(b.o, 0, tk.nv.length - 1), h = tk.nv[oNv];
   if (!h) throw Object.assign(new Error("Chưa vào game. Vào game rồi hãy nói."), { code: 400 });
   if (!KENH[b.ch]) throw Object.assign(new Error("Kênh này chưa có. Đừng gửi vào đây."), { code: 400 });
@@ -177,14 +177,33 @@ function chat(tk, b) {
   const bang = KENH[b.ch] === "bang" ? BH().idCua(tk.ten, oNv, h.name) : null;
   if (KENH[b.ch] === "bang" && bang == null) throw Object.assign(new Error("Chưa vào bang thì đừng nói ở kênh bang. Vào bang rồi hãy nói."), { code: 400 });
   let text = String(b.t || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, TIN_MAX);
-  // khoe đồ (anh 12/11 "thêm chức năng post đồ trên kênh thế giới"): b.u = mã món ở hành trang / trang bị -> lấy đúng món nhân vật đang có (không
-  // tin trình duyệt: không khoe được đồ không có), tin mang bản sao món (it — người xem rê / chạm chữ <tên đồ> để xem ô món). Chữ chưa có
-  // <tên đồ> (tên đồ của máy chủ) thì đổi chữ <…> đầu tiên / thêm vào cuối
-  const it = b.u != null ? monKhoe(h, b.u) : null;
-  if (it) {
-    const the = `<${String(DO().tenMon(it)).replace(/\s+/g, " ").trim()}>`;
-    if (!text.includes(the)) text = /<[^<>]*>/.test(text) ? text.replace(/<[^<>]*>/, the) : `${text.slice(0, Math.max(0, TIN_MAX - the.length - 1))} ${the}`.trim();
+  // khoe đồ (anh 12/11 "thêm chức năng post đồ trên kênh thế giới"; link chat 28/11/2026: tối đa 2 món): b.u = mã món ở hành trang /
+  // trang bị -> lấy đúng món nhân vật đang có (không tin trình duyệt: không khoe được đồ không có), tin mang bản sao món (it — người xem rê /
+  // chạm chữ <tên đồ> để xem ô món). b.us = [mã món…] -> its (theo thứ tự <…> trong chữ). Chữ chưa có <tên đồ> (tên đồ của máy chủ)
+  // thì đổi chữ <…> đầu tiên / thêm vào cuối
+  let its = Array.isArray(b.us) ? b.us.slice(0, 2).map((u) => monKhoe(h, u)) : (noiBo && Array.isArray(b.its) ? b.its.slice(0, 2).map((w) => { const { x, y, ...r } = w || {}; return JSON.parse(JSON.stringify(r)); }) : null);
+  if (its && !its.length) its = null; // us: [] -> không đính gì (khỏi lưu its: [] vào tin)
+  const it = its ? null : (b.u != null ? monKhoe(h, b.u) : null);
+  const dsKhoe = it ? [it] : its;
+  if (dsKhoe) {
+    // thay <…> theo đúng thứ tự vị trí trong chữ (món 2 không ghi đè tên món 1 vừa chèn); thừa món thì thêm vào cuối
+    const reKhoe = /<[^<>]{1,80}>/g;
+    let ii = 0, out = "", last = 0;
+    for (const mt of text.matchAll(reKhoe)) {
+      out += text.slice(last, mt.index);
+      if (ii < dsKhoe.length) out += `<${String(DO().tenMon(dsKhoe[ii++])).replace(/\s+/g, " ").trim()}>`;
+      else out += mt[0];
+      last = mt.index + mt[0].length;
+    }
+    out += text.slice(last);
+    text = out;
+    while (ii < dsKhoe.length) {
+      const the = `<${String(DO().tenMon(dsKhoe[ii++])).replace(/\s+/g, " ").trim()}>`;
+      if (!text.includes(the)) text = `${text.slice(0, Math.max(0, TIN_MAX - the.length - 1))} ${the}`.trim();
+    }
   }
+  // tọa độ đính kèm (link chat 28/11/2026): chỉ đường nội bộ mới được đính — { z, x, y } tọa độ LOGIC, tối đa 8; trình duyệt tự hiện link (X/Y)
+  const toas = noiBo && Array.isArray(b.toas) ? b.toas.slice(0, 8).map((o) => ({ z: +o.z, x: Math.round(+o.x), y: Math.round(+o.y) })).filter((o) => Number.isFinite(o.z) && Number.isFinite(o.x) && Number.isFinite(o.y)) : null;
   if (!text) throw Object.assign(new Error("Tin trống rỗng. Gõ chữ vào rồi hãy gửi."), { code: 400 });
   // nhắn tin mật (anh 13/11 "thêm tính năng nhắn tin mật với người chơi"): tới đúng 1 người đang chơi — b.toi = tên nhân vật (Ctrl + bấm tên ở khung chat /
   // menu người chơi "Nhắn tin mật"); chỉ máy người đó nhận (chi), người gửi tự hiện tin ở máy mình
@@ -203,9 +222,9 @@ function chat(tk, b) {
   const b0 = ben.get(tk.ten);
   // khu vực bang (bang hội đợt 4): ở bãi bang (mỗi bang 1 bản) tin phụ cận / thành thị mang mã bang của người gửi (kb; không bang: -1) — chỉ người cùng bang thấy (nhip thay)
   const kb = KENH[b.ch] === "zone" && b0 && (DOJS().NOI.ZONES.get(b0.zone) || {}).bang ? (BH().idCua(tk.ten, oNv, h.name) ?? -1) : null;
-  tin.push({ id: ++tinId, ch: b.ch, name: h.name, text, zone: b0 ? b0.zone : -1, tk: tk.ten, ...(AN.has(tk.ten) ? { an: 1 } : {}), ...(doi ? { doi } : {}), ...(bang != null ? { bang } : {}), ...(kb != null ? { kb } : {}), ...(it ? { it } : {}), ...(chi ? { chi, toi } : {}) }); // an: gửi lúc đang tàng hình — nhip() giấu tên với người nhận, người gửi vẫn tự thấy tên mình (echo local)
+  tin.push({ id: ++tinId, ch: b.ch, name: h.name, text, zone: b0 ? b0.zone : -1, tk: tk.ten, ...(AN.has(tk.ten) ? { an: 1 } : {}), ...(doi ? { doi } : {}), ...(bang != null ? { bang } : {}), ...(kb != null ? { kb } : {}), ...(it ? { it } : {}), ...(its ? { its } : {}), ...(toas && toas.length ? { toas } : {}), ...(chi ? { chi, toi } : {}) }); // an: gửi lúc đang tàng hình — nhip() giấu tên với người nhận, người gửi vẫn tự thấy tên mình (echo local)
   if (tin.length > TIN_GIU) tin.shift();
-  return { id: tinId, ...(toi ? { toi } : {}), ...(it ? { it, text } : {}) };
+  return { id: tinId, ...(toi ? { toi } : {}), ...(it ? { it, text } : {}), ...(its ? { its, text } : {}), ...(toas && toas.length ? { toas } : {}) };
 }
 // món khoe (chat b.u): món mã u ở hành trang / trang bị của nhân vật -> bản sao bỏ chỗ trong túi; không có -> lỗi (vừa bán / cất / giao dịch)
 function monKhoe(h, u) {
@@ -259,8 +278,11 @@ function roi(tk) { ben.delete(tk); AN.delete(tk); }
 const TIN_HT_MAX = 1500; // soát 13/11: thẻ màu làm tin dài thêm ~20 ký tự mỗi tên / phần thưởng (bắt nhím nhiều người may mắn)
 // cắt tin quá dài không để sót nửa thẻ "<color=cy" (trình duyệt sẽ in ra nguyên chữ)
 const catTin = (t) => { t = String(t); return t.length <= TIN_HT_MAX ? t : t.slice(0, TIN_HT_MAX).replace(/<[^<>]*$/, ""); };
-function thongBao(text, qt = false) {
-  tin.push({ id: ++tinId, ch: "CH_SYSTEM", name: "", text: catTin(text), zone: -1, tk: null, ...(qt ? { qt: 1 } : {}) });
+// tọa độ đính kèm tin hệ thống (link chat 28/11/2026): [{ z, x, y }] logic, tối đa 8 — chỉ đường nội bộ trong máy chủ truyền vào
+const locToas = (a) => Array.isArray(a) ? a.slice(0, 8).map((o) => ({ z: +o.z, x: Math.round(+o.x), y: Math.round(+o.y) })).filter((o) => Number.isFinite(o.z) && Number.isFinite(o.x) && Number.isFinite(o.y)) : null;
+function thongBao(text, qt = false, toas = null) {
+  const T = locToas(toas);
+  tin.push({ id: ++tinId, ch: "CH_SYSTEM", name: "", text: catTin(text), zone: -1, tk: null, ...(qt ? { qt: 1 } : {}), ...(T && T.length ? { toas: T } : {}) });
   if (tin.length > TIN_GIU) tin.shift();
 }
 // tin hệ thống chỉ người đang ở các bãi zs thấy (Msg2SubWorld của client — vd Bầu Cua ở các bãi có Chủ sòng bạc, may-chu/bau-cua.js)
@@ -271,14 +293,16 @@ function thongBaoBai(text, zs) {
 }
 
 // tin hệ thống chỉ 1 tài khoản thấy (chi — vd may-chu/quai-chung.js: trang chưa tải lại có bản đồ bãi cũ, anh 11/11); qt: hiện cả dòng loa thông báo
-function thongBaoTk(text, ten, qt = false) {
-  tin.push({ id: ++tinId, ch: "CH_SYSTEM", name: "", text: catTin(text), zone: -1, tk: null, chi: String(ten), ...(qt ? { qt: 1 } : {}) });
+function thongBaoTk(text, ten, qt = false, toas = null) {
+  const T = locToas(toas);
+  tin.push({ id: ++tinId, ch: "CH_SYSTEM", name: "", text: catTin(text), zone: -1, tk: null, chi: String(ten), ...(qt ? { qt: 1 } : {}), ...(T && T.length ? { toas: T } : {}) });
   if (tin.length > TIN_GIU) tin.shift();
 }
 // tin hệ thống của 1 đội (anh 18/11 — sat-thu.js nhanDoi: đội trưởng nhận nhiệm vụ sát thủ cho cả đội): kênh Đội ngũ CH_TEAM, name rỗng, chỉ thành viên đội id nhận (nhip thay)
-function thongBaoDoi(text, id) {
+function thongBaoDoi(text, id, toas = null) {
   if (id == null) return;
-  tin.push({ id: ++tinId, ch: "CH_TEAM", name: "", text: catTin(text), zone: -1, tk: null, doi: id });
+  const T = locToas(toas);
+  tin.push({ id: ++tinId, ch: "CH_TEAM", name: "", text: catTin(text), zone: -1, tk: null, doi: id, ...(T && T.length ? { toas: T } : {}) });
   if (tin.length > TIN_GIU) tin.shift();
 }
 // tin hệ thống của 1 bang (anh 14/11 — may-chu/bang-hoi.js: vào / rời, bổ nhiệm, khảo nghiệm…): kênh Bang hội CH_TONG, name rỗng, chỉ thành viên bang id nhận (nhip thay)

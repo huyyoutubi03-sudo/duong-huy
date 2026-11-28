@@ -83,7 +83,7 @@ function mo(opt = {}) {
   // lượt 86: + thưởng người phát hiện / người tham gia
   const tl = (x) => `${+x || 0}%`;
   TG().thongBao(`${opt.thuThu ? "[Thử] " : ""}${ds.length} con ${CF.ten} xuất hiện rải rác quanh ${bais}! Ai ra đòn cuối cùng bắt được nhím sẽ nhận ${MT.thuong(`${CF.kn.toLocaleString("vi-VN")} kinh nghiệm`)} và ${MT.thuong("1 phần quà")} (mỗi ngày tối đa ${D.ngay} con)`
-    + `${+CF.phatKn > 0 ? `; người phát hiện đầu tiên ${MT.thuong(`+${(+CF.phatKn).toLocaleString("vi-VN")} kinh nghiệm`)} (${tl(CF.phatXu)} được ${MT.thuong("1 Xu")})` : ""}${+CF.thamKn > 0 ? `; mọi người tham gia ${MT.thuong(`+${(+CF.thamKn).toLocaleString("vi-VN")} kinh nghiệm`)} (${tl(CF.thamXu)} được ${MT.thuong("1 Xu")})` : ""}.${opt.thuThu ? " (Phiên thử — không có thưởng, không tính số con.)" : ""}`, true);
+    + `${+CF.phatKn > 0 ? `; người phát hiện đầu tiên ${MT.thuong(`+${(+CF.phatKn).toLocaleString("vi-VN")} kinh nghiệm`)} (${tl(CF.phatXu)} được ${MT.thuong("1 Xu")})` : ""}${+CF.thamKn > 0 ? `; mọi người tham gia ${MT.thuong(`+${(+CF.thamKn).toLocaleString("vi-VN")} kinh nghiệm`)} (${tl(CF.thamXu)} được ${MT.thuong("1 Xu")})` : ""}.${opt.thuThu ? " (Phiên thử — không có thưởng, không tính số con.)" : ""}`, true, ds.slice(0, 8).map((n) => ({ z: n.bai, x: n.x, y: n.y })));
   return trangThai("");
 }
 // hết giờ / quản trị hủy / bắt hết
@@ -107,10 +107,10 @@ const traoCho = (ten, r) => { if (!cho.has(ten)) cho.set(ten, []); cho.get(ten).
 // người đánh trúng đầu tiên (có sát thương được tính) — phát hiện nhím n (lượt 86): + phatKn kinh nghiệm, phatXu % được 1 Xu (nhịp sau — nhanThuong), tin hệ thống
 function phatHien(n, tk, ten) {
   n.phat = ten;
-  if (D && D.thuThu) { TG().thongBao(`[Thử] ${tenCon(n)} ở ${tenBai(n.bai)} bị ${MT.ten(ten)} phát hiện (phiên thử — không có thưởng).`); return; } // phiên thử: không thưởng phát hiện
+  if (D && D.thuThu) { TG().thongBao(`[Thử] ${tenCon(n)} ở ${tenBai(n.bai)} bị ${MT.ten(ten)} phát hiện (phiên thử — không có thưởng).`, false, [{ z: n.bai, x: n.x, y: n.y }]); return; } // phiên thử: không thưởng phát hiện
   const xu = Math.random() * 100 < (+CF.phatXu || 0) ? 1 : 0, kn = Math.max(0, Math.round(+CF.phatKn || 0));
   if (kn || xu) traoCho(ten, { loai: "phat", kn, xu, so: n.so, bai: n.bai });
-  TG().thongBao(`${tenCon(n)} ở ${tenBai(n.bai)} bị ${MT.ten(ten)} phát hiện${kn ? ` (${MT.thuong(`+${vn(kn)} kinh nghiệm`)})` : ""}${xu ? ` — may mắn nhận được ${MT.thuong("1 Xu")}` : ""}!`);
+  TG().thongBao(`${tenCon(n)} ở ${tenBai(n.bai)} bị ${MT.ten(ten)} phát hiện${kn ? ` (${MT.thuong(`+${vn(kn)} kinh nghiệm`)})` : ""}${xu ? ` — may mắn nhận được ${MT.thuong("1 Xu")}` : ""}!`, false, [{ z: n.bai, x: n.x, y: n.y }]);
   NK().ghi("hiem", tk, ten, `Săn nhím: phát hiện ${tenCon(n)} (${tenBai(n.bai)}) — ${kn} kinh nghiệm${xu ? " + 1 Xu" : ""}`);
 }
 // nhím n bị bắt: tài khoản tk, nhân vật ten ra đòn kết liễu — người kết liễu: CF.kn kinh nghiệm + 1 món (như trước); mọi người tham gia (lượt 86): + thamKn kinh nghiệm,
@@ -119,7 +119,7 @@ function bat(n, tk, ten) {
   n.mau = 0; n.ai = ten; doi = true;
   if (D.thuThu) { // phiên thử: không đếm con/ngày, không thưởng, không cống hiến, không nguồn sự kiện
     const con = D.ds.filter((x) => !x.ai).length;
-    TG().thongBao(`[Thử] ${tenCon(n)} ở ${tenBai(n.bai)} bị ${MT.ten(ten)} kích sát (phiên thử — không có thưởng).${con ? ` Còn ${con} con.` : ""}`);
+    TG().thongBao(`[Thử] ${tenCon(n)} ở ${tenBai(n.bai)} bị ${MT.ten(ten)} kích sát (phiên thử — không có thưởng).${con ? ` Còn ${con} con.` : ""}`, false, [{ z: n.bai, x: n.x, y: n.y }]);
     if (!con) ketThuc(false);
     return;
   }
@@ -135,7 +135,7 @@ function bat(n, tk, ten) {
     NK().ghi("hiem", tkx, tenx, `Săn nhím: tham gia bắt ${tenCon(n)} (${tenBai(n.bai)}) — ${tkn} kinh nghiệm${xu ? " + 1 Xu" : ""}`);
   }
   const con = D.ds.filter((x) => !x.ai).length;
-  TG().thongBao(`${tenCon(n)} ở ${tenBai(n.bai)}${n.phat ? ` (phát hiện bởi ${MT.ten(n.phat)})` : ""} bị ${MT.ten(ten)} kích sát — ${MT.ten(ten)} nhận ${MT.thuong(`${vn(CF.kn)} kinh nghiệm`)}${mon.length ? ` và ${MT.thuong(tenMon(mon))}` : ""}${n.tham.size ? `; ${n.tham.size} người tham gia mỗi người ${MT.thuong(`+${vn(tkn)} kinh nghiệm`)}` : ""}.${may.length ? ` Người tham gia ${may.map(MT.ten).join(", ")} may mắn nhận được ${MT.thuong("1 Xu")}.` : ""}${con ? ` Còn ${con} con.` : ""}`);
+  TG().thongBao(`${tenCon(n)} ở ${tenBai(n.bai)}${n.phat ? ` (phát hiện bởi ${MT.ten(n.phat)})` : ""} bị ${MT.ten(ten)} kích sát — ${MT.ten(ten)} nhận ${MT.thuong(`${vn(CF.kn)} kinh nghiệm`)}${mon.length ? ` và ${MT.thuong(tenMon(mon))}` : ""}${n.tham.size ? `; ${n.tham.size} người tham gia mỗi người ${MT.thuong(`+${vn(tkn)} kinh nghiệm`)}` : ""}.${may.length ? ` Người tham gia ${may.map(MT.ten).join(", ")} may mắn nhận được ${MT.thuong("1 Xu")}.` : ""}${con ? ` Còn ${con} con.` : ""}`, false, [{ z: n.bai, x: n.x, y: n.y }]);
   NK().ghi("hiem", tk, ten, `Săn nhím (${tenBai(n.bai)}): ${CF.kn} kinh nghiệm${mon.length ? " + " + tenMon(mon) : ""}. Con thứ ${c.n} hôm nay.`);
   if (!con) ketThuc(false);
 }

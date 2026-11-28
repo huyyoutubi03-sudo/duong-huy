@@ -2595,6 +2595,8 @@ body.dt.dt-ngang #dt .dt-tin { width: min(230px, 28vw); }
 /* dòng tin nổi bấm được để mở khung chat (trước đây .dt-tin chặn hết chạm); mờ đi thì thôi không chặn */
 #dt .dt-tin > div { pointer-events: auto; cursor: pointer; }
 #dt .dt-tin.an > div { pointer-events: none; }
+/* link chat (28/11/2026): link tên đồ / tọa độ trong dải tin nổi vẫn bấm được kể cả khi khung .dt-tin chặn chạm */
+#dt .dt-tin .jx-toa, #dt .dt-tin .jx-khoe { pointer-events: auto; cursor: pointer; }
 
 /* --- Màn NGANG: cụm chat bên trái, trong khung đỏ --- */
 body.dt.dt-ngang #dt .dt-tin { left: 6px; right: auto; top: auto !important; bottom: calc(var(--vh100, 100vh) * 0.74 - 42px) !important; width: min(230px, 28vw); transform: none; text-align: left; } /* neo đáy như dọc: tin dài thì mọc lên trên, không đè ô nhập (ô nhập ở vh*0.26+48, cách 6px) */

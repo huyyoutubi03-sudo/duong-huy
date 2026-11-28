@@ -143,7 +143,7 @@ function goi(opt = {}) {
   // câu của client (functions_boss.lua PickBoss): "<tên> đã xuất hiện tại <bản đồ> (x,y)" — hiện giữa màn hình như thông báo quản trị; + chỗ
   // (ngoài cổng nào — người chơi chưa quen bản đồ thôn / thành)
   const cau = (b) => `${b.ten} tại ${tenBai(b.bai)} (${b.X}/${b.Y})${b.noi ? ` — ${b.noi}` : ""}`;
-  TG().thongBao(`${opt.thuThu ? "[Thử] " : ""}${moi.length > 1 ? `${moi.length} Boss Hoàng Kim xuất hiện: ${moi.map(cau).join("; ")}!` : `${moi[0].ten} xuất hiện tại ${tenBai(moi[0].bai)} (${moi[0].X}/${moi[0].Y})${moi[0].noi ? ` — ${moi[0].noi}` : ""}!`}${opt.thuThu ? " (Phiên thử — không có thưởng.)" : ""}`, true);
+  TG().thongBao(`${opt.thuThu ? "[Thử] " : ""}${moi.length > 1 ? `${moi.length} Boss Hoàng Kim xuất hiện: ${moi.map(cau).join("; ")}!` : `${moi[0].ten} xuất hiện tại ${tenBai(moi[0].bai)} (${moi[0].X}/${moi[0].Y})${moi[0].noi ? ` — ${moi[0].noi}` : ""}!`}${opt.thuThu ? " (Phiên thử — không có thưởng.)" : ""}`, true, moi.map((b) => ({ z: b.bai, x: b.x, y: b.y })));
   return trangThai("");
 }
 // gọi siêu boss (anh 18/11): opt.tai { bai, x, y, X, Y } (quản trị gọi ở chỗ mình — thử), opt.song (giây — thử), opt.mau, opt.mauNguoi (thử)
@@ -275,7 +275,7 @@ function danh(ten, u, d) {
   const ST = stGiay(), t = Date.now(), moi = !B.dmg.has(ten), x = B.dmg.get(ten) || { ten: p.name, d: 0, han: ST * 3, luc: t, dau: t, gui: 0, dinh: 0, g1: 0, g1t: t };
   if (moi) {
     const them = B.sk ? B.mauNguoi | 0 : Math.max(0, Math.round(+CF.mauNguoi || 0)); B.mauMax += them; B.mau += them; // siêu boss: × hsMau (anh 18/11 — goiSk b.mauNguoi)
-    if (!B.phat) { B.phat = p.name; TG().thongBao(`${B.ten} tại ${tenBai(B.bai)} (${B.X}/${B.Y}) bị ${MT.ten(p.name)} phát hiện!`); }
+    if (!B.phat) { B.phat = p.name; TG().thongBao(`${B.ten} tại ${tenBai(B.bai)} (${B.X}/${B.Y}) bị ${MT.ten(p.name)} phát hiện!`, false, [{ z: B.bai, x: B.x, y: B.y }]); }
   }
   // số liệu soát (anh 15/11 — Thiên Nhẫn Kích 45 % sát thương, nghi lỗi): phần trình duyệt gửi lúc đứng ở bãi boss (gui), cao nhất trong 1 giây (dinh — ô 1 giây
   // từ tin đầu của ô), lúc đánh đầu (dau) / cuối (luc) — chet() ghi vào nhật ký Đổ hiếm cạnh % sát thương
