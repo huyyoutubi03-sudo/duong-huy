@@ -4,8 +4,8 @@
 // dùng tối đa của cả máy chủ (0 = không giới hạn), hạn dùng, lời nhắn. Mỗi nhân vật dùng 1 mã 1 lần (chủ server 23/11/2026: đổi từ mỗi tài khoản —
 // nhân vật khác cùng tài khoản vẫn dùng được; lượt đã dùng ghi cả tài khoản lẫn tên nhân vật nên nhân vật đã dùng vẫn bị chặn như cũ). NGOẠI LỆ (chủ server
 // 25/11/2026): mã chung (tuDong, vd MAXPING) dùng lại KHÔNG GIỚI HẠN; nhập lại thì ngân lượng/Xu KHÔNG cộng dồn, chỉ nhận lại đồ (chỉ số gieo ngẫu nhiên
-// mới qua taoQua) + kinh nghiệm. Mã chung MAXPING (chủ server 28/11/2026): thêm chuyển sinh 10 lần + bộ đồ Hoàng Kim đúng mapping đổi ở NPC — chỉ nâng, nhập lại an toàn. Mã cố định
-// XU1000 (chủ server 28/11/2026, lệnh 12:07): 1.000 Xu, mã thường 1 lần/nhân vật, tự gieo khi chưa có (MA_CO_DINH trong doc()). Người chơi
+// mới qua taoQua) + kinh nghiệm. Mã chung MAXPING (chủ server 28/11/2026): thêm chuyển sinh 9 + sẵn sàng
+// vòng 10 + bộ đồ Hoàng Kim đúng mapping đổi ở NPC — chỉ nâng, nhập lại an toàn. Người chơi
 // nhập ở Lễ quan Ba Lăng (main.js — khung nhập chữ của client 输入字串界面2.ini) -> POST /api/ma-qua { o, ma } (api.js).
 // du-lieu/ma-qua.json = { ma: { MÃ: { qua: { tien, xu, exp, mon: [{ k, n, dong?, he? }] }, loi, toiDa, het (ms, 0 = không hạn), tat, tao: { boi, luc },
 //   dung: [{ tk, nv, luc }] } } } — sao lưu hằng ngày cùng tài khoản (du-lieu.js saoLuu).
@@ -31,13 +31,20 @@ const CS = () => require("./chuyen-sinh"); // hằng số chuyển sinh (TOI_DA/
 const HK_CS = (() => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets", "data", "do-hoang-kim.json"), "utf8")).items || {}; } catch { return {}; } })();
 
 const FILE = path.join(D.ROOT, "ma-qua.json");
-// Mã quà cố định của hệ thống (chủ server 28/11/2026, lệnh 12:07: "code cho 1000 xu đi"):
-// XU1000 — 1.000 Xu, 1 lần/nhân vật, để mua lễ bao Nhạc Vương Kiếm (500 Xu) lập bang.
-// Tự gieo vào ma-qua.json khi chưa có (file dữ liệu trên volume, không có trong repo) — đúng
-// hình dạng mã thường sẵn có, luật 1 lần/nhân vật của nhap() áp dụng như mọi mã thường (không
-// tuDong nên nhập lại không cộng dồn, không nhận lại gì). Quản trị vẫn tắt/mở/sửa được ở F10;
-// xóa rồi thì lần nạp sau gieo lại (mã cố định của hệ thống). Không hardcode tên acc/nhân vật.
-const MA_CO_DINH = { XU1000: { qua: { tien: 0, xu: 1000, exp: 0, mon: [] }, loi: "Nhận 1.000 Xu — mua lễ bao Nhạc Vương Kiếm mà lập bang.", toiDa: 0, het: 0 } };
+// Quà tiền/Xu chuẩn của mã chung MAXPING, ghi TRONG CODE (chủ server 28/11/2026, lệnh 13:20:
+// "thêm vào code MAXPING 5000 Xu và 5 ức ngân lượng luôn đi cho dễ"): 500.000.000 lượng +
+// 5.000 Xu, chỉ lần nhập đầu của nhân vật (nhập lại = 0, luật không cộng dồn ở nhap() giữ nguyên).
+// Ghi trong code vì quà tiền/Xu của mã chung nằm ở ma-qua.json trên volume — chuẩn này đè số
+// quản trị sửa ở F10 khi nhập MAXPING, đúng ý chủ server.
+// Mã XU1000 đã BỎ (lệnh 13:20 ngày 28/11/2026): không gieo nữa; doc() xóa luôn mục đã lưu nếu còn.
+// Người đã nhận trước đó giữ nguyên Xu/kiếm đã nhận, chỉ không nhập được nữa.
+const MAXPING_TIEN = 500000000, MAXPING_XU = 5000;
+// Mã 1 lần lập bang (chủ server 28/11/2026, lệnh 15:49 "viết cái code sài 1 lần để có nguyên liệu
+// cần để tạo bang cho nó nhập" + 15:50 "cách đơn giản không làm đi làm phức tạp"): 1 Nhạc Vương Kiếm
+// (qk:195 — tín vật lập bang, không phải đồ Hoàng Kim nên taoQua cấp được). Ghi trong code như
+// MAXPING để lên live cùng đợt deploy, không cần quản trị tạo ở F10. toiDa: 1 = cả máy chủ dùng
+// đúng 1 lượt rồi hết; nhập hỏng (túi đầy) không tính lượt vì taoQua lỗi trước khi ghi lượt.
+const MA_LAPBANG = "LAPBANG28";
 const SAI_MAX = 10, SAI_MS = 10 * 60e3, LOI_MAX = 100, DUNG_GUI = 50;
 const CHU = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // mã tự sinh: bỏ chữ dễ nhầm (O 0, I 1)
 const loi = (msg, code = 400) => { throw Object.assign(new Error(msg), { code }); };
@@ -164,11 +171,10 @@ function doc() {
   let j = null;
   try { const d = JSON.parse(fs.readFileSync(FILE, "utf8")); if (d && d.ma && typeof d.ma === "object") j = d; } catch {}
   if (!j) j = { ma: {} };
-  let moi = false; // gieo mã cố định còn thiếu (XU1000...) — chỉ thêm khi chưa có, không đè sửa của quản trị
-  for (const [k, v] of Object.entries(MA_CO_DINH)) {
-    if (!j.ma[k]) { j.ma[k] = { qua: v.qua, loi: v.loi, toiDa: v.toiDa, het: v.het, tao: { boi: "he-thong", luc: Date.now() }, dung: [] }; moi = true; }
-  }
-  if (moi) { try { ghi(j); } catch {} }
+  // BỎ mã XU1000 (lệnh 13:20 ngày 28/11/2026): xóa mục đã lưu trên volume nếu còn.
+  if (j.ma.XU1000) { delete j.ma.XU1000; try { ghi(j); } catch {} }
+  // Mã lập bang 1 lần (MA_LAPBANG): chèn vào danh sách đọc được; lượt dùng ghi bền khi nhập thành công (nhap -> ghi).
+  if (!j.ma[MA_LAPBANG]) j.ma[MA_LAPBANG] = { qua: { mon: [{ k: "qk:195", n: 1 }] }, loi: "Mã lập bang 1 lần — 1 Nhạc Vương Kiếm làm tín vật.", toiDa: 1, het: 0, tao: { boi: "code", luc: 0 }, dung: [] };
   return j;
 }
 function ghi(all) {
@@ -199,6 +205,7 @@ function nhap(tk, h, ma0, he0) {
     chon = he == null ? nhanh[0] : he;
     if (!nhanh.includes(chon)) loi("Chọn sai rồi. Hệ đó không phải của phái ngươi.");
     qua = { tien: daDung ? 0 : qua.tien || 0, xu: daDung ? 0 : qua.xu || 0, exp: qua.exp || 0, mon: doTheoPhai(h, chon) }; // nhập lại: ngân lượng/Xu không cộng dồn; đồ gieo lại chỉ số ngẫu nhiên qua taoQua
+    if (k === "MAXPING") { qua.tien = daDung ? 0 : MAXPING_TIEN; qua.xu = daDung ? 0 : MAXPING_XU; } // chuẩn trong code (lệnh 13:20 ngày 28/11/2026): 5 ức lượng + 5.000 Xu, chỉ lần đầu
   }
   const ds = DO.taoQua(h, qua); // túi không đủ chỗ -> lỗi, túi giữ nguyên
   const e = Math.max(0, Math.floor(qua.exp || 0));
@@ -242,17 +249,18 @@ function kiemQua(b) {
   return { qua, ds };
 }
 const nhom = (n) => String(Math.floor(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "."); // 1234567 -> 1.234.567
-function tomTat(m) {
+function tomTat(m, ma) {
   const q = m.qua || {}, ds = (q.mon || []).map((x) => `${x.n} ${DO.tenMon({ k: x.k }).trim()}${x.dong != null ? ` (${x.dong ? x.dong + " dòng" : "trắng"})` : ""}`);
   if (q.tuDong) ds.unshift("Quà theo phái + giới tính, chuyển sinh 9 + sẵn sàng vòng 10 + bộ đồ Hoàng Kim (mã chung, hệ/dòng ngẫu nhiên)");
-  if (q.tien) ds.push(DO.NOI.tien(q.tien)); if (q.xu) ds.push(`${q.xu} Xu`); if (q.exp) ds.push(`${nhom(q.exp)} kinh nghiệm`);
+  const tien = ma === "MAXPING" && q.tuDong ? MAXPING_TIEN : q.tien, xu = ma === "MAXPING" && q.tuDong ? MAXPING_XU : q.xu; // hiện chuẩn trong code, không hiện số cũ đã lưu
+  if (tien) ds.push(DO.NOI.tien(tien)); if (xu) ds.push(`${xu} Xu`); if (q.exp) ds.push(`${nhom(q.exp)} kinh nghiệm`);
   return ds.join(", ");
 }
 const chuKhoa = (m) => (laKhoa(m) ? " · món khóa vĩnh viễn" : ""); // nhật ký quản trị
 function quanTri(qt, b) {
   const all = doc(), t = Date.now();
   if (b.viec === "ds") {
-    return { ds: Object.entries(all.ma).map(([ma, m]) => ({ ma, qua: tomTat(m), ...(laKhoa(m) ? { khoa: 1 } : {}), loi: m.loi || "", toiDa: m.toiDa | 0, daDung: m.dung.length, ai: m.dung.slice(-DUNG_GUI).reverse(),
+    return { ds: Object.entries(all.ma).map(([ma, m]) => ({ ma, qua: tomTat(m, ma), ...(laKhoa(m) ? { khoa: 1 } : {}), loi: m.loi || "", toiDa: m.toiDa | 0, daDung: m.dung.length, ai: m.dung.slice(-DUNG_GUI).reverse(),
       het: m.het || 0, tt: tinhTrang(m, t), tao: m.tao })).sort((a, c) => (c.tao.luc || 0) - (a.tao.luc || 0)) };
   }
   if (b.viec === "tao") {
