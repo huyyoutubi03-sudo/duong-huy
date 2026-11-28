@@ -99,9 +99,10 @@ export function itemTipHtml(T, it, hero, opt = {}) {
     hint();
     return out.join("");
   }
-  const mauTen = d.length ? "Blue" : x.gr === "xanh" ? "White" : "Yellow";
+  const mauTen = g.hk ? "Yellow" : d.length ? "Blue" : x.gr === "xanh" ? "White" : "Yellow";
   line(span(x.n, mauTen) + (opt.dangMac ? span(DA_MAC, "Green") : "") + span(LEVEL.replace("%d", g.cl || 1), mauTen));
   khoa();
+  if (g.hk) line(span("Hoàng Kim — dòng cố định, không gieo lại", "Yellow")); // P3: đồ Hoàng Kim sinh sẵn 6 dòng cố định, không gieo dòng như đồ xanh
   // ngựa từ mã bài Kỳ Trân Các: hạn 30 ngày từ lúc dùng (máy chủ bỏ món khi hết hạn — may-chu/do.js chuan)
   if (it.het) { const s = Math.max(0, (it.het - Date.now()) / 1000), ng = Math.floor(s / 86400), gi = Math.floor((s % 86400) / 3600); line(span(`Hạn sử dụng: còn ${ng ? ng + " ngày " : ""}${gi} giờ`, "Red")); }
   // món Dã Tẩu mua ở sạp Hệ thống của Chợ Trời (may-chu/da-tau.js choHt): Trợ Thủ không tự bán / cất; nộp loại nào Dã Tẩu cũng giữ (cả Xem vật phẩm —
@@ -129,7 +130,7 @@ export function itemTipHtml(T, it, hero, opt = {}) {
   const c = diemCo(hero);
   const ok = {
     requirelevel: (v) => (hero.lvl || 1) >= v, requirestr: (v) => c.str >= v, requiredex: (v) => c.dex >= v, requirevit: (v) => c.vit >= v, requireeng: (v) => c.eng >= v,
-    requiresex: (v) => (v ? "f" : "m") === hero.sex, require_translife: () => false,
+    requiresex: (v) => (v ? "f" : "m") === hero.sex, require_translife: (v) => (hero.reborn | 0) >= v, // P3: đồ Hoàng Kim yêu cầu trùng sinh — trắng khi đủ, đỏ khi chưa (giống may-chu/do.js yeuCau)
   };
   for (const [k, v] of g.req || []) if (k !== "requireseries" && k !== "requiremenpai") line(span(fill(k, v), !ok[k] || ok[k](v) ? "White" : "Red"));
   // dòng xanh: "kỹ năng hệ X" của vũ khí hiện thành sát thương nội công hệ tương ứng (như bản 2 — attr.json serDmg)

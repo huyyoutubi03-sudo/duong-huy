@@ -1435,6 +1435,7 @@ henGio(async () => {
     const dct = DoCongCu.layBaoCao(); // dò công cụ (anh 13/11): có dấu hiệu mới thì gửi kèm nhịp — máy chủ ghi cờ "Nghi dùng công cụ" cho F10, không tự xử
     const j = await Net.pulse(hero.slot | 0, { zone: zn, ...((zoneToi != null ? chungToi : w.chung) ? { c: 1 } : {}), lvl: hero.lvl, look: looksOf(hero), tr, auto: w.auto ? 1 : 0, ...(TH && TH.dangBat() ? { th: 1 } : {}), // tàng hình: chỉ test1/test2 gửi th = 1 (may-chu/the-gioi.js)
       hp: p.hp > 0 ? Math.max(1, Math.round((p.hp * 100) / p.hpMax)) : 0, mp: Math.round((p.mp * 100) / p.mpMax), vs: w.vongPhat(), /* hp: còn sống thì ≥ 1 % — dưới 0,5 % làm tròn 0 thì người khác coi như đã ngã, không đánh được tới khi hồi (soát lôi đài 15/11) */ bl: w.buaPhat(), bc: w.buaHaiPhat(), /* bùa hại đang dính (Tống Kim — anh 12/11) */ kd: w.tkKhangPhat(), /* kháng / né thật đang có (Tống Kim — lượt 86) */
+      ...(hero.ngoaiTrang ? { nt: hero.ngoaiTrang | 0 } : {}), ...(hero.vongSang ? { vg: hero.vongSang | 0 } : {}), ...(hero.vkSang ? { vk: hero.vkSang | 0 } : {}), // mỹ phẩm P4 (vg khác vs — vs là vòng sáng võ công)
       ...(w.phanThan.length ? { pt: w.phanThan.map((a) => ({ i: a.id, tr: (ptTrail.get(a.id) || []).splice(0), vs: a.vs || [], bl: a.bl || [] })) } : {}) }, { ...extra, dv, chv, tc: Math.round(performance.now()), nd: 1, ...(dct ? { dct } : {}), ...(bst ? { bst } : {}), ...(nst ? { nst } : {}), ...(mcv ? { mcv } : {}), ...(vad ? { vad } : {}), ...(vdd ? { vdd } : {}), ...(qcd ? { qcd } : {}), ...(phd ? { phd } : {}) }); // tc: đồng hồ trang — máy chủ dò tăng tốc (may-chu/chong-hack.js)
     if (dct) DoCongCu.daGui(dct); // nhịp tới máy chủ rồi mới đánh dấu đã báo (soát 13/11)
     if (world === w) { w.setOthers(j.ai); w.phe = j.cp ?? null; if (TH) { TH.xacNhan(j.th); TH.nhip(); } } // cp: phe đang theo của mình (màu tên, vòng sáng — World.pheMinh); th: máy chủ xác nhận tàng hình; nhip: khẳng định lại voHinh/hideUntil lên player hiện tại (đổi bãi tạo World mới)
@@ -2615,10 +2616,10 @@ function themLeQuan(D) {
     if (!/路人_礼官\.lua$/.test(k)) continue;
     const m = s.nodes && s.nodes.main; if (!m) continue;
     m.t = "desc";
-    m.text = [LE_QUAN + "Tới <color=yellow>Chiến - Võ Lâm Xưa<color> rồi thì nghe cho kỹ.<enter>Ta lo việc ban thưởng của võ lâm: có <color=yellow>mã kích hoạt<color> thì đưa đây mà nhận quà; quên mật mã rương chứa đồ thì tìm ta mở pass rương; vật phẩm không cần nữa, kể cả vật phẩm <color=green>khóa bảo hiểm<color>, thì đưa ta hủy. Ở đây không mất tiền, AI quản, ta nói sao thì nghe vậy — cãi thì khỏi chơi."];
-    // anh 05/11: thêm "Hủy vật phẩm" (huyVatPham) trước "Kết thúc đối thoại"
-    m.opts = [["Đưa mã đây", "NhapMaKichHoat"], ...(m.opts || []).filter((x) => x[1] !== "NhapMaKichHoat" && x[1] !== "HuyVatPham" && x[1] != null).map(([t, f]) => [t, t === "Mở Pass Rương" ? "MoPassRuong" : f]),
-      ["Hủy vật phẩm", "HuyVatPham"], ["Kết thúc đối thoại", null]]; // anh 12/11: tâm thư (Esc → Ủng hộ tác giả)
+    m.text = [LE_QUAN + "Tới <color=yellow>Chiến - Võ Lâm Xưa<color> rồi thì nghe cho kỹ.<enter>Ta lo việc ban thưởng của võ lâm: có <color=yellow>mã kích hoạt<color> thì đưa đây mà nhận quà; quên mật mã rương chứa đồ thì tìm ta mở pass rương; vật phẩm không cần nữa, kể cả vật phẩm <color=green>khóa bảo hiểm<color>, thì đưa ta hủy; muốn lột xác làm lại từ đầu thì tìm ta chuyển sinh — cấp 200, đã bái nhập môn phái mới được; có đồ xanh đủ dòng thì đưa ta đổi đồ Hoàng Kim — đã chuyển sinh mới đổi được. Ở đây không mất tiền, AI quản, ta nói sao thì nghe vậy — cãi thì khỏi chơi."];
+    // anh 05/11: thêm "Hủy vật phẩm" (huyVatPham) trước "Kết thúc đối thoại"; chuyển sinh (chuyen-sinh.js) trước "Hủy vật phẩm"; đổi đồ Hoàng Kim (doiVatPhamHK — Q5, Huy quyết 13:49 ngày 27/11/2026) sau "Chuyển sinh"
+    m.opts = [["Đưa mã đây", "NhapMaKichHoat"], ...(m.opts || []).filter((x) => x[1] !== "NhapMaKichHoat" && x[1] !== "ChuyenSinh" && x[1] !== "DoiHK" && x[1] !== "HuyVatPham" && x[1] != null).map(([t, f]) => [t, t === "Mở Pass Rương" ? "MoPassRuong" : f]),
+      ["Chuyển sinh", "ChuyenSinh"], ["Đổi đồ Hoàng Kim", "DoiHK"], ["Hủy vật phẩm", "HuyVatPham"], ["Kết thúc đối thoại", null]]; // anh 12/11: tâm thư (Esc → Ủng hộ tác giả)
   }
 }
 // ---------- Báo Đáp Ân Sư: chèn lựa chọn vào khung Say của Võ sư (themBaoDapAnSu — như themLeQuan, chạy lúc dựng dữ liệu) ----------
@@ -2680,6 +2681,28 @@ function themThuyenPhu(D) {
 // món của hành trang (mọi loại, cả món khóa bảo hiểm) -> Xác nhận. S1 hỏi lại 1 lần ở khung hỏi của game (kể tên món sẽ hủy) vì hủy rồi không
 // lấy lại được; máy chủ may-chu/do.js act huy (nhật ký quản trị "huy"). Xong: câu client Msg2Player "Thao tác hủy vật phẩm thành công" + Talk
 // "Thao tác thành công, kiểm tra lại!"
+// Lễ quan → Đổi đồ Hoàng Kim (Q5 — Huy quyết 13:49 ngày 27/11/2026: nút gắn ở Lễ quan, món nền ở túi, phí 10.000.000
+// lượng, cần đã chuyển sinh ≥1 lần + nhân vật cấp 99 + cùng phái; món Hoàng Kim khóa vĩnh viễn).
+// Mẫu huyVatPham: chọn 1 món trong khung giao đồ -> hỏi chắc -> Net.doItem({ act: "doiHK", u }) -> máy chủ
+// (may-chu/do.js) kiểm đủ điều kiện rồi đổi, món cũ biến mất.
+function doiVatPhamHK() {
+  if (!hero || !GW) return;
+  GW.giaoDo({ tieuDe: "Đổi đồ Hoàng Kim", loi: "Chọn 1 món đồ xanh trong túi để đổi lấy đồ Hoàng Kim — món nền phải đủ dòng, cùng phái, ngươi phải cấp 99 và đã chuyển sinh rồi." }).then((ds) => {
+    if (!ds || !ds.length || !hero) return;
+    const o = (hero.bag || []).find((x) => x.u === ds[0]);
+    if (!o) return;
+    const x = ItemDB.item(o.k) || {};
+    return GW.hoi(`Đổi <color=yellow>${String(x.n || o.k).trim()}${(o.d || []).length ? ` (${(o.d || []).length} dòng)` : ""}<color> lấy đồ Hoàng Kim?<enter>Phí <color=yellow>10.000.000 lượng<color>. Món Hoàng Kim khóa vĩnh viễn, không bán, không giao dịch, không vứt được.`, "Đổi lấy Hoàng Kim", "Để sau đã").then((ok) => {
+      if (!ok || !hero) return;
+      return Net.doItem(hero.slot | 0, { act: "doiHK", u: o.u }).then((j) => {
+        applyServer(j);
+        P.hud.msg(j.msg || "Đổi đồ Hoàng Kim xong rồi.");
+        P.audio.ui("click");
+        GW.bao("Lễ quan: Xong rồi, tự kiểm tra lại đi!");
+      });
+    });
+  }).catch((e) => { if (e.ma !== "het-phien" && !e.boQua) GW.bao(`Lễ quan: ${e.message}`); });
+}
 function huyVatPham() {
   if (!hero || !GW) return;
   const ten = (o) => { const x = ItemDB.item(o.k) || {}, d = (o.d || []).length; return `${o.n > 1 ? o.n + " " : ""}${String(x.n || o.k).trim()}${d ? ` (${d} dòng)` : ""}`; };
@@ -2933,6 +2956,25 @@ function xuLyDaTau(j, w0 = world) {
   if ((j.giao || j.thuong) && GW && roi) P.hud.canh("Đã rời chỗ Dã Tẩu — nói chuyện lại với Dã Tẩu đi.");
   if (j.giao && GW && !roi) GW.giaoDo(j.giao).then((ds) => { if (ds && world === w0) daTau({ viec: "xong", u: ds }); });
   if (j.thuong && GW && !roi) GW.chonThuong(j.thuong).then((i) => { if (i != null && world === w0) daTau({ viec: "chon", i }); });
+  return j;
+}
+// ---------- Chuyển sinh (Lễ quan Ba Lăng — may-chu/chuyen-sinh.js; mẫu Dã Tẩu xuLyDaTau) ----------
+// Máy chủ trả: say { text, opts: [[nhãn, việc]] } | talk [câu] (xong quay lại "mo"); tin = câu báo; chuyenSinh = số lần sau khi lột xác
+function chuyenSinh(b) {
+  if (!hero) return;
+  Net.chuyenSinh(hero.slot | 0, b).then((j) => xuLyChuyenSinh(j)).catch((e) => { if (e.ma !== "het-phien") P.hud.msg(e.message); });
+}
+function xuLyChuyenSinh(j) {
+  applyServer(j);
+  for (const t of j.tin || []) P.hud.msg(t.replace(/<color=?\w*>/g, ""));
+  if (GW) GW.refresh(true);
+  if (j.chuyenSinh) { // vừa lột xác: điểm tiềm năng/kỹ năng cộng lại từ đầu (fixPoints) — attr cũ phải về 0 trước, không thì pts kẹt 0
+    hero.attr = { str: 0, dex: 0, vit: 0, eng: 0 }; hero.pts = null; hero.skPts = null;
+    if (j.vongKieu) hero.vongKieu = j.vongKieu; // kiểu vòng Tứ Linh vừa chọn (chuyen-sinh.js) — vẽ ngay, không chờ nhịp nv
+    fixPoints(hero); if (world) world.refreshStats(false); skillHud(); save();
+  }
+  if (j.say && NPCD) NPCD.choose("msgsel", "InfoText", richText(j.say.text, hero.name, "Lễ quan"), j.say.opts.map(([nhan, viec]) => [nhan, viec ? () => chuyenSinh({ viec }) : null]));
+  if (j.talk && NPCD) NPCD.talk(j.talk.map((t) => richText(t, hero.name, "Lễ quan")), 0, () => chuyenSinh({ viec: "mo" }));
   return j;
 }
 // ---------- "Đưa ta đến nơi làm nhiệm vụ Dã Tẩu" (anh 11/11 — chọn kiểu B: dòng dưới nhiệm vụ ở bảng nhiệm vụ góc trái / khung Nhiệm vụ điện thoại, + kiểu A:
@@ -3790,6 +3832,8 @@ function chucNangFn(id, npc) {
   const L = luat();
   if (id === "NhapMaKichHoat") { nhapMaKichHoat(); return { close: true }; } // Lễ quan Ba Lăng (anh 29/10)
   if (id === "HuyVatPham") { huyVatPham(); return { close: true }; } // Lễ quan: hủy vật phẩm (anh 05/11)
+  if (id === "ChuyenSinh") { chuyenSinh({ viec: "mo" }); return { close: true }; } // Lễ quan: chuyển sinh (may-chu/chuyen-sinh.js)
+  if (id === "DoiHK") { doiVatPhamHK(); return { close: true }; } // Lễ quan: đổi đồ Hoàng Kim (may-chu/do.js act doiHK — Q5, Huy quyết 13:49 ngày 27/11/2026)
   if (/^LoiDai(:|$)/.test(id)) return loiDaiFn(id); // Công Bình Tử (npc-them.json s1:loi-dai)
   if (/^DuaNgua(:|$)/.test(id)) return duaNguaFn(id); // Truy Phong Sứ Giả (npc-them.json s1:dua-ngua)
   if (/^BauCua(:|$)/.test(id)) return bauCuaFn(id); // Chủ sòng bạc Biện Kinh

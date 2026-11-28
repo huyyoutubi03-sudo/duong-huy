@@ -236,6 +236,7 @@ function chet(b, keKich) {
     const p = TG().dangChoi(ten); // vắng / đang chơi nhân vật khác: kinh nghiệm + rương + Xu ghi thẳng (r.ghi — nhanThuong không cộng lần 2, vẫn hiện khung)
     if ((!p || p.name !== x.ten) && ghiVang(ten, x.ten, r, b.ten)) r.ghi = 1;
     day(ten, r);
+    try { require("./chuyen-sinh").ghiDau(ten, x.ten); } catch {} // chuyển sinh bước 3: mỗi người có sát thương trong bảng xếp hạng được 1 dấu/ngày (khi boss bị hạ)
     const mL = r.monGhi || r.mon, kL = r.kich ? r.kich.monGhi || r.kich.mon : []; // người vắng: đồ đã ghi vào h.quaCho (ghiVang — monGhi)
     NK().ghi("hiem", ten, x.ten, `Boss thế giới ${b.ten}: hạng ${hang}, ${r.pct}% sát thương, ${r.kn} kinh nghiệm${mL.length ? " + " + tenMonL(mL) : ""}${tg ? ` + ${tg} ${tenRx} (tham gia)` : ""}${xu ? " + 1 Xu (may mắn)" : ""}${r.kich ? ` · kích sát ${r.kich.kn} kinh nghiệm${kL.length ? " + " + tenMonL(kL) : ""}` : ""}${r.ghi ? ` (vắng lúc boss chết — đã ghi vào nhân vật${r.monGhi ? ", đồ vào hàng chờ quà" : ""})` : ""}${soLieu(x)}`);
   });
@@ -301,6 +302,8 @@ function nhanThuong(h, ten) {
     if (r.tenNv && h.name && r.tenNv !== h.name) { con.push(r); continue; }
     let len = 0, day = false;
     const kn = r.ghi ? 0 : (r.kn || 0) + ((r.kich && r.kich.kn) || 0), tatCa = [...r.mon, ...((r.kich && r.kich.mon) || [])];
+    // mỹ phẩm P4 (điểm móc 4.5): nhận thưởng lần đầu (không phải nhận lại do túi đầy) thì 5% tặng 1 vòng/vũ khí sáng chưa có
+    const mp = (!r.lai && !r.ghi) ? DO.myPhamBossHK(h) : null;
     if (kn) { h.exp = (h.exp || 0) + kn; h.lvl = h.lvl || 1; len = N.lenCap(h); }
     // quà tham gia (anh 11/11): Bảo rương đồ xanh vào hàng chờ của nhân vật (do.js choRuongXanh — nhịp tự vào túi khi có chỗ, không hết hạn); 1 lần
     if ((r.tg | 0) > 0 && !r.lai && !r.ghi) DO.choRuongXanh(h, r.tg | 0);
@@ -311,7 +314,7 @@ function nhanThuong(h, ten) {
     if (r.lai && day) continue; // nhận lại phần đồ chờ mà túi vẫn đầy: im (lần đầu đã báo), khỏi báo mỗi nhịp
     // r.monGhi / r.kich.monGhi: đồ của người vắng đã vào hàng chờ quà (ghiVang — anh 16/11) — chỉ hiện trong khung tổng kết
     ra.push({ ten: r.ten, hang: r.hang, pct: r.pct, kn: r.kn, len, mon: day ? [] : r.monGhi || r.mon, ...(r.kich ? { kich: { kn: r.kich.kn, mon: day ? [] : r.kich.monGhi || r.kich.mon } } : {}), day,
-      ...((r.tg | 0) > 0 && !r.lai ? { tg: r.tg | 0 } : {}), ...((r.xu | 0) > 0 && !r.lai ? { xu: r.xu | 0 } : {}),
+      ...((r.tg | 0) > 0 && !r.lai ? { tg: r.tg | 0 } : {}), ...((r.xu | 0) > 0 && !r.lai ? { xu: r.xu | 0 } : {}), ...(mp ? { myPham: mp } : {}),
       bang: r.bang, so: r.so, tenNv: r.tenNv, ...(day ? { cho: tatCa } : {}), ...(r.khongDu ? { khongDu: r.khongDu } : {}), ...(r.chiXem ? { chiXem: 1 } : {}), ...(r.lai ? { lai: true } : {}) });
   }
   if (con.length) cho.set(ten, con); else cho.delete(ten);

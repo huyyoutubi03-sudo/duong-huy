@@ -88,6 +88,7 @@ const CHO = require("./cho-troi"); // chợ trời — bày bán (anh 02/11)
 const DO = require("./do");
 const XH = require("./xep-hang");
 const DTau = require("./da-tau"); // Dã Tẩu (anh 27/10)
+const CSH = require("./chuyen-sinh"); // Chuyển sinh (27/11/2026 — khôi phục hunk P2 đã mất khỏi cây làm việc)
 const PLD = require("./phong-lang-do"); // Phong Lăng Độ (anh 27/10)
 const SAT = require("./sat-thu"); // Boss Sát thủ — Nhiếp Thí Trần (anh 27/10)
 const VAI = require("./vuot-ai"); // Vượt Ải — Thách thức thời gian (anh 28/10)
@@ -160,7 +161,7 @@ const GIU = ["lvl", "exp", "gold", "xu", "bag", "equip", "looks", "uN", "locDo",
   "books", "skMin", "kyNangThem", "tiemNangThem", "mt", "tt", "buff", "bch", "sachV", "tuiTM", "tmHet",
   "shxt", "daTau", "pld", "satThu", "dtc", "vuotAi", "va", "viemDe", "vd", "leadExp", "leadLv", "tayTuy", "quaTin", "luyen", "tlh", "onl", "pd", "thuongCap", "sap", "choTin", "sanNhim", "pq", "phiPhong", "mc", "tuLam", "rxCho", "rxDay", "rxMon", "ptChoK", "ptChoKhoa", "quaCho", "qtTin", "qtDi", "pt", "ptCho", "ptTin", "ptDay",
   "diemTk", "tkNgay", "tkTin", "bcTin", "kbhMoTin", "doiPhai", "dpV", "dpLuc", "muaLai",
-  "bhMa", "ldTin", "dnCho", "bdas", "ccKn", "nsk"]; // bdas / ccKn: Báo Đáp Ân Sư (anh 16/11 — may-chu/bao-dap-an-su.js): số trong ngày + kinh nghiệm hương bao cả sự kiện, cấp kỹ năng Nhất Kỷ / Càn khôn còn hạn. dnCho: đồ thưởng đua ngựa còn giữ (túi đầy lúc về đích — 16/11, may-chu/dua-ngua.js; nhận ở Truy Phong Sứ Giả). ldTin: câu báo hoàn phí Lôi Đài (15/11 — may-chu/loi-dai.js hoan ghi thẳng tệp, nhịp gửi). bhMa: dấu phiếu bang hội đã nhận / đã trừ (14/11 — bang hội đợt 2, may-chu/bang-hoi.js HĐ 8: thiếu ở đây thì trình duyệt lưu nhân vật làm mất dấu -> giao lại / hoàn nhầm). doiPhai: chờ bái nhập phái mới (chiêu 90 / 120 mang sang), dpV: lần đổi phái, dpLuc: lúc chuyển phái — mỗi tuần 1 lần (11/11 — may-chu/doi-phai.js). kbhMoTin: món khóa có hạn vừa mở khóa, chờ nhịp báo (11/11 — do.js chuan; soát: thiếu ở đây thì trình duyệt lưu nhân vật làm câu báo lặp mãi / mất). bcTin: câu báo tiền thắng Bầu Cua (10/11). Trường của nhân vật do máy chủ quyết (pt*: Phân Thân — 05/11; diemTk / tkNgay / tkTin: Tống Kim — điểm Tống Kim, Huân công bài trong ngày, câu báo thưởng cuối trận — 06/11) (dòng 2: sách / điểm / trạng thái từ Kỳ Trân Các — 27/10; dòng 3: hoạt động — mảnh Sơn Hà Xã Tắc, Dã Tẩu, Phong Lăng Độ, Boss Sát thủ, Vượt Ải; thống soái — tổ đội 28/10; quà quản trị chưa báo — 28/10; Thiết La Hán, Online nhận thưởng — 31/10; sạp chợ trời — 02/11; số con Săn Nhím Béo Phì trong ngày, số đã chọn Phú Quý Cẩm Hạp, Phi Phong đã khoác, nhiệm vụ Võ Lâm Minh Chủ, Trợ Thủ tự làm nhiệm vụ đã mở khóa — 03/11)
+  "bhMa", "ldTin", "dnCho", "bdas", "ccKn", "nsk", "reborn", "cs", "vongKieu", "mpSo", "ngoaiTrang", "vongSang", "vkSang"]; // reborn/cs/vongKieu/mpSo + chọn mỹ phẩm: máy chủ giữ (khôi phục hunk P2 đã mất — chống bản lưu trình duyệt ghi đè) // bdas / ccKn: Báo Đáp Ân Sư (anh 16/11 — may-chu/bao-dap-an-su.js): số trong ngày + kinh nghiệm hương bao cả sự kiện, cấp kỹ năng Nhất Kỷ / Càn khôn còn hạn. dnCho: đồ thưởng đua ngựa còn giữ (túi đầy lúc về đích — 16/11, may-chu/dua-ngua.js; nhận ở Truy Phong Sứ Giả). ldTin: câu báo hoàn phí Lôi Đài (15/11 — may-chu/loi-dai.js hoan ghi thẳng tệp, nhịp gửi). bhMa: dấu phiếu bang hội đã nhận / đã trừ (14/11 — bang hội đợt 2, may-chu/bang-hoi.js HĐ 8: thiếu ở đây thì trình duyệt lưu nhân vật làm mất dấu -> giao lại / hoàn nhầm). doiPhai: chờ bái nhập phái mới (chiêu 90 / 120 mang sang), dpV: lần đổi phái, dpLuc: lúc chuyển phái — mỗi tuần 1 lần (11/11 — may-chu/doi-phai.js). kbhMoTin: món khóa có hạn vừa mở khóa, chờ nhịp báo (11/11 — do.js chuan; soát: thiếu ở đây thì trình duyệt lưu nhân vật làm câu báo lặp mãi / mất). bcTin: câu báo tiền thắng Bầu Cua (10/11). Trường của nhân vật do máy chủ quyết (pt*: Phân Thân — 05/11; diemTk / tkNgay / tkTin: Tống Kim — điểm Tống Kim, Huân công bài trong ngày, câu báo thưởng cuối trận — 06/11) (dòng 2: sách / điểm / trạng thái từ Kỳ Trân Các — 27/10; dòng 3: hoạt động — mảnh Sơn Hà Xã Tắc, Dã Tẩu, Phong Lăng Độ, Boss Sát thủ, Vượt Ải; thống soái — tổ đội 28/10; quà quản trị chưa báo — 28/10; Thiết La Hán, Online nhận thưởng — 31/10; sạp chợ trời — 02/11; số con Săn Nhím Béo Phì trong ngày, số đã chọn Phú Quý Cẩm Hạp, Phi Phong đã khoác, nhiệm vụ Võ Lâm Minh Chủ, Trợ Thủ tự làm nhiệm vụ đã mở khóa — 03/11)
 const ATTR = ["str", "dex", "vit", "eng"];
 
 // ảnh màn chờ: đọc thư mục mỗi lần hỏi (ít, nhẹ) -> anh thả thêm ảnh không cần tắt bật máy chủ
@@ -229,7 +230,7 @@ const tuiCua = (h) => ({ muaLai: DO.muaLaiGui(h), mlGio: Date.now(), bag: h.bag,
 const nvGui = (h) => { if (!h || !h.mkRuong) return h; const { mkRuong, ...r } = h; return { ...r, coMk: 1 }; };
 // shxt = mảnh Sơn Hà Xã Tắc, dt = nhiệm vụ Dã Tẩu đang làm (1 dòng — khung Nhiệm vụ / tin hệ thống), mc = nhiệm vụ Võ Lâm Minh Chủ hôm nay (may-chu/minh-chu.js tomTat),
 // diemTk = điểm Tống Kim (Quân Nhu quan — may-chu/tong-kim.js)
-const nvCua = (h) => ({ lvl: h.lvl, exp: h.exp, gold: h.gold, xu: h.xu | 0, leadLv: h.leadLv || 1, leadExp: h.leadExp || 0, bch: h.bch | 0, shxt: h.shxt | 0, dt: DTau.tomTat(h, h.daTau), dtc: DTau.chiTiet(h), pld: PLD.tomTat(h), satThu: SAT.tomTat(h), va: VAI.tomTat(h), vd: VDE.tomTat(h), tayTuy: TTY.tomTat(h), pd: PD.tomTat(h), mc: MC.tomTat(h), tl: TLAM.tomTat(h), diemTk: h.diemTk | 0, ccKn: BD.ccCon(h), nsk: NSK.tomTat(h) }); // nsk: nhiệm vụ ngày lễ (anh 18/11 — nguon-su-kien.js) // ccKn: +cấp kỹ năng còn hạn (anh 16/11 — Báo Đáp Ân Sư)
+const nvCua = (h) => ({ lvl: h.lvl, exp: h.exp, gold: h.gold, xu: h.xu | 0, leadLv: h.leadLv || 1, leadExp: h.leadExp || 0, bch: h.bch | 0, shxt: h.shxt | 0, dt: DTau.tomTat(h, h.daTau), dtc: DTau.chiTiet(h), pld: PLD.tomTat(h), satThu: SAT.tomTat(h), va: VAI.tomTat(h), vd: VDE.tomTat(h), tayTuy: TTY.tomTat(h), pd: PD.tomTat(h), mc: MC.tomTat(h), tl: TLAM.tomTat(h), diemTk: h.diemTk | 0, ccKn: BD.ccCon(h), nsk: NSK.tomTat(h), reborn: h.reborn | 0, cs: CSH.tomTat(h) }); // reborn/cs: chuyển sinh (khôi phục hunk P2 đã mất) // nsk: nhiệm vụ ngày lễ (anh 18/11 — nguon-su-kien.js) // ccKn: +cấp kỹ năng còn hạn (anh 16/11 — Báo Đáp Ân Sư)
 // sách / điểm thêm của nhân vật (vừa dùng món Kỳ Trân Các): trình duyệt nhận books, điểm thêm, skMin (cấp tối thiểu từ sách / Đại Thành) và
 // nâng hero.skills tới skMin — không ghi đè các điểm kỹ năng trình duyệt vừa cộng mà chưa lưu
 const knCua = (h) => ({ books: h.books || [], skMin: h.skMin || {}, kyNangThem: h.kyNangThem | 0, tiemNangThem: h.tiemNangThem | 0, mt: h.mt | 0, tt: h.tt | 0 });
@@ -703,6 +704,11 @@ async function xuLyApi(req, res, p) {
     if (p === "/api/da-tau" && m === "POST") {
       const h = oCua(tk, body), r = DTau.lam(h, body, tk.ten + "|" + (body.o | 0)); DO.chuan(h); D.ghiTk(tk);
       if (!HD_XEM.has(body.viec)) ghiHd("Dã Tẩu", tk.ten, h.name, r.tin || []);
+      return guiJson(res, 200, { ...r, nv: nvCua(h), tui: tuiCua(h) });
+    }
+    // Chuyển sinh (may-chu/chuyen-sinh.js — khôi phục route P2 đã mất khỏi cây làm việc): { o, viec: "mo" | "nhan" | "nop" | "xacNhan" | "xem" } -> { say | talk, tin, chuyenSinh?, vongKieu? }
+    if (p === "/api/chuyen-sinh" && m === "POST") {
+      const h = oCua(tk, body), r = CSH.lam(h, body, tk.ten + "|" + (body.o | 0)); DO.chuan(h); D.ghiTk(tk);
       return guiJson(res, 200, { ...r, nv: nvCua(h), tui: tuiCua(h) });
     }
     // Online nhận thưởng (may-chu/online.js — anh 31/10 khuya): { o, viec: "mo" | "xem" | "nhan" } -> { say | talk, tin }

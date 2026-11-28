@@ -111,6 +111,7 @@ export const Net = {
   xepHang() { return this.call("GET", "xep-hang"); },
   ungHo() { return this.call("GET", "ung-ho"); }, // danh sách ủng hộ tác giả (may-chu/ung-ho.js — anh 12/11) // bảng xếp hạng (may-chu/xep-hang.js)
   daTau(o, b) { return this.call("POST", "da-tau", { o, ...b }); }, // Dã Tẩu (may-chu/da-tau.js): { viec, … }
+  chuyenSinh(o, b) { return this.call("POST", "chuyen-sinh", { o, ...b }); }, // Chuyển sinh (may-chu/chuyen-sinh.js — Lễ quan Ba Lăng): { viec: "mo" | "nhan" | "nop" | "xacNhan" | "xem" }
   thuongOnline(o, b) { return this.call("POST", "thuong-online", { o, ...b }); },
   thuongCap(o, b) { return this.call("POST", "thuong-cap", { o, ...b }); }, // Thưởng thăng cấp (may-chu/thuong-cap.js): { viec: "mo" | "xem" | "nhan" } // Online nhận thưởng (may-chu/online.js): { viec: "mo" | "xem" | "nhan" }
   phanThan(o, b) { return this.call("POST", "phan-than", { o, ...b }); }, // Phân Thân (may-chu/phan-than.js — anh 05/11): { viec: "mo" | "thue" | "goi" | "cat", id? } -> { pt, ds?, msg?, tui?, nv? }

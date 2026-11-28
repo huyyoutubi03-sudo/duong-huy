@@ -1,0 +1,8791 @@
+{
+ "format": "vl-do-hoang-kim",
+ "version": 1,
+ "built": "2026-11-26T19:22:11.917Z",
+ "from": "cong-cu/sinh-do-hoang-kim.mjs từ do-goc.json + dong-xanh.json + items.json + skills.json (THIET-KE.md §2.3)",
+ "note": "Tỉ lệ 9/10 trên TRẦN max-roll đồ xanh cùng vị trí. Vũ khí giữ base gốc, giải dòng phys% trên tổng sát thương trực tiếp (vật lý + phẳng/nguyên tố). Vị trí cộng dồn: base + dòng /0,9. d = 5-6 dòng cố định (tối đa theo bảng dòng xanh). reborn:1, hk:1, cl:10. Chỉ sinh lúc build dữ liệu — không rơi từ quái, chỉ nhận qua 3 nguồn P3 (Boss Hoàng Kim / đổi NPC / hộp choHoangKim).",
+ "items": {
+  "hk:0:0:1": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiếu Lâm. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Đao này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     36
+    ],
+    [
+     "weapondamagemax_v",
+     105
+    ],
+    [
+     "attackratingenhance_p",
+     -20
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     110
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    36,
+    105
+   ],
+   "arPct": -20,
+   "lv": 81,
+   "str": 110,
+   "dex": 0,
+   "series": 0,
+   "fac": 0,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     122
+    ],
+    [
+     "addphysicsdamage_v",
+     56
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "metalskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "strength_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thiếu Lâm Hoàng Kim Đao",
+    "t": 0,
+    "p": 1,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 23,
+    "ic": "item/equip/closeweapon/obj-blade24.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:0:0:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiếu Lâm. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Côn này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     63
+    ],
+    [
+     "weapondamagemax_v",
+     117
+    ],
+    [
+     "attackratingenhance_p",
+     -10
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     165
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    63,
+    117
+   ],
+   "arPct": -10,
+   "lv": 81,
+   "str": 165,
+   "dex": 0,
+   "series": 0,
+   "fac": 0,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     122
+    ],
+    [
+     "addphysicsdamage_v",
+     56
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "metalskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "strength_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thiếu Lâm Hoàng Kim Côn",
+    "t": 0,
+    "p": 2,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 27,
+    "ic": "item/equip/closeweapon/obj-staff13.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:0:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiếu Lâm. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Áo này.",
+   "price": 25000,
+   "base": [
+    [
+     "armordefense_v",
+     700
+    ],
+    [
+     "durability_v",
+     93
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 0,
+   "fac": 0,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     12
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiếu Lâm Hoàng Kim Áo",
+    "t": 2,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": "armor",
+    "id": 36,
+    "ic": "item/equip/armor/obj-ma-cloth15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Áo"
+   },
+   "def": 700
+  },
+  "hk:0:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiếu Lâm. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Nhẫn này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 0,
+   "fac": 0,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "strength_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiếu Lâm Hoàng Kim Nhẫn",
+    "t": 3,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/ring/obj-ring10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Nhẫn"
+   }
+  },
+  "hk:0:4": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiếu Lâm. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Dây chuyền này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 0,
+   "fac": 0,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "strength_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiếu Lâm Hoàng Kim Dây chuyền",
+    "t": 4,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/nick/obj-neck20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Dây chuyền"
+   }
+  },
+  "hk:0:5": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiếu Lâm. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Giày này.",
+   "price": 7250,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     62
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 62,
+   "str": 164,
+   "dex": 0,
+   "series": 0,
+   "fac": 0,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     12
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiếu Lâm Hoàng Kim Giày",
+    "t": 5,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 62,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/boots/obj-shoes10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Giày"
+   },
+   "def": 156
+  },
+  "hk:0:6": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiếu Lâm. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Đai này.",
+   "price": 10000,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     15
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 164,
+   "dex": 0,
+   "series": 0,
+   "fac": 0,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     12
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiếu Lâm Hoàng Kim Đai",
+    "t": 6,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/sash/obj-sash20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Đai lưng"
+   },
+   "def": 156
+  },
+  "hk:0:7": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiếu Lâm. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Mũ này.",
+   "price": 5000,
+   "base": [
+    [
+     "armordefense_v",
+     350
+    ],
+    [
+     "durability_v",
+     37
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 0,
+   "fac": 0,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     12
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiếu Lâm Hoàng Kim Mũ",
+    "t": 7,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": "helm",
+    "id": 15,
+    "ic": "item/equip/cap/obj-ma-cap15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Mũ"
+   },
+   "def": 350
+  },
+  "hk:0:8": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiếu Lâm. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Hộ uyển này.",
+   "price": 4050,
+   "base": [
+    [
+     "armordefense_v",
+     124
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 100,
+   "dex": 0,
+   "series": 0,
+   "fac": 0,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     12
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiếu Lâm Hoàng Kim Hộ uyển",
+    "t": 8,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/bangle/obj-bangle20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Hộ uyển"
+   },
+   "def": 124
+  },
+  "hk:0:9": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiếu Lâm. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Ngọc bội này.",
+   "price": 5000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 0,
+   "fac": 0,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "strength_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiếu Lâm Hoàng Kim Ngọc bội",
+    "t": 9,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/waist/obj-waist20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Ngọc bội"
+   }
+  },
+  "hk:1:0:1": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Vương. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Đao này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     36
+    ],
+    [
+     "weapondamagemax_v",
+     105
+    ],
+    [
+     "attackratingenhance_p",
+     -20
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     110
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    36,
+    105
+   ],
+   "arPct": -20,
+   "lv": 81,
+   "str": 110,
+   "dex": 0,
+   "series": 0,
+   "fac": 1,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     122
+    ],
+    [
+     "addphysicsdamage_v",
+     56
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "metalskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "strength_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Vương Hoàng Kim Đao",
+    "t": 0,
+    "p": 1,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 23,
+    "ic": "item/equip/closeweapon/obj-blade24.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:1:0:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Vương. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Thương này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     16
+    ],
+    [
+     "weapondamagemax_v",
+     144
+    ],
+    [
+     "attackratingenhance_p",
+     30
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     138
+    ],
+    [
+     "requiredex",
+     138
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    16,
+    144
+   ],
+   "arPct": 30,
+   "lv": 81,
+   "str": 138,
+   "dex": 138,
+   "series": 0,
+   "fac": 1,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     122
+    ],
+    [
+     "addphysicsdamage_v",
+     56
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "metalskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "strength_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Vương Hoàng Kim Thương",
+    "t": 0,
+    "p": 3,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 25,
+    "ic": "item/equip/closeweapon/obj-spear04.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:1:0:4": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Vương. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Chùy này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     50
+    ],
+    [
+     "weapondamagemax_v",
+     150
+    ],
+    [
+     "attackratingenhance_p",
+     -30
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     200
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    50,
+    150
+   ],
+   "arPct": -30,
+   "lv": 81,
+   "str": 200,
+   "dex": 0,
+   "series": 0,
+   "fac": 1,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     122
+    ],
+    [
+     "addphysicsdamage_v",
+     56
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "metalskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "strength_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Vương Hoàng Kim Chùy",
+    "t": 0,
+    "p": 4,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 31,
+    "ic": "item/equip/closeweapon/obj-adha04.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:1:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Vương. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Áo này.",
+   "price": 25000,
+   "base": [
+    [
+     "armordefense_v",
+     700
+    ],
+    [
+     "durability_v",
+     93
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 0,
+   "fac": 1,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     12
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Vương Hoàng Kim Áo",
+    "t": 2,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": "armor",
+    "id": 36,
+    "ic": "item/equip/armor/obj-ma-cloth15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Áo"
+   },
+   "def": 700
+  },
+  "hk:1:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Vương. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Nhẫn này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 0,
+   "fac": 1,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "strength_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Vương Hoàng Kim Nhẫn",
+    "t": 3,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/ring/obj-ring10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Nhẫn"
+   }
+  },
+  "hk:1:4": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Vương. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Dây chuyền này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 0,
+   "fac": 1,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "strength_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Vương Hoàng Kim Dây chuyền",
+    "t": 4,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/nick/obj-neck20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Dây chuyền"
+   }
+  },
+  "hk:1:5": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Vương. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Giày này.",
+   "price": 7250,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     62
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 62,
+   "str": 164,
+   "dex": 0,
+   "series": 0,
+   "fac": 1,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     12
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Vương Hoàng Kim Giày",
+    "t": 5,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 62,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/boots/obj-shoes10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Giày"
+   },
+   "def": 156
+  },
+  "hk:1:6": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Vương. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Đai này.",
+   "price": 10000,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     15
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 164,
+   "dex": 0,
+   "series": 0,
+   "fac": 1,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     12
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Vương Hoàng Kim Đai",
+    "t": 6,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/sash/obj-sash20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Đai lưng"
+   },
+   "def": 156
+  },
+  "hk:1:7": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Vương. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Mũ này.",
+   "price": 5000,
+   "base": [
+    [
+     "armordefense_v",
+     350
+    ],
+    [
+     "durability_v",
+     37
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 0,
+   "fac": 1,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     12
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Vương Hoàng Kim Mũ",
+    "t": 7,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": "helm",
+    "id": 15,
+    "ic": "item/equip/cap/obj-ma-cap15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Mũ"
+   },
+   "def": 350
+  },
+  "hk:1:8": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Vương. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Hộ uyển này.",
+   "price": 4050,
+   "base": [
+    [
+     "armordefense_v",
+     124
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 100,
+   "dex": 0,
+   "series": 0,
+   "fac": 1,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     12
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Vương Hoàng Kim Hộ uyển",
+    "t": 8,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/bangle/obj-bangle20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Hộ uyển"
+   },
+   "def": 124
+  },
+  "hk:1:9": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Vương. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Ngọc bội này.",
+   "price": 5000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 0,
+   "fac": 1,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "strength_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "poisonres_p",
+     28
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Vương Hoàng Kim Ngọc bội",
+    "t": 9,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 0,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/waist/obj-waist20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Ngọc bội"
+   }
+  },
+  "hk:2:1:0": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Đường Môn. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Phi tiêu này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     38
+    ],
+    [
+     "weapondamagemax_v",
+     89
+    ],
+    [
+     "attackratingenhance_p",
+     0
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     80
+    ],
+    [
+     "requiredex",
+     155
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    38,
+    89
+   ],
+   "arPct": 0,
+   "lv": 81,
+   "str": 80,
+   "dex": 155,
+   "series": 1,
+   "fac": 2,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     122
+    ],
+    [
+     "addpoisondamage_v",
+     56
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "earthskill_v",
+     56
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ]
+   ],
+   "pack": {
+    "n": "Đường Môn Hoàng Kim Phi tiêu",
+    "t": 1,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 20,
+    "ic": "item/equip/rangeweapon/obj-adart04.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí tầm xa"
+   }
+  },
+  "hk:2:1:1": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Đường Môn. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Phi đao này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     40
+    ],
+    [
+     "weapondamagemax_v",
+     91
+    ],
+    [
+     "attackratingenhance_p",
+     -20
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     109
+    ],
+    [
+     "requiredex",
+     120
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    40,
+    91
+   ],
+   "arPct": -20,
+   "lv": 81,
+   "str": 109,
+   "dex": 120,
+   "series": 1,
+   "fac": 2,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     122
+    ],
+    [
+     "addpoisondamage_v",
+     56
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "earthskill_v",
+     56
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ]
+   ],
+   "pack": {
+    "n": "Đường Môn Hoàng Kim Phi đao",
+    "t": 1,
+    "p": 1,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 20,
+    "ic": "item/equip/rangeweapon/obj-adart12.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí tầm xa"
+   }
+  },
+  "hk:2:1:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Đường Môn. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Tụ tiễn này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     42
+    ],
+    [
+     "weapondamagemax_v",
+     93
+    ],
+    [
+     "attackratingenhance_p",
+     0
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     60
+    ],
+    [
+     "requiredex",
+     210
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    42,
+    93
+   ],
+   "arPct": 0,
+   "lv": 81,
+   "str": 60,
+   "dex": 210,
+   "series": 1,
+   "fac": 2,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     122
+    ],
+    [
+     "addpoisondamage_v",
+     56
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "earthskill_v",
+     56
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ]
+   ],
+   "pack": {
+    "n": "Đường Môn Hoàng Kim Tụ tiễn",
+    "t": 1,
+    "p": 2,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 20,
+    "ic": "item/equip/rangeweapon/obj-adart26.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí tầm xa"
+   }
+  },
+  "hk:2:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Đường Môn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Áo này.",
+   "price": 25000,
+   "base": [
+    [
+     "armordefense_v",
+     700
+    ],
+    [
+     "durability_v",
+     93
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 1,
+   "fac": 2,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Đường Môn Hoàng Kim Áo",
+    "t": 2,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": "armor",
+    "id": 36,
+    "ic": "item/equip/armor/obj-ma-cloth15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Áo"
+   },
+   "def": 700
+  },
+  "hk:2:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Đường Môn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Nhẫn này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 1,
+   "fac": 2,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "lucky_v",
+     12
+    ]
+   ],
+   "pack": {
+    "n": "Đường Môn Hoàng Kim Nhẫn",
+    "t": 3,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/ring/obj-ring10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Nhẫn"
+   }
+  },
+  "hk:2:4": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Đường Môn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Dây chuyền này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 1,
+   "fac": 2,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "lucky_v",
+     12
+    ]
+   ],
+   "pack": {
+    "n": "Đường Môn Hoàng Kim Dây chuyền",
+    "t": 4,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/nick/obj-neck20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Dây chuyền"
+   }
+  },
+  "hk:2:5": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Đường Môn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Giày này.",
+   "price": 7250,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     62
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 62,
+   "str": 164,
+   "dex": 0,
+   "series": 1,
+   "fac": 2,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Đường Môn Hoàng Kim Giày",
+    "t": 5,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 62,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/boots/obj-shoes10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Giày"
+   },
+   "def": 156
+  },
+  "hk:2:6": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Đường Môn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Đai này.",
+   "price": 10000,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     15
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 164,
+   "dex": 0,
+   "series": 1,
+   "fac": 2,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Đường Môn Hoàng Kim Đai",
+    "t": 6,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/sash/obj-sash20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Đai lưng"
+   },
+   "def": 156
+  },
+  "hk:2:7": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Đường Môn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Mũ này.",
+   "price": 5000,
+   "base": [
+    [
+     "armordefense_v",
+     350
+    ],
+    [
+     "durability_v",
+     37
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 1,
+   "fac": 2,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Đường Môn Hoàng Kim Mũ",
+    "t": 7,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": "helm",
+    "id": 15,
+    "ic": "item/equip/cap/obj-ma-cap15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Mũ"
+   },
+   "def": 350
+  },
+  "hk:2:8": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Đường Môn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Hộ uyển này.",
+   "price": 4050,
+   "base": [
+    [
+     "armordefense_v",
+     124
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 100,
+   "dex": 0,
+   "series": 1,
+   "fac": 2,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Đường Môn Hoàng Kim Hộ uyển",
+    "t": 8,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/bangle/obj-bangle20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Hộ uyển"
+   },
+   "def": 124
+  },
+  "hk:2:9": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Đường Môn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Ngọc bội này.",
+   "price": 5000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 1,
+   "fac": 2,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "lucky_v",
+     12
+    ]
+   ],
+   "pack": {
+    "n": "Đường Môn Hoàng Kim Ngọc bội",
+    "t": 9,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/waist/obj-waist20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Ngọc bội"
+   }
+  },
+  "hk:3:0:1": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Ngũ Độc. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Đao này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     36
+    ],
+    [
+     "weapondamagemax_v",
+     105
+    ],
+    [
+     "attackratingenhance_p",
+     -20
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     110
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    36,
+    105
+   ],
+   "arPct": -20,
+   "lv": 81,
+   "str": 110,
+   "dex": 0,
+   "series": 1,
+   "fac": 3,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     122
+    ],
+    [
+     "addpoisondamage_v",
+     56
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "earthskill_v",
+     56
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ]
+   ],
+   "pack": {
+    "n": "Ngũ Độc Hoàng Kim Đao",
+    "t": 0,
+    "p": 1,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 23,
+    "ic": "item/equip/closeweapon/obj-blade24.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:3:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Ngũ Độc. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Áo này.",
+   "price": 25000,
+   "base": [
+    [
+     "armordefense_v",
+     700
+    ],
+    [
+     "durability_v",
+     93
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 1,
+   "fac": 3,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Ngũ Độc Hoàng Kim Áo",
+    "t": 2,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": "armor",
+    "id": 36,
+    "ic": "item/equip/armor/obj-ma-cloth15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Áo"
+   },
+   "def": 700
+  },
+  "hk:3:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Ngũ Độc. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Nhẫn này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 1,
+   "fac": 3,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "lucky_v",
+     12
+    ]
+   ],
+   "pack": {
+    "n": "Ngũ Độc Hoàng Kim Nhẫn",
+    "t": 3,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/ring/obj-ring10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Nhẫn"
+   }
+  },
+  "hk:3:4": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Ngũ Độc. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Dây chuyền này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 1,
+   "fac": 3,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "lucky_v",
+     12
+    ]
+   ],
+   "pack": {
+    "n": "Ngũ Độc Hoàng Kim Dây chuyền",
+    "t": 4,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/nick/obj-neck20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Dây chuyền"
+   }
+  },
+  "hk:3:5": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Ngũ Độc. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Giày này.",
+   "price": 7250,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     62
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 62,
+   "str": 164,
+   "dex": 0,
+   "series": 1,
+   "fac": 3,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Ngũ Độc Hoàng Kim Giày",
+    "t": 5,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 62,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/boots/obj-shoes10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Giày"
+   },
+   "def": 156
+  },
+  "hk:3:6": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Ngũ Độc. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Đai này.",
+   "price": 10000,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     15
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 164,
+   "dex": 0,
+   "series": 1,
+   "fac": 3,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Ngũ Độc Hoàng Kim Đai",
+    "t": 6,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/sash/obj-sash20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Đai lưng"
+   },
+   "def": 156
+  },
+  "hk:3:7": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Ngũ Độc. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Mũ này.",
+   "price": 5000,
+   "base": [
+    [
+     "armordefense_v",
+     350
+    ],
+    [
+     "durability_v",
+     37
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 1,
+   "fac": 3,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Ngũ Độc Hoàng Kim Mũ",
+    "t": 7,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": "helm",
+    "id": 15,
+    "ic": "item/equip/cap/obj-ma-cap15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Mũ"
+   },
+   "def": 350
+  },
+  "hk:3:8": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Ngũ Độc. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Hộ uyển này.",
+   "price": 4050,
+   "base": [
+    [
+     "armordefense_v",
+     124
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 100,
+   "dex": 0,
+   "series": 1,
+   "fac": 3,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Ngũ Độc Hoàng Kim Hộ uyển",
+    "t": 8,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/bangle/obj-bangle20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Hộ uyển"
+   },
+   "def": 124
+  },
+  "hk:3:9": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Ngũ Độc. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Ngọc bội này.",
+   "price": 5000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 1,
+   "fac": 3,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "lightingres_p",
+     34
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "lucky_v",
+     12
+    ]
+   ],
+   "pack": {
+    "n": "Ngũ Độc Hoàng Kim Ngọc bội",
+    "t": 9,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 1,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/waist/obj-waist20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Ngọc bội"
+   }
+  },
+  "hk:4:0:0": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Nga My. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Kiếm này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     42
+    ],
+    [
+     "weapondamagemax_v",
+     78
+    ],
+    [
+     "attackratingenhance_p",
+     0
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    42,
+    78
+   ],
+   "arPct": 0,
+   "lv": 81,
+   "str": 100,
+   "dex": 0,
+   "series": 2,
+   "fac": 4,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     121
+    ],
+    [
+     "addcolddamage_v",
+     112
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "woodskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Nga My Hoàng Kim Kiếm",
+    "t": 0,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 21,
+    "ic": "item/equip/closeweapon/obj-sword24.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:4:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Nga My. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Áo này.",
+   "price": 25000,
+   "base": [
+    [
+     "armordefense_v",
+     700
+    ],
+    [
+     "durability_v",
+     93
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 2,
+   "fac": 4,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Nga My Hoàng Kim Áo",
+    "t": 2,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": "armor",
+    "id": 36,
+    "ic": "item/equip/armor/obj-ma-cloth15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Áo"
+   },
+   "def": 700
+  },
+  "hk:4:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Nga My. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Nhẫn này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 2,
+   "fac": 4,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Nga My Hoàng Kim Nhẫn",
+    "t": 3,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/ring/obj-ring10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Nhẫn"
+   }
+  },
+  "hk:4:4": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Nga My. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Dây chuyền này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 2,
+   "fac": 4,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Nga My Hoàng Kim Dây chuyền",
+    "t": 4,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/nick/obj-neck20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Dây chuyền"
+   }
+  },
+  "hk:4:5": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Nga My. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Giày này.",
+   "price": 7250,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     62
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 62,
+   "str": 164,
+   "dex": 0,
+   "series": 2,
+   "fac": 4,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Nga My Hoàng Kim Giày",
+    "t": 5,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 62,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/boots/obj-shoes10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Giày"
+   },
+   "def": 156
+  },
+  "hk:4:6": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Nga My. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Đai này.",
+   "price": 10000,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     15
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 164,
+   "dex": 0,
+   "series": 2,
+   "fac": 4,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Nga My Hoàng Kim Đai",
+    "t": 6,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/sash/obj-sash20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Đai lưng"
+   },
+   "def": 156
+  },
+  "hk:4:7": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Nga My. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Mũ này.",
+   "price": 5000,
+   "base": [
+    [
+     "armordefense_v",
+     350
+    ],
+    [
+     "durability_v",
+     37
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 2,
+   "fac": 4,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Nga My Hoàng Kim Mũ",
+    "t": 7,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": "helm",
+    "id": 15,
+    "ic": "item/equip/cap/obj-ma-cap15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Mũ"
+   },
+   "def": 350
+  },
+  "hk:4:8": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Nga My. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Hộ uyển này.",
+   "price": 4050,
+   "base": [
+    [
+     "armordefense_v",
+     124
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 100,
+   "dex": 0,
+   "series": 2,
+   "fac": 4,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Nga My Hoàng Kim Hộ uyển",
+    "t": 8,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/bangle/obj-bangle20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Hộ uyển"
+   },
+   "def": 124
+  },
+  "hk:4:9": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Nga My. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Ngọc bội này.",
+   "price": 5000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 2,
+   "fac": 4,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Nga My Hoàng Kim Ngọc bội",
+    "t": 9,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/waist/obj-waist20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Ngọc bội"
+   }
+  },
+  "hk:5:0:1": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thúy Yên. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Đao này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     36
+    ],
+    [
+     "weapondamagemax_v",
+     105
+    ],
+    [
+     "attackratingenhance_p",
+     -20
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     110
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    36,
+    105
+   ],
+   "arPct": -20,
+   "lv": 81,
+   "str": 110,
+   "dex": 0,
+   "series": 2,
+   "fac": 5,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     121
+    ],
+    [
+     "addcolddamage_v",
+     112
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "woodskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thúy Yên Hoàng Kim Đao",
+    "t": 0,
+    "p": 1,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 23,
+    "ic": "item/equip/closeweapon/obj-blade24.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:5:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thúy Yên. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Áo này.",
+   "price": 25000,
+   "base": [
+    [
+     "armordefense_v",
+     700
+    ],
+    [
+     "durability_v",
+     93
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 2,
+   "fac": 5,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thúy Yên Hoàng Kim Áo",
+    "t": 2,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": "armor",
+    "id": 36,
+    "ic": "item/equip/armor/obj-ma-cloth15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Áo"
+   },
+   "def": 700
+  },
+  "hk:5:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thúy Yên. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Nhẫn này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 2,
+   "fac": 5,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thúy Yên Hoàng Kim Nhẫn",
+    "t": 3,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/ring/obj-ring10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Nhẫn"
+   }
+  },
+  "hk:5:4": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thúy Yên. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Dây chuyền này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 2,
+   "fac": 5,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thúy Yên Hoàng Kim Dây chuyền",
+    "t": 4,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/nick/obj-neck20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Dây chuyền"
+   }
+  },
+  "hk:5:5": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thúy Yên. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Giày này.",
+   "price": 7250,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     62
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 62,
+   "str": 164,
+   "dex": 0,
+   "series": 2,
+   "fac": 5,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thúy Yên Hoàng Kim Giày",
+    "t": 5,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 62,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/boots/obj-shoes10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Giày"
+   },
+   "def": 156
+  },
+  "hk:5:6": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thúy Yên. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Đai này.",
+   "price": 10000,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     15
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 164,
+   "dex": 0,
+   "series": 2,
+   "fac": 5,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thúy Yên Hoàng Kim Đai",
+    "t": 6,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/sash/obj-sash20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Đai lưng"
+   },
+   "def": 156
+  },
+  "hk:5:7": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thúy Yên. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Mũ này.",
+   "price": 5000,
+   "base": [
+    [
+     "armordefense_v",
+     350
+    ],
+    [
+     "durability_v",
+     37
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 2,
+   "fac": 5,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thúy Yên Hoàng Kim Mũ",
+    "t": 7,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": "helm",
+    "id": 15,
+    "ic": "item/equip/cap/obj-ma-cap15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Mũ"
+   },
+   "def": 350
+  },
+  "hk:5:8": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thúy Yên. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Hộ uyển này.",
+   "price": 4050,
+   "base": [
+    [
+     "armordefense_v",
+     124
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 100,
+   "dex": 0,
+   "series": 2,
+   "fac": 5,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thúy Yên Hoàng Kim Hộ uyển",
+    "t": 8,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/bangle/obj-bangle20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Hộ uyển"
+   },
+   "def": 124
+  },
+  "hk:5:9": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thúy Yên. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Ngọc bội này.",
+   "price": 5000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 2,
+   "fac": 5,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "fireres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "vitality_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thúy Yên Hoàng Kim Ngọc bội",
+    "t": 9,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 2,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/waist/obj-waist20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Ngọc bội"
+   }
+  },
+  "hk:6:0:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Cái Bang. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Côn này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     63
+    ],
+    [
+     "weapondamagemax_v",
+     117
+    ],
+    [
+     "attackratingenhance_p",
+     -10
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     165
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    63,
+    117
+   ],
+   "arPct": -10,
+   "lv": 81,
+   "str": 165,
+   "dex": 0,
+   "series": 3,
+   "fac": 6,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     121
+    ],
+    [
+     "addfiredamage_v",
+     112
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "waterskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Cái Bang Hoàng Kim Côn",
+    "t": 0,
+    "p": 2,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 27,
+    "ic": "item/equip/closeweapon/obj-staff13.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:6:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Cái Bang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Áo này.",
+   "price": 25000,
+   "base": [
+    [
+     "armordefense_v",
+     700
+    ],
+    [
+     "durability_v",
+     93
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 3,
+   "fac": 6,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "physicsres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Cái Bang Hoàng Kim Áo",
+    "t": 2,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": "armor",
+    "id": 36,
+    "ic": "item/equip/armor/obj-ma-cloth15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Áo"
+   },
+   "def": 700
+  },
+  "hk:6:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Cái Bang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Nhẫn này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 3,
+   "fac": 6,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "freezetimereduce_p",
+     45
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Cái Bang Hoàng Kim Nhẫn",
+    "t": 3,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/ring/obj-ring10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Nhẫn"
+   }
+  },
+  "hk:6:4": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Cái Bang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Dây chuyền này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 3,
+   "fac": 6,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "freezetimereduce_p",
+     45
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Cái Bang Hoàng Kim Dây chuyền",
+    "t": 4,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/nick/obj-neck20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Dây chuyền"
+   }
+  },
+  "hk:6:5": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Cái Bang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Giày này.",
+   "price": 7250,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     62
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 62,
+   "str": 164,
+   "dex": 0,
+   "series": 3,
+   "fac": 6,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "physicsres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Cái Bang Hoàng Kim Giày",
+    "t": 5,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 62,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/boots/obj-shoes10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Giày"
+   },
+   "def": 156
+  },
+  "hk:6:6": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Cái Bang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Đai này.",
+   "price": 10000,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     15
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 164,
+   "dex": 0,
+   "series": 3,
+   "fac": 6,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "physicsres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Cái Bang Hoàng Kim Đai",
+    "t": 6,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/sash/obj-sash20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Đai lưng"
+   },
+   "def": 156
+  },
+  "hk:6:7": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Cái Bang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Mũ này.",
+   "price": 5000,
+   "base": [
+    [
+     "armordefense_v",
+     350
+    ],
+    [
+     "durability_v",
+     37
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 3,
+   "fac": 6,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "physicsres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Cái Bang Hoàng Kim Mũ",
+    "t": 7,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": "helm",
+    "id": 15,
+    "ic": "item/equip/cap/obj-ma-cap15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Mũ"
+   },
+   "def": 350
+  },
+  "hk:6:8": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Cái Bang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Hộ uyển này.",
+   "price": 4050,
+   "base": [
+    [
+     "armordefense_v",
+     124
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 100,
+   "dex": 0,
+   "series": 3,
+   "fac": 6,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "physicsres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Cái Bang Hoàng Kim Hộ uyển",
+    "t": 8,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/bangle/obj-bangle20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Hộ uyển"
+   },
+   "def": 124
+  },
+  "hk:6:9": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Cái Bang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Ngọc bội này.",
+   "price": 5000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 3,
+   "fac": 6,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "freezetimereduce_p",
+     45
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Cái Bang Hoàng Kim Ngọc bội",
+    "t": 9,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/waist/obj-waist20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Ngọc bội"
+   }
+  },
+  "hk:7:0:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Nhẫn. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Thương này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     16
+    ],
+    [
+     "weapondamagemax_v",
+     144
+    ],
+    [
+     "attackratingenhance_p",
+     30
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     138
+    ],
+    [
+     "requiredex",
+     138
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    16,
+    144
+   ],
+   "arPct": 30,
+   "lv": 81,
+   "str": 138,
+   "dex": 138,
+   "series": 3,
+   "fac": 7,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     121
+    ],
+    [
+     "addfiredamage_v",
+     112
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "waterskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Nhẫn Hoàng Kim Thương",
+    "t": 0,
+    "p": 3,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 25,
+    "ic": "item/equip/closeweapon/obj-spear04.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:7:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Nhẫn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Áo này.",
+   "price": 25000,
+   "base": [
+    [
+     "armordefense_v",
+     700
+    ],
+    [
+     "durability_v",
+     93
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 3,
+   "fac": 7,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "physicsres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Nhẫn Hoàng Kim Áo",
+    "t": 2,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": "armor",
+    "id": 36,
+    "ic": "item/equip/armor/obj-ma-cloth15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Áo"
+   },
+   "def": 700
+  },
+  "hk:7:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Nhẫn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Nhẫn này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 3,
+   "fac": 7,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "freezetimereduce_p",
+     45
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Nhẫn Hoàng Kim Nhẫn",
+    "t": 3,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/ring/obj-ring10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Nhẫn"
+   }
+  },
+  "hk:7:4": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Nhẫn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Dây chuyền này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 3,
+   "fac": 7,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "freezetimereduce_p",
+     45
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Nhẫn Hoàng Kim Dây chuyền",
+    "t": 4,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/nick/obj-neck20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Dây chuyền"
+   }
+  },
+  "hk:7:5": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Nhẫn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Giày này.",
+   "price": 7250,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     62
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 62,
+   "str": 164,
+   "dex": 0,
+   "series": 3,
+   "fac": 7,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "physicsres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Nhẫn Hoàng Kim Giày",
+    "t": 5,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 62,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/boots/obj-shoes10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Giày"
+   },
+   "def": 156
+  },
+  "hk:7:6": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Nhẫn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Đai này.",
+   "price": 10000,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     15
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 164,
+   "dex": 0,
+   "series": 3,
+   "fac": 7,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "physicsres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Nhẫn Hoàng Kim Đai",
+    "t": 6,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/sash/obj-sash20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Đai lưng"
+   },
+   "def": 156
+  },
+  "hk:7:7": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Nhẫn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Mũ này.",
+   "price": 5000,
+   "base": [
+    [
+     "armordefense_v",
+     350
+    ],
+    [
+     "durability_v",
+     37
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 3,
+   "fac": 7,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "physicsres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Nhẫn Hoàng Kim Mũ",
+    "t": 7,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": "helm",
+    "id": 15,
+    "ic": "item/equip/cap/obj-ma-cap15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Mũ"
+   },
+   "def": 350
+  },
+  "hk:7:8": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Nhẫn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Hộ uyển này.",
+   "price": 4050,
+   "base": [
+    [
+     "armordefense_v",
+     124
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 100,
+   "dex": 0,
+   "series": 3,
+   "fac": 7,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "physicsres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Nhẫn Hoàng Kim Hộ uyển",
+    "t": 8,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/bangle/obj-bangle20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Hộ uyển"
+   },
+   "def": 124
+  },
+  "hk:7:9": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Thiên Nhẫn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Ngọc bội này.",
+   "price": 5000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 3,
+   "fac": 7,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "dexterity_v",
+     23
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "freezetimereduce_p",
+     45
+    ],
+    [
+     "staminamax_v",
+     223
+    ]
+   ],
+   "pack": {
+    "n": "Thiên Nhẫn Hoàng Kim Ngọc bội",
+    "t": 9,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 3,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/waist/obj-waist20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Ngọc bội"
+   }
+  },
+  "hk:8:0:0": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Võ Đang. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Kiếm này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     42
+    ],
+    [
+     "weapondamagemax_v",
+     78
+    ],
+    [
+     "attackratingenhance_p",
+     0
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    42,
+    78
+   ],
+   "arPct": 0,
+   "lv": 81,
+   "str": 100,
+   "dex": 0,
+   "series": 4,
+   "fac": 8,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     121
+    ],
+    [
+     "addlightingdamage_v",
+     112
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "fireskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ]
+   ],
+   "pack": {
+    "n": "Võ Đang Hoàng Kim Kiếm",
+    "t": 0,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 21,
+    "ic": "item/equip/closeweapon/obj-sword24.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:8:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Võ Đang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Áo này.",
+   "price": 25000,
+   "base": [
+    [
+     "armordefense_v",
+     700
+    ],
+    [
+     "durability_v",
+     93
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 4,
+   "fac": 8,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Võ Đang Hoàng Kim Áo",
+    "t": 2,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": "armor",
+    "id": 36,
+    "ic": "item/equip/armor/obj-ma-cloth15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Áo"
+   },
+   "def": 700
+  },
+  "hk:8:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Võ Đang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Nhẫn này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 4,
+   "fac": 8,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Võ Đang Hoàng Kim Nhẫn",
+    "t": 3,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/ring/obj-ring10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Nhẫn"
+   }
+  },
+  "hk:8:4": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Võ Đang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Dây chuyền này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 4,
+   "fac": 8,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Võ Đang Hoàng Kim Dây chuyền",
+    "t": 4,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/nick/obj-neck20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Dây chuyền"
+   }
+  },
+  "hk:8:5": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Võ Đang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Giày này.",
+   "price": 7250,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     62
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 62,
+   "str": 164,
+   "dex": 0,
+   "series": 4,
+   "fac": 8,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Võ Đang Hoàng Kim Giày",
+    "t": 5,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 62,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/boots/obj-shoes10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Giày"
+   },
+   "def": 156
+  },
+  "hk:8:6": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Võ Đang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Đai này.",
+   "price": 10000,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     15
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 164,
+   "dex": 0,
+   "series": 4,
+   "fac": 8,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Võ Đang Hoàng Kim Đai",
+    "t": 6,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/sash/obj-sash20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Đai lưng"
+   },
+   "def": 156
+  },
+  "hk:8:7": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Võ Đang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Mũ này.",
+   "price": 5000,
+   "base": [
+    [
+     "armordefense_v",
+     350
+    ],
+    [
+     "durability_v",
+     37
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 4,
+   "fac": 8,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Võ Đang Hoàng Kim Mũ",
+    "t": 7,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": "helm",
+    "id": 15,
+    "ic": "item/equip/cap/obj-ma-cap15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Mũ"
+   },
+   "def": 350
+  },
+  "hk:8:8": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Võ Đang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Hộ uyển này.",
+   "price": 4050,
+   "base": [
+    [
+     "armordefense_v",
+     124
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 100,
+   "dex": 0,
+   "series": 4,
+   "fac": 8,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Võ Đang Hoàng Kim Hộ uyển",
+    "t": 8,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/bangle/obj-bangle20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Hộ uyển"
+   },
+   "def": 124
+  },
+  "hk:8:9": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Võ Đang. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Ngọc bội này.",
+   "price": 5000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 4,
+   "fac": 8,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Võ Đang Hoàng Kim Ngọc bội",
+    "t": 9,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/waist/obj-waist20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Ngọc bội"
+   }
+  },
+  "hk:9:0:0": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Côn Lôn. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Kiếm này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     42
+    ],
+    [
+     "weapondamagemax_v",
+     78
+    ],
+    [
+     "attackratingenhance_p",
+     0
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    42,
+    78
+   ],
+   "arPct": 0,
+   "lv": 81,
+   "str": 100,
+   "dex": 0,
+   "series": 4,
+   "fac": 9,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     121
+    ],
+    [
+     "addlightingdamage_v",
+     112
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "fireskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ]
+   ],
+   "pack": {
+    "n": "Côn Lôn Hoàng Kim Kiếm",
+    "t": 0,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 21,
+    "ic": "item/equip/closeweapon/obj-sword24.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:9:0:1": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Côn Lôn. Kẻ nào chưa trùng sinh một lần thì đừng mơ cầm nổi Đao này.",
+   "price": 0,
+   "base": [
+    [
+     "weapondamagemin_v",
+     36
+    ],
+    [
+     "weapondamagemax_v",
+     105
+    ],
+    [
+     "attackratingenhance_p",
+     -20
+    ],
+    [
+     "indestructible_b",
+     0
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     81
+    ],
+    [
+     "requirestr",
+     110
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "dmg": [
+    36,
+    105
+   ],
+   "arPct": -20,
+   "lv": 81,
+   "str": 110,
+   "dex": 0,
+   "series": 4,
+   "fac": 9,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "addphysicsdamage_p",
+     121
+    ],
+    [
+     "addlightingdamage_v",
+     112
+    ],
+    [
+     "attackratingenhance_v",
+     334
+    ],
+    [
+     "fireskill_v",
+     223
+    ],
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ]
+   ],
+   "pack": {
+    "n": "Côn Lôn Hoàng Kim Đao",
+    "t": 0,
+    "p": 1,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 81,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": "weapon",
+    "id": 23,
+    "ic": "item/equip/closeweapon/obj-blade24.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Vũ khí cận chiến"
+   }
+  },
+  "hk:9:2": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Côn Lôn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Áo này.",
+   "price": 25000,
+   "base": [
+    [
+     "armordefense_v",
+     700
+    ],
+    [
+     "durability_v",
+     93
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 4,
+   "fac": 9,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Côn Lôn Hoàng Kim Áo",
+    "t": 2,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": "armor",
+    "id": 36,
+    "ic": "item/equip/armor/obj-ma-cloth15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Áo"
+   },
+   "def": 700
+  },
+  "hk:9:3": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Côn Lôn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Nhẫn này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 4,
+   "fac": 9,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Côn Lôn Hoàng Kim Nhẫn",
+    "t": 3,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/ring/obj-ring10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Nhẫn"
+   }
+  },
+  "hk:9:4": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Côn Lôn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Dây chuyền này.",
+   "price": 15000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 4,
+   "fac": 9,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Côn Lôn Hoàng Kim Dây chuyền",
+    "t": 4,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/nick/obj-neck20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Dây chuyền"
+   }
+  },
+  "hk:9:5": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Côn Lôn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Giày này.",
+   "price": 7250,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     62
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 62,
+   "str": 164,
+   "dex": 0,
+   "series": 4,
+   "fac": 9,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Côn Lôn Hoàng Kim Giày",
+    "t": 5,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 62,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/boots/obj-shoes10.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Giày"
+   },
+   "def": 156
+  },
+  "hk:9:6": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Côn Lôn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Đai này.",
+   "price": 10000,
+   "base": [
+    [
+     "armordefense_v",
+     156
+    ],
+    [
+     "durability_v",
+     15
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     164
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 164,
+   "dex": 0,
+   "series": 4,
+   "fac": 9,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Côn Lôn Hoàng Kim Đai",
+    "t": 6,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/sash/obj-sash20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Đai lưng"
+   },
+   "def": 156
+  },
+  "hk:9:7": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Côn Lôn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Mũ này.",
+   "price": 5000,
+   "base": [
+    [
+     "armordefense_v",
+     350
+    ],
+    [
+     "durability_v",
+     37
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     260
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 260,
+   "dex": 0,
+   "series": 4,
+   "fac": 9,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Côn Lôn Hoàng Kim Mũ",
+    "t": 7,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": "helm",
+    "id": 15,
+    "ic": "item/equip/cap/obj-ma-cap15-3.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Mũ"
+   },
+   "def": 350
+  },
+  "hk:9:8": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Côn Lôn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Hộ uyển này.",
+   "price": 4050,
+   "base": [
+    [
+     "armordefense_v",
+     124
+    ],
+    [
+     "durability_v",
+     20
+    ]
+   ],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "requirestr",
+     100
+    ],
+    [
+     "requiredex",
+     0
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 100,
+   "dex": 0,
+   "series": 4,
+   "fac": 9,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Côn Lôn Hoàng Kim Hộ uyển",
+    "t": 8,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/bangle/obj-bangle20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Hộ uyển"
+   },
+   "def": 124
+  },
+  "hk:9:9": {
+   "cl": 10,
+   "intro": "Hoàng Kim của Côn Lôn. Kẻ nào chưa trùng sinh một lần thì đừng mơ mặc nổi Ngọc bội này.",
+   "price": 5000,
+   "base": [],
+   "req": [
+    [
+     "requirelevel",
+     60
+    ],
+    [
+     "require_translife",
+     1
+    ]
+   ],
+   "lv": 60,
+   "str": 0,
+   "dex": 0,
+   "series": 4,
+   "fac": 9,
+   "reborn": 1,
+   "hk": 1,
+   "d": [
+    [
+     "lifemax_v",
+     223
+    ],
+    [
+     "coldres_p",
+     28
+    ],
+    [
+     "manamax_v",
+     223
+    ],
+    [
+     "damage2addmana_p",
+     17
+    ],
+    [
+     "staminamax_v",
+     223
+    ],
+    [
+     "poisontimereduce_p",
+     45
+    ]
+   ],
+   "pack": {
+    "n": "Côn Lôn Hoàng Kim Ngọc bội",
+    "t": 9,
+    "p": 0,
+    "gr": "hkmp",
+    "sv": 7,
+    "lv": 60,
+    "s": 4,
+    "f": -1,
+    "x": -1,
+    "g": null,
+    "id": null,
+    "ic": "item/equip/waist/obj-waist20.png",
+    "c": [
+     1,
+     1
+    ],
+    "ln": "Ngọc bội"
+   }
+  }
+ },
+ "kiem": [
+  {
+   "k": "hk:0:0:1",
+   "phai": "Thiếu Lâm",
+   "viTri": "Đao",
+   "mau": "meleeweapon:20",
+   "xanh": 191,
+   "hk": 212.5,
+   "tiLe": 0.8988,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:0:0:2",
+   "phai": "Thiếu Lâm",
+   "viTri": "Côn",
+   "mau": "meleeweapon:30",
+   "xanh": 230,
+   "hk": 255.8,
+   "tiLe": 0.8991,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:0:2",
+   "phai": "Thiếu Lâm",
+   "viTri": "Áo",
+   "mau": "armor:190",
+   "xanh": 630,
+   "hk": 700,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8956,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:0:3",
+   "phai": "Thiếu Lâm",
+   "viTri": "Nhẫn",
+   "mau": "ring:10",
+   "xanh": 645,
+   "hk": 720,
+   "tiLe": 0.8958,
+   "tiLeDong": 0.8958,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:0:4",
+   "phai": "Thiếu Lâm",
+   "viTri": "Dây chuyền",
+   "mau": "amulet:20",
+   "xanh": 645,
+   "hk": 720,
+   "tiLe": 0.8958,
+   "tiLeDong": 0.8958,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:0:5",
+   "phai": "Thiếu Lâm",
+   "viTri": "Giày",
+   "mau": "boot:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8956,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:0:6",
+   "phai": "Thiếu Lâm",
+   "viTri": "Đai",
+   "mau": "belt:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8956,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:0:7",
+   "phai": "Thiếu Lâm",
+   "viTri": "Mũ",
+   "mau": "helm:50",
+   "xanh": 315,
+   "hk": 350,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8956,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:0:8",
+   "phai": "Thiếu Lâm",
+   "viTri": "Hộ uyển",
+   "mau": "cuff:20",
+   "xanh": 111,
+   "hk": 124,
+   "tiLe": 0.8952,
+   "tiLeDong": 0.8956,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:0:9",
+   "phai": "Thiếu Lâm",
+   "viTri": "Ngọc bội",
+   "mau": "pendant:20",
+   "xanh": 645,
+   "hk": 720,
+   "tiLe": 0.8958,
+   "tiLeDong": 0.8958,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:1:0:1",
+   "phai": "Thiên Vương",
+   "viTri": "Đao",
+   "mau": "meleeweapon:20",
+   "xanh": 191,
+   "hk": 212.5,
+   "tiLe": 0.8988,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:1:0:3",
+   "phai": "Thiên Vương",
+   "viTri": "Thương",
+   "mau": "meleeweapon:40",
+   "xanh": 210,
+   "hk": 233.6,
+   "tiLe": 0.899,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:1:0:4",
+   "phai": "Thiên Vương",
+   "viTri": "Chùy",
+   "mau": "meleeweapon:50",
+   "xanh": 250,
+   "hk": 278,
+   "tiLe": 0.8993,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:1:2",
+   "phai": "Thiên Vương",
+   "viTri": "Áo",
+   "mau": "armor:190",
+   "xanh": 630,
+   "hk": 700,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8956,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:1:3",
+   "phai": "Thiên Vương",
+   "viTri": "Nhẫn",
+   "mau": "ring:10",
+   "xanh": 645,
+   "hk": 720,
+   "tiLe": 0.8958,
+   "tiLeDong": 0.8958,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:1:4",
+   "phai": "Thiên Vương",
+   "viTri": "Dây chuyền",
+   "mau": "amulet:20",
+   "xanh": 645,
+   "hk": 720,
+   "tiLe": 0.8958,
+   "tiLeDong": 0.8958,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:1:5",
+   "phai": "Thiên Vương",
+   "viTri": "Giày",
+   "mau": "boot:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8956,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:1:6",
+   "phai": "Thiên Vương",
+   "viTri": "Đai",
+   "mau": "belt:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8956,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:1:7",
+   "phai": "Thiên Vương",
+   "viTri": "Mũ",
+   "mau": "helm:50",
+   "xanh": 315,
+   "hk": 350,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8956,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:1:8",
+   "phai": "Thiên Vương",
+   "viTri": "Hộ uyển",
+   "mau": "cuff:20",
+   "xanh": 111,
+   "hk": 124,
+   "tiLe": 0.8952,
+   "tiLeDong": 0.8956,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:1:9",
+   "phai": "Thiên Vương",
+   "viTri": "Ngọc bội",
+   "mau": "pendant:20",
+   "xanh": 645,
+   "hk": 720,
+   "tiLe": 0.8958,
+   "tiLeDong": 0.8958,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:2:1:0",
+   "phai": "Đường Môn",
+   "viTri": "Phi tiêu",
+   "mau": "rangeweapon:10",
+   "xanh": 177,
+   "hk": 197,
+   "tiLe": 0.8986,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:2:1:1",
+   "phai": "Đường Môn",
+   "viTri": "Phi đao",
+   "mau": "rangeweapon:20",
+   "xanh": 181,
+   "hk": 201.4,
+   "tiLe": 0.8987,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:2:1:2",
+   "phai": "Đường Môn",
+   "viTri": "Tụ tiễn",
+   "mau": "rangeweapon:30",
+   "xanh": 185,
+   "hk": 205.8,
+   "tiLe": 0.8987,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:2:2",
+   "phai": "Đường Môn",
+   "viTri": "Áo",
+   "mau": "armor:190",
+   "xanh": 630,
+   "hk": 700,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8958,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:2:3",
+   "phai": "Đường Môn",
+   "viTri": "Nhẫn",
+   "mau": "ring:10",
+   "xanh": 655,
+   "hk": 732,
+   "tiLe": 0.8948,
+   "tiLeDong": 0.8948,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:2:4",
+   "phai": "Đường Môn",
+   "viTri": "Dây chuyền",
+   "mau": "amulet:20",
+   "xanh": 655,
+   "hk": 732,
+   "tiLe": 0.8948,
+   "tiLeDong": 0.8948,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:2:5",
+   "phai": "Đường Môn",
+   "viTri": "Giày",
+   "mau": "boot:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8958,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:2:6",
+   "phai": "Đường Môn",
+   "viTri": "Đai",
+   "mau": "belt:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8958,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:2:7",
+   "phai": "Đường Môn",
+   "viTri": "Mũ",
+   "mau": "helm:50",
+   "xanh": 315,
+   "hk": 350,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8958,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:2:8",
+   "phai": "Đường Môn",
+   "viTri": "Hộ uyển",
+   "mau": "cuff:20",
+   "xanh": 111,
+   "hk": 124,
+   "tiLe": 0.8952,
+   "tiLeDong": 0.8958,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:2:9",
+   "phai": "Đường Môn",
+   "viTri": "Ngọc bội",
+   "mau": "pendant:20",
+   "xanh": 655,
+   "hk": 732,
+   "tiLe": 0.8948,
+   "tiLeDong": 0.8948,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:3:0:1",
+   "phai": "Ngũ Độc",
+   "viTri": "Đao",
+   "mau": "meleeweapon:20",
+   "xanh": 191,
+   "hk": 212.5,
+   "tiLe": 0.8988,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:3:2",
+   "phai": "Ngũ Độc",
+   "viTri": "Áo",
+   "mau": "armor:190",
+   "xanh": 630,
+   "hk": 700,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8958,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:3:3",
+   "phai": "Ngũ Độc",
+   "viTri": "Nhẫn",
+   "mau": "ring:10",
+   "xanh": 655,
+   "hk": 732,
+   "tiLe": 0.8948,
+   "tiLeDong": 0.8948,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:3:4",
+   "phai": "Ngũ Độc",
+   "viTri": "Dây chuyền",
+   "mau": "amulet:20",
+   "xanh": 655,
+   "hk": 732,
+   "tiLe": 0.8948,
+   "tiLeDong": 0.8948,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:3:5",
+   "phai": "Ngũ Độc",
+   "viTri": "Giày",
+   "mau": "boot:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8958,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:3:6",
+   "phai": "Ngũ Độc",
+   "viTri": "Đai",
+   "mau": "belt:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8958,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:3:7",
+   "phai": "Ngũ Độc",
+   "viTri": "Mũ",
+   "mau": "helm:50",
+   "xanh": 315,
+   "hk": 350,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8958,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:3:8",
+   "phai": "Ngũ Độc",
+   "viTri": "Hộ uyển",
+   "mau": "cuff:20",
+   "xanh": 111,
+   "hk": 124,
+   "tiLe": 0.8952,
+   "tiLeDong": 0.8958,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:3:9",
+   "phai": "Ngũ Độc",
+   "viTri": "Ngọc bội",
+   "mau": "pendant:20",
+   "xanh": 655,
+   "hk": 732,
+   "tiLe": 0.8948,
+   "tiLeDong": 0.8948,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:4:0:0",
+   "phai": "Nga My",
+   "viTri": "Kiếm",
+   "mau": "meleeweapon:10",
+   "xanh": 220,
+   "hk": 244.6,
+   "tiLe": 0.8994,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:4:2",
+   "phai": "Nga My",
+   "viTri": "Áo",
+   "mau": "armor:190",
+   "xanh": 630,
+   "hk": 700,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:4:3",
+   "phai": "Nga My",
+   "viTri": "Nhẫn",
+   "mau": "ring:10",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:4:4",
+   "phai": "Nga My",
+   "viTri": "Dây chuyền",
+   "mau": "amulet:20",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:4:5",
+   "phai": "Nga My",
+   "viTri": "Giày",
+   "mau": "boot:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:4:6",
+   "phai": "Nga My",
+   "viTri": "Đai",
+   "mau": "belt:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:4:7",
+   "phai": "Nga My",
+   "viTri": "Mũ",
+   "mau": "helm:50",
+   "xanh": 315,
+   "hk": 350,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:4:8",
+   "phai": "Nga My",
+   "viTri": "Hộ uyển",
+   "mau": "cuff:20",
+   "xanh": 111,
+   "hk": 124,
+   "tiLe": 0.8952,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:4:9",
+   "phai": "Nga My",
+   "viTri": "Ngọc bội",
+   "mau": "pendant:20",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:5:0:1",
+   "phai": "Thúy Yên",
+   "viTri": "Đao",
+   "mau": "meleeweapon:20",
+   "xanh": 241,
+   "hk": 267.8,
+   "tiLe": 0.8999,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:5:2",
+   "phai": "Thúy Yên",
+   "viTri": "Áo",
+   "mau": "armor:190",
+   "xanh": 630,
+   "hk": 700,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:5:3",
+   "phai": "Thúy Yên",
+   "viTri": "Nhẫn",
+   "mau": "ring:10",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:5:4",
+   "phai": "Thúy Yên",
+   "viTri": "Dây chuyền",
+   "mau": "amulet:20",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:5:5",
+   "phai": "Thúy Yên",
+   "viTri": "Giày",
+   "mau": "boot:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:5:6",
+   "phai": "Thúy Yên",
+   "viTri": "Đai",
+   "mau": "belt:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:5:7",
+   "phai": "Thúy Yên",
+   "viTri": "Mũ",
+   "mau": "helm:50",
+   "xanh": 315,
+   "hk": 350,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:5:8",
+   "phai": "Thúy Yên",
+   "viTri": "Hộ uyển",
+   "mau": "cuff:20",
+   "xanh": 111,
+   "hk": 124,
+   "tiLe": 0.8952,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:5:9",
+   "phai": "Thúy Yên",
+   "viTri": "Ngọc bội",
+   "mau": "pendant:20",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:6:0:2",
+   "phai": "Cái Bang",
+   "viTri": "Côn",
+   "mau": "meleeweapon:30",
+   "xanh": 280,
+   "hk": 310.9,
+   "tiLe": 0.9006,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:6:2",
+   "phai": "Cái Bang",
+   "viTri": "Áo",
+   "mau": "armor:190",
+   "xanh": 630,
+   "hk": 700,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:6:3",
+   "phai": "Cái Bang",
+   "viTri": "Nhẫn",
+   "mau": "ring:10",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:6:4",
+   "phai": "Cái Bang",
+   "viTri": "Dây chuyền",
+   "mau": "amulet:20",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:6:5",
+   "phai": "Cái Bang",
+   "viTri": "Giày",
+   "mau": "boot:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:6:6",
+   "phai": "Cái Bang",
+   "viTri": "Đai",
+   "mau": "belt:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:6:7",
+   "phai": "Cái Bang",
+   "viTri": "Mũ",
+   "mau": "helm:50",
+   "xanh": 315,
+   "hk": 350,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:6:8",
+   "phai": "Cái Bang",
+   "viTri": "Hộ uyển",
+   "mau": "cuff:20",
+   "xanh": 111,
+   "hk": 124,
+   "tiLe": 0.8952,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:6:9",
+   "phai": "Cái Bang",
+   "viTri": "Ngọc bội",
+   "mau": "pendant:20",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:7:0:3",
+   "phai": "Thiên Nhẫn",
+   "viTri": "Thương",
+   "mau": "meleeweapon:40",
+   "xanh": 260,
+   "hk": 288.8,
+   "tiLe": 0.9003,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:7:2",
+   "phai": "Thiên Nhẫn",
+   "viTri": "Áo",
+   "mau": "armor:190",
+   "xanh": 630,
+   "hk": 700,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:7:3",
+   "phai": "Thiên Nhẫn",
+   "viTri": "Nhẫn",
+   "mau": "ring:10",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:7:4",
+   "phai": "Thiên Nhẫn",
+   "viTri": "Dây chuyền",
+   "mau": "amulet:20",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:7:5",
+   "phai": "Thiên Nhẫn",
+   "viTri": "Giày",
+   "mau": "boot:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:7:6",
+   "phai": "Thiên Nhẫn",
+   "viTri": "Đai",
+   "mau": "belt:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:7:7",
+   "phai": "Thiên Nhẫn",
+   "viTri": "Mũ",
+   "mau": "helm:50",
+   "xanh": 315,
+   "hk": 350,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:7:8",
+   "phai": "Thiên Nhẫn",
+   "viTri": "Hộ uyển",
+   "mau": "cuff:20",
+   "xanh": 111,
+   "hk": 124,
+   "tiLe": 0.8952,
+   "tiLeDong": 0.8955,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:7:9",
+   "phai": "Thiên Nhẫn",
+   "viTri": "Ngọc bội",
+   "mau": "pendant:20",
+   "xanh": 660,
+   "hk": 737,
+   "tiLe": 0.8955,
+   "tiLeDong": 0.8955,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:8:0:0",
+   "phai": "Võ Đang",
+   "viTri": "Kiếm",
+   "mau": "meleeweapon:10",
+   "xanh": 220,
+   "hk": 244.6,
+   "tiLe": 0.8994,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:8:2",
+   "phai": "Võ Đang",
+   "viTri": "Áo",
+   "mau": "armor:190",
+   "xanh": 630,
+   "hk": 700,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8959,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:8:3",
+   "phai": "Võ Đang",
+   "viTri": "Nhẫn",
+   "mau": "ring:10",
+   "xanh": 680,
+   "hk": 759,
+   "tiLe": 0.8959,
+   "tiLeDong": 0.8959,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:8:4",
+   "phai": "Võ Đang",
+   "viTri": "Dây chuyền",
+   "mau": "amulet:20",
+   "xanh": 680,
+   "hk": 759,
+   "tiLe": 0.8959,
+   "tiLeDong": 0.8959,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:8:5",
+   "phai": "Võ Đang",
+   "viTri": "Giày",
+   "mau": "boot:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8959,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:8:6",
+   "phai": "Võ Đang",
+   "viTri": "Đai",
+   "mau": "belt:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8959,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:8:7",
+   "phai": "Võ Đang",
+   "viTri": "Mũ",
+   "mau": "helm:50",
+   "xanh": 315,
+   "hk": 350,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8959,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:8:8",
+   "phai": "Võ Đang",
+   "viTri": "Hộ uyển",
+   "mau": "cuff:20",
+   "xanh": 111,
+   "hk": 124,
+   "tiLe": 0.8952,
+   "tiLeDong": 0.8959,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:8:9",
+   "phai": "Võ Đang",
+   "viTri": "Ngọc bội",
+   "mau": "pendant:20",
+   "xanh": 680,
+   "hk": 759,
+   "tiLe": 0.8959,
+   "tiLeDong": 0.8959,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:9:0:0",
+   "phai": "Côn Lôn",
+   "viTri": "Kiếm",
+   "mau": "meleeweapon:10",
+   "xanh": 220,
+   "hk": 244.6,
+   "tiLe": 0.8994,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:9:0:1",
+   "phai": "Côn Lôn",
+   "viTri": "Đao",
+   "mau": "meleeweapon:20",
+   "xanh": 241,
+   "hk": 267.8,
+   "tiLe": 0.8999,
+   "loai": "vu-khi"
+  },
+  {
+   "k": "hk:9:2",
+   "phai": "Côn Lôn",
+   "viTri": "Áo",
+   "mau": "armor:190",
+   "xanh": 630,
+   "hk": 700,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8959,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:9:3",
+   "phai": "Côn Lôn",
+   "viTri": "Nhẫn",
+   "mau": "ring:10",
+   "xanh": 680,
+   "hk": 759,
+   "tiLe": 0.8959,
+   "tiLeDong": 0.8959,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:9:4",
+   "phai": "Côn Lôn",
+   "viTri": "Dây chuyền",
+   "mau": "amulet:20",
+   "xanh": 680,
+   "hk": 759,
+   "tiLe": 0.8959,
+   "tiLeDong": 0.8959,
+   "loai": "dong"
+  },
+  {
+   "k": "hk:9:5",
+   "phai": "Côn Lôn",
+   "viTri": "Giày",
+   "mau": "boot:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8959,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:9:6",
+   "phai": "Côn Lôn",
+   "viTri": "Đai",
+   "mau": "belt:20",
+   "xanh": 140,
+   "hk": 156,
+   "tiLe": 0.8974,
+   "tiLeDong": 0.8959,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:9:7",
+   "phai": "Côn Lôn",
+   "viTri": "Mũ",
+   "mau": "helm:50",
+   "xanh": 315,
+   "hk": 350,
+   "tiLe": 0.9,
+   "tiLeDong": 0.8959,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:9:8",
+   "phai": "Côn Lôn",
+   "viTri": "Hộ uyển",
+   "mau": "cuff:20",
+   "xanh": 111,
+   "hk": 124,
+   "tiLe": 0.8952,
+   "tiLeDong": 0.8959,
+   "loai": "phong-thu"
+  },
+  {
+   "k": "hk:9:9",
+   "phai": "Côn Lôn",
+   "viTri": "Ngọc bội",
+   "mau": "pendant:20",
+   "xanh": 680,
+   "hk": 759,
+   "tiLe": 0.8959,
+   "tiLeDong": 0.8959,
+   "loai": "dong"
+  }
+ ]
+}

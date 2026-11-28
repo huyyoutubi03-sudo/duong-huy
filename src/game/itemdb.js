@@ -45,7 +45,8 @@ export const ItemDB = {
   load() {
     // vat-pham.json (cong-cu/dung-tap-hoa.js): Thổ Địa Phù + hàng Tạp hóa Ba Lăng (shops[38] = [{ k, gia, s }]); thuốc: shops[39] = [khóa]
     return (this._p = this._p || Promise.all([json(BASE + "items.json"), json("assets/data/do-goc.json"), json("assets/data/attr.json"), json("assets/data/thuoc.json"), json("assets/data/vat-pham.json").catch(() => ({ items: {}, shops: {} })),
-      json("assets/data/ky-tran-cac.json").catch(() => ({ items: {}, the: [], buff: {} }))]).then(([p, g, attr, th, vp, ktc]) => {
+      json("assets/data/ky-tran-cac.json").catch(() => ({ items: {}, the: [], buff: {} })),
+      json("assets/data/do-hoang-kim.json").catch(() => ({ items: {} }))]).then(([p, g, attr, th, vp, ktc, hk]) => {
       this.pack = p; this.by = new Map(p.items.map((x) => [x.k, x]));
       for (const x of p.items) x.c = [1, 1]; // Huy lệnh 27/11/2026: mọi trang bị chỉ chiếm 1 ô trong hành trang (lưới 6×10 giữ nguyên 60 ô) — mọi chỗ vẽ lưới client đều đọc x.c; thuốc / phù / Kỳ Trân Các không nằm trong p.items nên giữ nguyên
       for (const [k, x] of Object.entries(th.items)) this.by.set(k, { ...x, k, thuoc: 1 });
@@ -54,6 +55,8 @@ export const ItemDB = {
       for (const [k, x] of Object.entries(ktc.items)) this.by.set(k, { ...x, k, tuKtc: 1 }); // tuKtc: món của bảng Kỳ Trân Các (cả thuốc trong lễ bao) — windows.js _khongBan
       this.ktc = { the: ktc.the || [], buff: ktc.buff || {}, bua: ktc.bua || { hieu: {}, mon: {} } };
       this.goc = g.items; this.serDmg = attr.serDmg || {}; this.shops = { ...th.shops, ...vp.shops };
+      // Đồ Hoàng Kim (P3 — THIET-KE.md §2.3): bảng sinh sẵn lúc build dữ liệu (cong-cu/sinh-do-hoang-kim.mjs) — gộp vào goc + by (pack lồng trong từng món); tên vàng qua gr "hkmp" (GROUP_COL sẵn có)
+      for (const [k, v] of Object.entries(hk.items || {})) { const { pack, ...gg } = v; this.goc[k] = gg; if (pack) this.by.set(k, { ...pack, k, c: [1, 1] }); }
       // cửa hàng phúc duyên (Thần bí Thương Nhân Liễu Ất — Sale 93 của client; giá = điểm phúc duyên — anh 31/10 khuya lần 2): GW.openShop(93, "pd")
       if (ktc.phucDuyen && ktc.phucDuyen.length) this.shops[93] = ktc.phucDuyen.map((o) => ({ k: o.k, gia: o.gia }));
       return p;
@@ -143,7 +146,7 @@ export function giaSua(it, L = { gia: 50, dong: 16 }) {
 export function canWear(hero, it) {
   if (isPotion(it)) return true;
   const g = ItemDB.base(it.k);
-  if ((hero.lvl || 1) < (g.lv || 1) || g.reborn) return false;
+  if ((hero.lvl || 1) < (g.lv || 1) || (g.reborn && (hero.reborn | 0) < g.reborn)) return false;
   if (g.sex && g.sex !== hero.sex) return false;
   if (g.str || g.dex) { const c = diemCo(hero); if ((g.str && c.str < g.str) || (g.dex && c.dex < g.dex)) return false; }
   return true;

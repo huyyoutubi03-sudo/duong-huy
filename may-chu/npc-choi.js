@@ -71,6 +71,7 @@ const ONL = () => require("./online");
 const PD = () => require("./phuc-duyen");
 const TLAM = () => require("./tu-lam");
 const TD = () => require("./to-doi");
+const CS = () => require("./chuyen-sinh"); // chuyển sinh (Huy quyết Q6 13:49 ngày 27/11/2026): bot CÓ chuyển sinh — đi chuỗi nhiệm vụ như người chơi, trần ngày như nhau
 
 const CFG_PATH = process.env.VL_NPC_CHOI_CONFIG || path.join(__dirname, "npc-choi-config.json");
 const CFG = JSON.parse(fs.readFileSync(CFG_PATH, "utf8"));
@@ -79,7 +80,7 @@ const ZONES = CFG.zones || {};
 const SO_TOI_DA = Math.max(1, Math.min(CFG.bots.length, +process.env.VL_NPC_CHOI_SO || 170));
 const HIEN_MS = Math.max(500, +process.env.VL_NPC_CHOI_HIEN || 1500);
 const LAT = Math.max(1, Math.min(12, Math.round(HIEN_MS / 500))); // lát hiện diện: mỗi 500ms 1 lát
-const EXP_MAXPING = 97566772100, TIEN_MAXPING = 50000000, XU_MAXPING = 100; // đúng số mã MAXPING — CHỈ dùng ở đường tạo cũ (CAP1=0), không cấp phát cho bot mới
+const EXP_MAXPING = 22566772100, TIEN_MAXPING = 50000000, XU_MAXPING = 100; // tổng exp 1→200 sau kẹp Q2 (bảng char.json kẹp 300M, Huy quyết 13:49 ngày 27/11/2026; gốc 97.566.772.100) — CHỈ dùng ở đường tạo cũ (CAP1=0) + công thức T(h), không cấp phát cho bot mới
 // Tạo mới từ cấp 1 (mặc định BẬT — bot sống như người chơi thật, không đặc quyền).
 const CAP1 = process.env.VL_NPC_CHOI_CAP1 !== "0";
 // Trần exp/ngày: "0" = không giới hạn (chỉ để đo); số khác = trần; thiếu/sai thì 1.000.000.000.
@@ -222,7 +223,9 @@ function tenMayChu() {
 function tienTrinh(h) {
   let t = (h.exp || 0);
   for (let lv = 1; lv < (h.lvl | 0); lv++) t += N.need(lv);
-  return t;
+  // Chuyển sinh: mỗi vòng đã qua = đủ tổng exp 1→200 (EXP_MAXPING, đã kẹp Q2) + phần 1→90 bỏ qua
+  // khi về cấp 90 (Σneed 1..89 ≈ 234M, ~1% — chấp vào trần ngày, như bản 3 vòng cũ)
+  return t + (h.reborn | 0) * EXP_MAXPING;
 }
 // Chạm trần ngày chưa? Mốc ngày lưu bền trong chính file tài khoản bot (ghi cùng luu()),
 // khởi động lại không reset. Chết mất exp thì tiến trình giảm theo — "hoàn" lại ít trần.
@@ -565,10 +568,35 @@ function raoBan(bot) {
   } catch (e) { log(`rao bán lỗi (${bot.h.name}):`, e.message); }
 }
 
+// ---------- chuyển sinh của bot (Q6 — Huy quyết 13:49 ngày 27/11/2026) ----------
+// Bot cấp 200 + đã bái nhập phái thì tự đi chuỗi nhiệm vụ như người chơi, trần đếm/ngày như nhau
+// (chuyen-sinh.js ngayMoi). Bước 1 (giết quái ngang cấp) và bước 3 (dấu Boss) chạy tự động qua đúng
+// móc gietQuai (do.js) / ghiDau (boss-tg.js) sẵn có — ở đây chỉ lái nhận (buoc 0), nộp hồn (buoc 2)
+// và xác nhận (buoc 4). Đo lường (DO_MODE) thì không lái, giữ số đo grind thuần.
+// Xác nhận chỉ khi không trong hoạt động (hd) và không đang chết — khỏi lột xác giữa trận.
+// Sau lột xác: về thành (mode "ve") + xóa bãi train để capNhatBai chọn lại bãi theo cấp 90.
+function hdChuyenSinh(bot) {
+  try {
+    const h = bot.h; if (!h || DO_MODE) return;
+    if ((h.lvl | 0) < 200 || h.fac == null || (h.reborn | 0) >= 10) return;
+    const D = h.cs && typeof h.cs === "object" ? h.cs : null;
+    if (!D || !D.buoc) { try { CS().lam(h, { viec: "nhan" }, bot.key); } catch {} return; } // chưa nhận / vừa xong vòng: nhận vòng mới (lỗi thường: đội đang đánh boss — nhịp sau thử lại, không ghi log)
+    if (D.buoc === 2) { try { CS().lam(h, { viec: "nop" }, bot.key); } catch {} return; } // có hồn trong túi thì nộp (hết trần ngày / hết hồn thì thôi)
+    if (D.buoc >= 4 && bot.mode !== "hd" && bot.mode !== "chet") {
+      const kq = CS().lam(h, { viec: "xacNhan" }, bot.key);
+      if (kq && kq.chuyenSinh) {
+        boMucTieu(bot); bot.baiTrain = null; bot.mode = "ve";
+        log(`chuyển sinh lần ${kq.chuyenSinh} — về cấp 90, về thành (${h.name})`);
+      }
+    }
+  } catch (e) { log(`chuyển sinh lỗi (${bot.h && bot.h.name}):`, e.message); }
+}
+
 function tickBot(bot) {
   try {
     try { ONL().dem(bot.h, bot.key, false); } catch {} // online tích lũy theo nhịp thật (≤90 giây mới tính)
     lamMoiTab(bot); // lên cấp thì bảng chiêu theo kịp (chiêu/tiềm năng mới chỉ áp ở thành — như người chơi cộng điểm)
+    hdChuyenSinh(bot); // Q6: bot cấp 200 thì đi chuỗi chuyển sinh (nhận/nộp/xác nhận); bước 1 + 3 chạy qua đúng gietQuai/ghiDau sẵn có
     if (bot.mode === "hd") { hdTick(bot); return; }
     // Chạm trần exp/ngày thì không vào hoạt động nữa (kể cả đang bày sạp) — về nghỉ ở thành.
     if ((bot.mode === "luyen" || bot.mode === "cho") && !DO_MODE && !hetTran(bot)) hdKiemTra(bot); // hoạt động có giờ: vào đúng cửa, hết thì về train/sạp

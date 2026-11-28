@@ -57,6 +57,13 @@ const path = require("path");
 const ROOT = path.join(__dirname, "..");
 const doc = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, f), "utf8"));
 const PACK = doc("assets/web/item/items.json"), GOC = doc("assets/data/do-goc.json").items, DX = doc("assets/data/dong-xanh.json");
+// Mỹ phẩm P4 (26/11/2026, THIET-KE.md §2.4): chỉ đổi ngoại hình, 0 chỉ số. File chưa có (trước đợt P4) thì bảng rỗng —
+// mọi id đều không hợp lệ, chọn/bỏ vẫn chạy nhưng không chọn được món nào (không vỡ máy chủ).
+const MP_NT = (() => { try { return doc("assets/data/ngoai-trang.json"); } catch { return { bo: [] }; } })();
+const MP_VS = (() => { try { return doc("assets/data/vong-sang.json"); } catch { return { vong: [], vuKhi: [] }; } })();
+const MP_NT_BY = new Map((MP_NT.bo || []).map((x) => [x.id | 0, x]));
+const MP_VG_BY = new Map((MP_VS.vong || []).map((x) => [x.id | 0, x]));
+const MP_VK_BY = new Map((MP_VS.vuKhi || []).map((x) => [x.id | 0, x]));
 const NKD = () => require("./nhat-ky"); // sổ hoạt động từng tài khoản (nạp lúc dùng)
 const NG = require("./nguon-mon"); // nguồn gốc món: mã riêng + nơi sinh ra + đường đi (anh 18/11 tối — may-chu/nguon-mon.js)
 const CHR = doc("assets/data/char.json"), MS = doc("assets/data/mobstats.json"), CFG = require("./cau-hinh-qt").apDung(doc("cau-hinh.json")); // + phần quản trị sửa ở F10 → Cấu hình (du-lieu/cau-hinh-qt.json — anh 11/11)
@@ -80,6 +87,22 @@ const laPhu = (it) => !!(it && (BY.get(it.k) || {}).phu);
 const KTC = (() => { try { return doc("assets/data/ky-tran-cac.json"); } catch { return { items: {}, the: [], buff: {} }; } })();
 for (const [k, x] of Object.entries(KTC.items)) BY.set(k, { ...x, k });
 const HANG_KTC = new Map(KTC.the.flatMap((t) => t.hang.filter((o) => o.k).map((o) => [o.k, o.gia])));
+// ---------- Đồ Hoàng Kim (P3 — THIET-KE.md §2.3): bảng sinh sẵn lúc build dữ liệu
+// (cong-cu/sinh-do-hoang-kim.mjs), KHÔNG rơi từ quái (BY_TYPE của taoDo chỉ lấy từ PACK),
+// chỉ nhận qua 3 nguồn: hộp choHoangKim, đổi ở NPC (act doiHK), Boss Hoàng Kim (boss-tg.js
+// tặng hộp). Món HK: cl:10, reborn:1, hk:1, d = 5-6 dòng cố định (tối đa theo bảng dòng xanh của vị trí+hệ); khóa bảo hiểm vĩnh viễn khi nhận.
+const HK = (() => { try { return doc("assets/data/do-hoang-kim.json"); } catch { return { items: {} }; } })();
+const HK_KEYS = Object.keys(HK.items || {});
+for (const [k, v] of Object.entries(HK.items || {})) { const { pack, ...g } = v; GOC[k] = g; if (pack) BY.set(k, { ...pack, k }); }
+const laHK = (k) => !!(k && (GOC[k] || {}).hk);
+const hkTheoPhai = (fac) => HK_KEYS.filter((k) => (GOC[k] || {}).fac === +fac);
+const hkTheoViTri = (fac, t, p) => hkTheoPhai(fac).find((k) => { const x = BY.get(k) || {}; return x.t === t && (t === 0 || t === 1 ? x.p === p : true); });
+// món HK mới (chưa khóa, chưa gắn nguồn — nơi nhận tự gắn kbh + NG.gan theo đường của nó)
+const monHK = (k) => { const g = GOC[k]; if (!g || !g.hk) loi("Không có món Hoàng Kim này. Tìm lại đi."); return { k, s: g.series, d: g.d.map(([kk, vv]) => [kk, vv]), m: Math.max(1, g.lv | 0) }; };
+// trần dòng xanh của khóa k trên loại t, hệ s: tienTo = dòng tiền tố (se -1), ngược lại hậu tố (se = s)
+// số dòng tối đa gieo được trên loại t, hệ s (gieoDong dừng khi hết dòng phân biệt — vd áo hệ Kim/Mộc chỉ 5 dòng)
+const tranDong = (k, t, s, tienTo) => { let mx = null; for (const r of DX.rows) { if (r.k !== k || !(r.w[t] > 0) || (tienTo ? r.se !== -1 : r.se !== s)) continue; const hi = r.p[0][1]; if (mx == null || hi > mx) mx = hi; } return mx; };
+const soDongToiDa = (t, s) => { const pre = new Set(), suf = new Set(); for (const r of DX.rows) { if (!(r.w[t] > 0)) continue; if (r.se === -1) pre.add(r.k); else if (r.se === s) suf.add(r.k); } return Math.min(3, pre.size) + Math.min(3, suf.size); };
 // "hoàn" = trạng thái vật phẩm có chỉ số chiến đấu (buff.attrs): hoàn Tống Kim + hoàn Kỳ Trân Các (Phi Tốc, Đại Lực, Nội … hoàn, Kích Công Trợ Lực, Âm Dương…) —
 // trong trận Tống Kim tối đa 3 phút, trọng thương thì mất (anh 17/11 — tong-kim.js hoanTran). Chiến cổ / Lệnh Bài (đồng đội — trình duyệt) không tính
 const laHoan = (k) => typeof k === "string" && k !== "tkChienCo" && k !== "tkLenhBai" && !!(KTC.buff[k] && KTC.buff[k].attrs && Object.keys(KTC.buff[k].attrs).length);
@@ -343,6 +366,7 @@ const PQ = () => require("./phu-quy.js"); // Phú Quý Cẩm Hạp (như trên)
 const VAI = () => require("./vuot-ai.js"); // Vượt Ải (như trên)
 const VDE = () => require("./viem-de.js"); // Viêm Đế Bảo Tàng — mở Viêm Đế Bí Bảo (anh 04/11)
 const DTA = () => require("./da-tau.js"); // Dã Tẩu — hệ ngựa nhiệm vụ đang đòi (mua ở Mã phu — anh 10/11)
+const CSH = () => require("./chuyen-sinh.js"); // Chuyển sinh — đếm giết quái / rơi hồn trong gietQuai (nạp lúc dùng, như Dã Tẩu)
 const HE_TEN = ["Kim", "Mộc", "Thủy", "Hỏa", "Thổ"];
 const MCH = () => require("./minh-chu.js"); // nhiệm vụ Võ Lâm Minh Chủ — đếm quái nhiệm vụ giết quái (như trên)
 const PTH = () => require("./phan-than.js"); // Phân Thân (anh 05/11): có phân thân đang theo thì ủy thác không đo tốc độ (như trên)
@@ -472,6 +496,9 @@ const khongPha = (d) => Array.isArray(d) && d.some((e) => e && e[0] === "indestr
 
 const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+// Bảng exp (assets/data/char.json, Huy quyết Q2 13:49 ngày 27/11/2026): kẹp need tối đa 300.000.000
+// từ cấp 145 (56 mốc) — tổng 1→200 còn 22.566.772.100 (gốc 97.566.772.100), ~13,5 ngày chơi đều
+// 4 giờ/ngày theo mô hình P0.2 (1.669M/ngày). Client đọc cùng bảng này để hiện thanh exp nên không lệch.
 const need = (lvl) => CHR.exp[lvl - 1] || Infinity;
 function chonTrongSo(w) { // { khóa: trọng số } hoặc [trọng số] -> khóa / chỉ số
   const e = Array.isArray(w) ? w.map((v, i) => [i, v]) : Object.entries(w);
@@ -675,6 +702,51 @@ const aoMac = (h) => Object.values(h.equip || {}).find((o) => o && (BY.get(o.k) 
 // GIỐNG src/char/jx-char.js LE_PHUC — sửa thì sửa cả 2.
 const LE_PHUC = new Set([43, 44, 45, 46]);
 const laLePhuc = (ao) => !!ao && LE_PHUC.has((BY.get(ao.k) || {}).id);
+// Mỹ phẩm P4: sở hữu h.mpSo = { nt: [id], vg: [id], vk: [id] }; đang chọn h.ngoaiTrang / h.vongSang / h.vkSang (id hoặc 0).
+// Chỉ chuẩn hóa id + sở hữu — không cộng chỉ số, không đụng equip/looks.
+function mpSoChuan(mpSo) {
+  const s = (mpSo && typeof mpSo === "object") ? mpSo : {};
+  const loc = (L, by) => (Array.isArray(L) ? L : []).map((v) => v | 0).filter((v, i, a) => v > 0 && a.indexOf(v) === i && by.has(v));
+  return { nt: loc(s.nt, MP_NT_BY), vg: loc(s.vg, MP_VG_BY), vk: loc(s.vk, MP_VK_BY) };
+}
+function mpChuan(h) {
+  h.mpSo = mpSoChuan(h.mpSo);
+  h.ngoaiTrang = (h.mpSo.nt.includes(h.ngoaiTrang | 0) ? h.ngoaiTrang | 0 : 0);
+  h.vongSang = (h.mpSo.vg.includes(h.vongSang | 0) ? h.vongSang | 0 : 0);
+  h.vkSang = (h.mpSo.vk.includes(h.vkSang | 0) ? h.vkSang | 0 : 0);
+}
+// Tặng 1 món mỹ phẩm đã có trong bảng (điểm móc cho P2/P3 gọi — không tự tặng ở đây). Trả về món hoặc null.
+function tangMyPham(h, loai, id) {
+  const by = loai === "nt" ? MP_NT_BY : loai === "vg" ? MP_VG_BY : loai === "vk" ? MP_VK_BY : null;
+  if (!by || !by.has(id | 0)) return null;
+  const so = mpSoChuan(h.mpSo), ds = loai === "nt" ? so.nt : loai === "vg" ? so.vg : so.vk;
+  if (!ds.includes(id | 0)) ds.push(id | 0);
+  h.mpSo = so;
+  return by.get(id | 0);
+}
+// ĐIỂM MÓC P2 — may-chu/chuyen-sinh.js xacNhan() gọi hàm này KHI chuyển sinh xong (đã gắn, 27/11/2026).
+// Đề xuất mặc định (Q7 đã chốt 13:57 ngày 27/11/2026: vẽ thêm mẫu riêng — mẫu thử Q7 chưa duyệt nên
+// vòng 8–10 TẠM không tặng mỹ phẩm): lần 1 -> 1 bộ ngoại trang theo phái (id = fac + 1); lần 2 -> vòng sáng 1;
+// lần 3 -> vũ khí sáng 1; lần 4–7 -> nốt vòng/vũ khí sáng còn lại (2, 3); lần 8–10 -> null (chờ mẫu Q7 duyệt).
+function myPhamChuyenSinh(h, lan) {
+  if ((lan | 0) === 1) { const id = (h.fac == null ? 0 : h.fac | 0) + 1, d = tangMyPham(h, "nt", id); return d ? { loai: "nt", id, ten: d.ten } : null; }
+  if ((lan | 0) === 2) { const d = tangMyPham(h, "vg", 1); return d ? { loai: "vg", id: 1, ten: d.ten } : null; }
+  if ((lan | 0) === 3) { const d = tangMyPham(h, "vk", 1); return d ? { loai: "vk", id: 1, ten: d.ten } : null; }
+  const them = { 4: ["vg", 2], 5: ["vk", 2], 6: ["vg", 3], 7: ["vk", 3] }[(lan | 0)];
+  if (them) { const d = tangMyPham(h, them[0], them[1]); return d ? { loai: them[0], id: them[1], ten: d.ten } : null; }
+  return null;
+}
+// ĐIỂM MÓC P3 — may-chu/boss-tg.js nhanThuong() gọi hàm này khi nhận thưởng Boss Hoàng Kim lần đầu (đã gắn, 27/11/2026).
+// Tỉ lệ thấp mặc định 5%/lần, tặng ngẫu nhiên 1 vòng/vũ khí sáng chưa có; đã có đủ thì không tặng gì.
+function myPhamBossHK(h) {
+  if (Math.random() >= 0.05) return null;
+  const so = mpSoChuan(h.mpSo);
+  const chua = [...[1, 2, 3].filter((id) => !so.vg.includes(id)).map((id) => ["vg", id]), ...[1, 2, 3].filter((id) => !so.vk.includes(id)).map((id) => ["vk", id])];
+  if (!chua.length) return null;
+  const [loai, id] = chua[Math.floor(Math.random() * chua.length)];
+  const d = tangMyPham(h, loai, id);
+  return d ? { loai, id, ten: d.ten } : null;
+}
 function kieuDang(h) {
   const L = {};
   for (const it of Object.values(h.equip || {})) { const x = BY.get(it.k); if (x && x.g && x.id != null) L[x.g] = x.id; }
@@ -734,6 +806,7 @@ function chuan(h) {
   if (!h) return false;
   const truoc = JSON.stringify([h.bag, h.equip, h.looks, h.uN, h.ruong, h.tienRuong, h.ruongPhu, h.books, h.sachV, h.tuiTM, h.chongV]);
   h.uN = h.uN | 0;
+  h.reborn = Math.max(0, Math.min(10, h.reborn | 0)); // chuyển sinh: tối đa 10 lần — Huy quyết Q3 13:49 27/11/2026 (thay 3 vòng cũ); nhân vật cũ không có trường thì 0, không vỡ
   const seen = new Set(), t0 = Date.now(), moKhoa = []; // moKhoa: tên món khóa có hạn vừa hết giờ (KBH_TAM)
   // nguồn gốc món (anh 18/11 tối): nhân vật chuẩn hóa lần đầu sau bản này (chưa có ngV) -> trang bị chưa có mã là đồ cũ ("cu"); đã có ngV mà vẫn gặp món
   // chưa có mã -> món vào túi / rương không qua chỗ tạo món nào đã gắn nguồn: "?" + nhật ký (khongRo)
@@ -798,6 +871,7 @@ function chuan(h) {
     return R;
   });
   h.looks = kieuDang(h);
+  mpChuan(h); // mỹ phẩm P4: chỉ chuẩn hóa id/sở hữu, không cộng chỉ số
   // sách võ công (anh 27/10): chiêu 90 / 120 / 150 chỉ học bằng sách (h.books — máy chủ giữ). Nhân vật có trước: chiêu sách đã cộng điểm coi
   // như đã đọc sách (1 lần — sachV)
   if (!h.sachV) { const B = new Set(h.books || []); for (const [id, lv] of Object.entries(h.skills || {})) if ((lv | 0) > 0 && CHIEU_SACH.has(+id)) B.add(+id); h.books = [...B]; h.sachV = 1; }
@@ -1145,6 +1219,8 @@ function gietQuai(h, ds, ctx) {
     // anh 18/11 — nhiệm vụ ngày lễ (nguon-su-kien.js demGiet): quái mình tự hạ ở bãi luyện công — như Sợi chỉ màu
     if (!va && !sat && !thuyen && !ptGiet && !ctx.ph && !khongRoi) { try { const nt = NSK().demGiet(h, 1); if (nt) (kq.tin = kq.tin || []).push(nt); } catch (e) { console.error("Nguồn sự kiện — nhiệm vụ ngày lễ:", e.message); } }
     if (!va && !sat && !thuyen) { const mt = MCH().giet(h, ctx, Z, id); if (mt) (kq.tin = kq.tin || []).push(...mt); } // nhiệm vụ Võ Lâm Minh Chủ: hạ đúng quái ở đúng bãi (cả tổ đội)
+    // Chuyển sinh (may-chu/chuyen-sinh.js demGiet): đếm quái ngang cấp bước 1; bước 2 thì trùm/tinh anh rơi Linh Hồn Chiến 40% qua roiDacBiet sẵn có
+    if (!va && !sat && !thuyen && !ptGiet && !ctx.ph && !khongRoi) { try { const cg = CSH().demGiet(h, { boss, ta, L }); if (cg) { if (cg.tin) (kq.tin = kq.tin || []).push(cg.tin); if (cg.roiHon) roiDacBiet(1, CSH().BANG_HON, its); } } catch (e) { console.error("Chuyển sinh — đếm giết:", e.message); } }
     if (VK) {
       if (VK.bhDam) congBh(ctx, h, "vuotAi", null, { dot: VK.bhDam }); // bang hội đợt 2: hết 1 đám Vượt Ải (1 người) — 4 / 8 / 10 theo đám
       if (VK.kn) { h.exp += VK.kn; kq.kn += VK.kn; kq.len += lenCap(h); }
@@ -1401,7 +1477,7 @@ function diemCo(h) {
 function yeuCau(h, it) {
   const g = GOC[it.k] || {};
   if ((h.lvl || 1) < capYeuCau(it)) return `Cần đẳng cấp ${capYeuCau(it)}`;
-  if (g.reborn) return "Cần trùng sinh";
+  if (g.reborn && (h.reborn | 0) < g.reborn) return `Cần trùng sinh ${g.reborn} lần`;
   if (g.sex && g.sex !== h.sex) return g.sex === "f" ? "Chỉ nữ mặc được" : "Chỉ nam mặc được";
   const c = g.str || g.dex ? diemCo(h) : null;
   if (g.str && c.str < g.str) return `Cần sức mạnh ${g.str}`;
@@ -1593,6 +1669,20 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
       h.diemTk = co - gia * n;
       return { msg: `Mua ${n} ${x.n.trim()}: tốn ${gia * n} điểm Tống Kim (còn ${h.diemTk})` };
     }
+    case "chonMP": { // mỹ phẩm P4: chọn món ĐÃ SỞ HỮU (loai nt | vg | vk, id) — chỉ đổi ngoại hình, 0 chỉ số; không đụng nhánh yeuCau/P2/P3
+      const loai = String(b.loai || ""), id = b.id | 0;
+      const by = loai === "nt" ? MP_NT_BY : loai === "vg" ? MP_VG_BY : loai === "vk" ? MP_VK_BY : null;
+      if (!by) loi("Loại mỹ phẩm không có. Chọn lại đi.");
+      if (!by.has(id)) loi("Món mỹ phẩm này không có. Chọn lại đi.");
+      if (!mpSoChuan(h.mpSo)[loai].includes(id)) loi("Ngươi chưa có món này. Kiếm được rồi hãy chọn.");
+      if (loai === "nt") h.ngoaiTrang = id; else if (loai === "vg") h.vongSang = id; else h.vkSang = id;
+      return { msg: `Đã chọn ${by.get(id).ten}. Chỉ đổi ngoại hình, không cộng chỉ số.` };
+    }
+    case "boMP": { // mỹ phẩm P4: bỏ chọn (loai nt | vg | vk) — ngoại hình về như đồ đang mặc
+      const loai = String(b.loai || "");
+      if (loai === "nt") h.ngoaiTrang = 0; else if (loai === "vg") h.vongSang = 0; else if (loai === "vk") h.vkSang = 0; else loi("Loại mỹ phẩm không có. Chọn lại đi.");
+      return { msg: "Đã bỏ mỹ phẩm. Ngoại hình về như đồ đang mặc." };
+    }
     case "dung": return dungVat(h, it, b, key, !!(tk && tk.admin)); // quản trị: thử món sự kiện ngoài ngày (anh 16/11 — Báo Đáp Ân Sư)
     // ---- mua lại món đã bán (lượt 88): b.u = mã món lúc bán; giá = giá mua lại đã chốt lúc bán; món về túi đúng như lúc bán (dòng, khóa, độ bền, phi phong…)
     case "muaLai": {
@@ -1643,11 +1733,38 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
       if (!it) loi("Không có món này trong túi. Tìm lại đi.");
       // it.kbh + món của bảng Kỳ Trân Các: thuốc Hồi Thiên rút từ lễ bao mua bằng Xu (anh 12/11 — "k bán dc, chỉ hủy dc ở lễ quan")
       if (laKtc(it) || it.het || (it.kbh && KTC.items[it.k])) loi("Vật phẩm của Kỳ Trân Các thì đừng bán cho cửa hàng.");
+      if (laHK(it.k)) loi("Đồ Hoàng Kim khóa bảo hiểm vĩnh viễn, không bán cho cửa hàng được đâu.");
       if (it.vv) loi("Ngựa vĩnh viễn từ mã bài thì đừng bán cho cửa hàng."); // anh 16/11 — Báo Đáp Ân Sư (Mã bài Bôn Tiêu / Phiên Vũ)
       if (it.tk) loi(CAU_TK);
       const p = giaBan(it); h.bag.splice(i, 1); h.gold = (h.gold || 0) + p;
       giuMuaLai(h, it, p); // mua lại trong 5 phút (lượt 88)
       return { msg: `Bán ${it.n ? it.n + " " : ""}${tenMon(it)}: +${tien(p)}` };
+    }
+    case "doiHK": { // đổi đồ Hoàng Kim ở NPC (P3 — THIET-KE.md §2.3; chưa có nút NPC, chỉ có act máy chủ — gắn nút NPC là việc tiếp theo, xem P3-KET-QUA.md): 1 món xanh đủ dòng tối đa + 10.000.000 lượng -> 1 món HK cùng vị trí, đúng phái
+      const PHI_HK = 10000000;
+      if (!it || laHK(it.k)) loi("Không có món đồ xanh nào như vậy trong túi. Tìm lại đi.");
+      if ((h.reborn | 0) < 1) loi("Đổi đồ Hoàng Kim cần trùng sinh 1 lần. Trùng sinh xong hãy quay lại.");
+      if (h.fac == null) loi("Ngươi chưa bái nhập phái nào cả. Bái nhập phái rồi hãy đổi.");
+      const xHK = BY.get(it.k), gHK = GOC[it.k];
+      if (!xHK || !gHK || xHK.t == null || xHK.t < 0 || xHK.t > 9) loi("Món này không đổi được đồ Hoàng Kim. Tìm món khác đi.");
+      const dsHK = it.d || [];
+      const toiDaHK = soDongToiDa(xHK.t, it.s);
+      if (dsHK.length !== toiDaHK) loi(`Món đổi phải đủ ${toiDaHK} dòng (tối đa của loại này, hệ này). Món này mới ${dsHK.length} dòng.`);
+      for (let j = 0; j < dsHK.length; j++) {
+        const [kk, vv] = dsHK[j], mx = tranDong(kk, xHK.t, it.s, j % 2 === 0);
+        if (mx == null) loi(`Dòng ${kk} không phải dòng của loại món này. Món này không đổi được.`);
+        if ((vv | 0) * 10 < mx * 9) loi(`Dòng ${kk} mới ${vv}, chưa đạt 90% trần (${mx}). Cần dòng gần trần mới đổi được.`);
+      }
+      if ((h.gold || 0) < PHI_HK) loi(`Đổi đồ Hoàng Kim cần ${tien(PHI_HK)}. Ngân lượng trên người ngươi chưa đủ.`);
+      const kHK = hkTheoViTri(h.fac, xHK.t, xHK.p);
+      if (!kHK) loi("Phái của ngươi không có đồ Hoàng Kim cho vị trí / nhánh vũ khí này. Đổi món khác đi.");
+      const ox = it.x, oy = it.y;
+      h.bag.splice(i, 1); h.gold -= PHI_HK;
+      const moi = monHK(kHK);
+      moi.kbh = KBH_VV;
+      NG.gan(moi, "qua", "Đổi 1 món xanh đủ dòng tối đa + 10.000.000 lượng", h.name);
+      if (!vaoTui(h, moi, ox, oy)) { h.bag.push(it); h.gold += PHI_HK; loi("Hành trang không đủ chỗ. Dọn bớt đi rồi hãy đổi."); }
+      return { msg: `Đổi được ${tenMon(moi).trim()} — đồ Hoàng Kim khóa bảo hiểm vĩnh viễn, không bán sạp, không giao dịch được.` };
     }
     case "mua": { // b.k = món bày ở cửa hàng (thuốc / Thổ Địa Phù / đồ trắng Tạp hóa), b.n = số lượng
       const x = BY.get(String(b.k)), n = b.n | 0;
@@ -2215,8 +2332,14 @@ function dungVat(h, it, b, key, qt = false) {
       bot(); h.pd.diem = (h.pd.diem | 0) + D.diem;
       return { msg: `Ngươi nhận được ${D.diem} điểm phúc duyên (có ${h.pd.diem})` };
     }
-    case "choHoangKim": { // Hoàng Kim Bảo Hạp / Vé số Hoàng Kim (quà mốc Dã Tẩu 6000 / 7000 / 8000 — anh 31/10 khuya lần 2): giữ lại, mở khi có trang bị Hoàng Kim
-      loi(`${x.n.trim()}: game chưa có trang bị Hoàng Kim. Cứ giữ lại, khi game cập nhật trang bị Hoàng Kim sẽ ${D.monPhai ? "đổi được 1 món Hoàng Kim môn phái của phái đang chơi" : "mở ra 1 món ngẫu nhiên bộ An Bang / Định Quốc"}`);
+    case "choHoangKim": { // Hoàng Kim Bảo Hạp / Vé số Hoàng Kim (quà mốc Dã Tẩu 6000 / 7000 / 8000): mở ra 1 món HK ngẫu nhiên đúng phái người mở — cần trùng sinh 1 lần (P3, THIET-KE.md §2.3; Q5 chưa chốt: cả 2 hộp đều ra món đúng phái, không phân biệt An Bang / Định Quốc)
+      if ((h.reborn | 0) < 1) loi(`${x.n.trim()}: cần trùng sinh 1 lần mới mở được. Cứ giữ lại, trùng sinh xong hãy mở.`);
+      if (h.fac == null) loi("Ngươi chưa bái nhập phái nào cả. Bái nhập phái rồi hãy mở hộp này.");
+      const dsHK = hkTheoPhai(h.fac);
+      if (!dsHK.length) loi("Phái của ngươi chưa có đồ Hoàng Kim. Tìm lại đi.");
+      const moiHK = monHK(dsHK[Math.floor(Math.random() * dsHK.length)]);
+      datMoi(moiHK, "Hành trang không đủ chỗ. Dọn bớt đi rồi hãy mở.", { kbh: KBH_VV });
+      return { msg: `Mở ${x.n.trim()}: nhận được ${tenMon(moiHK).trim()} — đồ Hoàng Kim khóa bảo hiểm vĩnh viễn, không bán sạp, không giao dịch được.` };
     }
     case "laHan": { // Thiết La Hán (script\item\tie-luohan.lua): mỗi ngày (giờ Việt Nam) tối đa D.lanNgay quyển + D.knNgay kinh nghiệm; trên cấp D.capToiDa
       // vô hiệu (không mất món). Nhóm cấp (cấp trên 100 tính như 100) -> [kinh nghiệm, %]: ngẫu nhiên 1–100 ≤ % thì đủ, không thì kinh nghiệm × số / 200
@@ -2418,6 +2541,7 @@ function taoQua(h, q) {
     for (const m of (Array.isArray(q.mon) ? q.mon : []).slice(0, 20)) {
       const x = BY.get(String(m && m.k)), loai = loaiQua(x);
       if (!loai) loi(`Không có món ${m && m.k}. Tìm lại đi.`);
+      if (laHK(x.k)) loi("Đồ Hoàng Kim chỉ nhận qua Boss Hoàng Kim, đổi ở NPC hoặc mở hộp — không tặng / gửi qua mã quà được.");
       const ten = (x.n || x.k).trim(), kb = KHONG_KHOA.has(x.k) ? {} : kb0;
       if (loai === "do") {
         const s = m.he >= 0 && m.he <= 4 ? m.he | 0 : ri(0, 4), dong = clamp(m.dong | 0, 0, 6), n = clamp(m.n | 0 || 1, 1, 10);
@@ -2446,5 +2570,5 @@ function taoQua(h, q) {
 }
 
 // NOI: phần dùng chung cho may-chu/da-tau.js (Dã Tẩu)
-const NOI = { oTrong: oTrongTui, laTB, campPhai: (fac) => (fac == null ? 0 : PHAI_CAMP.get(+fac) || 0), CFG, BY, ZONES, FARM, THANH, BAI_NAY, capVao, need, MAX_LEVEL, lenCap, loi, ngayVN, tien, themChong, coMon, mayMan, vaoTui, mang: MANG, soThuoc, soThuocK, chongMax, laThuoc, xepChong, donChong, TIEN_MAX, ROWS, CHIA_XA, KBH_VV, KBH_TAM, CAU_KBH, KHONG_KHOA, CAU_TK, MAPS, FULL }; // chợ trời (may-chu/cho-troi.js): thuốc mang tối đa, gộp chồng, tiền tối đa; ROWS: sạp Hệ thống của Dã Tẩu dựng món; MAPS / FULL: bảng bản đồ đã nạp (region, scale — may-chu/npc-gan.js đổi tọa độ NPC, anh 13/11)
-module.exports = { muaLaiGui, MUA_LAI, NOI, mobStats: MS, quaiCap: (lv) => (QUAI_CAP ? QUAI_CAP(lv) : null), knBai, baiNay, chuan, hamChieu, laLuyen, sachPhai, thuocPhai, luyenDon, luyenCua, diemDaDung, dangNhapDem, thuongDN, dnCho, mauSat, gietQuai, roiMon, luyenKn, nhanChia, nhat, datBai, datChung, doiDo, banMon, coMon, tien, chet, lam, uong, hao, uyThacVe, uyThacDo, buffDem, buffCon, laHoan, CHIEU_SACH, thuUyThac, ghiDev, tenMon, giaBan, SLOT_OF, timMon, taoQua, monTin, tenBai, MAX_LEVEL, RXC, monRuongXanh, choRuongXanh, nhanRuongCho, BUA_MON, LUAT: { muaLai: { phut: MUA_LAI.phut, heSo: MUA_LAI.heSo }, sua: SUA, haoMon: +DB.haoMon || 0, vuKhi: VK, uyThac: { gioNgay: UT.gioNgay, tiLe: UT.tiLe, vangGiay: UT.vangGiay }, get dangNhap() { return { xu: DN.xu, phiTiep: DN.phiTiep }; }, ruongChuy: ((CFG.daTau || {}).ruong || {}).chuy ?? 6, ruongXanh: { soDong: RXC.soDong, oTrong: RXC.oTrong }, ruong: { moRong: RG.moRong }, tienTrang: { luongMotXu: TT.luongMotXu, luongBanXu: TT.luongBanXu, banXuNgay: TT.banXuNgay }, doiPhai: { cap: +((CFG.doiPhai || {}).cap) || 120, ngay: +((CFG.doiPhai || {}).ngay) || 7 }, kyNangPhai: CFG.kyNangPhai || null, choTroi: ((C) => { const t = C.thue ?? 20, b = Number.isFinite(+C.thueBan) ? +C.thueBan : t / 2; return { thue: t, thueBan: b, thueMua: Number.isFinite(+C.thueMua) ? +C.thueMua : t - b, cap: C.cap ?? 10 }; })(CFG.choTroi || {}), get thuongCap() { return ((CFG.thuongCap || {}).moc || []).map((m) => m.cap).filter((c) => c > 0).sort((a, b) => a - b); }, tanThu: CFG.tanThu || null, tangIchDoi: CFG.tangIchDoi || null, quaiChung: CFG.quaiChung ? { bai: (CFG.quaiChung.bai || []).map(Number), thuong: QC_THUONG, manh: CFG.quaiChung.manh || null } : null, satThu: { mau: (CFG.satThu && CFG.satThu.mau) || {}, dat: SAT_DAT }, chong: TC.chongToiDa, chongRieng: CHONG_RIENG, mua: TC.muaToiDa, mang: TC.mangToiDa || 60, banLai: TC.banLai, giaBan: CFG.giaBan, thieuCap: VB.thieuCap | 0, noiCong: +((CFG.noiCong || {}).phanTram) || 0, quaiVoCong: { ...(CFG.quaiVoCong || {}), bat: process.env.VL_QUAI_VO_CONG === "1" || !!(CFG.quaiVoCong || {}).bat }, voCong: (CFG.voCong && CFG.voCong.moPhai) || ["shaolin", "emei"], canBang: { trum: CAN_BANG.trum || null, soQuai: CAN_BANG.soQuai || null, tinhAnhMoi: QD.tinhAnhMoi, thuLinhMoi: QD.thuLinhMoi, ta: Object.fromEntries(Object.entries(RDB).map(([z, b]) => [z, { ten: b.ta.ten, mau: b.ta.mau, st: b.ta.st, ar: b.ta.ar, def: b.ta.def }])), bai: Object.fromEntries(Object.entries(CAN_BANG.bai || {}).map(([z, b]) => [z, { mau: b.mau, satThuong: b.satThuong, ...(b.chiSo ? { chiSo: b.chiSo } : {}), ...(b.soQuai ? { soQuai: b.soQuai } : {}), ...Object.fromEntries(["chinhXac", "neTranh", "capQuai", "mauThuLinh", "mauTinhAnh"].filter((k) => b[k] != null).map((k) => [k, b[k]])) }])) } } };
+const NOI = { oTrong: oTrongTui, laTB, campPhai: (fac) => (fac == null ? 0 : PHAI_CAMP.get(+fac) || 0), CFG, BY, ZONES, FARM, THANH, BAI_NAY, capVao, need, MAX_LEVEL, lenCap, loi, ngayVN, tien, themChong, coMon, mayMan, vaoTui, mang: MANG, soThuoc, soThuocK, chongMax, laThuoc, xepChong, donChong, TIEN_MAX, ROWS, gieoDong, CHIA_XA, KBH_VV, KBH_TAM, CAU_KBH, KHONG_KHOA, CAU_TK, MAPS, FULL, tangMyPham, myPhamChuyenSinh, myPhamBossHK }; // chợ trời (may-chu/cho-troi.js): thuốc mang tối đa, gộp chồng, tiền tối đa; ROWS: sạp Hệ thống của Dã Tẩu dựng món; MAPS / FULL: bảng bản đồ đã nạp (region, scale — may-chu/npc-gan.js đổi tọa độ NPC, anh 13/11)
+module.exports = { muaLaiGui, MUA_LAI, NOI, tangMyPham, myPhamChuyenSinh, myPhamBossHK, mobStats: MS, quaiCap: (lv) => (QUAI_CAP ? QUAI_CAP(lv) : null), knBai, baiNay, chuan, hamChieu, laLuyen, sachPhai, thuocPhai, luyenDon, luyenCua, diemDaDung, dangNhapDem, thuongDN, dnCho, mauSat, gietQuai, roiMon, luyenKn, nhanChia, nhat, datBai, datChung, doiDo, banMon, coMon, tien, chet, lam, uong, hao, uyThacVe, uyThacDo, buffDem, buffCon, laHoan, CHIEU_SACH, thuUyThac, ghiDev, tenMon, giaBan, SLOT_OF, timMon, taoQua, monTin, tenBai, MAX_LEVEL, RXC, monRuongXanh, choRuongXanh, nhanRuongCho, BUA_MON, LUAT: { muaLai: { phut: MUA_LAI.phut, heSo: MUA_LAI.heSo }, sua: SUA, haoMon: +DB.haoMon || 0, vuKhi: VK, uyThac: { gioNgay: UT.gioNgay, tiLe: UT.tiLe, vangGiay: UT.vangGiay }, get dangNhap() { return { xu: DN.xu, phiTiep: DN.phiTiep }; }, ruongChuy: ((CFG.daTau || {}).ruong || {}).chuy ?? 6, ruongXanh: { soDong: RXC.soDong, oTrong: RXC.oTrong }, ruong: { moRong: RG.moRong }, tienTrang: { luongMotXu: TT.luongMotXu, luongBanXu: TT.luongBanXu, banXuNgay: TT.banXuNgay }, doiPhai: { cap: +((CFG.doiPhai || {}).cap) || 120, ngay: +((CFG.doiPhai || {}).ngay) || 7 }, kyNangPhai: CFG.kyNangPhai || null, choTroi: ((C) => { const t = C.thue ?? 20, b = Number.isFinite(+C.thueBan) ? +C.thueBan : t / 2; return { thue: t, thueBan: b, thueMua: Number.isFinite(+C.thueMua) ? +C.thueMua : t - b, cap: C.cap ?? 10 }; })(CFG.choTroi || {}), get thuongCap() { return ((CFG.thuongCap || {}).moc || []).map((m) => m.cap).filter((c) => c > 0).sort((a, b) => a - b); }, tanThu: CFG.tanThu || null, tangIchDoi: CFG.tangIchDoi || null, quaiChung: CFG.quaiChung ? { bai: (CFG.quaiChung.bai || []).map(Number), thuong: QC_THUONG, manh: CFG.quaiChung.manh || null } : null, satThu: { mau: (CFG.satThu && CFG.satThu.mau) || {}, dat: SAT_DAT }, chong: TC.chongToiDa, chongRieng: CHONG_RIENG, mua: TC.muaToiDa, mang: TC.mangToiDa || 60, banLai: TC.banLai, giaBan: CFG.giaBan, thieuCap: VB.thieuCap | 0, noiCong: +((CFG.noiCong || {}).phanTram) || 0, quaiVoCong: { ...(CFG.quaiVoCong || {}), bat: process.env.VL_QUAI_VO_CONG === "1" || !!(CFG.quaiVoCong || {}).bat }, voCong: (CFG.voCong && CFG.voCong.moPhai) || ["shaolin", "emei"], canBang: { trum: CAN_BANG.trum || null, soQuai: CAN_BANG.soQuai || null, tinhAnhMoi: QD.tinhAnhMoi, thuLinhMoi: QD.thuLinhMoi, ta: Object.fromEntries(Object.entries(RDB).map(([z, b]) => [z, { ten: b.ta.ten, mau: b.ta.mau, st: b.ta.st, ar: b.ta.ar, def: b.ta.def }])), bai: Object.fromEntries(Object.entries(CAN_BANG.bai || {}).map(([z, b]) => [z, { mau: b.mau, satThuong: b.satThuong, ...(b.chiSo ? { chiSo: b.chiSo } : {}), ...(b.soQuai ? { soQuai: b.soQuai } : {}), ...Object.fromEntries(["chinhXac", "neTranh", "capQuai", "mauThuLinh", "mauTinhAnh"].filter((k) => b[k] != null).map((k) => [k, b[k]])) }])) } } };

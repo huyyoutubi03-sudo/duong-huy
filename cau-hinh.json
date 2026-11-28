@@ -1,7 +1,9 @@
 {
   "_ghi_chu": "Cấu hình máy chủ S1 (THIET-KE-S1.md mục 2–4). Sửa xong thì tắt bật lại Chay_Game.bat. Không phát ra ngoài trình duyệt.",
-  "kinhNghiem": 3.5,
-  "_kinhNghiem": "hệ số nhân kinh nghiệm quái (bảng client) — x3,5: người chơi chăm ~cấp 120 sau 1 tháng",
+  "kinhNghiem": 17.5,
+  "_kinhNghiem": "hệ số nhân kinh nghiệm quái (bảng client) — ×5 so với bảng gốc (3,5 × 5 = 17,5; P1 chuyển sinh 27/11/2026): CHỈ nhân exp giết quái qua motCon(); exp hoạt động (Phú Quý, Dã Tẩu, quà nhiệm vụ, online) KHÔNG nhân đợt 1",
+  "kinhNghiemHoatDong": 1,
+  "_kinhNghiemHoatDong": "GIỮ CHỖ, chưa dùng (P1 chuyển sinh 27/11/2026): hệ số exp hoạt động, mặc định 1 = không nhân; chỉ dùng khi Huy chốt nhân cả exp hoạt động (Q1 đợt 2)",
   "roiDo": {
     "quaiThuong": 0.01,
     "trum": 0.2

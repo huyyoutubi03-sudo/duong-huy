@@ -179,6 +179,27 @@ export class JxChar {
     const a = this.meta.sex[sex].order.act[ai];
     return a && a.line && a.line[g] ? "line" : a && a.dir && a.dir[dir] ? "dir" : "default";
   }
+  // Tâm khung hình của 1 bộ phận tại đúng khung/hướng đang vẽ (cùng cách tính khung + neo như draw): { dx, dy } so với điểm chân,
+  // hoặc null nếu tấm chưa tải xong (người gọi dùng điểm dự phòng). P4 (26/11/2026): neo tay cầm để phủ sáng vũ khí.
+  partCenter(look, part, opt) {
+    const ai = this.actIndex(look, opt.act);
+    if (ai < 0) return null;
+    const name = this.meta.acts[ai], main = this.mainPart(look, ai);
+    if (!main) return null;
+    const fi = this.partFile(look, part, ai);
+    if (!fi) return null;
+    const S = this._sheets.get(fi);
+    if (!S) { this._sheet(fi); return null; }
+    const MF = this.file(this.partFile(look, main, ai)), n = MF[3];
+    const dir = (((opt.dir | 0) % 8) + 8) % 8, sc = opt.scale || 1;
+    const k = opt.frame != null ? Math.max(0, Math.min(n - 1, opt.frame | 0)) : this.frameAt(n, name, opt.t, opt.ms, opt.duration);
+    const tOwn = opt.frame != null ? null : opt.t || 0;
+    const F = this.file(fi);
+    const r = S.rects[this.partFrame(F, dir, k, n, tOwn, F[2] === 1 && F[3] !== n)];
+    if (!r || !r.w || !r.h) return null;
+    const ax = F.length > 4 ? F[4] : this.meta.anchor[0], ay = F.length > 4 ? F[5] : this.meta.anchor[1];
+    return { dx: (r.ox + r.w / 2 - ax) * sc, dy: (r.oy + r.h / 2 - ay) * sc };
+  }
 
   // ---------- vẽ ----------
   // opt: { act, dir 0..7, t (giây) | frame, ms, duration, x, y (điểm chân), scale, alpha, shadow (mặc định true),

@@ -30,6 +30,7 @@ import { ldist } from "./map.js";
 import { dirOf } from "../dir.js";
 import * as R from "./rules.js";
 import { ItemDB, looksOf, equipStats, isPotion, weaponKind, laBuffTk, laHoan } from "./itemdb.js";
+import { MyPham, looksMoi, looksKhach } from "./mypham.js"; // mỹ phẩm P4: chỉ ngoại hình, 0 chỉ số
 import { installVoCong, skillB, mergeB, skillSupport, kindOf, auraGhep, addAttrs, vongGiu, KC_ID, KC_PHI, BUA_VUNG_AI } from "./vocong.js";
 import { mocNhanTrung, hoiCoc, HOI_COC } from "./mocnhan.js";
 import { nhatMon, BOSS_TAM, laBoss } from "./auto.js";
@@ -340,6 +341,42 @@ function _nhipGio(P, t) {
   _gio.t = t + (360 + Math.random() * 240) * 1000;
 }
 
+// Bảng màu 4 kiểu vòng chuyển sinh Tứ Linh (Huy chốt 15:58 ngày 27/11/2026; chọn lúc chuyển sinh 16:16 — may-chu/chuyen-sinh.js KIEU_VONG, lưu h.vongKieu, người khác xem qua p.vk). Kiểu không hợp lệ -> Long lam.
+const VONG_KIEU = {
+  long: { // Long — lam
+    canh: ["rgba(96, 214, 248, 0.95)", "rgba(32, 132, 206, 0.92)", "rgba(10, 46, 112, 0.94)"],
+    vien: "rgba(216, 233, 255, 0.95)", gan: "rgba(230, 244, 255, 0.55)",
+    khac: "rgba(228, 240, 255, 0.85)", khacDiem: "rgba(238, 246, 255, 0.95)",
+    nu: ["rgba(70, 220, 212, 0.95)", "rgba(16, 120, 158, 0.95)"], nuBen: "rgba(38, 170, 190, 0.92)",
+    quau: "rgba(90, 200, 255, 0.10)", vong: "rgba(205, 228, 255, 0.75)", vongMo: "rgba(140, 190, 240, 0.35)",
+    ngoc: "rgba(120, 220, 255, 0.9)", nen: "rgba(120, 210, 255, 0.55)", nenMo: "rgba(120, 210, 255, 0.30)",
+  },
+  lan: { // Lân — vàng
+    canh: ["rgba(255, 233, 168, 0.95)", "rgba(245, 184, 29, 0.92)", "rgba(138, 90, 0, 0.94)"],
+    vien: "rgba(255, 243, 208, 0.95)", gan: "rgba(255, 244, 214, 0.55)",
+    khac: "rgba(255, 240, 200, 0.85)", khacDiem: "rgba(255, 250, 225, 0.95)",
+    nu: ["rgba(255, 220, 120, 0.95)", "rgba(180, 120, 20, 0.95)"], nuBen: "rgba(220, 170, 60, 0.92)",
+    quau: "rgba(255, 210, 110, 0.10)", vong: "rgba(255, 238, 200, 0.75)", vongMo: "rgba(240, 200, 120, 0.35)",
+    ngoc: "rgba(255, 217, 77, 0.9)", nen: "rgba(255, 210, 110, 0.55)", nenMo: "rgba(255, 210, 110, 0.30)",
+  },
+  quy: { // Quy — xanh lục
+    canh: ["rgba(125, 232, 176, 0.95)", "rgba(47, 168, 102, 0.92)", "rgba(11, 77, 51, 0.94)"],
+    vien: "rgba(226, 255, 233, 0.95)", gan: "rgba(230, 255, 238, 0.55)",
+    khac: "rgba(230, 255, 238, 0.85)", khacDiem: "rgba(240, 255, 244, 0.95)",
+    nu: ["rgba(90, 220, 160, 0.95)", "rgba(20, 130, 100, 0.95)"], nuBen: "rgba(50, 180, 130, 0.92)",
+    quau: "rgba(110, 230, 170, 0.10)", vong: "rgba(215, 250, 228, 0.75)", vongMo: "rgba(150, 210, 170, 0.35)",
+    ngoc: "rgba(92, 232, 154, 0.9)", nen: "rgba(110, 230, 170, 0.55)", nenMo: "rgba(110, 230, 170, 0.30)",
+  },
+  phung: { // Phụng — đỏ tím
+    canh: ["rgba(255, 179, 200, 0.95)", "rgba(226, 58, 110, 0.92)", "rgba(90, 14, 60, 0.94)"],
+    vien: "rgba(255, 224, 234, 0.95)", gan: "rgba(255, 232, 240, 0.55)",
+    khac: "rgba(255, 228, 236, 0.85)", khacDiem: "rgba(255, 240, 246, 0.95)",
+    nu: ["rgba(230, 130, 200, 0.95)", "rgba(140, 40, 140, 0.95)"], nuBen: "rgba(190, 90, 170, 0.92)",
+    quau: "rgba(255, 140, 190, 0.10)", vong: "rgba(255, 220, 232, 0.75)", vongMo: "rgba(230, 150, 190, 0.35)",
+    ngoc: "rgba(255, 126, 176, 0.9)", nen: "rgba(255, 140, 190, 0.55)", nenMo: "rgba(255, 140, 190, 0.30)",
+  },
+};
+
 export class World {
   // P = { jx, npc, audio, mons (assets/data/monsters.json .mons) }, hero = nhân vật đã tạo,
   // opt = { at: [x, y] chỗ đứng, hp / mp: phần sinh lực / nội lực lúc vào (đổi bản đồ giữ nguyên; hồi sinh ở thành), rest: dưỡng sức
@@ -356,7 +393,7 @@ export class World {
     this.auto = false;
     // cờ của công cụ thử (src/game/devtool.js): bất tử, 1 đòn chết, dừng sinh quái, bấm đất = dịch chuyển, vẽ lưới vật cản + đường đi
     this.dev = { god: false, oneHit: false, noSpawn: false, tp: false, grid: false };
-    const look = P.jx.look({ sex: hero.sex, ...looksOf(hero) });
+    const look = P.jx.look({ sex: hero.sex, ...looksMoi(P.jx, hero.sex, hero) });
     R.fixPoints(hero);
     this.wk = weaponKind(hero);
     this.vcOpen = opt.vcOpen !== false; // phái đã mở võ công (cau-hinh.json voCong.moPhai — main.js vcOpen)
@@ -405,6 +442,8 @@ export class World {
     this.diem = opt.diem && opt.diem.length ? opt.diem : null;
     this.suKien = !!opt.suKien;
     if (zone.m && zone.m.length && !this.suKien) for (let i = 0; i < this.cap; i++) this.spawnMob(false, 200);
+    // mỹ phẩm P4: dữ liệu tải lười — xong thì vẽ lại theo ngoại trang/vũ khí sáng đang chọn (halo đọc đệm mỗi khung nên tự hiện)
+    MyPham.load().then(() => { if (this.hero && (this.hero.ngoaiTrang || this.hero.vkSang)) this.applyLooks(); }).catch(() => {});
   }
 
   // ---------- quái ----------
@@ -501,12 +540,14 @@ export class World {
     p.dash = null;
     return true;
   }
-  // vẽ lại theo đồ đang mặc (hero.looks) + lên / xuống ngựa (hero.rideOff)
-  applyLooks() { this.refreshStats(false); this.player.look = this.P.jx.look({ sex: this.hero.sex, ...looksOf(this.hero) }); return this.player.look; }
-  // đòn thường theo vũ khí đang cầm: tầm (logic), đạn, có bay không (ám khí)
+  // vẽ lại theo đồ đang mặc (hero.looks) + ngoại trang đang chọn (P4 — thiếu id thì giữ đồ mặc) + lên / xuống ngựa (hero.rideOff)
+  applyLooks() { this.refreshStats(false); this.player.look = this.P.jx.look({ sex: this.hero.sex, ...looksMoi(this.P.jx, this.hero.sex, this.hero) }); return this.player.look; }
+  // đòn thường theo vũ khí đang cầm: tầm (logic), đạn, có bay không (ám khí); P4: vũ khí sáng đổi đạn trúng đòn, giữ nguyên tầm/cách bay
   weaponAtk() {
     const F = this.P.fx, b = F ? F.basic((this.hero.looks || {}).weapon || 1, !!this.hero.ranged) : { fx: HIT_FX, range: 75, fly: false };
-    return { reach: b.range * SCALE, atkFx: b.fx, ranged: b.fly };
+    const vk = MyPham.defVk(this.hero && this.hero.vkSang);
+    const fx = vk && vk.fx && F && F.has(vk.fx) ? vk.fx : b.fx;
+    return { reach: b.range * SCALE, atkFx: fx, ranged: b.fly };
   }
 
   // ---------- điều khiển ----------
@@ -660,10 +701,12 @@ export class World {
       let e = M.get(s.name);
       if (!e) { e = { kind: "other", name: s.name, x: f[1], y: f[2], dir: f[3], t: 0, act: "stand", buf: [], gap: 0.1, lag: 0.2, off: 0, ...(s.pt ? { pt: 1 } : {}) }; M.set(s.name, e); }
       if (s.pt) { e.chu = s.chu; e.so = s.so | 0; } // người thuê + thứ tự phân thân (chiêu của phân thân — main.js "chieu")
-      const key = s.sex + JSON.stringify(s.look);
-      if (e.lookKey !== key) { e.lookKey = key; e.sex = s.sex; e.look = this.P.jx.look({ sex: s.sex, ...s.look }); }
+      const nt = s.nt | 0, key = s.sex + JSON.stringify(s.look) + "|" + nt; // P4: đổi ngoại trang thì vẽ lại (khóa gồm nt)
+      if (e.lookKey !== key) { e.lookKey = key; e.sex = s.sex; e.look = this.P.jx.look({ sex: s.sex, ...looksKhach(this.P.jx, s.sex, s.look || {}, nt) }); }
+      e.nt = nt; e.vg = s.vg | 0; e.vk = s.vk | 0; // mỹ phẩm P4 (vg KHÁC vs — vs là vòng sáng võ công ở dòng dưới)
       e.lvl = s.lvl; e.fac = s.fac ?? null; e.co = !!s.co; e.gd = s.gd | 0; e.cp = s.cp ?? this.campPhai(s.fac); // cp: phe đang theo (máy chủ — màu tên, vòng sáng) // co: đội trưởng của đội đang mở, gd: 1 mở giao dịch / 2 đang giao dịch -> cờ trên đầu
       e.cc = s.cc | 0; // vầng trăng Nhất Kỷ / Càn khôn đang có (anh 16/11 — bit 1 Hồng Nguyệt, 2 Lam Nguyệt: vocong.js TRANG_CC; máy chủ the-gioi.js ccDau)
+      e.rb = s.rb | 0; // chuyển sinh: số lần (kẹp 0–10 — máy chủ the-gioi.js) — nhãn trên đầu hiện "×N", vòng sen dưới chân
       e.hp = s.hp ?? 100; e.mp = s.mp ?? 100; e.vs = s.vs || null; e.qt = !!s.qt; // % sinh lực / nội lực (bảng đội ngũ), vòng sáng hỗ trợ đang bật (vongDoi)
       // NPC nhân vật mẫu (may-chu/npc-choi.js, cờ npc trong snapshot): đánh được như 1 người chơi — các trường
       // dưới đây để công thức sát thương (skDamage / heroDamage qua mobRes / serK) không vỡ khi đọc e.res / e.def
@@ -989,7 +1032,7 @@ export class World {
     } else if (p.goal && !p.path) { p.goal = null; p.manual = false; } // đích không còn đường: bỏ luôn cờ tay để khỏi kẹt trạng thái
     const x0 = p.x, y0 = p.y;
     if (p.path && p.path.length) {
-      if (this.follow(p, p.path, this.tocEp != null ? this.tocEp : RUN * (1 + (p.moveSpeed || 0) / 100) * K, dt)) { p.path = null; if (p.goal) { p.goal = null; p.manual = false; } } // "Tốc độ di chuyển +%": giày, ngựa; đường đua: tốc cố định (tocEp — duangua.js)
+      if (this.follow(p, p.path, this.tocEp != null ? this.tocEp : RUN * (1 + (p.moveSpeed || 0) / 100) * K, dt)) { p.path = null; if (p.goal) { p.goal = null; p.manual = false; } } // tới đích: lệnh đi theo link tọa độ coi như xong
       this.setAct(p, "run");
     } else this.setAct(p, "stand");
     this.unstick(p, x0, y0, dt);
@@ -1413,7 +1456,7 @@ export class World {
   // nguồn khác (quái, không rõ) không xét
   ganBoss(src, m) { const a = src && (src === this.player || src.pt) ? src : null; return !a || !Number.isFinite(a.x) || ldist(a.x, a.y, m.x, m.y) <= BOSS_TAM * SCALE + (m.radius || 0) + 40; }
   hit(src, dst, dmg, sk) { // sk: mã chiêu của đòn (npcHit) — đòn thường: 0 / không có
-    // tàng hình test1 (tang-hinh.js): đang ẩn thì không nhận bất kỳ sát thương nào, không chết được — kể cả đòn đang bay, độc,
+    // tàng hình test1/test2 (tang-hinh.js): đang ẩn thì không nhận bất kỳ sát thương nào, không chết được — kể cả đòn đang bay, độc,
     // Tống Kim (tkTrungThang cũng qua đây). Mọi sát thương vào mình đều qua hit() nên chặn ở đây là chặn hết.
     if (dst === this.player && dst.voHinh) return;
     if (dst.coc && !dst.alive) return; // cọc đảo Tẩy Tủy đã vỡ, chờ mọc lại
@@ -1860,6 +1903,171 @@ export class World {
     line(this.player, this.player.path, "rgba(120,255,120,.95)");
   }
 
+  // Hiệu ứng chuyển sinh — VÒNG RỒNG LAM (Huy chốt mẫu 15:52 ngày 27/11/2026, lệnh 15:53 "10 kiểu 1→10 cánh",
+  // "xoay tròn nhẹ nhàng"): vòng pháp trận dưới chân; số cánh = số lần chuyển sinh (1–10). Thuần mỹ phẩm, 0 chỉ số.
+  // Vẽ bằng đường canvas (không thêm file art): cánh pointed gradient lam đậm, viền bạc, mỗi cánh 1 nét rồng nhỏ
+  // khắc bạc đơn giản; vòng nụ sen nhỏ màu lam ngọc ở trong; viền tròn mảnh + chấm ngọc sáng ĐỨNG YÊN; giữa trống
+  // (nhân vật đứng). Cánh + nụ xoay chậm đều 1 vòng/30 giây. Vẽ trước thân như vòng sáng mỹ phẩm.
+  _veVongSen(ctx, p, other, kcZ) {
+    const n = Math.max(0, Math.min(10, other ? (p.rb | 0) : (this.hero ? (this.hero.reborn | 0) : 0)));
+    if (!n) return;
+    const K = VONG_KIEU[other ? p.vk : (this.hero && this.hero.vongKieu)] || VONG_KIEU.long;
+    const x = p.x, y = p.y - kcZ, rx = 56, ry = 28; // ellipse mặt đất 2:1
+    const rot = this.time * (Math.PI * 2 / 30); // 1 vòng/30 giây — cánh + nền VL2 cùng xoay
+    ctx.save();
+    ctx.globalAlpha = 0.92;
+    // quầng sáng mờ ở tâm (giữa trống, chỉ sáng nhẹ quanh chân)
+    ctx.fillStyle = K.quau;
+    ctx.beginPath(); ctx.ellipse(x, y, rx * 0.44, ry * 0.44, 0, 0, Math.PI * 2); ctx.fill();
+    // VIỀN NGOÀI ĐỨNG YÊN: vòng mảnh đôi + 10 chấm ngọc sáng cố định
+    ctx.strokeStyle = K.vong; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = K.vongMo; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(x, y, rx * 1.07, ry * 1.07, 0, 0, Math.PI * 2); ctx.stroke();
+    for (let i = 0; i < 10; i++) {
+      const a = (i + 0.5) * Math.PI * 2 / 10;
+      const gx = x + Math.cos(a) * rx * 1.07, gy = y + Math.sin(a) * ry * 1.07;
+      ctx.fillStyle = K.ngoc;
+      ctx.beginPath(); ctx.arc(gx, gy, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.beginPath(); ctx.arc(gx - 0.5, gy - 0.5, 0.7, 0, Math.PI * 2); ctx.fill();
+    }
+    // vòng trong mảnh quanh vùng trống (đứng yên)
+    ctx.strokeStyle = K.vong; ctx.globalAlpha = 0.55; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(x, y, rx * 0.44, ry * 0.44, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = 0.92;
+    // LỚP DƯỚI — nền chuyển sinh VL2 (vòng tròn ma pháp phát sáng, xoay cùng cánh; chỉ vẽ ở vành 0,44–1,0 rx, giữa trống):
+    // 2 vòng đồng tâm + 3 cung năng lượng xoáy + 12 vạch phù văn nhỏ
+    ctx.strokeStyle = K.nenMo; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.ellipse(x, y, rx * 0.98, ry * 0.98, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(x, y, rx * 0.82, ry * 0.82, 0, 0, Math.PI * 2); ctx.stroke();
+    for (let s = 0; s < 3; s++) { // cung năng lượng: mỗi cung ~70°, lệch nhau 120°, xoay theo rot
+      const a0 = rot * 1 + (s * Math.PI * 2) / 3;
+      ctx.strokeStyle = K.nen; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.ellipse(x, y, rx * 0.9, ry * 0.9, 0, a0, a0 + 1.22); ctx.stroke();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.75)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.ellipse(x, y, rx * 0.9, ry * 0.9, 0, a0, a0 + 1.22); ctx.stroke();
+    }
+    ctx.strokeStyle = K.nenMo; ctx.lineWidth = 1;
+    for (let i = 0; i < 12; i++) { // vạch phù văn quanh vành, xoay theo rot
+      const a = rot + (i * Math.PI * 2) / 12;
+      const x1 = x + Math.cos(a) * rx * 0.86, y1 = y + Math.sin(a) * ry * 0.86;
+      const x2 = x + Math.cos(a) * rx * 0.94, y2 = y + Math.sin(a) * ry * 0.94;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    }
+    // LỚP TRÊN — cánh + nụ: sắp theo py tăng dần (xa trước, gần sau) để cái gần đè lên cái xa
+    const doi = [];
+    for (let i = 0; i < n; i++) {
+      const a = rot + (i * Math.PI * 2) / n;
+      doi.push({ loai: 0, a, px: x + Math.cos(a) * rx * 0.78, py: y + Math.sin(a) * ry * 0.78 });
+      doi.push({ loai: 1, a, px: x + Math.cos(a) * rx * 0.56, py: y + Math.sin(a) * ry * 0.56 });
+    }
+    doi.sort((u, v) => u.py - v.py);
+    const kieu = other ? (p.vk || "long") : ((this.hero && this.hero.vongKieu) || "long");
+    for (const d of doi) {
+      const huong = Math.atan2(Math.sin(d.a) * ry, Math.cos(d.a) * rx); // hướng ra ngoài trên màn hình
+      ctx.save();
+      ctx.translate(d.px, d.py);
+      ctx.rotate(huong + Math.PI / 2);
+      if (d.loai === 0) {
+        // CÁNH LỚN pointed: chóp nhọn hướng ra ngoài (đầu -y), dài 30, rộng 13; gốc sáng, chóp đậm theo kiểu
+        const L = 30, W = 13;
+        const g = ctx.createLinearGradient(0, L / 2, 0, -L / 2);
+        g.addColorStop(0, K.canh[0]);
+        g.addColorStop(0.45, K.canh[1]);
+        g.addColorStop(1, K.canh[2]);
+        ctx.beginPath();
+        ctx.moveTo(0, -L / 2);
+        ctx.bezierCurveTo(W / 2, -L / 5, W / 2, L / 5, 0, L / 2);
+        ctx.bezierCurveTo(-W / 2, L / 5, -W / 2, -L / 5, 0, -L / 2);
+        ctx.fillStyle = g; ctx.fill();
+        ctx.strokeStyle = K.vien; ctx.lineWidth = 1.2; ctx.stroke();
+        ctx.beginPath(); // gân giữa mảnh
+        ctx.moveTo(0, L / 2 - 3); ctx.lineTo(0, -L / 2 + 4);
+        ctx.strokeStyle = K.gan; ctx.lineWidth = 0.8; ctx.stroke();
+        // nét khắc trong cánh theo linh thú (đơn giản hóa ở cỡ game — vài nét mảnh, không vẽ linh thú chi tiết)
+        ctx.strokeStyle = K.khac; ctx.lineWidth = 1;
+        if (kieu === "lan") { // Lân: 2 cung vảy + chấm sừng
+          ctx.beginPath(); ctx.arc(-1, 2, 3.2, 0.3, Math.PI - 0.3); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, -3, 3.2, 0.3, Math.PI - 0.3); ctx.stroke();
+          ctx.fillStyle = K.khacDiem;
+          ctx.beginPath(); ctx.arc(0, -9.5, 1.1, 0, Math.PI * 2); ctx.fill();
+        } else if (kieu === "quy") { // Quy: mai rùa lục giác nhỏ + 1 vạch
+          ctx.beginPath();
+          for (let k = 0; k < 6; k++) { const aa = (k * Math.PI) / 3 - Math.PI / 2; const px2 = Math.cos(aa) * 3, py2 = Math.sin(aa) * 3.6 - 2; k ? ctx.lineTo(px2, py2) : ctx.moveTo(px2, py2); }
+          ctx.closePath(); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(-2.5, 5); ctx.lineTo(2.5, 5); ctx.stroke();
+        } else if (kieu === "phung") { // Phụng: 3 nét lông xòe từ 1 điểm
+          ctx.beginPath();
+          ctx.moveTo(0, 7); ctx.quadraticCurveTo(-3.5, 0, -3, -8);
+          ctx.moveTo(0, 7); ctx.quadraticCurveTo(0, -1, 0, -10);
+          ctx.moveTo(0, 7); ctx.quadraticCurveTo(3.5, 0, 3, -8);
+          ctx.stroke();
+        } else { // Long: 1 đường cong hình chữ S + đầu rồng (chấm + 2 râu)
+          ctx.beginPath();
+          ctx.moveTo(-2.5, 6);
+          ctx.bezierCurveTo(3, 3.5, -3, 0.5, 1.5, -2);
+          ctx.bezierCurveTo(4.5, -4, -1, -5.5, -0.5, -8.5);
+          ctx.stroke();
+          ctx.fillStyle = K.khacDiem;
+          ctx.beginPath(); ctx.arc(-0.5, -9.5, 1.1, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(-0.5, -10); ctx.lineTo(-2.5, -12); ctx.moveTo(-0.5, -10); ctx.lineTo(1.5, -12);
+          ctx.strokeStyle = K.khac; ctx.lineWidth = 0.7; ctx.stroke();
+        }
+      } else {
+        // NỤ SEN NHỎ: 2 cánh bên + 1 nụ giữa, theo tông kiểu
+        ctx.fillStyle = K.nuBen;
+        ctx.strokeStyle = K.vien; ctx.lineWidth = 0.8;
+        for (const s of [-1, 1]) {
+          ctx.save(); ctx.rotate(s * 0.62); ctx.scale(0.68, 0.68);
+          ctx.beginPath();
+          ctx.moveTo(0, -6);
+          ctx.bezierCurveTo(3.4, -2.5, 3.4, 2.5, 0, 5);
+          ctx.bezierCurveTo(-3.4, 2.5, -3.4, -2.5, 0, -6);
+          ctx.fill(); ctx.stroke();
+          ctx.restore();
+        }
+        const g2 = ctx.createLinearGradient(0, 5, 0, -6);
+        g2.addColorStop(0, K.nu[0]);
+        g2.addColorStop(1, K.nu[1]);
+        ctx.beginPath();
+        ctx.moveTo(0, -6);
+        ctx.bezierCurveTo(3.4, -2.5, 3.4, 2.5, 0, 5);
+        ctx.bezierCurveTo(-3.4, 2.5, -3.4, -2.5, 0, -6);
+        ctx.fillStyle = g2; ctx.fill();
+        ctx.strokeStyle = K.vien; ctx.lineWidth = 0.9; ctx.stroke();
+        ctx.beginPath(); // 2 vạch vảy ngang trên nụ
+        ctx.moveTo(-2, -1); ctx.quadraticCurveTo(0, 0, 2, -1);
+        ctx.moveTo(-2.2, 2); ctx.quadraticCurveTo(0, 3, 2.2, 2);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)"; ctx.lineWidth = 0.7; ctx.stroke();
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+  // Mỹ phẩm P4 — vòng sáng thường trực dưới chân (vẽ TRƯỚC thân: nhãn tên vẽ sau nên không bị đè).
+  // t lặp theo tocDo của món; fx chưa tải xong / chưa có dữ liệu thì không vẽ gì.
+  _veVongSang(ctx, p, other, kcZ) {
+    const F = this.P.fx; if (!F) return;
+    const def = MyPham.defVg(other ? (p.vg | 0) : (this.hero.vongSang | 0));
+    if (!def || !def.fx || !F.has(def.fx)) return;
+    const d = F.duration(def.fx);
+    F.draw(ctx, def.fx, d > 0 ? (this.time * (def.tocDo || 1)) % d : 0, p.x, p.y - kcZ);
+  }
+  // Mỹ phẩm P4 — phủ sáng vũ khí TẠI NEO TAY CẦM (jx-char.js partCenter, đúng khung/hướng đang vẽ), vẽ SAU thân để thấy
+  // được quanh vũ khí. Đợt 1 chỉ overlay — chưa làm vệt sáng khi chém. FxPack.draw lấy (x, y) là điểm trúng trên đất nên
+  // cộng thêm độ nâng của sprite để tâm hiệu ứng trùng đúng tâm khung vũ khí.
+  _veVkSang(ctx, p, other, jx, A, dir, t, duration, kcZ) {
+    const F = this.P.fx; if (!F) return;
+    const def = MyPham.defVk(other ? (p.vk | 0) : (this.hero.vkSang | 0));
+    if (!def || !def.fx || !F.has(def.fx)) return;
+    const c = jx.partCenter(p.look, "rweapon", { act: A, dir, t, duration }) || { dx: 0, dy: -55 };
+    const f = F.M.fx[def.fx], adj = f ? (f.cy + 10) * (F.M.scale || 0.75) : 67;
+    const d = F.duration(def.fx);
+    F.draw(ctx, def.fx, d > 0 ? (this.time * (def.tocDo || 1)) % d : 0, p.x + c.dx, p.y - kcZ + c.dy + adj);
+  }
+
   // p = nhân vật mình (kind "hero") hoặc người chơi khác (kind "other": giới / thế đánh do máy chủ báo)
   drawHeroBody(ctx, p) {
     const jx = this.P.jx, other = p.kind === "other" || !!p.tkb, sex = other ? p.sex : this.hero.sex; // bot Tống Kim (tkb): vẽ như người khác
@@ -1890,8 +2098,11 @@ export class World {
     // nhuộm bằng bản tô màu giữ sẵn (loc — spr.js anhLoc), không đặt ctx.filter mỗi khung (anh 06/11: "bị làm chậm mà chạy thì fps tụt không phanh")
     const nTT = other && !p.tkb ? this.nguoiTT(p) : null; // người khác vừa bị mình đánh trúng độc / chậm / choáng (anh 17/11 — nguoiTT)
     const tint = nTT ? nTT.tint : (!other || p.tkb) && this.quaiVC && this.tkNhuom(p) ? this.mobTint(p) : ""; // bot Tống Kim: nhuộm choáng / chậm / độc như quái (giới hạn — tkNhuom)
+    this._veVongSen(ctx, p, other, kcZ); // vòng rồng lam chuyển sinh: số cánh = số lần, xoay 1 vòng/30 giây (Huy chốt mẫu 15:52 ngày 27/11/2026)
+    this._veVongSang(ctx, p, other, kcZ); // P4: vòng sáng dưới chân, trước thân
     let r = jx.draw(ctx, p.look, { act: A, dir: p.dir, t: sw ? p.t % p.swing : p.t, duration: sw ? p.swing : dur, x: p.x, y: p.y - kcZ, alpha: hid ? HIDE_ALPHA : 1, ...(tint ? { loc: tint } : {}) });
     if (!r && kcN) r = jx.draw(ctx, p.look, { act: fight ? "FightRun" : "NormalRun", dir: p.dir, t: p.t, duration: DUR.run, x: p.x, y: p.y - kcZ, alpha: hid ? HIDE_ALPHA : 1, shadow: false }); // hình nhảy đang tải: tạm hình chạy, không biến mất
+    this._veVkSang(ctx, p, other, jx, A, p.dir, sw ? p.t % p.swing : p.t, sw ? p.swing : dur, kcZ);
     p.top = p.y - kcZ + (r ? Math.max(-150, r.top) : -90);
   }
   drawHeroLabel(ctx, p) {
@@ -1907,7 +2118,8 @@ export class World {
     const lv = other ? p.lvl : this.hero.lvl, coCap = Number.isFinite(+lv) && +lv > 0;
     const hau = other ? ((this.nguoiTT(p) || {}).chu || "") : (this.tk && this.tk.xem ? " (Người xem)" : p.hideUntil > this.time ? " (Ẩn thân)" : "");
     const ten = other ? p.name : this.hero.name;
-    const tren = coCap ? `Cấp ${+lv | 0} · ${this.tenPhai(other ? p.fac : this.hero.fac)}${hau}` : null;
+    const rb = other ? (p.rb | 0) : (this.hero.reborn | 0); // chuyển sinh: số lần — hiện "×N" sau tên phái, trước hậu tố (Ẩn thân)/(Người xem)
+    const tren = coCap ? `Cấp ${+lv | 0} · ${this.tenPhai(other ? p.fac : this.hero.fac)}${rb ? " · ×" + rb : ""}${hau}` : null;
     const themDong = S.showName !== false && tren ? 13 : 0; // có dòng trên thì các dòng phía trên dời lên thêm 1 dòng
     if (S.showName !== false) { if (tren) this.label(ctx, p.x, ny - 13, tren, mauTen); this.label(ctx, p.x, ny, ten + (tren ? "" : hau), mauTen); } // lôi đài: "(Người xem)" (loidai.js st.xem)
     // dòng bang (anh 14/11 — Bang hội đợt 1; vị trí như engine KNpc::PaintInfo :8897): ngay trên tên một dòng, viền đen. Kiểu chữ: mẫu 4 anh chọn 14/11 "Chức · Tên bang"
@@ -2129,6 +2341,7 @@ export class World {
     { const p1 = this.player; if (p1 && p1.skBua && p1.skBua.until > this.time) { B.lifePct = B.lifePct || 0; B.resAll = B.resAll || 0; addAttrs(B, p1.skBua.attrs); } }
     if (TD.toc) { B.moveSpeed = (B.moveSpeed || 0) + TD.toc; B.atkSpeed = (B.atkSpeed || 0) + TD.toc; B.castSpeed = (B.castSpeed || 0) + TD.toc; } // tăng ích tổ đội: tốc chạy + tốc đánh (ngoại / nội công)
     if (TD.hoi) { B.lifeRegen = (B.lifeRegen || 0) + TD.hoi / 2; B.manaRegen = (B.manaRegen || 0) + TD.hoi / 2; } // + hồi sinh lực / nội lực mỗi giây (lifeRegen tính mỗi nửa giây -> / 2)
+    { const rb = Math.max(0, Math.min(10, this.hero.reborn | 0)); if (rb) { B.lifePct = (B.lifePct || 0) + rb * 5; B.manaPct = (B.manaPct || 0) + rb * 5; B.dmgPct = (B.dmgPct || 0) + rb * 5; } } // chuyển sinh: mỗi lần +5% sinh lực/nội lực/sát thương tối đa (cộng dồn, tối đa 10 lần = +50% — Huy quyết Q3 13:49 ngày 27/11/2026) — chỉ nhân phần gốc (heroStats), như mọi bonus %
     return B;
   }
   // vòng sáng hỗ trợ của đồng đội (anh 29/10 "nhân vật có chiêu vòng sáng có tác dụng cho đồng đội thì đồng đội cũng được hưởng nếu trong phạm
