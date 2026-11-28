@@ -1210,10 +1210,10 @@ function npcApi() {
     // Xa phu "Đưa ta đến bản đồ nhiệm vụ sát thủ": chỉ hiện khi đang nhận nhiệm vụ (anh 03/11); "Đưa ta đến nơi làm nhiệm vụ Dã Tẩu": chỉ khi nhiệm vụ có bãi / NPC bán (anh 11/11)
     // "Khu vực bang hội" (đợt 4): chỉ thành viên bang, khu vực bang đang mở (luat().khuBang.bat)
     // Võ Sư "Hoạt động báo đáp ân sư" (anh 16/11): máy chủ chưa có sự kiện (LUAT không có baoDapAnSu) thì ẩn; có thì luôn hiện (ngoài ngày: báo đã kết thúc / chưa bắt đầu)
-    anOpt: (id) => (id === "BanDoSatThu" && !satNv()) || (id === "NoiDaTau" && !coNoiDt()) || (id === "KhuBangHoi" && (!bhMinhCur || (luat().khuBang || {}).bat === 0)) || (id === "BaoDapAnSu" && !luat().baoDapAnSu) || ((id === "KhamNam" || id === "KhamNamHelp" || id === "KhamNam:hoan") && !luat().khamNam),
+    anOpt: (id) => (id === "BanDoSatThu" && !satNv()) || (id === "NoiDaTau" && !coNoiDt()) || (id === "KhuBangHoi" && (!bhMinhCur || (luat().khuBang || {}).bat === 0)) || (id === "BaoDapAnSu" && !luat().baoDapAnSu) || ((id === "KhamNam" || id === "KhamNamHelp" || id === "KhamNam:hoan") && !luat().khamNam) || ((id === "WayPointFun" || id === "KhuLuyenCong") && luatDC().bat), // luật di chuyển 28/11: bật luật thì ẩn Xa phu ra bãi (đi bãi chỉ bằng Thần Hành)
     setRank: (n) => { hero.rank = n; save(); },
-    // lựa chọn đi bản đồ khác của script (NewWorld): game chưa có bản đồ đó -> báo (TẠM câu báo)
-    travel: (id, at) => { const z = P.maps.zones.find((x) => String(x.map) === String(id)); if (z) { gotoZone(z, at ? { at } : {}); return; } const m = P.maplist.maps[id]; P.hud.msg(`${m ? m.name : "Bản đồ " + id}: chưa mở`); },
+    // lựa chọn đi bản đồ khác của script (NewWorld): game chưa có bản đồ đó -> báo (TẠM câu báo); luật di chuyển 28/11: đích là thành/bãi có sẵn thì chặn, phải dùng Thần Hành Phù (về phái không có SetFaction trong node này nhưng đích không tồn tại nên vẫn báo chưa mở như cũ)
+    travel: (id, at) => { const z = P.maps.zones.find((x) => String(x.map) === String(id)); if (z) { if (luatDC().bat && (TOWN_KINDS.has(z.kind) || FARM_KINDS.has(z.kind))) { P.hud.msg(DC_CHAN()); return; } gotoZone(z, at ? { at } : {}); return; } const m = P.maplist.maps[id]; P.hud.msg(`${m ? m.name : "Bản đồ " + id}: chưa mở`); },
   };
 }
 
@@ -3741,6 +3741,9 @@ function dungPhu(b, opt = {}) {
     return gotoZone(town, o).then(() => true);
   }).catch((e) => { fail(e); return false; });
 }
+// Luật di chuyển (Huy chốt 16:34 28/11/2026): Xa phu chỉ đi liên thành; đi sang map khác bắt buộc dùng Thần Hành Phù. Công tắc cau-hinh.json luatDiChuyen (LUAT gửi lúc vào game): bat 0 / không có = luật cũ, mọi chặn dưới đây tự tắt.
+function luatDC() { const L = (luat().luatDiChuyen || {}); return { bat: L.bat ? 1 : 0, gia: +L.giaThanHanh || 5 }; }
+const DC_CHAN = () => `Xa phu chỉ đưa đi các thành thôi — đi sang map khác phải dùng Thần Hành Phù (Kỳ Trân Các bán, ${luatDC().gia} Xu/tấm).`;
 // ---------- Xa phu (anh 26/10: bỏ đi bản đồ bằng chọn trên bản đồ nhỏ, chỉ đi bằng Xa phu) ----------
 // Hàm của client script\global\station.lua: "Những nơi đã đi qua" (WayPointFun) — client: 3 nơi luyện công vừa đi qua; bản đồ game không
 // nối nhau nên là mọi bãi luyện công đủ cấp, bãi cao trước; miễn phí như script (PrePay đã tắt). "Những thành thị đã đi qua" (StationFun) —
@@ -3788,12 +3791,14 @@ function xaPhuFn(id) {
   }
   if (id === "NoiDaTau") return denDaTau(true); // anh 11/11 (kiểu A): máy chủ tính nơi + kiểm (Xa phu ở thành — miễn phí); khung giữ tới khi có trả lời
   if (id === "WayPointFun") {
+    if (luatDC().bat) return { text: DC_CHAN(), opts: [["Không đi đâu cả ", null]] }; // luật di chuyển 28/11: đi bãi chỉ bằng Thần Hành Phù
     const zs = P.maps.zones.filter((z) => FARM_KINDS.has(z.kind) && !z.chiThuyen && moBai(z)).sort((a, b) => b.lo - a.lo || (a.kind === "chính" ? -1 : 1));
     if (!zs.length) return { text: XE_KHONG, opts: [] };
     return { text: "Chọn đi: ", opts: [...zs.map((z) => [`${z.n} (cấp ${z.lo}–${z.hi})`, xeChon(z)]), ["Không đi đâu cả ", null]] };
   }
   // bãi có 2 bản (anh 03/11 — luat().quaiChung.bai): quái riêng như mọi bãi / quái chung cùng người khác, thêm % kinh nghiệm + ngân lượng
   if (/^BanBai:\d+$/.test(id)) {
+    if (luatDC().bat) return { text: DC_CHAN(), opts: [["Không đi đâu cả ", null]] }; // luật di chuyển 28/11: vào bãi chỉ bằng Thần Hành Phù (dự phòng — đường vào bãi chính đã chặn ở trên)
     const z = P.maps.zones.find((x) => x.id === +id.split(":")[1]);
     if (!z || !moBai(z)) return { text: XE_KHONG, opts: [] };
     // khung lời client ngắt dòng giữa chữ (bản đầu "người chơi khá / c") -> tự xuống dòng, mỗi dòng ≤ ~50 ký tự
@@ -3803,6 +3808,7 @@ function xaPhuFn(id) {
   // "Khu vực luyện công" (anh 29/10 — game thêm, client không có): ô = 1 mốc cấp (bãi cùng cấp vào, như bản đồ chia 1–10, 10–20 …), chọn ô
   // thì ra các bãi của mốc đó. Chỉ bãi đủ cấp vào; bờ Bắc Phong Lăng Độ chỉ tới bằng thuyền nên không có
   if (id === "KhuLuyenCong" || /^KhuLuyenCong:\d+$/.test(id)) {
+    if (luatDC().bat) return { text: DC_CHAN(), opts: [["Không đi đâu cả ", null]] }; // luật di chuyển 28/11: đi bãi chỉ bằng Thần Hành Phù
     const zs = P.maps.zones.filter((z) => FARM_KINDS.has(z.kind) && !z.chiThuyen && moBai(z)).sort((a, b) => a.lo - b.lo || (a.kind === "chính" ? -1 : 1));
     if (!zs.length) return { text: XE_KHONG, opts: [] };
     const nhom = new Map();

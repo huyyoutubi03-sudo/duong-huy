@@ -2387,6 +2387,12 @@
   "vaoBai": {
     "thieuCap": 0
   },
+  "luatDiChuyen": {
+    "bat": 1,
+    "giaThanHanh": 5,
+    "loaiTru": []
+  },
+  "_luatDiChuyen": "Luật di chuyển (Huy chốt 16:34 28/11/2026): Xa phu chỉ đi liên thành; đi sang map khác bắt buộc dùng Thần Hành Phù. bat: 1 = bật luật (Xa phu không đưa ra bãi, NewWorld đi map bị chặn ở trình duyệt, Thần Hành dựng đích từ ZONES); 0 = về luật cũ (Xa phu ra bãi như trước, Thần Hành chỉ 2 đích Ba Lăng/Biện Kinh). giaThanHanh: giá chung 1 tấm (Xu) — giá bán ở Kỳ Trân Các nằm trong ky-tran-cac.json, đây chỉ để trình duyệt hiện. loaiTru: [mã zone] loại khỏi đích Thần Hành, ngoài các loại đã loại mặc định (thuyền/ải/tongkim/viêm đế/đua ngựa/lôi đài/đảo/chiến, khu bang, điểm báo danh, bờ Bắc, bản gương). Đổi bat cần đăng nhập lại mới có hiệu lực ở trình duyệt (LUAT gửi lúc vào game).",
   "voCong": {
     "moPhai": [
       "*"

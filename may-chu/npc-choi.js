@@ -449,11 +449,42 @@ function snapshot(bot) {
   // P1 (26/11/2026): 3 mốc nội suy / lần hiện diện + số đòn atkN + cờ fight, để client
   // vẽ chuyển động mượt và phát lại động tác đánh (world.js updateOther chỉ phát khi atkN đổi).
   // act suy từ mục tiêu (đường đánh trả không tự đặt act) — sạp / chết / đứng không có mục tiêu nên không ảnh hưởng.
+  // Chuyển động chân thật (28/11/2026): mốc phủ KÍN khoảng hiện diện — trước 3 mốc chỉ phủ
+  // 1000ms trong khi hiện diện cách nhau 1500ms nên client hết mốc, bot đứng chết ~0,5 giây
+  // mỗi nhịp rồi nhảy đoạn mới. Nay 4 mốc phủ đủ span, nội suy êm (smoothstep: chậm ở đầu/
+  // cuối đoạn như người tăng–giảm tốc) + bo cong Bézier khi đổi hướng (cắt góc trong thay
+  // vì cua gấp 60°–90°). Dịch tức thời (đổi map/về thành, đoạn > 600): giữ kiểu cũ thẳng/1 giây.
+  // Số lần gửi, nhịp hiện diện, va chạm, đích đến không đổi.
   const t = Date.now(), px = bot.px ?? bot.x, py = bot.py ?? bot.y;
-  bot.px = bot.x; bot.py = bot.y;
+  const span = Math.max(500, Math.min(3000, t - (bot._pxT || t - 1500)));
+  const doiMap = bot._pxZone != null && bot._pxZone !== bot.zone;
+  bot.px = bot.x; bot.py = bot.y; bot._pxZone = bot.zone; bot._pxT = t;
   const act = bot.mucTieu ? "attack" : bot.act;
-  const moc = (k, w) => [t - (1 - k) * 1000, Math.round(px + (bot.x - px) * w), Math.round(py + (bot.y - py) * w), bot.dir, act, bot.atkN | 0, 1, bot.mucTieu ? 1 : 0];
-  return { zone: bot.zone, lvl: bot.h.lvl | 0, npc: 1, look: { ...bot.look }, tr: [moc(0, 1 / 3), moc(0.5, 2 / 3), moc(1, 1)], hp, mp };
+  const dx = bot.x - px, dy = bot.y - py, dy2 = dy * 2, dai = Math.hypot(dx, dy2);
+  if (dai > 20) bot.dir = _dirCua(dx, dy2); // hướng đứng = hướng vừa đi (trước gần như hằng số 2)
+  const mocCu = (f) => [t - Math.round((1 - f) * 1000), Math.round(px + dx * f), Math.round(py + dy * f), bot.dir, act, bot.atkN | 0, 1, bot.mucTieu ? 1 : 0];
+  if (doiMap || dai > 600) return { zone: bot.zone, lvl: bot.h.lvl | 0, npc: 1, look: { ...bot.look }, tr: [mocCu(1 / 3), mocCu(2 / 3), mocCu(1)], hp, mp };
+  // Bo cong theo góc cua với bước trước (không gian nhìn: y nhân 2; dấu cua theo cross).
+  let cx = (px + bot.x) / 2, cyv = py + bot.y; // điểm điều khiển Bézier (cyv ở không gian nhìn: (2py+2y)/2)
+  const vx0 = bot._vx || 0, vy0 = bot._vy || 0, f0 = Math.hypot(vx0, vy0);
+  bot._vx = dx; bot._vy = dy2;
+  if (f0 > 20 && dai > 20) {
+    const cross = vx0 * dy2 - vy0 * dx, dot = vx0 * dx + vy0 * dy2;
+    const gocCua = Math.atan2(Math.abs(cross), dot);
+    const bo = 0.18 * dai * Math.sin(gocCua / 2);
+    if (bo > 1) {
+      const side = cross >= 0 ? 1 : -1; // pháp tuyến phải (y xuống) khi cua thuận chiều kim đồng hồ
+      cx += (dy2 / dai) * bo * side;
+      cyv += (-dx / dai) * bo * side;
+    }
+  }
+  const moc = (f) => {
+    const e = f * f * (3 - 2 * f), u = 1 - e; // smoothstep
+    const qx = u * u * px + 2 * u * e * cx + e * e * bot.x;
+    const qyv = u * u * (py * 2) + 2 * u * e * cyv + e * e * (bot.y * 2);
+    return [t - Math.round((1 - f) * span), Math.round(qx), Math.round(qyv / 2), bot.dir, act, bot.atkN | 0, 1, bot.mucTieu ? 1 : 0];
+  };
+  return { zone: bot.zone, lvl: bot.h.lvl | 0, npc: 1, look: { ...bot.look }, tr: [moc(0), moc(1 / 3), moc(2 / 3), moc(1)], hp, mp };
 }
 
 function hienDien(bot) {
@@ -640,9 +671,29 @@ function tickBot(bot) {
       }
       const T = baiTrain(bot);
       if (!bot.mucTieu) {
-        bot.x = Math.max(T.cx - T.r, Math.min(T.cx + T.r, bot.x + ri(-250, 250)));
-        bot.y = Math.max(T.cy - T.r, Math.min(T.cy + T.r, bot.y + ri(-150, 150)));
-        bot.dir = ri(0, 7); bot.act = Math.random() < 0.7 ? "attack" : "run";
+        // Lang thang đi BỘ (28/11/2026): trước gán thẳng vị trí mỗi nhịp nên bot
+        // nhấp nháy lung tung không va chạm; nay chọn đích rồi đi qua buocToi
+        // (có va chạm, tốc độ riêng, nghỉ ngẫu nhiên), tới nơi thì đứng đánh/
+        // ngó quanh như người cày. Vùng và tần suất đổi chỗ giữ nguyên.
+        const lt = bot._langThang;
+        const toiDich = lt && Math.hypot(lt[0] - bot.x, (lt[1] - bot.y) * 2) <= 60;
+        if (!lt || toiDich || bot.buocKet) {
+          if (Math.random() < 0.3) { // đứng lại: đánh/ngó quanh, nghỉ 1 nhịp
+            bot._langThang = null; bot.dir = ri(0, 7);
+            bot.act = Math.random() < 0.7 ? "attack" : "stand";
+            bot._nghiTuTick = tickN; bot._nghiDenTick = tickN + 1;
+          } else {
+            bot._langThang = [
+              Math.max(T.cx - T.r, Math.min(T.cx + T.r, bot.x + ri(-250, 250))),
+              Math.max(T.cy - T.r, Math.min(T.cy + T.r, bot.y + ri(-150, 150))),
+            ];
+          }
+        }
+        if (bot._langThang) {
+          const ox = bot.x, oy = bot.y;
+          buocToi(bot, bot._langThang[0], bot._langThang[1], 200);
+          bot.act = (bot.x !== ox || bot.y !== oy) ? "run" : "stand";
+        }
       }
       // Máu / nội lực thật: hồi theo nhịp từ bình đã uống, uống khi dưới ngưỡng Trợ Thủ, quái có thể đánh trước.
       hoiTheoNhip(bot);
@@ -1226,8 +1277,11 @@ function vongDanh(bot) {
       boMucTieu(bot);
       return;
     }
-    bot.x = Math.max(bot.x - 20, Math.min(bot.x + 20, bot.x + ri(-20, 20)));
-    bot.y = Math.max(bot.y - 12, Math.min(bot.y + 12, bot.y + ri(-12, 12)));
+    // Nhích chỗ lúc đánh (28/11/2026): trước gán thẳng vị trí; nay qua buocToi
+    // bước nhỏ (có va chạm), nhìn như dịch chân lúc đánh.
+    buocToi(bot,
+      Math.max(bot.x - 20, Math.min(bot.x + 20, bot.x + ri(-20, 20))),
+      Math.max(bot.y - 12, Math.min(bot.y + 12, bot.y + ri(-12, 12))), 48);
     danhBot(bot, m);
     return;
   }
@@ -1381,7 +1435,25 @@ function napLai(bot) { // module khác ghi thẳng tệp tài khoản (thưởng
   } catch (e) { log(`nạp lại lỗi (${bot.h.name}):`, e.message); }
   return false;
 }
+// Chuyển động chân thật (28/11/2026 — Huy: bot nhìn không chân thật): tốc độ
+// riêng từng con + nghỉ ngẫu nhiên 1 nhịp khi đi đường không mục tiêu. Chỉ đổi
+// CÁCH ĐI NHÌN THẤY: đích đến, va chạm, tốc độ trung bình cả bầy không đổi.
+const _tocDoCua = (bot) => {
+  if (bot._tocDo) return bot._tocDo;
+  bot._tocDo = 0.92 + ((tkHash(`toc|${bot.cfg.acct}`) % 1000) / 1000) * 0.16;
+  return bot._tocDo;
+};
+const _dirCua = (dx, dy2) => (Math.round(Math.atan2(-dx, dy2) / (Math.PI / 4)) % 8 + 8) % 8; // giống src/dir.js
+const _coTheNghi = (bot) => { // đi đường không mục tiêu: 5% nghỉ 1 nhịp (lệch pha cả bầy)
+  if (bot.mucTieu || bot.buocKet) return;
+  if (Math.random() < 0.05) { bot._nghiTuTick = tickN; bot._nghiDenTick = tickN + 1; }
+};
 function buocToi(bot, x, y, buoc = 160) {
+  buoc *= _tocDoCua(bot); // tốc độ riêng từng con, trung bình cả bầy không đổi
+  // Nghỉ 1 nhịp đã chốt từ nhịp trước (chỉ đi đường không mục tiêu mới nghỉ).
+  if (!bot.mucTieu && bot._nghiTuTick != null && tickN > bot._nghiTuTick && tickN <= bot._nghiDenTick) {
+    bot.act = "stand"; return false;
+  }
   // Chống xuyên tường (27/11/2026): bước thẳng cũ đi xuyên ô vật cản; nay kiểm tra toàn bộ đoạn
   // bước theo lưới j.obs (tkDiDuoc, ô 24×12, mẫu mỗi 6 đơn vị để không nhảy qua tường mỏng),
   // kẹt thì trượt dọc tường (lệch ±30°/±60°), kẹt hẳn thì đứng lại + báo bot.buocKet để nhịp gọi
@@ -1398,7 +1470,7 @@ function buocToi(bot, x, y, buoc = 160) {
     for (let i = 1; i <= n; i++) {
       if (!tkDiDuoc(bot.zone, bot.x + (dx * i) / n, bot.y + ((y - bot.y) * i) / n)) { thong = false; break; }
     }
-    if (thong) { bot.x = x; bot.y = y; return true; }
+    if (thong) { bot.x = x; bot.y = y; _coTheNghi(bot); return true; }
     // Bị chặn giữa đường: rơi xuống bước từng phần có trượt bên dưới.
   }
   const goc = Math.atan2(dy, dx);
@@ -1412,7 +1484,7 @@ function buocToi(bot, x, y, buoc = 160) {
     for (let i = 1; i <= n; i++) {
       if (!tkDiDuoc(bot.zone, bot.x + (sx * i) / n, bot.y + (sy * i) / n)) { k = i - 1; break; }
     }
-    if (k > 0) { bot.x += (sx * k) / n; bot.y += (sy * k) / n; return false; }
+    if (k > 0) { bot.x += (sx * k) / n; bot.y += (sy * k) / n; _coTheNghi(bot); return false; }
   }
   bot.buocKet = true; return false;
 }
@@ -2818,10 +2890,33 @@ function hocSach(bot) {
     catch (e) { log(`học sách lỗi (${h.name}):`, e.message); }
   }
 }
+function nhanThuongDangNhap(bot) { // thưởng đăng nhập ngày (Xu) — đúng luật thuongDN (do.js): 1 lần/tài khoản/ngày, chuỗi theo nhân vật; quá 42 ngày: trả 5 Xu lấy 60 Xu, không đủ Xu thì về lại ngày 1. Ghi vào bot.tk THẬT (luu() ngay sau viecThanh mới bền; fakeTk chỉ là shim, không ghi).
+  try {
+    const h = bot.h, tk = bot.tk;
+    if (!h || !tk) return;
+    const xem = DO.thuongDN(h, tk, {});
+    if (!xem || !xem.tt || xem.tt.da) return;
+    const n = xem.tt.n | 0;
+    const b = n >= 43 ? ((h.xu | 0) >= 5 ? { nhan: 42, chon: "tra" } : { nhan: 42, chon: "lai" }) : { nhan: n };
+    const r = DO.thuongDN(h, tk, b);
+    if (r && r.xu) log(`thưởng đăng nhập (${h.name}): +${r.xu} Xu (ngày ${n})`);
+  } catch (e) { log(`thưởng đăng nhập lỗi (${bot.h && bot.h.name}):`, e.message); }
+}
+function dungLaHan(bot) { // Thiết La Hán ms:23 — đúng luật case laHan (do.js): cấp ≤ 180, tối đa 10 quyển + trần kinh nghiệm/ngày; chạm trần thì case ném lỗi, dừng, để mai.
+  const h = bot.h;
+  if (!h || (h.lvl | 0) > 180) return;
+  for (let i = 0; i < 10; i++) {
+    const o = (h.bag || []).find((x) => x.k === "ms:23");
+    if (!o) return;
+    try { DO.lam(h, { act: "dung", u: o.u }, bot.key, bot.fakeTk); }
+    catch { return; }
+  }
+}
 function viecThanh(bot) { // chạy 1 lần mỗi lần về thành, trước khi lưu
   try { ONL().dem(bot.h, bot.key, true); } catch {}
   try { ONL().lam(bot.h, bot.key, { viec: "nhan" }); } catch {}
   try { PD().lam(bot.h, bot.key, { viec: "nhan" }); } catch {}
+  nhanThuongDangNhap(bot); dungLaHan(bot);
   dongBoCap(bot); suaDo(bot); muaBinh(bot); macDoRoi(bot); muaNgua(bot); hocSach(bot);
   // Kinh tế bot (Huy chốt 00:36 27/11/2026): mặc đồ hơn theo S2, bán rác cho NPC (lệnh 01:49 27/11/2026),
   // quét sạp người khác mua món nâng cấp/sách.

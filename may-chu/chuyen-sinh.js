@@ -39,6 +39,31 @@ const muc = (vong) => {
   };
 };
 const VONG = Array.from({ length: TOI_DA }, (_, i) => muc(i + 1)); // giữ dạng bảng cho code ngoài đọc (p2-probe)
+
+// Huy CHỐT 15:44 ngày 28/11/2026: BỎ PHÍ vòng 10 cho BOT — người chơi thường giữ nguyên phí 200M.
+// Nhận diện bot theo đúng danh sách tài khoản bot của npc-choi.js (npc-choi-config.json — cùng nguồn
+// với BOT_ACCT ở npc-choi.js, cùng đường env VL_NPC_CHOI_CONFIG; KHÔNG tự bịa tiêu chí mới). Chỉ vòng 10
+// (vong === TOI_DA): vòng 1–9 của bot đã lên bằng migration (không qua phí), vòng < 10 qua đường thật
+// vẫn thu phí như cũ. Đọc lười + cache 1 lần (máy chủ nạp cấu hình 1 lần lúc boot như npc-choi.js);
+// đọc lỗi thì tập rỗng — mặc định an toàn: thu phí như người chơi.
+const _fs = require("fs"), _path = require("path");
+let _botAcct = null;
+function tapBotAcct() {
+  if (_botAcct) return _botAcct;
+  _botAcct = new Set();
+  try {
+    const cfgPath = process.env.VL_NPC_CHOI_CONFIG || _path.join(__dirname, "npc-choi-config.json");
+    const cfg = JSON.parse(_fs.readFileSync(cfgPath, "utf8"));
+    for (const b of cfg.bots || []) if (b && b.acct) _botAcct.add(String(b.acct));
+  } catch {}
+  return _botAcct;
+}
+// key = "tên-tài-khoản|ô" (api.js / bot.key của npc-choi.js) — thiếu key thì không miễn (an toàn).
+function botMienPhi(key, vong) {
+  if (!key) return false;
+  const ten = String(key).split("|")[0];
+  return !!ten && (vong | 0) === TOI_DA && tapBotAcct().has(ten);
+}
 const HON = "qk:1001"; // Linh Hồn Chiến (assets/data/ky-tran-cac.json — món mới của đợt này, dung: null, xếp chồng như Kỳ Trân Các)
 const BANG_HON = { [HON]: 0.4 }; // 40%/con — 1 lượt roiDacBiet, tối đa 1 hồn/con (Huy chốt 40% lúc 06:59 ngày 27/11/2026, từ 20%)
 const THUONG_PCT = 5, TIEM_NANG = 10; // mỗi lần: +5% sinh lực/nội lực/sát thương (world.js bonus), +10 tiềm năng tự do (tiemNangThem)
@@ -173,6 +198,14 @@ function ghiDau(ten, tenNv) {
     D.dau++; D.dauNgay++;
     if (D.dau >= M.dau) D.buoc = 4;
     DL.ghiTk(acc);
+    // Bot giữ nhân vật trong bộ nhớ, luu() ghi đè file mỗi ~30 giây + mỗi lần đổi mode — vá luôn
+    // đối tượng sống, không thì dấu vừa ghi bị ghi đè mất (lỗi thật, bước 3 không bao giờ xong
+    // với bot). Người chơi không cần: api.js đọc lại file mỗi yêu cầu nên lần sau đã thấy dấu mới.
+    try {
+      const NPC = require("./npc-choi.js");
+      const bot = NPC.layBotTheoTen && NPC.layBotTheoTen(ten, tenNv);
+      if (bot && bot.h && bot.h.cs) Object.assign(bot.h.cs, { dau: D.dau, dauNgay: D.dauNgay, buoc: D.buoc, ngay: D.ngay });
+    } catch {}
     return 1;
   } catch (e) { console.error("Chuyển sinh — dấu Boss:", e.message); return 0; }
 }
@@ -193,13 +226,14 @@ function lamChuyenSinh(h, D) {
   h.cs = { buoc: 0, vong: h.reborn + 1, quai: 0, quaiNgay: 0, hon: 0, honNgay: 0, dau: 0, dauNgay: 0, ngay: N.ngayVN(Date.now()) };
   return h.reborn;
 }
-function xacNhan(h, kieu) {
+function xacNhan(h, kieu, key) {
   const D = lay(h); if (!D || D.buoc < 4) return khung(h);
   ngayMoi(D);
   const M = muc(D.vong);
   if (D.quai < M.quai || D.hon < M.hon || D.dau < M.dau) return khung(h, "Chưa đủ đâu — làm cho xong 3 bước rồi hãy tới.");
-  if ((h.gold | 0) < M.phi) loi(`Thiếu tiền rồi. Cần ${N.tien(M.phi)}, ngươi chỉ có ${N.tien(h.gold | 0)} — đi kiếm đủ rồi hãy quay lại.`);
-  h.gold -= M.phi;
+  const phi = botMienPhi(key, D.vong) ? 0 : M.phi; // Huy chốt 15:44 28/11/2026: vòng 10 miễn phí cho bot
+  if ((h.gold | 0) < phi) loi(`Thiếu tiền rồi. Cần ${N.tien(phi)}, ngươi chỉ có ${N.tien(h.gold | 0)} — đi kiếm đủ rồi hãy quay lại.`);
+  if (phi) h.gold -= phi;
   h.vongKieu = KIEU_HOP_LE(kieu); // kiểu vòng lần này — bền theo nhân vật (api.js giữ trường, nvCua đồng bộ client)
   const lan = lamChuyenSinh(h, D);
   const mp = DO.myPhamChuyenSinh(h, lan); // mỹ phẩm P4 (điểm móc 4.5): lần 1 bộ theo phái, lần 2 vòng sáng, lần 3 vũ khí sáng
@@ -225,7 +259,7 @@ function lam(h, b, key) {
   const [viec, tham] = String((b && b.viec) || "mo").split(":");
   if (viec === "nhan") return nhan(h, key);
   if (viec === "nop") return nop(h);
-  if (viec === "xacNhan") return xacNhan(h, tham);
+  if (viec === "xacNhan") return xacNhan(h, tham, key);
   if (viec === "xem") return xem(h);
   if (viec === "mo") return khung(h);
   loi("Không có việc này. Đừng bấm nữa.");
@@ -241,4 +275,6 @@ const tomTat = (h) => {
     : `Chuyển sinh vòng ${D.vong}: về Lễ quan nộp phí`;
 };
 
-module.exports = { lam, tomTat, demGiet, ghiDau, HON, BANG_HON, VONG, TOI_DA, THUONG_PCT, TIEM_NANG, KIEU_VONG };
+// muc/lamChuyenSinh xuất thêm CHỈ cho migration/test (migration-bot-chuyen-sinh-9.js, harness Q6) —
+// game không gọi trực tiếp; mọi chuyển sinh thật vẫn đi qua lam()/xacNhan() + trần ngày + phí.
+module.exports = { lam, tomTat, demGiet, ghiDau, muc, lamChuyenSinh, botMienPhi, HON, BANG_HON, VONG, TOI_DA, THUONG_PCT, TIEM_NANG, KIEU_VONG };
