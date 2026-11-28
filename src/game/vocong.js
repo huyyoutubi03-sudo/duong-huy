@@ -1497,8 +1497,7 @@ export function installVoCong(World) {
         if (e.curse) for (const c of e.curse) if (c.st && c.until > this.time) L.push(c.st);
         if (e.vongSt && !L.includes(e.vongSt)) L.push(e.vongSt); // vòng Vô Hình Độc của siêu boss (bosstg.js vongVhd — anh 18/11)
       }
-      // tài khoản quản trị (QT_VONG — vòng sáng danh hiệu Quán quân liên đấu): mình (World.laQt) / người khác (cờ qt máy chủ gửi)
-      if ((e.kind === "hero" && this.laQt) || (e.kind === "other" && e.qt)) L.push(QT_VONG);
+      // QT_VONG (vòng sáng danh hiệu Quán quân — sprite 0f0b7671be) BỎ HẲN theo lệnh Huy 13:24 ngày 28/11/2026 — không đẩy vào danh sách trạng thái cho bất kỳ ai, kể cả tài khoản quản trị. Tên vàng kim quản trị (QT_MAU, world.js) giữ nguyên.
       // vầng trăng Nhất Kỷ / Càn khôn (TRANG_CC — anh 16/11): mình theo hero.ccKn còn hạn, người khác theo cờ cc máy chủ gửi (the-gioi.js ccDau); phân thân không có
       { const m = e.kind === "hero" ? ccTrang(this.hero) : e.kind === "other" && !e.pt ? e.cc | 0 : 0; if (m) for (const [b, id] of TRANG_CC) if (m & b) L.push(id); }
       // vòng sáng tân thủ (anh 02/11 — mẫu A vòng xanh lá, World.tanThu.vong): mình / người khác (cấp máy chủ gửi) dưới capDuoi cấp; quản trị giữ vòng riêng

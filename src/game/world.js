@@ -135,6 +135,8 @@ PHE_MAU[12] = "#ff92ff"; PHE_MAU[13] = "#55ff91"; // lôi đài (anh 15/11 — l
 // sáng danh hiệu Võ lâm liên đấu Quán quân của client (vocong.js QT_VONG). Mình: World.laQt (main.js theo Net.me.admin); người khác: cờ qt máy chủ
 // gửi (may-chu/the-gioi.js)
 const QT_MAU = "#ffd700";
+// tên phái NGẮN cho nhãn trên đầu (Huy 12:22 ngày 28/11/2026: chỉ tên phái trần, bỏ hậu tố phái/môn/Bang/Giáo — "Nga My", "Thúy Yên"; Vô Môn Phái giữ nguyên). Tra theo khóa phái vì hậu tố không tách bằng regex được ("Cái Bang", "Đường Môn" giữ nguyên cả chữ Bang/Môn). Chỉ dùng ở tenPhai (nhãn đầu); dữ liệu f.n và các khung khác không đổi.
+const TEN_PHAI_NGAN = { shaolin: "Thiếu Lâm", tianwang: "Thiên Vương", tangmen: "Đường Môn", wudu: "Ngũ Độc", emei: "Nga My", cuiyan: "Thúy Yên", gaibang: "Cái Bang", tianren: "Thiên Nhẫn", wudang: "Võ Đang", kunlun: "Côn Lôn" };
 // Tọa Vọng Vô Ngã / nội lực hộ thân % (anh 14/11 chốt): hiệu lực tối đa 99 % dù tổng kỹ năng + trang bị cao hơn — mỗi đòn luôn trừ ít nhất 1 % (làm tròn lên) vào sinh lực (guard)
 const HO_THAN_MAX = 99;
 // dòng bang mẫu 4 (anh 14/11): màu chức vụ theo bậc — bang chủ đỏ cam, trưởng lão vàng, đội trưởng xanh trời, đệ tử / ẩn sỹ / khác trắng (tránh trùng màu tên 3 phe);
@@ -341,7 +343,7 @@ function _nhipGio(P, t) {
   _gio.t = t + (360 + Math.random() * 240) * 1000;
 }
 
-// Bảng màu 4 kiểu vòng chuyển sinh Tứ Linh (Huy chốt 15:58 ngày 27/11/2026; chọn lúc chuyển sinh 16:16 — may-chu/chuyen-sinh.js KIEU_VONG, lưu h.vongKieu, người khác xem qua p.vk). Kiểu không hợp lệ -> Long lam.
+// Bảng màu 4 kiểu vòng chuyển sinh Tứ Linh (Huy chốt 15:58 ngày 27/11/2026; chọn lúc chuyển sinh 16:16 — may-chu/chuyen-sinh.js KIEU_VONG, lưu h.vongKieu, người khác xem qua p.vongKieu — snapshot the-gioi.js gửi vongKieu, KHÔNG dùng p.vk vì vk là id sáng vũ khí P4). Kiểu không hợp lệ -> Long lam.
 const VONG_KIEU = {
   long: { // Long — lam
     canh: ["rgba(96, 214, 248, 0.95)", "rgba(32, 132, 206, 0.92)", "rgba(10, 46, 112, 0.94)"],
@@ -707,6 +709,7 @@ export class World {
       e.lvl = s.lvl; e.fac = s.fac ?? null; e.co = !!s.co; e.gd = s.gd | 0; e.cp = s.cp ?? this.campPhai(s.fac); // cp: phe đang theo (máy chủ — màu tên, vòng sáng) // co: đội trưởng của đội đang mở, gd: 1 mở giao dịch / 2 đang giao dịch -> cờ trên đầu
       e.cc = s.cc | 0; // vầng trăng Nhất Kỷ / Càn khôn đang có (anh 16/11 — bit 1 Hồng Nguyệt, 2 Lam Nguyệt: vocong.js TRANG_CC; máy chủ the-gioi.js ccDau)
       e.rb = s.rb | 0; // chuyển sinh: số lần (kẹp 0–10 — máy chủ the-gioi.js) — nhãn trên đầu hiện "×N", vòng sen dưới chân
+      e.vongKieu = VONG_KIEU[s.vongKieu] ? s.vongKieu : "long"; // kiểu vòng chuyển sinh của người khác (máy chủ gửi vongKieu; KHÔNG dùng p.vk — vk là id sáng vũ khí P4, _veVkSang)
       e.hp = s.hp ?? 100; e.mp = s.mp ?? 100; e.vs = s.vs || null; e.qt = !!s.qt; // % sinh lực / nội lực (bảng đội ngũ), vòng sáng hỗ trợ đang bật (vongDoi)
       // NPC nhân vật mẫu (may-chu/npc-choi.js, cờ npc trong snapshot): đánh được như 1 người chơi — các trường
       // dưới đây để công thức sát thương (skDamage / heroDamage qua mobRes / serK) không vỡ khi đọc e.res / e.def
@@ -1911,7 +1914,7 @@ export class World {
   _veVongSen(ctx, p, other, kcZ) {
     const n = Math.max(0, Math.min(10, other ? (p.rb | 0) : (this.hero ? (this.hero.reborn | 0) : 0)));
     if (!n) return;
-    const K = VONG_KIEU[other ? p.vk : (this.hero && this.hero.vongKieu)] || VONG_KIEU.long;
+    const K = VONG_KIEU[other ? p.vongKieu : (this.hero && this.hero.vongKieu)] || VONG_KIEU.long;
     const x = p.x, y = p.y - kcZ, rx = 56, ry = 28; // ellipse mặt đất 2:1
     const rot = this.time * (Math.PI * 2 / 30); // 1 vòng/30 giây — cánh + nền VL2 cùng xoay
     ctx.save();
@@ -1963,7 +1966,7 @@ export class World {
       doi.push({ loai: 1, a, px: x + Math.cos(a) * rx * 0.56, py: y + Math.sin(a) * ry * 0.56 });
     }
     doi.sort((u, v) => u.py - v.py);
-    const kieu = other ? (p.vk || "long") : ((this.hero && this.hero.vongKieu) || "long");
+    const kieu = other ? (p.vongKieu || "long") : ((this.hero && this.hero.vongKieu) || "long");
     for (const d of doi) {
       const huong = Math.atan2(Math.sin(d.a) * ry, Math.cos(d.a) * rx); // hướng ra ngoài trên màn hình
       ctx.save();
@@ -2370,8 +2373,8 @@ export class World {
   }
   // phe theo phái (factions[].camp: 1 chính, 2 tà, 3 trung lập; chưa vào phái 0)
   campPhai(fac) { return fac == null ? 0 : ((this.P.factions || []).find((f) => f.id === +fac) || {}).camp | 0; }
-  // tên môn phái cho nhãn trên đầu (Huy 26/11: tên + cấp + môn phái) — chưa nhập môn: "Vô Môn Phái" như main.js facOf
-  tenPhai(fac) { if (fac == null) return "Vô Môn Phái"; const f = (this.P.factions || []).find((x) => x.id === +fac); return (f && f.n) || "Vô Môn Phái"; }
+  // tên môn phái cho nhãn trên đầu (Huy 26/11: tên + cấp + môn phái; Huy 12:22 ngày 28/11/2026: chỉ tên phái ngắn) — chưa nhập môn: "Vô Môn Phái" như main.js facOf
+  tenPhai(fac) { if (fac == null) return "Vô Môn Phái"; const f = (this.P.factions || []).find((x) => x.id === +fac); return (f && TEN_PHAI_NGAN[f.key]) || (f && f.n) || "Vô Môn Phái"; }
   // phe đang theo của mình: máy chủ báo qua nhịp (this.phe — trong đội: phe đội trưởng); chưa có thì theo phái mình
   pheMinh() { return this.phe ?? this.campPhai(this.hero.fac); }
   // vòng sáng hỗ trợ của mình còn tác dụng (đang bật ở ô tay phải + vòng ghép — auraGhep, + vòng vừa đổi chưa hết hạn — vongCapNhat) gửi qua
