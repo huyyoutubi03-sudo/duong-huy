@@ -242,6 +242,8 @@ const thongTin = (tk) => ({ ten: tk.ten, admin: !!tk.admin, nv: tk.nv.map(nvGui)
 function soOnline() {
   const t = Date.now(); let n = 0;
   for (const [k, at] of online) if (t - at < ONLINE_MS) n++; else online.delete(k);
+  // Bot như người chơi thật (Huy chốt 16:21 28/11/2026: tính bot luôn): cộng dàn bot đang chạy (0 khi bot tắt).
+  try { const NC = require("./npc-choi"); if (NC && NC.soBot) n += NC.soBot() | 0; } catch {}
   return n;
 }
 // tên nhân vật cấm (anh 10/11: "cấm ng chơi đặt tên nv có chữ GM, ADMIN, cấm đặt từ tục tiễu: Địt, đụ, lồn, cặc, địt mẹ, đụ mẹ, vv") — danh sách ở
@@ -697,7 +699,7 @@ async function xuLyApi(req, res, p) {
       if (r.huy) NK.ghi("huy", tk.ten, h.name,`Hủy ${r.huy.map((it) => `${it.n > 1 ? it.n + " " : ""}${DO.tenMon(it).trim()}${(it.d || []).length ? ` (${it.d.length} dòng)` : ""}${it.kbh ? " (khóa)" : ""}`).join(", ")}`, { mon: r.huy.map(NK.mon) });
       return guiJson(res, 200, { msg: r.msg, nv: nvCua(h), tui: tuiCua(h), ...(r.vut ? { vut: r.vut } : {}), ...(r.chon ? { chon: r.chon } : {}),
         ...(r.hoiSo ? { hoiSo: r.hoiSo, con: r.con } : {}), ...(r.hoiPq ? { hoiPq: r.hoiPq } : {}), ...(r.hieuUng ? { hieuUng: r.hieuUng } : {}), ...(r.moRuong ? { moRuong: r.moRuong } : {}), ...(r.tuMau !== undefined ? { tuMau: r.tuMau } : {}), ...(r.vdBao ? { vdBao: r.vdBao } : {}), ...(r.doiGioi ? { doiGioi: r.doiGioi } : {}), ...(r.gioiXong ? { gioiXong: 1, gioiMoi: r.gioiMoi } : {}), ...(r.kn ? { kn: knCua(h) } : {}), ...(r.xoaMk ? { xoaMk: r.xoaMk } : {}),
-        ...(r.tkDoi ? { tkDoi: r.tkDoi } : {}), ...(r.tkHoi ? { tkHoi: r.tkHoi } : {}), ...(r.banXu !== undefined ? { banXu: r.banXu } : {}), ...(r.di ? { di: r.di } : {}), buff: DO.buffCon(h, tk.ten + "|" + (body.o | 0)) }); // tkDoi / tkHoi: món Tống Kim (Chiến cổ / Lệnh Bài, Càn Khôn — trình duyệt áp); di: Phong Lăng Truyền Tống Lệnh -> bờ Bắc (anh 16/11 — Báo Đáp Ân Sư, trình duyệt diPld)
+        ...(r.tkDoi ? { tkDoi: r.tkDoi } : {}), ...(r.tkHoi ? { tkHoi: r.tkHoi } : {}), ...(r.banXu !== undefined ? { banXu: r.banXu } : {}), ...(r.di ? { di: r.di } : {}), ...(r.diChon ? { diChon: r.diChon } : {}), buff: DO.buffCon(h, tk.ten + "|" + (body.o | 0)) }); // tkDoi / tkHoi: món Tống Kim (Chiến cổ / Lệnh Bài, Càn Khôn — trình duyệt áp); di: Phong Lăng Truyền Tống Lệnh -> bờ Bắc (anh 16/11 — Báo Đáp Ân Sư, trình duyệt diPld); diChon: Thần Hành Phù -> chọn thành rồi tới (anh 28/11)
     }
     // Dã Tẩu (may-chu/da-tau.js): { o, viec, … } -> { say: { text, opts } | talk: [câu] | giao: { tieuDe, loi } | thuong: { text, ds }, tin: [câu] }; viec "den"
     // (Đưa ta đến nơi làm nhiệm vụ — anh 11/11) -> { di | hoiPhu | canh | tin }: khóa "tài khoản|ô" để đọc bãi đang đứng (do.js BAI_NAY, nhịp ghi)

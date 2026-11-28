@@ -206,13 +206,13 @@ export class GameWindows {
       const el = w.node(s, E); if (!el) continue;
       el.classList.add("jw-slot");
       el.dataset.tha = "mac"; el.dataset.o = s; // khung chỗ đặt (_oDat)
-      el.oncontextmenu = (e) => { e.preventDefault(); this._hideTip(); if (!this.hand && (api.hero().equip || {})[s] && !this._khoaChan()) api.doItem({ act: "thao", slot: s }); };
+      el.oncontextmenu = (e) => { e.preventDefault(); this._hideTip(); const it = (api.hero().equip || {})[s]; if (!this.hand && it && !this._khoaChan()) { if (e.ctrlKey || e.shiftKey) return this._banDo(it, true); api.doItem({ act: "thao", slot: s }); } };
       el.onclick = (e) => {
         const it = (api.hero().equip || {})[s];
         if (it && e.ctrlKey && !e.shiftKey && !e.altKey && !this.hand && api.khoe) { this._hideTip(); return api.khoe(it); } // Ctrl + bấm: khoe đồ (anh 12/11)
         this._slotClick(s, e);
       };
-      el.onmousemove = (e) => { const it = (api.hero().equip || {})[s]; if (it && !this.hand) this._showTip(it, e, this._sua() ? this._suaHint(it) : ["Bấm: cầm lên · Chuột phải: tháo", KHOE], s); else this._hideTip(); };
+      el.onmousemove = (e) => { const it = (api.hero().equip || {})[s]; if (it && !this.hand) this._showTip(it, e, this._sua() ? this._suaHint(it) : ["Bấm: cầm lên · Chuột phải: tháo · Ctrl + chuột phải: bán", KHOE], s); else this._hideTip(); };
       el.onmouseleave = () => this._hideTip();
     }
     for (const b of ["BtnBind", "BtnUnBind"]) w.on(b, () => api.msg(`${{ BtnBind: "Gắn", BtnUnBind: "Gỡ gắn" }[b]} đồ — làm cùng đồ (M4)`), E);
@@ -1201,9 +1201,7 @@ export class GameWindows {
         if (e.shiftKey && !e.ctrlKey && (b.n | 0) > 1) return this.tachMon(b);
         if (ruong() && !(e.ctrlKey || e.shiftKey || e.altKey)) return this.api.doItem({ act: "cat", u: b.u, r: this._khoNhan() }); // Alt: nút Dùng / Mặc trên điện thoại (_goiYKho)
         if (!(e.ctrlKey || e.shiftKey)) return x.ktc ? this.api.dungVat(b) : x.phu ? this.api.dungPhu(b) : pot ? this.api.drink(b) : this._khoaChan() ? null : this.api.doItem({ act: "mac", u: b.u });
-        const kb = this._khongBan(b); if (kb) return this.api.msg(kb);
-        if (n < 4 || !((this.api.hero().auto || {}).baoVe)) return this.api.doItem({ act: "ban", u: b.u }); // Bảo vệ trang bị tắt (Trợ Thủ → Khác): bán luôn
-        this.hoi(`Bán <color=yellow>${x.n} (${n} dòng)<color>?`).then((ok) => ok && this.api.doItem({ act: "ban", u: b.u }));
+        return this._banDo(b); // Ctrl (hoặc Shift trên món lẻ) + chuột phải: bán — cùng đường _banDo (giá + luật NPC, hỏi lại món ≥ 4 dòng)
       };
       box.appendChild(el);
     }
@@ -2337,7 +2335,8 @@ export class GameWindows {
       if (!x || !x.ic) continue;
       const im = document.createElement("img");
       im.className = "jw-icon"; im.src = `assets/web/icon/${esc(x.ic)}`; im.alt = "";
-      Object.assign(im.style, { position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", maxWidth: "100%", maxHeight: "100%", pointerEvents: "none" });
+      // Huy 14:01 ngày 28/11/2026: hình đồ bằng đúng 1 ô túi (28 điểm) — 100% của ô nhưng không quá 28 (ô khảm có thể to hơn ô túi)
+      Object.assign(im.style, { position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", maxWidth: "min(100%, 28px)", maxHeight: "min(100%, 28px)", pointerEvents: "none" });
       el.appendChild(im);
       // ô thủy tinh / Hoán Linh: số viên của chồng đang đặt, góc dưới phải như ô túi (anh 17/11 lần 2 "hiển thị số thủy tinh đang có trong ô khảm nạm")
       if (o !== "mon") { const n = document.createElement("b"); n.className = "jw-n"; n.textContent = String(Math.max(1, b.n | 0)); el.appendChild(n); }
@@ -3374,6 +3373,17 @@ export class GameWindows {
   // món không bán cho cửa hàng được (như may-chu/do.js act ban): món Kỳ Trân Các, ngựa có hạn, món khóa của bảng Kỳ Trân Các (thuốc Hồi Thiên rút từ
   // lễ bao mua bằng Xu — anh 12/11) -> câu báo; bán được -> null
   _khongBan(b) { const x = ItemDB.item(b.k) || {}; return x.ktc || b.het || (b.kbh && x.tuKtc) ? "Vật phẩm của Kỳ Trân Các không bán cho cửa hàng được đâu." : null; }
+  // Bán món cho NPC (cùng đường bán ở cửa hàng: doItem act "ban" — giá + luật chặn theo máy chủ do.js giaBan; cả chồng: bán hết chồng như
+  // khung bán ở cửa hàng). Món đang mặc thì không bán — báo tháo ra trước (Huy 13:48, chốt 13:51 ngày 28/11/2026: thêm mục Bán đồ vào ô xem
+  // món Hành trang / Trang bị, giữ nguyên khoe đồ)
+  _banDo(b, dangMac) {
+    const api = this.api, x = ItemDB.item(b.k) || {};
+    if (dangMac) return api.msg("Món đang mặc trên người — tháo ra trước đã rồi hãy bán.");
+    const kb = this._khongBan(b); if (kb) return api.msg(kb);
+    const n = (b.d || []).length;
+    if (n < 4 || !((api.hero().auto || {}).baoVe)) return api.doItem({ act: "ban", u: b.u }); // Bảo vệ trang bị tắt (Trợ Thủ → Khác): bán luôn
+    this.hoi(`Bán <color=yellow>${x.n} (${n} dòng)<color>?`).then((ok) => ok && api.doItem({ act: "ban", u: b.u }));
+  }
   _showTip(it, e, hint, slot, price, nv) {
     const P = this.api.P, T = P.skillTip; if (!T || !ItemDB.item(it.k)) return;
     this.tipHint = hint; // dòng gợi ý gốc: điện thoại dọc đọc ra nút việc làm (dienthoai.js hanhDong)

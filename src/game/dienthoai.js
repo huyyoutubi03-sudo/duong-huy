@@ -667,6 +667,12 @@ export class DienThoai {
       this.mode = mode;
       this.el.querySelector(".dt-nutda").textContent = this.ngang && mode === "cs" ? "✕" : mode === "cs" || mode === "chat" || this.ngang ? "Đóng ✕" : "Thu gọn ▾";
     }
+    // tầng chung mặc định (Huy 13:56 28/11/2026): bất kỳ cửa sổ/popup/bảng nào mở lên (kể cả khung hỏi
+    // giữa màn hình trong GIUA) hay khung chat/bản đồ lớn mở thì cụm nút nổi (Zalo/khóa/CAM/Tự đánh/AUTO)
+    // bị che — game.css body.dt-khungmo; đóng hết mới hiện lại. Bản đồ nhỏ (.dt-mm) và thanh dưới (.dt-tab)
+    // không thuộc cụm này. Khung xếp chồng: thứ tự tự nhiên theo z của win (P.win.open đã xếp).
+    const khungMo = ws.length > 0 || this.chat || this.bdlMo;
+    if (this.sig.khungMo !== khungMo) { this.sig.khungMo = khungMo; document.body.classList.toggle("dt-khungmo", khungMo); }
     // cần: lúc thu gọn và lúc bảng Giang hồ mở (màn thấp — iPhone SE có thanh Safari — chỉ lúc thu gọn: không đủ chỗ cho cần + dòng tin + nút Chat)
     const can = this.can && (mode === "gon" || (!this.ngang && mode === "luoi" && this.day - 346 >= TREN + 30));
     if (this.sig.can !== can) { this.sig.can = can; document.body.classList.toggle("dt-cando", can); if (!can) this._thaCan(); }
@@ -769,7 +775,7 @@ export class DienThoai {
     document.body.classList.toggle("dt-ngang", this.ngang);
     this._datCo(on && !this.mt ? this.co : 1);
     if (!on || doi) {
-      document.body.classList.remove("dt-" + this.mode, "dt-thap", "dt-cando", "dt-hang", "dt-noi-co", "dt-sap-co", "dt-nhat-co"); this.mode = ""; this.sig = {}; this._thaCan(); this._thoiKeo(true);
+      document.body.classList.remove("dt-" + this.mode, "dt-thap", "dt-cando", "dt-hang", "dt-noi-co", "dt-sap-co", "dt-nhat-co", "dt-khungmo"); this.mode = ""; this.sig = {}; this._thaCan(); this._thoiKeo(true);
       for (const w of Object.values(this.api.P.win.wins)) { w.el.style.transform = ""; w.el._dtTf = ""; w.el._dtAn = false; w.el.classList.remove("dt-an"); }
       this.hanhEl.style.display = "none"; this.thuTu.clear();
       if (!on) this._moBdl(false); // về giao diện máy tính: đóng bản đồ lớn (dọc <-> ngang: giữ, tự vẽ lại theo khung mới)

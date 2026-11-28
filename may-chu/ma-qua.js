@@ -115,9 +115,9 @@ const boDoHK = (h, eqt) => {
 // Cấp bộ đồ HK vào túi — HỆ + DÒNG GIEO NGẪU NHIÊN THEO TỪNG MÓN MỖI LẦN NHẬN (chủ server 28/11/2026):
 // mỗi món gieo hệ 0–4 rồi gieo dòng bằng đúng hàm gieoDong của do.js (qua DO.NOI), số dòng = số dòng
 // cố định của bảng HK (gieoDong có thể trả ít hơn nếu hết dòng phân biệt — như đồ rơi).
-// LƯU Ý ĐÃ XÁC MINH: chuan() (do.js) ghi đè hệ món HK về hệ cố định của bảng do-hoang-kim.json lúc
-// nạp/lưu (GOC series) — hệ gieo chỉ thấy lúc nhận, hệ bền là hệ bảng; dòng đã gieo thì giữ nguyên
-// (chuan chỉ gieo lại khi gặp khóa dòng lạ). Mặc đồ không kiểm hệ (yeuCau bỏ yêu cầu ngũ hành 04/11) —
+// (Huy chốt 15:47 28/11/2026: ngẫu nhiên hết, kể cả đồ HK — chuan() giữ nguyên hệ đã gieo, không còn
+// ghi đè về hệ cố định của bảng; dòng đã gieo thì giữ nguyên, chuan chỉ gieo lại khi gặp khóa dòng lạ.)
+// Mặc đồ không kiểm hệ (yeuCau bỏ yêu cầu ngũ hành 04/11) —
 // chỉ dòng ẩn (2/4/6) kích theo quy tắc ngũ hành tương sinh (soKich).
 // Hình dạng món như monHK (khóa bảo hiểm vĩnh viễn, gắn nguồn "qua"). taoQua chặn đồ HK nên không đi
 // qua quà chung; túi không đủ chỗ thì lỗi trước khi động vào trạng thái nào.

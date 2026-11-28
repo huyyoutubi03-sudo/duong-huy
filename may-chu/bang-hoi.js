@@ -65,6 +65,23 @@ const bangCua = (tk, o) => { const c = cua(tk, o); return c ? c.B : null; };
 const idCua = (tk, o) => { const B = bangCua(tk, o); return B ? B.id : null; };
 const bangTheoId = (id) => DL.bang.find((B) => String(B.id) === String(id)) || null;
 
+// Bot NPC vào bang như người chơi thật (Huy lệnh 16:08–16:09 28/11/2026: chia 170 bot vào 2 bang,
+// đối xử như người chơi thật — chỉ bang chủ là người thật). Thêm thẳng thành viên, không qua
+// mời/duyệt/xin (đường đó cần người bấm); không lộ qua HTTP (lam() không đổi). Idempotent: đã ở
+// bang nào thì giữ nguyên bang đó, không nhảy bang; chưa có bang tên đó thì thôi để kỳ sau thử lại;
+// đang trong thời gian chờ sau khi rời bang thì thôi. Không gửi tin hệ thống từng bot (170 tin
+// 1 lúc sẽ spam kênh bang); ai cần biết thì đọc danh sách thành viên.
+function vaoBangBot(tkTen, o, tenNv, tenBang) {
+  const c = cua(tkTen, o);
+  if (c) return { daCo: true, id: c.B.id, ten: c.B.ten };
+  const B = DL.bang.find((x) => khoa(x.ten) === khoa(tenBang));
+  if (!B) return { chuaCo: true };
+  if ((DL.cho[khoaTv(tkTen, o)] || 0) > Date.now()) return { cho: true };
+  B.tv.push({ tk: tkTen, o: o | 0, ten: tenNv, cv: "de", dh: "", vao: Date.now() });
+  B.v++; xepChiSo(); ghi();
+  return { vao: true, id: B.id, ten: B.ten };
+}
+
 function tenBangOk(t) {
   t = String(t || "").normalize("NFC").trim().replace(/\s+/g, " ");
   if (t.length < 2 || t.length > 14 || TEN_BAD.test(t)) loi("Tên bang hội 2–14 chữ, không dùng ký tự lạ.");
@@ -462,6 +479,6 @@ function dsXepHang(tong) {
 
 tai();
 
-module.exports = { lam, nhip, nhan, idCua, cuaNv, datKhu, bangTheoId, xoaNv, xoaTk,
+module.exports = { lam, nhip, nhan, idCua, cuaNv, datKhu, bangTheoId, vaoBangBot, xoaNv, xoaTk,
   khoaKho, quanTri, dsXepHang, ganKiemTen, xa, CF, TEN_CV, TEN_PHE, cong, quai, nhanCho,
   chanRtb, teDanNay, VAN };

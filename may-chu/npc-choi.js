@@ -58,6 +58,7 @@ const BTG = () => require("./boss-tg");
 const SN = () => require("./san-nhim");
 const RTB = () => require("./ruong-tb");
 const PQ = () => require("./phu-quy");
+const BH = () => require("./bang-hoi"); // bang hội (Huy 16:08 28/11/2026): bot vào bang như người chơi thật
 const PH = () => require("./phong-hoa");
 const TK = () => require("./tong-kim");
 const PLD = () => require("./phong-lang-do");
@@ -76,6 +77,13 @@ const CS = () => require("./chuyen-sinh"); // chuyển sinh (Huy quyết Q6 13:4
 const CFG_PATH = process.env.VL_NPC_CHOI_CONFIG || path.join(__dirname, "npc-choi-config.json");
 const CFG = JSON.parse(fs.readFileSync(CFG_PATH, "utf8"));
 const Z_TOWN = 37; // Biện Kinh (thành, được bày sạp)
+const Z_BL = 53; // Ba Lăng huyện (thôn, được bày sạp — 1 mớ bot bày ở đây cho vui, lệnh Huy 14:38 28/11/2026)
+const TEN_THANH = { 37: "Biện Kinh", 53: "Ba Lăng" };
+const O_THANH = (z) => z === Z_TOWN || z === Z_BL; // vùng an toàn thành/thôn: không bị đánh / không chọn làm mục tiêu
+function thanhCua(bot) { // thành/thôn bot về bày sạp: có stalls53 trong config thì Ba Lăng, không thì Biện Kinh (mặc định cũ)
+  if (bot.cfg && Array.isArray(bot.cfg.stalls53) && bot.cfg.stalls53.length) return { zone: Z_BL, stalls: bot.cfg.stalls53, ten: TEN_THANH[Z_BL] };
+  return { zone: Z_TOWN, stalls: bot.cfg.stalls, ten: TEN_THANH[Z_TOWN] };
+}
 const ZONES = CFG.zones || {};
 const SO_TOI_DA = Math.max(1, Math.min(CFG.bots.length, +process.env.VL_NPC_CHOI_SO || 170));
 const HIEN_MS = Math.max(500, +process.env.VL_NPC_CHOI_HIEN || 1500);
@@ -196,7 +204,7 @@ const pick = (L) => L[Math.floor(Math.random() * L.length)];
 const boDau = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").toLowerCase();
 
 let bots = []; // [{ cfg, tab, tk, h, fakeTk, key, zone, x, y, dir, act, ... }] — bot 0 = Pháp Không
-let timer = null, timerHien = null, timerThu = null, tickN = 0;
+let timer = null, timerHien = null, timerThu = null, timerBang = null, tickN = 0;
 const choDanh = new Map(); // tài khoản người chơi -> [đòn đánh trả đang chờ gửi kèm nhịp sau] (layDanhCho)
 let traLoiChungAll = 0; // chống spam TIN RAO: chỉ rao dùng (Huy 10:18 27/11/2026: câu trả lời trực tiếp không qua cửa chung 30s nữa)
 const tenBot = new Set(); // tên nhân vật của bầy bot — bot CHỈ trả lời người chơi thật, không trả lời tin của bot khác (khỏi vòng lặp bot tự hỏi tự đáp khi AI không còn qua cửa chung 30s; Huy 10:18 27/11/2026)
@@ -461,10 +469,25 @@ function soThuoc(bot, k) { return (bot.h.bag || []).filter((o) => o.k === k).red
 
 function gietMot(bot, mob, lv) {
   const T = baiTrain(bot);
+  const truTuong = mob == null; // giết trừu tượng (không có mục tiêu thật): nhịp sinh tinh anh mới áp được
   mob = mob || pick(T.mobs); lv = lv || T.mobLv;
   const x = bot.x, y = bot.y;
+  // Chuyển sinh bước 2 (bot cần hồn): cứ 50 con trừu tượng thì 1 con tính là tinh anh (đúng nhịp
+  // QD.tinhAnhMoi của quai-chung.js:1362) để hồn Linh Hồn Chiến có đường rơi 40%. Cổng TA_GAP/taBai
+  // trong gietQuai tự chặn khi bãi không có tinh anh (con đó chỉ tính "bo"). Trước đây gietMot luôn
+  // r[3]=0 nên bot không bao giờ có hồn, kẹt vĩnh viễn ở bước 2. Chỉ khi còn thiếu hồn (đã nộp + túi < cần);
+  // giết có mục tiêu (vongDanh) giữ nguyên quái thường.
+  let loai = 0;
+  if (truTuong) {
+    const D = bot.h && bot.h.cs;
+    if (D && D.buoc === 2) {
+      const M = CS().muc(D.vong);
+      const trongTui = (bot.h.bag || []).reduce((t, it) => t + (it && it.k === CS().HON ? (it.n | 0) || 1 : 0), 0);
+      if (D.hon + trongTui < M.hon) { bot._taDem = (bot._taDem | 0) + 1; if (bot._taDem % 50 === 0) loai = 2; }
+    }
+  }
   let kq;
-  try { kq = DO.gietQuai(bot.h, [[bot.zone, mob, lv, 0, 0, x, y]], { ten: bot.cfg.acct, admin: false, key: bot.key }); }
+  try { kq = DO.gietQuai(bot.h, [[bot.zone, mob, lv, loai, 0, x, y]], { ten: bot.cfg.acct, admin: false, key: bot.key }); }
   catch (e) { log(`giết quái lỗi (${bot.h.name}):`, e.message); return; }
   if (!kq || !kq.n) { bot.stats.bo += (kq && kq.bo) || 1; return; } // bị luật chặn: đếm để thấy trong kiểm chứng
   bot.kills++; bot.stats.giet++; bot.stats.kn += kq.kn || 0;
@@ -515,12 +538,12 @@ function moSap(bot) {
     return false;
   }
   try { CHO.lam(bot.fakeTk, bot.h, 0, { viec: "loiRao", qc: QC }); } catch (e) { log(`đặt lời rao lỗi (${bot.h.name}):`, e.message); return false; }
-  for (const [sx, sy] of bot.cfg.stalls) {
+  for (const [sx, sy] of thanhCua(bot).stalls) {
     bot.x = sx; bot.y = sy; hienDien(bot); // chỗ mở sạp = chỗ đang đứng (nhịp gần nhất của máy chủ)
     try {
-      const r = CHO.lam(bot.fakeTk, bot.h, 0, { viec: "mo", on: 1, bai: Z_TOWN, x: sx, y: sy });
+      const r = CHO.lam(bot.fakeTk, bot.h, 0, { viec: "mo", on: 1, bai: thanhCua(bot).zone, x: sx, y: sy });
       bot.stallSpot = [sx, sy];
-      log(`mở sạp ở Biện Kinh: ${bot.h.name} — ${r && r.msg ? r.msg : ""}`);
+      log(`mở sạp ở ${thanhCua(bot).ten}: ${bot.h.name} — ${r && r.msg ? r.msg : ""}`);
       return true;
     } catch (e) { /* chỗ này sát sạp khác / ngoài vùng an toàn: thử điểm dự phòng */ }
   }
@@ -542,10 +565,11 @@ function dongSap(bot) {
 // lẫn nhau, bot không có cơ chế an toàn để nhận mua đồ người chơi.
 const RAO_BAN_MS = 100 * 1000; // ĐX-1: còn ngồi bán thì rao lại mỗi ~100 giây (qua cửa chung nên cả bầy ≤ ~2 tin/phút)
 const RAO_MAX = 100; // Huy chốt 01:15 27/11/2026: tin rao ≤100 ký tự (trần TIN_MAX ở the-gioi.js) — rút ở ranh giới từ, giữ nguyên tên + giá cả 2 món
-function rutTinRao(mon, monDau) {
+function rutTinRao(mon, monDau, tenThanh) {
   // Ưu tiên: giữ nguyên danh sách món → rút khẩu hiệu trước → rút đầu → cuối cùng chỉ còn món đầu (không bao giờ cắt giữa tên/giá)
   const khauHieu = ["Tới mà xem, đừng hỏi nhiều.", "Tới mà xem.", "Tới xem."];
-  const daus = ["Bán đồ ngon ở sạp Biện Kinh: ", "Sạp Biện Kinh: ", ""];
+  const ten = tenThanh || "Biện Kinh";
+  const daus = [`Bán đồ ngon ở sạp ${ten}: `, `Sạp ${ten}: `, ""];
   for (const d of daus)
     for (const kh of khauHieu) {
       const t = `${d}${mon}. ${kh}`;
@@ -560,7 +584,7 @@ function raoBan(bot) {
   const t = Date.now();
   if (t - traLoiChungAll < CHAT_CHUNG_MS) { bot.raoDen = t + 1500; return; } // ĐX-1: cửa chung bận thì thử lại nhịp sau (1,5 giây), khỏi dời +30 giây rồi mất lượt khi sạp đóng
   const dsMon = ds.slice(0, 2).map((it) => `${DO.tenMon(it) || "?"} ${(it.gia | 0) || giaCua(it)} lượng`); // giá niêm yết thật trên sạp
-  const tin = rutTinRao(dsMon.join(", "), dsMon[0]);
+  const tin = rutTinRao(dsMon.join(", "), dsMon[0], thanhCua(bot).ten);
   traLoiChungAll = t;
   bot.raoDen = t + RAO_BAN_MS + ri(0, 20 * 1000);
   try {
@@ -583,6 +607,7 @@ function hdChuyenSinh(bot) {
     if (!D || !D.buoc) { try { CS().lam(h, { viec: "nhan" }, bot.key); } catch {} return; } // chưa nhận / vừa xong vòng: nhận vòng mới (lỗi thường: đội đang đánh boss — nhịp sau thử lại, không ghi log)
     if (D.buoc === 2) { try { CS().lam(h, { viec: "nop" }, bot.key); } catch {} return; } // có hồn trong túi thì nộp (hết trần ngày / hết hồn thì thôi)
     if (D.buoc >= 4 && bot.mode !== "hd" && bot.mode !== "chet") {
+      if (!CS().botMienPhi(bot.key, D.vong) && (h.gold | 0) < CS().muc(D.vong).phi) return; // chưa đủ phí: chờ kiếm tiền, không gọi xacNhan để khỏi spam log loi() mỗi nhịp (vòng 10 miễn phí cho bot — Huy chốt 15:44 28/11/2026)
       const kq = CS().lam(h, { viec: "xacNhan" }, bot.key);
       if (kq && kq.chuyenSinh) {
         boMucTieu(bot); bot.baiTrain = null; bot.mode = "ve";
@@ -605,9 +630,10 @@ function tickBot(bot) {
       // Chạm trần: dừng giết, về thành nghỉ (bày sạp/ngồi chơi) tới ngày mới — không nhận thêm exp.
       if (!DO_MODE && hetTran(bot)) {
         boMucTieu(bot);
-        bot.mode = "nghi"; bot.zone = Z_TOWN; bot.x = bot.cfg.stalls[0][0]; bot.y = bot.cfg.stalls[0][1];
+        const th = thanhCua(bot);
+        bot.mode = "nghi"; bot.zone = th.zone; bot.x = th.stalls[0][0]; bot.y = th.stalls[0][1];
         bot.dir = 2; bot.act = "sit"; bot.daMoSapNghi = false;
-        try { DO.baiNay(bot.key, Z_TOWN); } catch {}
+        try { DO.baiNay(bot.key, th.zone); } catch {}
         hienDien(bot); viecThanh(bot); luu(bot);
         log(`chạm trần exp/ngày — về thành nghỉ (${bot.h.name}, cấp ${bot.h.lvl})`);
         return;
@@ -638,15 +664,17 @@ function tickBot(bot) {
       }
     } else if (bot.mode === "chet") {
       bot.act = "die";
-      if (Date.now() - bot.chetLuc >= 3000) { bot.mode = "ve"; hoiDay(bot); log(`hồi sinh ở Biện Kinh (${bot.h.name}), máu / nội lực đầy`); }
+      if (Date.now() - bot.chetLuc >= 3000) { bot.mode = "ve"; hoiDay(bot); log(`hồi sinh ở ${thanhCua(bot).ten} (${bot.h.name}), máu / nội lực đầy`); }
     } else if (bot.mode === "ve") {
-      bot.zone = Z_TOWN; bot.x = bot.cfg.stalls[0][0]; bot.y = bot.cfg.stalls[0][1]; bot.dir = 2; bot.act = "stand";
+      const th = thanhCua(bot);
+      bot.zone = th.zone; bot.x = th.stalls[0][0]; bot.y = th.stalls[0][1]; bot.dir = 2; bot.act = "stand";
       // Bình mua bằng lượng farm được ở viecThanh (muaBinh) — KHÔNG cấp phát miễn phí như P2 cũ.
-      DO.baiNay(bot.key, Z_TOWN); hienDien(bot); viecThanh(bot); bot.mode = "ban"; bot.kills = 0; luu(bot);
+      DO.baiNay(bot.key, th.zone); hienDien(bot); viecThanh(bot); bot.mode = "ban"; bot.kills = 0; luu(bot);
     } else if (bot.mode === "ban") {
       if (DO_MODE) { // đo lường: bỏ qua sạp, về train ngay để đo grind thuần
         bot.mode = "luyen"; capNhatBai(bot); veBaiTrain(bot); bot.act = "run"; luu(bot);
       } else {
+        napLai(bot); // bán hàng trong lúc bày sạp ghi thẳng tệp (cho-troi.js "mua"): nạp lại trước khi mở sạp, khỏi bị luu() ghi đè mất tiền bán + khỏi bày lại món đã bán
         bot.mode = moSap(bot) ? "cho" : "luyen";
         if (bot.mode === "cho") { bot.stallDen = Date.now() + STALL_MS; bot.raoDen = Date.now() + ri(5, 15) * 1000; } // ĐX-1: rao đầu 5–15 giây sau khi mở sạp, trong cửa sạp mở (STALL_MS 120s)
         else { capNhatBai(bot); veBaiTrain(bot); bot.act = "run"; }
@@ -657,6 +685,7 @@ function tickBot(bot) {
       if (Date.now() >= (bot.raoDen || 0)) raoBan(bot); // rao bán thưa, qua cửa tiết lưu chung
       // Chạm trần thì giữ sạp mở, ngồi chơi tới ngày mới (không đóng sạp rồi ra train ngay).
       if (Date.now() >= bot.stallDen && (DO_MODE || !hetTran(bot))) {
+        napLai(bot); // như trên: tiền bán + món đã bán + tin báo sạp nằm ở tệp, nạp lại trước khi đóng sạp khỏi ghi đè mất
         dongSap(bot);
         bot.mode = "luyen"; capNhatBai(bot); veBaiTrain(bot); bot.act = "run";
         hoiDay(bot); luu(bot);
@@ -664,22 +693,24 @@ function tickBot(bot) {
       }
     } else if (bot.mode === "nghi") {
       // Nghỉ vì chạm trần: ở thành, bày sạp nếu có đồ ngon, ngồi chơi, vẫn trả lời chat qua hiện diện.
-      bot.zone = Z_TOWN; bot.act = "sit";
+      const th = thanhCua(bot);
+      bot.zone = th.zone; bot.act = "sit";
       if (!(bot.h.sap && bot.h.sap.mo) && !bot.daMoSapNghi) {
-        bot.x = bot.cfg.stalls[0][0]; bot.y = bot.cfg.stalls[0][1];
+        bot.x = th.stalls[0][0]; bot.y = th.stalls[0][1];
         bot.daMoSapNghi = true;
+        napLai(bot); // như nhánh "ban": nạp lại trước khi mở sạp (chưa kiểm đường "nghi" — cần bot chạm trần ngày)
         if (moSap(bot)) { bot.stallDen = Date.now() + STALL_MS; bot.raoDen = Date.now() + ri(5, 15) * 1000; } // ĐX-1: rao lần đầu 5–15 giây sau khi mở sạp
       }
       if (bot.h.sap && bot.h.sap.mo && Date.now() >= (bot.raoDen || 0)) raoBan(bot);
       if (!hetTran(bot)) { // ngày mới: đóng sạp (nếu có), ra train tiếp
-        if (bot.h.sap && bot.h.sap.mo) dongSap(bot);
+        if (bot.h.sap && bot.h.sap.mo) { napLai(bot); dongSap(bot); }
         bot.daMoSapNghi = false;
         bot.mode = "luyen"; capNhatBai(bot); veBaiTrain(bot); bot.act = "run";
         hoiDay(bot); luu(bot);
         log(`hết nghỉ — ra train tiếp (${bot.h.name}, cấp ${bot.h.lvl})`);
       }
     }
-    if ((tickN + bot.idx) % 20 === 0) luu(bot);
+    if ((tickN + bot.idx) % 20 === 0) { if (bot.mode === "cho" || bot.mode === "nghi") napLai(bot); luu(bot); } // ngồi bán / ngồi nghỉ: h không đổi trong bộ nhớ, nạp lại trước khi lưu để khỏi ghi đè mất tiền bán + món đã bán (ghi thẳng tệp lúc bày sạp)
   } catch (e) { log(`tick lỗi (${bot.h.name}):`, e.message); }
 }
 
@@ -996,7 +1027,7 @@ function nhanDon(d) {
 function nhanDonBot(bot, d) {
   if (!bot.chiSo) return { ok: false, lyDo: "bot-tat" };
   if (bot.mode === "chet" || bot.hpCur <= 0) return { ok: false, lyDo: "da-chet" };
-  if (bot.mode !== "luyen" || bot.zone === Z_TOWN) return { ok: false, lyDo: "vung-an-toan" };
+  if (bot.mode !== "luyen" || O_THANH(bot.zone)) return { ok: false, lyDo: "vung-an-toan" };
   const dmg = d.dmg;
   if (!Number.isFinite(dmg) || dmg <= 0) return { ok: false, lyDo: "khong-sat-thuong" };
   apDungDon(bot, dmg, d);
@@ -1058,7 +1089,7 @@ function giaiQuyetDich(hien, bx, by) {
   const py = hien && Number.isFinite(hien.y) ? hien.y : by;
   let dich = null, dMin = Infinity;
   for (const b of bots) {
-    if (b.mode !== "luyen" || b.zone === Z_TOWN || !b.chiSo || b.hpCur <= 0) continue;
+    if (b.mode !== "luyen" || O_THANH(b.zone) || !b.chiSo || b.hpCur <= 0) continue;
     if (zone != null && b.zone !== zone) continue;
     const d = Math.hypot(px - b.x, (py - b.y) * 2);
     if (d < dMin) { dMin = d; dich = b; }
@@ -1262,9 +1293,11 @@ function duoiToaDo(bot) { // đuôi tọa độ gắn vào mọi câu trả lờ
 function traLoi(bot, msg) {
   // Chỉ trả lời tin chat thật của người chơi. Tin hệ thống (CH_SYSTEM) và các kênh khác không
   // phải lời hỏi — trả lời chúng vừa lỗi kênh, vừa đốt cửa tiết lưu kênh chung (26/11/2026).
-  if (msg.ch !== "CH_WORLD" && msg.ch !== "CH_NEARBY" && msg.ch !== "CH_CITY" && msg.ch !== "CH_TEAM" && msg.ch !== "PRIVATE") return;
+  // Kênh bang (CH_TONG — Huy 16:09 28/11/2026: bot như người chơi thật, chat bang như người chơi):
+  // trả lời cả tin hỏi ở kênh bang; tin hệ thống kênh bang (name rỗng) thì không.
+  if (msg.ch !== "CH_WORLD" && msg.ch !== "CH_NEARBY" && msg.ch !== "CH_CITY" && msg.ch !== "CH_TEAM" && msg.ch !== "PRIVATE" && msg.ch !== "CH_TONG") return;
   const n = msg.name || "", txt = String(msg.text || "");
-  if (n === bot.h.name || !txt.trim()) return;
+  if (!n || n === bot.h.name || !txt.trim()) return;
   if (tenBot.has(n)) return; // tin của bot khác trong bầy — chỉ trả lời người chơi thật
   if (bot.traLoiDen && Date.now() < bot.traLoiDen) return; // 10 giây mới trả lời cùng người 1 lần
   const rieng = msg.ch === "PRIVATE";
@@ -2130,6 +2163,27 @@ function hdPhTick(bot) {
   if (dmg > 0) { try { PH().danh(bot.cfg.acct, PH().BAI, { s: ++bot.hdSeq, d: [[muc.uid, dmg]] }); } catch {} }
 }
 
+// ----- Boss Hoàng Kim: xoay 20 suất/phiên cho bot CẦN dấu chuyển sinh -----
+// Trần 20 bot/phiên giữ nguyên như cũ (bot.idx < 20) — chỉ đổi NGƯỜI được chọn: ưu tiên bot đang ở
+// bước 3 (cần dấu Boss), ít dấu nhất trước; còn suất thì bot khác. Xếp hạng tính lại khi đổi phiên
+// hoặc mỗi 60 giây (dấu chỉ đổi khi boss chết nên hạng ổn định trong phiên). Không tăng quân đánh
+// boss, không đụng cân bằng boss — chỉ chia đều suất cho dàn bot cùng làm nhiệm vụ vòng 10.
+const BTG_TOI_DA = 20;
+let btgChon = { u: null, at: 0, ds: [] };
+function duocDanhBtg(bot) {
+  let u = null;
+  try { const tt = BTG().trangThai(bot.cfg.acct); u = tt ? String(tt.u) : null; } catch {}
+  const t = Date.now();
+  if (btgChon.u !== u || t - btgChon.at > 60000) {
+    const xep = [...bots].map((b) => {
+      const D = b.h && b.h.cs;
+      return { b, uu: D && D.buoc === 3 ? 0 : 1, dau: (D && D.dau) | 0, idx: b.idx };
+    }).sort((a, c) => (a.uu - c.uu) || (a.dau - c.dau) || (a.idx - c.idx));
+    btgChon = { u, at: t, ds: xep.slice(0, BTG_TOI_DA).map((x) => x.b) };
+  }
+  return btgChon.ds.includes(bot);
+}
+
 // ----- Boss Hoàng Kim: 20 bot -----
 function hdBtgVao(bot) {
   if (!BTG().dangCo()) return false;
@@ -2533,9 +2587,9 @@ function hdKiemTra(bot) {
   if (bot.hdNgay.ngay !== ngayVN()) bot.hdNgay = { ngay: ngayVN() };
   if (hdVaThanhVien(bot)) return;
   try {
-    // Giới hạn theo idx đã đủ (20 Boss / 30 Nhím / 10 Rương / 40 Phong Hỏa); không bọc thêm
-    // theo tổng số bot — bọc so>=170 làm đợt kiểm ít bot (và live thiếu bot) mất hẳn 4 hoạt động giờ.
-    if (bot.idx < 20 && hdBtgVao(bot)) return;
+    // Giới hạn theo idx đã đủ (30 Nhím / 10 Rương / 40 Phong Hỏa); Boss xoay 20 suất/phiên
+    // (duocDanhBtg) — không bọc thêm theo tổng số bot, khỏi làm đợt kiểm ít bot mất hoạt động giờ.
+    if (duocDanhBtg(bot) && hdBtgVao(bot)) return;
     if (bot.idx < 30 && hdSnVao(bot)) return;
     if (bot.idx < 10 && hdRtbVao(bot)) return;
     if (bot.idx < 40 && hdPhVao(bot)) return;
@@ -2549,7 +2603,7 @@ function hdKiemTra(bot) {
 }
 function hdCoUuTien(bot) { // rẻ, không tác dụng phụ: có hoạt động THEO GIỜ đang mở mà bot đủ điều kiện + chưa nhường cho đợt này không?
   try {
-    if (bot.idx < 20 && BTG().dangCo()) {
+    if (duocDanhBtg(bot) && BTG().dangCo()) {
       const tt = BTG().trangThai(bot.cfg.acct);
       if (tt && !tt.ket && bot.hdNgay.btg !== String(tt.u) && bot.hdNhuong !== "btg" + tt.u) return "btg" + tt.u;
     }
@@ -2780,6 +2834,23 @@ function viecThanh(bot) { // chạy 1 lần mỗi lần về thành, trước kh
   boSungChieu(bot); nopLuyen(bot); phuQuyTown(bot);
 }
 
+// ---------- bang hội (Huy lệnh 16:08–16:09 28/11/2026) ----------
+// Bot như người chơi thật trong hệ bang hội: nửa đầu dàn bot vào Đại Tống (phe Chánh), nửa sau
+// vào Đại Kim (phe Tà). Đổi quy tắc chia chỉ cần sửa 1 chỗ: BANG_BOT / NUA_BOT ở dưới.
+// Bang chủ vẫn là người chơi thật (TYT1/TNT1); bot chỉ làm thành viên (cv "de" — bang-hoi.js
+// vaoBangBot). Nhãn bang, danh sách thành viên, đếm online, chat bang đều đi đường chung của
+// người chơi (the-gioi.js nhip/chat/dangChoi, bang-hoi.js nhan/xemCua) nên tự hiện như người chơi.
+const BANG_BOT = ["Đại Tống", "Đại Kim"];
+const NUA_BOT = Math.ceil((CFG.bots || []).length / 2); // 170 bot -> 85/85
+const bangCuaBot = (idx) => BANG_BOT[idx < NUA_BOT ? 0 : 1];
+function vaoBang(bot) {
+  if (bot._bangOk) return;
+  try {
+    const r = BH().vaoBangBot(bot.cfg.acct, 0, bot.h.name, bangCuaBot(bot.idx));
+    if (r.vao || r.daCo) bot._bangOk = true;
+  } catch (e) { log(`vào bang lỗi (${bot.h.name}):`, e.message); }
+}
+
 // ---------- vòng đời ----------
 function test1DangChoi() {
   try { return !!TG.dangChoi("test1"); }
@@ -2824,6 +2895,12 @@ function batDau() {
   if (!bots.length) throw new Error("Không tạo được bot nào: " + loi.join(" | "));
   if (loi.length) log(`cảnh báo: ${loi.length} bot không chạy:`, loi.join(" | "));
   for (const b of created) if (b.h && b.h.name) tenBot.add(b.h.name);
+  // Bang hội: cho cả dàn bot vào 2 bang (idempotent — đã là thành viên thì giữ nguyên);
+  // thử lại mỗi 60 giây cho bot nào chưa vào được (bang chưa lập, đang chờ rời bang...).
+  for (const b of bots) vaoBang(b);
+  const vao = bots.filter((b) => b._bangOk);
+  log(`vào bang: ${vao.length}/${bots.length} bot đã ở bang (${BANG_BOT.map((t) => `${t}: ${vao.filter((b) => bangCuaBot(b.idx) === t).length}`).join(", ")})`);
+  timerBang = setInterval(() => { for (const b of bots) vaoBang(b); }, 60000);
   // Nhịp chung 1500ms cho tất cả bot (giết quái + trạng thái); hiện diện chia lát theo VL_NPC_CHOI_HIEN.
   timer = setInterval(() => { tickN++; for (const b of bots) tickBot(b); }, 1500);
   let latN = 0;
@@ -2840,7 +2917,8 @@ function dung() {
   if (timer) clearInterval(timer);
   if (timerHien) clearInterval(timerHien);
   if (timerThu) clearInterval(timerThu);
-  timer = timerHien = timerThu = null;
+  if (timerBang) clearInterval(timerBang);
+  timer = timerHien = timerThu = timerBang = null;
   for (const b of bots) {
     try { if (b.h.sap && b.h.sap.mo) dongSap(b); } catch {}
     try { luu(b); } catch {}
@@ -2887,6 +2965,8 @@ const B0 = () => bots[0] || null;
 const TAB0 = () => BC.bangChieu(0, 2);
 module.exports = {
   batDau, dung, trangThai, tuDong, nhanDon, nhanBaoDon, layDanhCho,
+  soBot: () => bots.length, // số bot đang chạy (nhẹ, không dựng object trạng thái) — đếm online (Huy chốt 16:21 28/11/2026: bot như người chơi thật, tính bot luôn)
+  layBotTheoTen: (ten, tenNv) => bots.find((b) => b.tk && b.tk.ten === ten && b.h && b.h.name === tenNv) || null,
   ACCT: ACCT0, TEN: TEN0,
   _test: {
     layS: () => B0(),

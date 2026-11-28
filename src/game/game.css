@@ -255,6 +255,7 @@ body.dt .jx-menu.jx-nguoi div { padding: 10px 16px; }
 #jxhud .jx-chat i.bc, #dt .dt-clist i.bc, #dt .dt-tin i.bc { vertical-align: middle; margin: 0 1px; }
 /* khoe đồ (anh 12/11 — hud.js _khoeHtml): chữ <tên đồ> của tin — rê / chạm xem món */
 .jx-khoe { cursor: pointer; }
+.jx-toa { cursor: pointer; } /* link tọa độ trong chat / bảng boss / ô Săn Nhím (28/11/2026): màu đặt inline #2E6BF0, không gạch chân */
 /* Ủng hộ duy trì máy chủ (anh 13/11 — mẫu A tối viền vàng, cùng tông màn đăng nhập; src/game/ungho-qr.js) — dòng dưới khung đăng nhập + khung 4 bước */
 .lg-ungho { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(201,154,74,.35); text-align: center; }
 .lg-ungho-nut { background: transparent; border: 1px solid rgba(201,154,74,.6); color: #f3d38a; font-weight: 700; border-radius: 16px; padding: 7px 14px; cursor: pointer; }
@@ -455,6 +456,8 @@ body.dt .bc-chon > div > i { transform: scale(1.5); }
 #jxwin .jw-btn.gd-tat { filter: grayscale(.85) brightness(.7); }
 #jxwin .jw-slot:hover { outline: 1px solid rgba(255,217,78,.55); outline-offset: -1px; }
 #jxwin .jw-icon { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+/* hình đồ trong ô xem món (Huy 14:01 ngày 28/11/2026): thu nhỏ bằng đúng 1 ô túi (UNIT = 28 điểm), mọi nơi tooltip hiện — túi / rương / cửa hàng / sạp / giao dịch / ô trang bị + soi đồ / ô khảm. Ô chiêu KHÔNG đụng: icon chiêu 30–36 điểm, ô 36. */
+#jxwin .jw-it > .jw-icon, #jxwin .jw-slot[data-o] > .jw-icon, #jxwin .jw-slot[data-kham] > .jw-icon { max-width: 28px; max-height: 28px; }
 #jxwin .jw-box .jw-it, #jxwin .gd-xem .jw-it { position: absolute; cursor: pointer; }
 /* nền ô món trong túi như client (màu đo trên ảnh game thật 25/10): mặc được xanh, thiếu yêu cầu đỏ sậm — tô từng ô, chừa đường lưới;
    món đang cầm trên tay: ẩn. gd-xem: lưới món của đối phương trong khung giao dịch — chỉ xem, không phải chỗ thả món (windows.js _giaoDich) */
@@ -1734,6 +1737,7 @@ body.dt.dt-ngang:not(.dt-gon):not(.dt-chat) #dt .dt-bcua.hien { display: none; }
 #kat .kat-o span { color: #cfc3a6; font-size: 12px; }
 #kat .kat-o b { font-weight: normal; color: #8a7f68; letter-spacing: 1px; }
 #kat .kat-o.co b { color: rgb(255,253,122); letter-spacing: 3px; }
+#kat .kat-mk-hien { margin: 8px 0 2px; text-align: center; font: bold 30px/38px var(--jx), Tahoma, sans-serif; letter-spacing: 12px; text-indent: 12px; color: #fffd7a; text-shadow: 1px 1px 0 #000; }
 #kat .kat-tt { display: flex; align-items: center; gap: 8px; margin: 2px 0 4px; }
 #kat .kat-ic { flex: none; width: 19px; height: 23px; background: url("../../assets/ui/hud/btn/khoa_mo.png") 0 0 no-repeat; }
 #kat .kat-ic.dong { background-image: url("../../assets/ui/hud/btn/khoa_dong.png"); }
@@ -2660,6 +2664,10 @@ body.dt.dt-ngang #dt .dt-zalo { top: 156px; right: 38px; }
   body.dt.dt-ngang #dt .dt-bd { top: 66px; right: 130px; }
 }
 
+/* ---------- Huy 16:01 27/11/2026: thanh Mộc nhân luyện công trên điện thoại dọc — ngắn gọn theo nội dung, sát vào trong ----------
+   Chỉ lúc thu gọn (.thu, chỉ còn hàng đầu): bề rộng theo đúng nội dung, không trải dài; lúc mở bảng DPS / chỉnh kháng thì giữ nguyên
+   bề rộng cũ cho bảng khỏi vỡ. Màn ngang + máy tính không đổi. */
+body.dt:not(.dt-ngang) .mn.thu { width: max-content; max-width: calc(var(--vw100, 100vw) - 120px); }
 
 /* ---------- Bố cục màn NGANG đợt 27/11/2026 (Huy lệnh 16:04 + 16:12) ----------
    Chỉ màn ngang (body.dt.dt-ngang); màn dọc + máy tính giữ nguyên. Đặt cuối file để thắng các luật ở trên.
@@ -2700,6 +2708,11 @@ body.dt.dt-ngang #dt .dt-go { left: 50%; right: auto; top: auto; bottom: 8px; tr
 body.dt.dt-ngang.dt-noi-co #dt .dt-go, body.dt.dt-ngang.dt-sap-co #dt .dt-go, body.dt.dt-ngang.dt-nhat-co #dt .dt-go { bottom: 60px; }
 body.dt.dt-ngang.dt-noi-co.dt-sap-co #dt .dt-go, body.dt.dt-ngang.dt-noi-co.dt-nhat-co #dt .dt-go, body.dt.dt-ngang.dt-sap-co.dt-nhat-co #dt .dt-go { bottom: 110px; }
 body.dt.dt-ngang.dt-noi-co.dt-sap-co.dt-nhat-co #dt .dt-go { bottom: 160px; }
+
+/* Tầng chung mặc định (Huy 13:56 28/11/2026): khung/cửa sổ/popup nào mở lên (body.dt-khungmo do
+   dienthoai.js tick() đặt) cũng phủ lên cụm nút nổi — Zalo, khóa cấp 2, CAM (#td-btns-dt, z-index 9,
+   trên cả #jxwin), Tự đánh, AUTO. Bản đồ nhỏ (.dt-mm) và thanh dưới (.dt-tab) không thuộc cụm này. */
+body.dt.dt-khungmo #dt .dt-zalo, body.dt.dt-khungmo #dt .dt-kat, body.dt.dt-khungmo #dt .dt-auto, body.dt.dt-khungmo #dt .dt-tudanh, body.dt.dt-khungmo #td-btns-dt { display: none !important; }
 
 /* Bảng chỉ huy tổ đội Tống Kim (Huy 22:09/22:21 27/11/2026) — chỉ test1/test2 */
 .ch-bang { position: fixed; right: 8px; top: 60px; z-index: 40; width: min(560px, 92vw); max-height: 82vh; overflow-y: auto; background: linear-gradient(#2b2413, #171204); border: 1px solid #8a6d2f; border-radius: 6px; color: #ffe9b0; font: 13px/1.5 "VK Sans Serif 13", "IBM Plex Mono", monospace; padding: 8px 10px; box-shadow: 0 4px 18px rgba(0,0,0,.5); }

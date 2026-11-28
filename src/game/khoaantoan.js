@@ -128,7 +128,7 @@ export class KhoaAnToan {
       this._mo(hop);
     });
   }
-  // ô 6 số trong khung (bấm -> bàn phím): trả hàm đọc giá trị
+  // ô 6 số trong khung (bấm -> bàn phím): trả hàm đọc giá trị, kèm .xoa() để xóa ô (quay lại nhập lại sau bước xem lại)
   _oSo(hop, k) {
     const o = hop.el.querySelector(`[data-so="${k}"]`), v = { s: "" };
     o.addEventListener("click", async () => {
@@ -137,7 +137,25 @@ export class KhoaAnToan {
       const s = await this._nhapSo(o.dataset.tieu || "Mật khẩu cấp 2", o.dataset.cau || "");
       if (s != null) { v.s = s; o.querySelector("b").textContent = "******"; o.classList.add("co"); hop.loi(""); }
     });
-    return () => v.s;
+    const doc = () => v.s;
+    doc.xoa = () => { v.s = ""; const b = o.querySelector("b"); if (b) b.textContent = "bấm để nhập"; o.classList.remove("co"); };
+    return doc;
+  }
+  // khung xem lại mật khẩu vừa nhập TRƯỚC KHI LƯU (Huy lệnh 15:48 28/11/2026): hiện rõ đủ 6 số để tự kiểm tra đúng hay không.
+  // Chỉ hiện ở bước này, không ghi vào chat/log/console; đóng khung là hết (không lưu lại đâu). luu() gửi lên máy chủ + tự đóng
+  // khung nhập khi xong; veNhap() xóa các ô số để nhập lại.
+  _xemLaiMk(mk, chuLuu, luu, veNhap) {
+    const hop = this._hop("KIỂM TRA LẠI MẬT KHẨU",
+      `<div class="kat-nho">Mật khẩu vừa nhập:</div><div class="kat-mk-hien">${esc(mk)}</div>` +
+      `<div class="kat-nho">Xem kỹ có đúng không. Đúng thì bấm "${esc(chuLuu)}" để lưu. Sai thì bấm "Nhập lại" rồi nhập lại từ đầu.</div>`,
+      [[chuLuu, "ok"], ["Nhập lại", "huy"]]);
+    hop.ok = async () => {
+      hop.ban(true); hop.loi("");
+      try { await luu(); this._dong(hop); }
+      catch (e) { hop.ban(false); hop.loi(e.message); if (e.ma === "het-phien") this._dong(hop); }
+    };
+    hop.huy = () => { this._dong(hop); veNhap(); };
+    this._mo(hop);
   }
 
   // ---------- mở khóa (can-mk2) ----------
@@ -170,16 +188,20 @@ export class KhoaAnToan {
       const moi = this._oSo(hop, "moi"), lai = this._oSo(hop, "lai");
       const dong = (v) => { this._dong(hop); xong(v); };
       hop.huy = () => dong(false);
-      hop.ok = async () => {
+      hop.ok = () => {
         const mk1 = hop.gt("mk1");
         if (!mk1) return hop.loi("Nhập mật khẩu đăng nhập vào, đừng để trống.");
         if (moi().length !== SO) return hop.loi("Bấm ô Mật khẩu cấp 2 mà nhập 6 chữ số, đừng ngồi nhìn.");
         if (moi() !== lai()) return hop.loi("2 lần nhập mật khẩu cấp 2 khác nhau. Nhập lại cho khớp đi.");
-        hop.ban(true); hop.loi("");
-        try {
-          const r = await Net.baoMat({ viec: "dat", mk1, moi: moi() }); this.capNhat(r);
-          dong(true); if (this.api.msg) this.api.msg("Đã đặt mật khẩu cấp 2 — khóa an toàn đang mở tới khi thoát game hoặc tải lại trang. Nhớ đấy.");
-        } catch (e) { hop.ban(false); hop.loi(e.message); if (e.ma === "het-phien") dong(false); }
+        const mkMoi = moi();
+        this._xemLaiMk(mkMoi, "Đúng rồi, lưu",
+          async () => {
+            try {
+              const r = await Net.baoMat({ viec: "dat", mk1, moi: mkMoi }); this.capNhat(r);
+              dong(true); if (this.api.msg) this.api.msg("Đã đặt mật khẩu cấp 2 — khóa an toàn đang mở tới khi thoát game hoặc tải lại trang. Nhớ đấy.");
+            } catch (e) { if (e.ma === "het-phien") dong(false); throw e; }
+          },
+          () => { moi.xoa(); lai.xoa(); hop.loi(""); });
       };
       this._mo(hop);
     });
@@ -196,13 +218,19 @@ export class KhoaAnToan {
       const cu = this._oSo(hop, "cu"), moi = this._oSo(hop, "moi"), lai = this._oSo(hop, "lai");
       const dong = (v) => { this._dong(hop); xong(v); };
       hop.huy = () => dong(false);
-      hop.ok = async () => {
+      hop.ok = () => {
         if (cu().length !== SO) return hop.loi("Bấm ô Mật khẩu cũ mà nhập, đừng để trống.");
         if (moi().length !== SO) return hop.loi("Bấm ô Mật khẩu mới mà nhập 6 chữ số.");
         if (moi() !== lai()) return hop.loi("2 lần nhập mật khẩu mới khác nhau. Nhập lại cho khớp đi.");
-        hop.ban(true); hop.loi("");
-        try { const r = await Net.baoMat({ viec: "doi", cu: cu(), moi: moi() }); this.capNhat(r); dong(true); if (this.api.msg) this.api.msg("Đã đổi mật khẩu cấp 2 xong."); }
-        catch (e) { hop.ban(false); hop.loi(e.message); if (e.ma === "het-phien") dong(false); }
+        const mkCu = cu(), mkMoi = moi();
+        this._xemLaiMk(mkMoi, "Đúng rồi, đổi",
+          async () => {
+            try {
+              const r = await Net.baoMat({ viec: "doi", cu: mkCu, moi: mkMoi }); this.capNhat(r);
+              dong(true); if (this.api.msg) this.api.msg("Đã đổi mật khẩu cấp 2 xong.");
+            } catch (e) { if (e.ma === "het-phien") dong(false); throw e; }
+          },
+          () => { moi.xoa(); lai.xoa(); hop.loi(""); });
       };
       this._mo(hop);
     });

@@ -90,15 +90,15 @@ const HANG_KTC = new Map(KTC.the.flatMap((t) => t.hang.filter((o) => o.k).map((o
 // ---------- Đồ Hoàng Kim (P3 — THIET-KE.md §2.3): bảng sinh sẵn lúc build dữ liệu
 // (cong-cu/sinh-do-hoang-kim.mjs), KHÔNG rơi từ quái (BY_TYPE của taoDo chỉ lấy từ PACK),
 // chỉ nhận qua 3 nguồn: hộp choHoangKim, đổi ở NPC (act doiHK), Boss Hoàng Kim (boss-tg.js
-// tặng hộp). Món HK: cl:10, reborn:1, hk:1, d = 5-6 dòng cố định (tối đa theo bảng dòng xanh của vị trí+hệ); khóa bảo hiểm vĩnh viễn khi nhận.
+// tặng hộp). Món HK: cl:10, reborn:1, hk:1, d = 5-6 dòng (số dòng theo bảng, gieo ngẫu nhiên như đồ rơi — Huy chốt 15:47 28/11/2026: ngẫu nhiên hết, kể cả đồ HK); khóa bảo hiểm vĩnh viễn khi nhận.
 const HK = (() => { try { return doc("assets/data/do-hoang-kim.json"); } catch { return { items: {} }; } })();
 const HK_KEYS = Object.keys(HK.items || {});
 for (const [k, v] of Object.entries(HK.items || {})) { const { pack, ...g } = v; GOC[k] = g; if (pack) BY.set(k, { ...pack, k }); }
 const laHK = (k) => !!(k && (GOC[k] || {}).hk);
 const hkTheoPhai = (fac) => HK_KEYS.filter((k) => (GOC[k] || {}).fac === +fac);
 const hkTheoViTri = (fac, t, p) => hkTheoPhai(fac).find((k) => { const x = BY.get(k) || {}; return x.t === t && (t === 0 || t === 1 ? x.p === p : true); });
-// món HK mới (chưa khóa, chưa gắn nguồn — nơi nhận tự gắn kbh + NG.gan theo đường của nó)
-const monHK = (k) => { const g = GOC[k]; if (!g || !g.hk) loi("Không có món Hoàng Kim này. Tìm lại đi."); return { k, s: g.series, d: g.d.map(([kk, vv]) => [kk, vv]), m: Math.max(1, g.lv | 0) }; };
+// món HK mới (chưa khóa, chưa gắn nguồn — nơi nhận tự gắn kbh + NG.gan theo đường của nó; HỆ + DÒNG GIEO NGẪU NHIÊN như tangDoHK của MAXPING — Huy chốt 15:47 28/11/2026: ngẫu nhiên hết, kể cả đồ HK; số dòng = số dòng của bảng, gieoDong có thể trả ít hơn nếu hết dòng phân biệt)
+const monHK = (k) => { const g = GOC[k]; if (!g || !g.hk) loi("Không có món Hoàng Kim này. Tìm lại đi."); const x = BY.get(k), s = ri(0, 4); return { k, s, d: x ? gieoDong(x.t, capDo(k), s, (g.d || []).length) : g.d.map(([kk, vv]) => [kk, vv]), m: Math.max(1, g.lv | 0) }; };
 // trần dòng xanh của khóa k trên loại t, hệ s: tienTo = dòng tiền tố (se -1), ngược lại hậu tố (se = s)
 // số dòng tối đa gieo được trên loại t, hệ s (gieoDong dừng khi hết dòng phân biệt — vd áo hệ Kim/Mộc chỉ 5 dòng)
 const tranDong = (k, t, s, tienTo) => { let mx = null; for (const r of DX.rows) { if (r.k !== k || !(r.w[t] > 0) || (tienTo ? r.se !== -1 : r.se !== s)) continue; const hi = r.p[0][1]; if (mx == null || hi > mx) mx = hi; } return mx; };
@@ -830,9 +830,9 @@ function chuan(h) {
       // het: món có hạn (Huân công bài Tống Kim — hết hạn 24:00 ngày hôm sau, anh 06/11): giữ hạn, quá hạn thì biến mất (trên)
       return { u, k: o.k, n: clamp((o.n | 0) || 1, 1, chongMax(o.k)), ...kt, ...(o.het ? { het: +o.het } : {}), ...kb, ...at };
     }
-    // ngũ hành: mọi trang bị (ngựa: hệ cố định của bảng client); món cũ chưa có -> gieo
+    // ngũ hành: hệ đã gieo lúc nhận được giữ nguyên (ngẫu nhiên hết, kể cả đồ HK — Huy chốt 15:47 28/11/2026, đảo quyết giữ luật chuan cũ 11:46); món cũ chưa có hệ thì hệ cố định của bảng (ngựa: bảng client), không có nữa thì gieo
     const fixed = (GOC[o.k] || {}).series ?? (x.t === 10 && x.s >= 0 ? x.s : null);
-    const s = fixed ?? (Number.isInteger(o.s) && o.s >= 0 && o.s <= 4 ? o.s : ri(0, 4));
+    const s = (Number.isInteger(o.s) && o.s >= 0 && o.s <= 4) ? o.s : (fixed ?? ri(0, 4));
     let d = (Array.isArray(o.d) ? o.d : []).filter((e) => Array.isArray(e) && Number.isFinite(+e[1])).map(([k, v]) => [k, +v]);
     // đồ rơi trước khi dòng xanh theo client (25/10: khóa tự đặt "life", "dmgPct"…) -> gieo lại theo bảng client, giữ số dòng
     if (d.some(([k]) => !KEYS.has(k))) d = gieoDong(x.t, capDo(o.k), s, d.length);
@@ -1733,7 +1733,7 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
       if (!it) loi("Không có món này trong túi. Tìm lại đi.");
       // it.kbh + món của bảng Kỳ Trân Các: thuốc Hồi Thiên rút từ lễ bao mua bằng Xu (anh 12/11 — "k bán dc, chỉ hủy dc ở lễ quan")
       if (laKtc(it) || it.het || (it.kbh && KTC.items[it.k])) loi("Vật phẩm của Kỳ Trân Các thì đừng bán cho cửa hàng.");
-      if (laHK(it.k)) loi("Đồ Hoàng Kim khóa bảo hiểm vĩnh viễn, không bán cho cửa hàng được đâu.");
+      if (laHK(it.k) && it.kbh) loi("Đồ Hoàng Kim đang khóa bảo hiểm, không bán cho cửa hàng được đâu."); // Huy chốt 15:47 28/11/2026: đồ HK bán được ở shop — chỉ món đang khóa bảo hiểm thì vẫn chặn (mở khóa rồi hãy bán, như đồ thường)
       if (it.vv) loi("Ngựa vĩnh viễn từ mã bài thì đừng bán cho cửa hàng."); // anh 16/11 — Báo Đáp Ân Sư (Mã bài Bôn Tiêu / Phiên Vũ)
       if (it.tk) loi(CAU_TK);
       const p = giaBan(it); h.bag.splice(i, 1); h.gold = (h.gold || 0) + p;
@@ -1775,7 +1775,7 @@ function lam(h, b, key, tk) { // tk: tài khoản (api.js /api/do) — việc đ
       if (x.phu) { muaChong(h, x, g.gia, n); return { msg: `Mua ${n} ${x.n}: -${tien(g.gia * n)}` }; }
       // đồ trắng: mỗi lần 1 món, ngũ hành theo hàng bày (goods Series), m = 1 (giá bán lại như đồ rơi từ quái cấp 1)
       if ((h.gold || 0) < g.gia) loi("Ngân lượng không đủ. Kiếm thêm đi.");
-      // hệ như chuan(): món có hệ cố định (ngựa — do-goc series / items.json s) thì chuan() ghi đè hệ khác lúc lưu -> lấy luôn ở đây cho câu báo đúng hệ thật
+      // hệ lúc mua (chuan() giữ nguyên hệ đã ghi — Huy chốt 15:47 28/11/2026: ngẫu nhiên hết; món có hệ cố định (ngựa — do-goc series / items.json s) thì lấy hệ đó cho câu báo đúng hệ thật)
       // (rà soát lượt 58, anh 10/11: ngựa Mã phu không ngẫu nhiên — mỗi con 1 hệ, con cấp 7 / cấp 8 "Đại Uyển Bạch Mã" đều Thủy). Hàng không ghi hệ mà không
       // có hệ cố định: đang làm nhiệm vụ Dã Tẩu mua đúng món -> hệ nhiệm vụ đòi, còn lại ngẫu nhiên
       const coDinh = (GOC[x.k] || {}).series ?? (x.t === 10 && x.s >= 0 ? x.s : null);
@@ -2544,7 +2544,11 @@ function taoQua(h, q) {
       if (laHK(x.k)) loi("Đồ Hoàng Kim chỉ nhận qua Boss Hoàng Kim, đổi ở NPC hoặc mở hộp — không tặng / gửi qua mã quà được.");
       const ten = (x.n || x.k).trim(), kb = KHONG_KHOA.has(x.k) ? {} : kb0;
       if (loai === "do") {
-        const s = m.he >= 0 && m.he <= 4 ? m.he | 0 : ri(0, 4), dong = clamp(m.dong | 0, 0, 6), n = clamp(m.n | 0 || 1, 1, 10);
+        // số dòng: mã ghi rõ dong thì tôn trọng (kể cả 0); không ghi thì gieo theo đúng bảng số dòng quái rơi thường (CFG.soDong.quaiThuong — như taoDo; trang sức tối thiểu 1 dòng như quái rơi). Hệ: mã ghi rõ he thì tôn trọng, không ghi thì gieo ngẫu nhiên (đã có từ trước).
+        const s = m.he >= 0 && m.he <= 4 ? m.he | 0 : ri(0, 4);
+        let dong = m.dong == null ? chonTrongSo(CFG.soDong.quaiThuong) : clamp(m.dong | 0, 0, 6);
+        if (!dong && JEWEL.has(+x.t)) dong = 1;
+        const n = clamp(m.n | 0 || 1, 1, 10);
         for (let i = 0; i < n; i++) {
           const it = NG.gan({ k: x.k, s, d: dong ? gieoDong(x.t, capDo(x.k), s, dong) : [], m: Math.max(1, x.lv | 0), ...kb, u: ++h.uN }, "qua", q.ng || "", h.name); // q.ng: tên phần thưởng (không có: việc đang làm)
           if (!vaoTui(h, it)) loi("Hành trang không đủ chỗ. Dọn bớt đi rồi hãy làm.");

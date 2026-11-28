@@ -152,6 +152,10 @@ export function itemTipHtml(T, it, hero, opt = {}) {
     for (const [t, , c] of (Array.isArray(it.di) ? it.di : []).slice(-4)) line(span(`${gioNguon(t)} — ${c}`, "White"));
     line(span(`Mã món: ${it.g}`, "DBlue"));
   }
+  { // người nhặt đầu tiên (Huy chốt 14:18 28/11/2026: quái rớt ra, ai nhặt đầu tiên ghi tên người đó — ng[3] đã có sẵn, máy chủ gửi nguyên cho mọi acc): hiện cho MỌI người chơi, chỉ tên, không mở nguồn gốc/đường đi; món cũ không có tên thì ẩn dòng
+    const tenNhat = Array.isArray(it.ng) ? String(it.ng[3] || "").trim() : "";
+    if (tenNhat) { line(""); line(span(`Người nhặt đầu tiên: ${tenNhat}`, "Gold")); }
+  }
   hint();
   return out.join("");
 }
