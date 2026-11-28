@@ -119,7 +119,7 @@ const tron = (L) => { const a = L.slice(); for (let i = a.length - 1; i > 0; i--
 // gọi boss: opt.so (số boss — mặc định CF.so mỗi khung giờ), opt.tpl (mẫu), opt.tai { bai, x, y, X, Y } (quản trị gọi 1 boss ở chỗ mình — thử), opt.mau.
 // Nhiều boss: mỗi con 1 chỗ khác nhau (xoay vòng qua các bản đồ — Ba Lăng / Biện Kinh — rồi bốc chỗ chưa dùng), mẫu khác nhau nếu đủ
 function goi(opt = {}) {
-  if (BS.some((b) => !b.sk)) N.loi(`Đang có boss thế giới: ${BS.filter((b) => !b.sk).map((b) => b.ten).join(", ")}. Đánh xong rồi hãy gọi.`);
+  if (BS.some((b) => !b.sk && !b.thuThu)) N.loi(`Đang có boss thế giới: ${BS.filter((b) => !b.sk && !b.thuThu).map((b) => b.ten).join(", ")}. Đánh xong rồi hãy gọi.`); // boss thử không chặn boss thật
   const L = Array.isArray(CF.cho) && CF.cho.length ? CF.cho : BTG.cho;
   if (!BTG.ds.length || !L.length) N.loi("Chưa dựng assets/data/boss-tg.json (node cong-cu/dung-boss-tg.mjs)");
   const n = opt.tai ? 1 : Math.max(1, Math.min(10, Math.round(+(opt.so ?? CF.so) || 1)));
@@ -134,16 +134,16 @@ function goi(opt = {}) {
   choDs.forEach((c, i) => {
     const Z = N.ZONES.get(c.bai | 0); if (!Z) return;
     const b = mauDs[i % mauDs.length];
-    moi.push({ u: t + i, tpl: b.tpl, ten: b.ten, he: b.he, lv: BTG.lv || 95, bai: Z.id, x: Math.round(+c.x || 0), y: Math.round(+c.y || 0), X: c.X | 0, Y: c.Y | 0,
+    moi.push({ u: t + i, tpl: b.tpl, ten: opt.thuThu ? b.ten + " (Thử)" : b.ten, he: b.he, lv: BTG.lv || 95, bai: Z.id, x: Math.round(+c.x || 0), y: Math.round(+c.y || 0), X: c.X | 0, Y: c.Y | 0,
       noi: opt.tai ? "" : String(c.noi || ""), mau, mauMax: mau, het: t + CF.song * 60000, dmg: new Map(), nhan: new Map(), phat: null,
-      dot: t, ...(opt.tai ? { thu: 1 } : {}) }); // bang hội đợt 2: dot = khung giờ (mỗi khung chỉ tính 1 lần); thu = quản trị gọi tại chỗ để thử — không tính cống hiến
+      dot: t, ...(opt.tai ? { thu: 1 } : {}), ...(opt.thuThu ? { thuThu: 1 } : {}) }); // bang hội đợt 2: dot = khung giờ (mỗi khung chỉ tính 1 lần); thu = quản trị gọi tại chỗ để thử — không tính cống hiến; thuThu = phiên thử F10 — không thưởng
   });
   if (!moi.length) N.loi("Không có chỗ đứng cho boss (bossTheGioi.cho)");
   BS = [...BS.filter((b) => b.sk), ...moi]; XONG = XONG.filter((b) => b.sk); doi = true; // siêu boss (anh 18/11) giữ nguyên
   // câu của client (functions_boss.lua PickBoss): "<tên> đã xuất hiện tại <bản đồ> (x,y)" — hiện giữa màn hình như thông báo quản trị; + chỗ
   // (ngoài cổng nào — người chơi chưa quen bản đồ thôn / thành)
   const cau = (b) => `${b.ten} tại ${tenBai(b.bai)} (${b.X}/${b.Y})${b.noi ? ` — ${b.noi}` : ""}`;
-  TG().thongBao(moi.length > 1 ? `${moi.length} Boss Hoàng Kim xuất hiện: ${moi.map(cau).join("; ")}!` : `${moi[0].ten} xuất hiện tại ${tenBai(moi[0].bai)} (${moi[0].X}/${moi[0].Y})${moi[0].noi ? ` — ${moi[0].noi}` : ""}!`, true);
+  TG().thongBao(`${opt.thuThu ? "[Thử] " : ""}${moi.length > 1 ? `${moi.length} Boss Hoàng Kim xuất hiện: ${moi.map(cau).join("; ")}!` : `${moi[0].ten} xuất hiện tại ${tenBai(moi[0].bai)} (${moi[0].X}/${moi[0].Y})${moi[0].noi ? ` — ${moi[0].noi}` : ""}!`}${opt.thuThu ? " (Phiên thử — không có thưởng.)" : ""}`, true);
   return trangThai("");
 }
 // gọi siêu boss (anh 18/11): opt.tai { bai, x, y, X, Y } (quản trị gọi ở chỗ mình — thử), opt.song (giây — thử), opt.mau, opt.mauNguoi (thử)
@@ -215,6 +215,7 @@ function chet(b, keKich) {
   if (b.sk) return thuongSk(b, keKich, false); // siêu boss (anh 18/11)
   const i = BS.indexOf(b); if (i >= 0) BS.splice(i, 1);
   b.mau = 0; b.ket = "chet"; b.luc = Date.now(); XONG.push(b); doi = true;
+  if (b.thuThu) { TG().thongBao(`[Thử] ${b.ten} bị tiêu diệt (phiên thử — không có thưởng).`, true); return; } // phiên thử: không xếp hạng, không thưởng, không dấu chuyển sinh
   const xep = [...b.dmg.entries()].sort((a, c) => c[1].d - a[1].d), tong = xep.reduce((s, [, x]) => s + x.d, 0) || 1, luc = Date.now();
   // % sát thương để hiện (1 số lẻ): chưa đủ ngưỡng thì làm tròn xuống — 0,97 % không hiện thành "1 %" cạnh câu "chưa đủ 1 %" (rà soát 11/11)
   const hien = (d) => { const p = (d * 100) / tong; return p < CF.nguong ? Math.floor(p * 10) / 10 : Math.round(p * 10) / 10; };
@@ -320,6 +321,8 @@ function nhanThuong(h, ten) {
 // bảng quản trị / công cụ thử: { viec: "goi" (so?, tpl?, tai?, mau?) | "huy" (mọi boss đang sống) | "xem" }
 function quanTri(b) {
   if (b.viec === "goi") return { b: goi({ so: b.so, tpl: b.tpl, tai: b.tai, mau: b.mau }), dsBoss: dsTT("") };
+  if (b.viec === "moThu") return { b: goi({ thuThu: true, so: 1 }), dsBoss: dsTT(""), thu: 1 }; // F10 Lịch hoạt động (Huy 22:18 27/11/2026)
+  if (b.viec === "dongThu") { const L = BS.filter((x) => x.thuThu); for (const x of L) roi(x, true); return { b: null, dsBoss: dsTT(""), dong: L.length }; }
   if (b.viec === "huy") { if (!BS.length) N.loi("Không có boss thế giới nào đang sống."); for (const x of [...BS]) roi(x, true); return { b: null, dsBoss: dsTT("") }; }
   const B0 = BS[0], xet = B0 ? ungVien(B0, Date.now()).map((x) => ({ ten: x.ten, cach: Math.round(x.d), nhiet: Math.round(x.n) })) : [];
   return { b: trangThai(""), ds: BTG.ds.map((x) => [x.tpl, x.ten]), dsBoss: dsTT(""), lich: CF.gio, bat: !!CF.bat, so: CF.so, xet,
@@ -336,7 +339,7 @@ setInterval(() => {
   for (const b of [...BS]) if (t >= b.het) { if (b.sk) thuongSk(b, null, true); else roi(b, false); } // siêu boss hết giờ: ½ quà (anh 18/11)
   for (const b of BS) chonMuc(b);
   if (XONG.some((b) => t - b.luc > XONG_GIU)) { XONG = XONG.filter((b) => t - b.luc <= XONG_GIU); doi = true; }
-  if (!BS.some((b) => !b.sk) && CF.bat && Array.isArray(CF.gio)) {
+  if (!BS.some((b) => !b.sk && !b.thuThu) && CF.bat && Array.isArray(CF.gio)) {
     const vn = new Date(t + 7 * 3600000).toISOString(), hm = vn.slice(11, 16), k = vn.slice(0, 10) + " " + hm;
     if (CF.gio.includes(hm) && !daGoi.has(k) && GV.thuOk(CF, t)) { daGoi.add(k); try { goi({}); } catch (e) { console.error("Boss thế giới:", e.message); } }
   }
@@ -344,5 +347,9 @@ setInterval(() => {
   if (doi && t - guiLuc >= 250) { doi = false; guiLuc = t; ver++; phat(); }
 }, 250).unref();
 
+// Mở thử / đóng thử (F10 Lịch hoạt động): điều phối qua quanTri để 1 đường duy nhất.
+function moThu(qt, b) { return quanTri({ viec: "moThu" }); }
+function dongThu(qt, b) { return quanTri({ viec: "dongThu" }); }
+
 // roi(huy): mọi boss đang sống rời / bị gọi về (lịch hoạt động, công cụ cũ)
-module.exports = { goi, roi: (huy) => { const L = [...BS]; for (const b of L) roi(b, huy); return L.length ? true : null; }, danh, trangThai, dsTT, nhanThuong, quanTri, CF, dangCo: () => BS.length > 0 };
+module.exports = { goi, roi: (huy) => { const L = [...BS]; for (const b of L) roi(b, huy); return L.length ? true : null; }, danh, trangThai, dsTT, nhanThuong, quanTri, CF, dangCo: () => BS.length > 0, moThu, dongThu };

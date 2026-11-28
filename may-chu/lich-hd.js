@@ -148,6 +148,7 @@ function trang(H, now) {
         o.chu = p.pha === "bd" ? `Đang báo danh. Khai chiến sau ${conPhut(p.kc, now)}.` : `Đang đánh — Tống ${p.diem[0]} : Kim ${p.diem[1]}. Còn ${conPhut(p.het, now)}.`;
       } else if (L.dang) o.chu = p.pha === "xong" ? "Trận này kết thúc rồi." : "Trận này không ai báo danh.";
       if (p.thienTu) o.chu += `${o.chu ? " · " : ""}Thiên Tử ×2`;
+      if (p.thu) o.chu += `${o.chu ? " · " : ""}Phiên thử — không thưởng`;
     } else if (H.id === "bauCua") {
       // Bầu Cua (anh 10/11): 1 ván 2 phút — 1 phút đặt cửa, 1 phút xem kết quả
       const v = MOD.bauCua().lich(now);
@@ -217,6 +218,7 @@ function xem() {
       const t = trang(H, now), M = MAC[H.id] || {};
       return { id: H.id, ten: H.ten, kieu: H.kieu, bat: CF.bat !== false, gio: chuoiGio(H, CF), quay: CF.quay, hetNhan: CF.hetNhan,
         thu: H.kieu === "pq" ? null : Array.isArray(CF.thu) && CF.thu.length < 7 ? CF.thu.slice() : [0, 1, 2, 3, 4, 5, 6],
+        thuDang: THU_DANG.has(H.id) ? 1 : 0, // phiên thử đang mở (bộ nhớ, không ghi file)
         so: H.so.map(([k, n, a, b, buoc]) => [k, n, a, b, +CF[k] || 0, buoc || 1]), mac: { gio: chuoiGio(H, M), quay: M.quay, hetNhan: M.hetNhan, so: H.so.map(([k]) => M[k]) },
         daSua: !!S[H.id], sua: S.sua[H.id] || null, cho: H.id === "phuQuy" && S.cho && S.cho.phuQuy ? S.cho.phuQuy : null, tt: t };
     }).filter(Boolean),
@@ -316,7 +318,34 @@ function quanTri(qt, b) {
   if (viec === "xem") return xem();
   if (viec === "luu") return luu(qt, b);
   if (viec === "macDinh") return macDinh(qt, b);
+  if (viec === "moThu") return moThu(qt, b);
+  if (viec === "dongThu") return dongThu(qt, b);
   loi("Việc này không hợp lệ. Đừng bấm nữa.");
+}
+
+// ---------- mở thử (Huy lệnh 22:18 27/11/2026): phiên thử tách biệt — không đổi lịch, không thưởng, tới giờ thật tự cắt ----------
+const THU_DANG = new Map(); // id -> { ai, luc } — chỉ trong bộ nhớ, máy chủ chạy lại là mất
+function moThu(qt, b) {
+  if (!napXong) nap();
+  const H = BY.get(String(b.id || "")); if (!H) loi("Không có hoạt động này. Kiểm tra lại.");
+  const M = MOD[H.id]();
+  if (typeof M.moThu !== "function") loi(`${H.ten}: không mở thử được qua lịch — ${H.id === "pld" ? "Phong Lăng Độ mở thử bằng chuyến riêng (nút Mở thử lên thuyền ngay)." : "xem THIET-KE.md để biết phương án thay thế."}`);
+  const r = M.moThu(qt, b);
+  // Chỉ ghi phiên thử đang mở khi module có đóng thử (Phú Quý là quay xem trước không trạng thái — không ghi, khỏi kẹt cờ "Đang mở thử").
+  if (typeof M.dongThu === "function") THU_DANG.set(H.id, { ai: qt.ten, luc: Date.now() });
+  NK().ghi("qt", qt.ten, null, `Lịch hoạt động — Mở thử ${H.ten} (phiên thử: không thưởng, không tính số lần; tới giờ thật tự cắt)`);
+  return { ...xem(), thuOk: { id: H.id, ten: H.ten, r: r == null ? null : r } };
+}
+function dongThu(qt, b) {
+  if (!napXong) nap();
+  const H = BY.get(String(b.id || "")); if (!H) loi("Không có hoạt động này. Kiểm tra lại.");
+  if (!THU_DANG.has(H.id)) loi(`${H.ten}: không có phiên thử nào đang mở.`);
+  const M = MOD[H.id]();
+  if (typeof M.dongThu !== "function") loi(`${H.ten}: phiên thử tự kết thúc, không cần đóng.`);
+  const r = M.dongThu(qt, b);
+  THU_DANG.delete(H.id);
+  NK().ghi("qt", qt.ten, null, `Lịch hoạt động — Đóng thử ${H.ten}`);
+  return { ...xem(), thuOk: { id: H.id, ten: H.ten, dong: 1, r: r == null ? null : r } };
 }
 
 module.exports = { chung, cuaToi, quanTri, nap, HD };

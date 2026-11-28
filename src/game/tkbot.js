@@ -212,6 +212,8 @@ function chonNgua(L, rng) {
 }
 // nhân vật bot phái fac (khóa skills.json), giới sex ("m" | "f"), cấp L — như nhanVatMau nhưng theo hạt giống, có giới, 2–4 dòng / món, kỹ năng ≤ cấp − cấp học + 1
 export function heroBot(P, DX, fac, sex, L, seed) {
+  // fac có thể là id SỐ (dòng bot máy chủ gửi — dongB) hay khóa chữ: chuẩn hóa về khóa chữ, phần dưới vẫn dùng khóa như cũ
+  if (typeof fac === "number") { const F0 = P.factions.find((f) => f.id === fac); if (F0) fac = F0.key; }
   const rng = rngTu(seed), F = P.factions.find((f) => f.key === fac), lo = LO[fac] || LO.shaolin, series = F ? F.series : 0;
   const st = P.chr.start.find((s) => s.series === series && s.sex === (sex === "f" ? 1 : 0)) || P.chr.start[0];
   const h = { name: "", sex: sex === "f" ? "f" : "m", series, start: { ...st }, lvl: L, exp: 0, gold: 0, attr: { str: 0, dex: 0, vit: 0, eng: 0 }, equip: {}, bag: [], looks: {}, uN: 0,

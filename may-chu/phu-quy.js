@@ -95,6 +95,13 @@ function chon(h, key, n) {
 }
 
 // ---------- quay số ----------
+// Quay xem trước (F10 Lịch hoạt động — Huy 22:18 27/11/2026): đúng thuật toán quay() nhưng KHÔNG ghi S.dot, KHÔNG luu(), KHÔNG thông báo.
+function quayThu() {
+  const ds = Array.from({ length: 90 }, (_, i) => i + 10);
+  for (let i = ds.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ds[i], ds[j]] = [ds[j], ds[i]]; }
+  const chon10 = ds.slice(0, 10);
+  return { thuong: chon10.slice(0, 9), db: chon10[9], thu: 1 };
+}
 function quay(R, ep) {
   const ds = Array.from({ length: 90 }, (_, i) => i + 10);
   for (let i = ds.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ds[i], ds[j]] = [ds[j], ds[i]]; }
@@ -192,6 +199,7 @@ function bao(h) {
 // công cụ thử (tài khoản quản trị): { viec: "xem" | "quay" (so?: 10 số — 9 thường + 1 đặc biệt; dot?) | "lech" (phut — chỉ máy thử VL_PQ_THU=1) }
 function quanTri(b) {
   if (b.viec === "quay") { const R = b.dot || dotCu(); return { quay: quay(R, b.so), dot: R }; }
+  if (b.viec === "quayThu") return { quay: quayThu(), dot: dotCu(), thu: 1 }; // xem trước, không ghi
   if (b.viec === "lech") {
     if (process.env.VL_PQ_THU !== "1") loi("Chỉ máy thử (VL_PQ_THU=1) mới dời giờ được");
     LECH = Math.round((+b.phut || 0) * 60000);
@@ -199,4 +207,7 @@ function quanTri(b) {
   return { bay: new Date(bay() + 7 * 3600e3).toISOString().slice(0, 16).replace("T", " "), dotNay: dotNay(), dotCu: dotCu(), lech: LECH / 60000, cf: { cap: CF.cap, toiDa: CF.toiDa, quay: CF.quay, hetNhan: CF.hetNhan }, dot: S.dot, tong: S.tong };
 }
 
-module.exports = { hoi, chon, lam, bao, quanTri, tt, CF };
+// Mở thử (F10 Lịch hoạt động): quay xem trước — không tạo phiên, không cần đóng.
+function moThu(qt, b) { return quanTri({ viec: "quayThu" }); }
+
+module.exports = { hoi, chon, lam, bao, quanTri, tt, CF, quayThu, moThu };

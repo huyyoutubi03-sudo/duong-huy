@@ -61,6 +61,7 @@ const PQ = () => require("./phu-quy");
 const PH = () => require("./phong-hoa");
 const TK = () => require("./tong-kim");
 const PLD = () => require("./phong-lang-do");
+const CH = () => require("./chi-huy-tk"); // bảng chỉ huy tổ đội Tống Kim (Huy 22:09/22:21 27/11/2026) — gọi lười, tránh vòng require
 const SAT = () => require("./sat-thu");
 const DT = () => require("./da-tau");
 const VAI = () => require("./vuot-ai");
@@ -1320,9 +1321,39 @@ function napLai(bot) { // module khác ghi thẳng tệp tài khoản (thưởng
   return false;
 }
 function buocToi(bot, x, y, buoc = 160) {
+  // Chống xuyên tường (27/11/2026): bước thẳng cũ đi xuyên ô vật cản; nay kiểm tra toàn bộ đoạn
+  // bước theo lưới j.obs (tkDiDuoc, ô 24×12, mẫu mỗi 6 đơn vị để không nhảy qua tường mỏng),
+  // kẹt thì trượt dọc tường (lệch ±30°/±60°), kẹt hẳn thì đứng lại + báo bot.buocKet để nhịp gọi
+  // chọn lại mục tiêu/điểm — không dịch chuyển tức thời, không kẹt vĩnh viễn.
+  // Sửa 28/11/2026 (lỗ nhánh d <= buoc): trước đây đoạn ngắn chỉ kiểm ô đích nên bước thẳng
+  // xuyên tường mỏng (đo 8 đoạn/trận Tống Kim); nay kiểm toàn bộ đoạn, mẫu mỗi 6 đơn vị
+  // (tỉ lệ như nhánh xa); bị chặn thì bước từng phần có trượt như nhánh xa (độ dài bước = d,
+  // không vượt đích) thay vì đứng chết.
+  bot.buocKet = false;
   const dx = x - bot.x, dy = (y - bot.y) * 2, d = Math.hypot(dx, dy);
-  if (d <= buoc) { bot.x = x; bot.y = y; return true; }
-  bot.x += (dx / d) * buoc; bot.y += ((dy / d) * buoc) / 2; return false;
+  if (d <= buoc) {
+    const n = Math.max(1, Math.ceil(d / 6));
+    let thong = true;
+    for (let i = 1; i <= n; i++) {
+      if (!tkDiDuoc(bot.zone, bot.x + (dx * i) / n, bot.y + ((y - bot.y) * i) / n)) { thong = false; break; }
+    }
+    if (thong) { bot.x = x; bot.y = y; return true; }
+    // Bị chặn giữa đường: rơi xuống bước từng phần có trượt bên dưới.
+  }
+  const goc = Math.atan2(dy, dx);
+  const dai = Math.min(d, buoc); // nhánh xa: dai = buoc như cũ; đoạn ngắn bị chặn: không vượt đích
+  for (const lech of [0, Math.PI / 6, -Math.PI / 6, Math.PI / 3, -Math.PI / 3]) {
+    const a = goc + lech, sx = Math.cos(a) * dai, sy = (Math.sin(a) * dai) / 2;
+    // Mẫu theo độ dài ĐÃ TỈ LỆ (dai/6): ô lưới 24×12, mẫu thưa theo hypot chưa tỉ lệ
+    // nhảy qua góc tường ở bước gần dọc (đo đơn vị 28/11/2026: 1/40 lọt).
+    const n = Math.max(1, Math.ceil(dai / 6));
+    let k = n;
+    for (let i = 1; i <= n; i++) {
+      if (!tkDiDuoc(bot.zone, bot.x + (sx * i) / n, bot.y + (sy * i) / n)) { k = i - 1; break; }
+    }
+    if (k > 0) { bot.x += (sx * k) / n; bot.y += (sy * k) / n; return false; }
+  }
+  bot.buocKet = true; return false;
 }
 function donHoatDong(bot) { // 1 đòn đánh hoạt động: chiêu xoay + sát thương đúng công thức client (tinhSatThuong)
   const id = chonChieu(bot, null), C = bot.chiSo;
@@ -1411,7 +1442,8 @@ function hdTkVao(bot) {
   const D = TK()._thu.D;
   const vao = bot.hdDi;
   const trai = D.trai[dk.phe];
-  dichChuyen(bot, vao ? vao.zone : D.bai, vao && vao.at ? vao.at[0] : trai[0], vao && vao.at ? vao.at[1] : trai[1]);
+  const cho = (D.loai === "tran" && !D.batDau) ? tkChoDung(bot, dk.phe, D) : null; // vào sớm: về thẳng chỗ đứng riêng, không chồng ở điểm trại (Huy lệnh 22:03 27/11/2026)
+  dichChuyen(bot, vao ? vao.zone : D.bai, cho ? cho[0] : (vao && vao.at ? vao.at[0] : trai[0]), cho ? cho[1] : (vao && vao.at ? vao.at[1] : trai[1]));
   const m = TK().botVao(bot.cfg.acct, bot.h, 0, bot.hpMax);
   if (!m) return false;
   bot.hdNgay.tk = key;
@@ -1421,18 +1453,385 @@ function hdTkVao(bot) {
 // Tản ra trong Tống Kim (27/11/2026): trước đây mọi bot áp sát đúng điểm mục tiêu nên chồng lên nhau (đo thật: 148/170 bot trong vòng R=300, khoảng cách gần nhất ~0).
 // Mỗi bot giữ 1 góc + bán kính riêng quanh mục tiêu + bị đẩy khỏi bot cùng phe gần đó. Sát thương không đổi (botDanh/botBiDanh không xét khoảng cách).
 function gocTan(bot) { let h = 0; const s = String((bot.cfg && bot.cfg.acct) || ""); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
-function diemTan(bot, x, y, phe) {
+function diemTan(bot, x, y, phe, keyMuc) {
   const h = gocTan(bot), g = (h % 360) * Math.PI / 180, R = 120 + (h % 60);
   let nx = x + R * Math.cos(g), ny = y + (R / 2) * Math.sin(g);
-  for (const o of bots) {
-    if (o === bot || !o.hd || o.hd.loai !== "tk" || o.hd.phe !== phe) continue;
-    const d = Math.hypot(o.x - nx, (o.y - ny) * 2);
+  const day = (ox, oy) => {
+    const d = Math.hypot(ox - nx, (oy - ny) * 2);
     if (d < 60) {
-      if (d > 0.01) { const k = (60 - d) / d; nx += (nx - o.x) * k; ny += ((ny - o.y) * k) / 2; }
+      if (d > 0.01) { const k = (60 - d) / d; nx += (nx - ox) * k; ny += ((ny - oy) * k) / 2; }
       else { nx += 60 * Math.cos(g + 1); ny += 30 * Math.sin(g + 1); }
     }
+  };
+  for (const o of bots) {
+    if (o === bot || !o.hd || o.hd.loai !== "tk" || o.hd.phe !== phe) continue;
+    day(o.x, o.y);
+    const t = o.hd.tkMuc; // điểm tản đã chốt của bot cùng phe nhắm cùng mục tiêu: ổn định hơn vị trí tức thời (sửa chạy loạn 27/11/2026)
+    if (t && t.key === keyMuc && t.sx != null) day(t.sx, t.sy);
+  }
+  if (!tkDiDuoc(bot.zone, nx, ny)) { // điểm tản trong tường: kẹp về ô đi được gần nhất (chống xuyên tường 27/11/2026)
+    let tim = false;
+    for (let r = 24; r <= 480 && !tim; r += 24) {
+      for (let k = 0; k < 8; k++) {
+        const a = (k * Math.PI) / 4, px = nx + r * Math.cos(a), py = ny + (r / 2) * Math.sin(a);
+        if (tkDiDuoc(bot.zone, px, py)) { nx = px; ny = py; tim = true; break; }
+      }
+    }
+    if (!tim) { nx = x; ny = y; } // sâu trong vùng tường: về vị trí neo (mục tiêu/doanh — ô đi được trong thực tế), khỏi đứng ở điểm cấm
   }
   return [nx, ny];
+}
+// ---- chỗ đứng chờ Tống Kim (Huy lệnh 22:03 27/11/2026): mỗi bot 1 chỗ RIÊNG, tản ra, đứng yên như người chơi thật ----
+// Ô đi được phía máy chủ: đọc đúng lưới j.obs như client map.js (bit 1 = vật cản, ô 24×12), qua N.ZONES[].jmo như cho-troi.js đọc jmo.an.
+const TK_JMO = (() => { try { const F = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets/web/map/full/index.json"), "utf8")); return F && F.jmo ? F.jmo : null; } catch { return null; } })();
+const TK_OBS = new Map();
+function tkDiDuoc(bai, x, y) {
+  const Z = N.ZONES.get(bai | 0), J = Z && TK_JMO && TK_JMO[Z.jmo];
+  if (!J || !J.obs) return x >= 0 && y >= 0; // không lưới: trong khung như client khi grid null (vùng gọi đã giới hạn)
+  let g = TK_OBS.get(Z.jmo);
+  if (!g) TK_OBS.set(Z.jmo, (g = { b: Buffer.from(J.obs, "base64"), gw: J.gw, gh: J.gh, cw: J.cw, ch: J.ch }));
+  const cx = Math.floor(x / g.cw), cy = Math.floor(y / g.ch);
+  if (!(cx >= 0 && cy >= 0 && cx < g.gw && cy < g.gh)) return false;
+  const i = cy * g.gw + cx;
+  return ((g.b[i >> 3] >> (i & 7)) & 1) === 0;
+}
+function tkHash(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+
+// ----- Bẫy cổng hậu doanh phía máy chủ (sửa 28/11/2026 — Huy duyệt 00:58) -----
+// Người chơi ra khỏi hậu doanh bằng bẫy ra.bay -> ra.toi (tongkim.js bay /
+// tkbot.js tkRaHau); phía máy chủ trước đây không có code bẫy nào nên bot đi
+// bộ thẳng vào hàng rào và kẹt vĩnh viễn. Trường khoảng cách BFS (mốc đường
+// tính sẵn): flood-fill 1 lần/trận/phe từ các ô đi được quanh điểm bẫy, bot
+// đi theo ô kề có khoảng cách nhỏ dần. Không port A* của client (map.js
+// path): nặng, cần cả bộ máy lưới/vùng-liên; BFS đủ vì chỉ cần tới bẫy
+// trong cùng vùng-liên, tính 1 lần rồi dùng chung cho cả trận.
+const TK_BAY = new Map(); // key gio|kc|phe -> { dist, gw, gh, cw, ch, bay, toi, bayR, rect, ok }
+function tkBayDiem(a) { // [x, y] từ JSON thô -> số hữu hạn
+  if (!Array.isArray(a)) return [];
+  const o = [];
+  for (const v of a) if (Array.isArray(v) && Number.isFinite(+v[0]) && Number.isFinite(+v[1])) o.push([+v[0], +v[1]]);
+  return o;
+}
+function tkBayDuLieu(D, phe) {
+  const key = `${D.gio || ""}|${D.kc || 0}|${phe}`;
+  const cu = TK_BAY.get(key);
+  if (cu) return cu;
+  const e = { ok: false, dist: null, gw: 0, gh: 0, cw: 24, ch: 12, bay: [], toi: [], bayR: 24, rect: null, veBay: [], veToi: [] };
+  TK_BAY.set(key, e);
+  if (TK_BAY.size > 4) TK_BAY.delete(TK_BAY.keys().next().value); // chỉ giữ vài trận gần nhất
+  try {
+    const T = (D.td && Array.isArray(D.td.phe) && D.td.phe[phe]) || {};
+    const ra = T.ra || {};
+    e.bay = tkBayDiem(ra.bay); e.toi = tkBayDiem(ra.toi);
+    const ve = T.ve || {}; // bẫy VỀ (sửa 28/11/2026): cùng entry cache, khỏi tính BFS riêng
+    e.veBay = tkBayDiem(ve.bay); e.veToi = tkBayDiem(ve.toi);
+    e.bayR = (D.td && +D.td.bayR > 0) ? +D.td.bayR : 24;
+    const vg = T.hau && Array.isArray(T.hau.vung) ? T.hau.vung[0] : null;
+    if (vg && vg.length >= 4) e.rect = [+vg[0], +vg[1], +vg[2], +vg[3]];
+    if (!e.bay.length || !e.toi.length) return e;
+    const Z = N.ZONES.get(D.bai | 0), J = Z && TK_JMO && TK_JMO[Z.jmo];
+    if (!J || !J.obs) return e;
+    let g = TK_OBS.get(Z.jmo);
+    if (!g) TK_OBS.set(Z.jmo, (g = { b: Buffer.from(J.obs, "base64"), gw: J.gw, gh: J.gh, cw: J.cw, ch: J.ch }));
+    const { b, gw, gh, cw, ch } = g;
+    e.gw = gw; e.gh = gh; e.cw = cw; e.ch = ch;
+    const di = (cx, cy) => cy * gw + cx;
+    const trong = (cx, cy) => cx >= 0 && cy >= 0 && cx < gw && cy < gh && ((b[di(cx, cy) >> 3] >> (di(cx, cy) & 7)) & 1) === 0;
+    const dist = new Int32Array(gw * gh).fill(-1);
+    const q = new Int32Array(gw * gh);
+    let head = 0, tail = 0;
+    const gieo = (cx, cy) => { const i = di(cx, cy); if (dist[i] < 0) { dist[i] = 0; q[tail++] = i; } };
+    // Gieo: mọi ô đi được có tâm trong tầm kích hoạt quanh điểm bẫy (đứng lên
+    // là qua cổng, như client giẫm bẫy theo khoảng cách — không cần tới đúng ô).
+    const R = e.bayR + 16; // +16 như tkRaHau: đường dừng ở tâm ô đi được gần nhất
+    for (const [bx, by] of e.bay) {
+      const x0 = Math.max(0, Math.floor((bx - R) / cw)), x1 = Math.min(gw - 1, Math.floor((bx + R) / cw));
+      const y0 = Math.max(0, Math.floor((by - R) / ch)), y1 = Math.min(gh - 1, Math.floor((by + R) / ch));
+      for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) {
+        if (!trong(cx, cy)) continue;
+        if (Math.hypot((cx + 0.5) * cw - bx, ((cy + 0.5) * ch - by) * 2) <= R) gieo(cx, cy);
+      }
+    }
+    if (tail === 0) { // dự phòng: bẫy nằm sâu trong tường, không ô nào trong tầm -> gieo ô đi được gần nhất mỗi điểm bẫy
+      for (const [bx, by] of e.bay) {
+        let tot = -1, totD = Infinity;
+        const x0 = Math.max(0, Math.floor(bx / cw) - 60), x1 = Math.min(gw - 1, Math.floor(bx / cw) + 60);
+        const y0 = Math.max(0, Math.floor(by / ch) - 60), y1 = Math.min(gh - 1, Math.floor(by / ch) + 60);
+        for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) {
+          if (!trong(cx, cy)) continue;
+          const d = Math.hypot((cx + 0.5) * cw - bx, ((cy + 0.5) * ch - by) * 2);
+          if (d < totD) { totD = d; tot = di(cx, cy); }
+        }
+        if (tot >= 0) { dist[tot] = 0; q[tail++] = tot; }
+      }
+    }
+    if (tail === 0) return e;
+    while (head < tail) { // 8 hướng, không cắt góc (đúng luật vùng-liên của client)
+      const i = q[head++], cx = i % gw, cy = (i / gw) | 0, d = dist[i] + 1;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const nx = cx + dx, ny = cy + dy;
+        if (!trong(nx, ny) || dist[di(nx, ny)] >= 0) continue;
+        if (dx && dy && !(trong(cx + dx, cy) && trong(cx, cy + dy))) continue;
+        dist[di(nx, ny)] = d; q[tail++] = di(nx, ny);
+      }
+    }
+    e.dist = dist; e.ok = true;
+  } catch { /* không lưới/dữ liệu: giữ hành vi cũ, không sập nhịp bot */ }
+  return e;
+}
+function tkBayTai(e, x, y) { // khoảng cách BFS từ ô của (x, y) tới bẫy; -1 = khác vùng / không lưới
+  if (!e || !e.ok || !e.dist) return -1;
+  const cx = Math.floor(x / e.cw), cy = Math.floor(y / e.ch);
+  if (!(cx >= 0 && cy >= 0 && cx < e.gw && cy < e.gh)) return -1;
+  return e.dist[cy * e.gw + cx];
+}
+function tkBayTrongRect(e, x, y) { const r = e.rect; return !!r && x >= r[0] && y >= r[1] && x <= r[2] && y <= r[3]; }
+function tkBayGan(e, x, y) { // khoảng cách logic tới điểm bẫy gần nhất
+  let m = Infinity;
+  for (const p of e.bay) { const d = Math.hypot(x - p[0], (y - p[1]) * 2); if (d < m) m = d; }
+  return m;
+}
+function tkBayDiemGan(e, x, y) {
+  let tot = null, m = Infinity;
+  for (const p of e.bay) { const d = Math.hypot(x - p[0], (y - p[1]) * 2); if (d < m) { m = d; tot = p; } }
+  return tot;
+}
+function tkBayDich(bot, D, phe, e) { // qua cổng: tới 1 điểm ra.toi ngẫu nhiên, lệch vào ô đi được như client dichChuyen
+  const c = e.toi[(Math.random() * e.toi.length) | 0];
+  let x = c[0], y = c[1];
+  for (let i = 0; i < 6; i++) {
+    const a = Math.random() * Math.PI * 2, r = Math.random() * 30;
+    const nx = c[0] + Math.cos(a) * r, ny = c[1] + Math.sin(a) * r * 0.5;
+    if (tkDiDuoc(D.bai, nx, ny)) { x = nx; y = ny; break; }
+  }
+  dichChuyen(bot, D.bai, Math.round(x), Math.round(y));
+  bot.hd.tkMuc = null; bot.hd.mucTk = null; bot.hd.tkKet = 0; // chọn lại mục tiêu/điểm tản ở chiến trường
+  bot.act = "stand";
+}
+// Lệnh đội hiện tại có phải giữ hậu doanh? Đội RÚT (neo luôn là traiTa) hoặc
+// đội GIỮ neo traiTa (viTri("traiTa") === D.trai[phe] — so theo tọa độ, khỏi
+// động vào chi-huy-tk.js). Dùng chung cho miễn trừ tkBayRa + cổng tkBayVe.
+// lenCho đã throttle 5 giây trong capNhat nên gọi thêm mỗi nhịp không tốn.
+// Không lệnh / lỗi: false (giữ hành vi cũ: ra cổng đánh).
+function tkLenhVeNha(bot, D, phe) {
+  try {
+    const lenh = CH().lenCho(bot.cfg.acct, D, phe);
+    if (!lenh) return false;
+    if (lenh.cheDo === "rut") return true;
+    if (lenh.cheDo === "giu" && D.trai && D.trai[phe]) {
+      const tr = D.trai[phe];
+      return Math.abs(lenh.neo[0] - tr[0]) <= 2 && Math.abs(lenh.neo[1] - tr[1]) <= 2;
+    }
+  } catch {}
+  return false;
+}
+// Bot còn ở phía hậu doanh thì nhịp này chỉ lo ra cổng. Trả true = đã xử
+// lý (đi tới bẫy / dịch chuyển), nhịp gọi return; false = đã ở chiến trường.
+function tkBayRa(bot, D, phe) {
+  const e = tkBayDuLieu(D, phe);
+  if (!e || !e.ok) return false;
+  const tai = tkBayTai(e, bot.x, bot.y);
+  if (!(tai >= 0 || tkBayTrongRect(e, bot.x, bot.y))) return false;
+  if (tkLenhVeNha(bot, D, phe)) return false; // giữ hậu doanh (sửa 28/11/2026): đã về nhà thì ở yên, không ra cổng
+  if (tkBayGan(e, bot.x, bot.y) <= e.bayR + 16) { tkBayDich(bot, D, phe, e); return true; }
+  if (tai > 0) { // đi theo trường BFS: ô kề có khoảng cách nhỏ dần
+    const cx = Math.floor(bot.x / e.cw), cy = Math.floor(bot.y / e.ch);
+    let tot = null, totD = tai;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      if (!dx && !dy) continue;
+      const nx = cx + dx, ny = cy + dy;
+      if (!(nx >= 0 && ny >= 0 && nx < e.gw && ny < e.gh)) continue;
+      const d = e.dist[ny * e.gw + nx];
+      if (d >= 0 && d < totD) { totD = d; tot = [(nx + 0.5) * e.cw, (ny + 0.5) * e.ch]; }
+    }
+    if (tot) {
+      buocToi(bot, tot[0], tot[1], 200);
+      bot.act = bot.buocKet ? "stand" : "run";
+      if (!bot.buocKet && tkBayGan(e, bot.x, bot.y) <= e.bayR + 16) tkBayDich(bot, D, phe, e);
+      return true;
+    }
+    bot.act = "stand"; return true;
+  }
+  if (tai === 0) { bot.act = "stand"; return true; } // đã ở ô bẫy: nhịp sau kích hoạt theo khoảng cách
+  // Túi khác vùng (chỗ chờ cũ / ngoài hàng rào): đi thẳng tới điểm bẫy gần
+  // nhất — bẫy kích hoạt theo khoảng cách nên qua được cả khi có tường chắn.
+  const c = tkBayDiemGan(e, bot.x, bot.y);
+  if (c) { buocToi(bot, c[0], c[1], 200); bot.act = bot.buocKet ? "stand" : "run"; }
+  else bot.act = "stand";
+  return true;
+}
+// ----- Bẫy cổng VỀ phía máy chủ (sửa 28/11/2026 — Huy lệnh 01:22 "nào hợp lý thì triển khai") -----
+// Đối xứng tkBayRa: bot được lệnh về giữ hậu doanh (đội RÚT / đội GIỮ neo traiTa)
+// mà còn ở ngoài chiến trường, giẫm bẫy ve.bay -> ve.toi thì về nhà như người
+// chơi (tongkim.js bay / tkbot.js tkVe — tọa độ lấy từ D.td, không hardcode).
+// CHỈ khi có lệnh về nhà: bot đang đánh mà vô tình giẫm bẫy thì KHÔNG bị giật
+// về (người chơi tự chọn đường đi; bot không có "ý định" ngoài lệnh đội —
+// giật về giữa lúc đánh sẽ phá đội hình và tạo vòng lặp về <-> ra với tkBayRa).
+// Không dữ liệu ve thì giữ hành vi cũ. Trả true = đã dịch chuyển, nhịp gọi return.
+function tkBayVe(bot, D, phe) {
+  const e = tkBayDuLieu(D, phe);
+  if (!e || !e.ok || !e.veBay.length || !e.veToi.length) return false;
+  if (!tkLenhVeNha(bot, D, phe)) return false;
+  const tai = tkBayTai(e, bot.x, bot.y);
+  if (tai >= 0 || tkBayTrongRect(e, bot.x, bot.y)) return false; // đã ở hậu doanh: để tkBayRa / đứng neo xử lý
+  let gan = Infinity;
+  for (const p of e.veBay) { const d = Math.hypot(bot.x - p[0], (bot.y - p[1]) * 2); if (d < gan) gan = d; }
+  if (!(gan <= e.bayR + 16)) return false;
+  const c = e.veToi[(Math.random() * e.veToi.length) | 0];
+  let x = c[0], y = c[1];
+  for (let i = 0; i < 6; i++) {
+    const a = Math.random() * Math.PI * 2, r = Math.random() * 30;
+    const nx = c[0] + Math.cos(a) * r, ny = c[1] + Math.sin(a) * r * 0.5;
+    if (tkDiDuoc(D.bai, nx, ny)) { x = nx; y = ny; break; }
+  }
+  dichChuyen(bot, D.bai, Math.round(x), Math.round(y));
+  bot.hd.tkMuc = null; bot.hd.mucTk = null; bot.hd.tkKet = 0; // về nhà: bỏ mục tiêu/điểm tản cũ, chọn lại sau
+  bot.act = "stand";
+  return true;
+}
+// ----- Tìm đường BFS khi kẹt (B2-1 — Huy duyệt 06:46 28/11/2026) -----
+// buocToi tham lam (thẳng + trượt ±30°/±60°) kẹt ở hàng rào/hành lang cong:
+// cả 5 hướng đều bị chặn ngay mẫu đầu nên bot đứng chết rồi chọn lại đúng mục
+// tiêu cũ. Khi kẹt >= 3 nhịp, đi 1 bước theo trường khoảng cách BFS tới điểm
+// tản/mục tiêu (tái dùng kiểu tkBayDuLieu: flood-fill từ đích, 8 hướng không
+// cắt góc, tính theo nhu cầu, cache theo trận/phe/ô đích, dừng sớm khi tới
+// được ô bot — không tính sẵn toàn map). Không lưới/không tới được: null,
+// nhịp gọi giữ hành vi cũ. Chỉ dùng trong nhánh kẹt, không đụng buocToi.
+const TK_BFS = new Map(); // key gio|kc|phe|cx|cy đích -> {dist: Map, gw, gh, cw, ch, ok}
+const TK_BFS_TOI_DA = 6; // số trường giữ lại (đích đổi liên tục theo điểm tản)
+const TK_BFS_CELL_TOI_DA = 60000; // chặn flood vô hạn
+const TK_THONG_KE = { bfsTinh: 0, bfsBuoc: 0, bfsHong: 0, camBo: 0 }; // chỉ đếm phục vụ đo, không đổi hành vi
+function tkBfsBuoc(bot, D, phe, sx, sy) { // 1 bước (tâm ô kề) theo trường BFS; null = không có đường/không lưới
+  if (sx == null || sy == null) return null;
+  const Z = N.ZONES.get(D.bai | 0), J = Z && TK_JMO && TK_JMO[Z.jmo];
+  if (!J || !J.obs) return null;
+  let g = TK_OBS.get(Z.jmo);
+  if (!g) TK_OBS.set(Z.jmo, (g = { b: Buffer.from(J.obs, "base64"), gw: J.gw, gh: J.gh, cw: J.cw, ch: J.ch }));
+  const { b, gw, gh, cw, ch } = g;
+  const di = (cx, cy) => cy * gw + cx;
+  const trong = (cx, cy) => cx >= 0 && cy >= 0 && cx < gw && cy < gh && ((b[di(cx, cy) >> 3] >> (di(cx, cy) & 7)) & 1) === 0;
+  const dcx = Math.floor(sx / cw), dcy = Math.floor(sy / ch);
+  const bcx = Math.floor(bot.x / cw), bcy = Math.floor(bot.y / ch);
+  const canCell = bcx >= 0 && bcy >= 0 && bcx < gw && bcy < gh ? di(bcx, bcy) : -1;
+  const key = `${D.gio || ""}|${D.kc || 0}|${phe}|${dcx}|${dcy}`;
+  let e = TK_BFS.get(key);
+  if (e && (canCell < 0 || !e.dist.has(canCell))) e = null; // trường cũ dừng sớm trước ô bot này: tính lại
+  if (!e) {
+    e = { dist: new Map(), gw, gh, cw, ch, ok: false };
+    TK_BFS.set(key, e);
+    if (TK_BFS.size > TK_BFS_TOI_DA) TK_BFS.delete(TK_BFS.keys().next().value);
+    let goc = [];
+    if (trong(dcx, dcy)) goc = [[dcx, dcy]];
+    else for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (trong(dcx + dx, dcy + dy)) goc.push([dcx + dx, dcy + dy]);
+    if (goc.length && canCell >= 0) {
+      const q = [];
+      for (const [cx, cy] of goc) { const i = di(cx, cy); if (!e.dist.has(i)) { e.dist.set(i, 0); q.push(i); } }
+      let head = 0, thay = e.dist.has(canCell);
+      while (head < q.length && !thay) {
+        const i = q[head++], cx = i % gw, cy = (i / gw) | 0, d = e.dist.get(i) + 1;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue;
+          const nx = cx + dx, ny = cy + dy, ni = di(nx, ny);
+          if (!trong(nx, ny) || e.dist.has(ni)) continue;
+          if (dx && dy && !(trong(cx + dx, cy) && trong(cx, cy + dy))) continue;
+          e.dist.set(ni, d); q.push(ni);
+          if (ni === canCell) thay = true;
+        }
+        if (e.dist.size > TK_BFS_CELL_TOI_DA) break;
+      }
+      e.ok = e.dist.has(canCell);
+      if (e.ok) TK_THONG_KE.bfsTinh++;
+    }
+  }
+  if (!e.ok || canCell < 0) { TK_THONG_KE.bfsHong++; return null; }
+  const d0 = e.dist.get(canCell);
+  if (d0 <= 1) return [sx, sy]; // kề đích: về thẳng đích
+  let tot = null, totD = d0;
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+    if (!dx && !dy) continue;
+    const nx = bcx + dx, ny = bcy + dy;
+    if (!(nx >= 0 && ny >= 0 && nx < gw && ny < gh)) continue;
+    const d = e.dist.get(di(nx, ny));
+    if (d != null && d < totD) { totD = d; tot = [(nx + 0.5) * cw, (ny + 0.5) * ch]; }
+  }
+  if (!tot) { TK_THONG_KE.bfsHong++; return null; }
+  TK_THONG_KE.bfsBuoc++;
+  return tot;
+}
+// B1-3: giới hạn số bot 1 phe dồn Nguyên Soái (độc chiếm Soái khóa trận).
+// 6 ≈ 1/3 đội 17 — Soái vẫn có người đánh, còn lại đánh người/quân như cũ.
+// Đếm TRỰC TIẾP (không qua demMucLuc cache theo nhịp): cache khiến cả 40 bot
+// trong cùng 1 nhịp đều thấy số cũ và cùng lấy Soái (đo 28/11: 20/20 mỗi phe).
+const TK_SOAI_TOI_DA = 6;
+function tkSoaiDay(phe) {
+  let n = 0;
+  for (const o of bots) {
+    if (!o.hd || o.hd.loai !== "tk" || o.hd.phe !== phe) continue;
+    const tm = o.hd.tkMuc;
+    if (tm && tm.loai === "soai") n++;
+  }
+  return n;
+}
+// B2-3: mục tiêu vừa bị bỏ vì kẹt thì cấm chọn lại 2 nhịp (phá vòng kẹt -> chọn lại đúng mục tiêu cũ).
+function tkBiCam(bot, key) { const c = bot.hd && bot.hd.tkCam; return !!(c && c.key === key && tickN < c.den); }
+function tkChoTrongBay(D, phe, x, y) { // chỗ đứng chờ phải cùng vùng-liên với bẫy; không dữ liệu bẫy thì giữ hành vi cũ
+  const e = tkBayDuLieu(D, phe);
+  if (!e || !e.ok) return true;
+  return tkBayTai(e, x, y) >= 0;
+}
+function tkJit(seed, amp) { const h = tkHash(seed); return [(h % (2 * amp + 1)) - amp, ((h >>> 9) % (2 * amp + 1)) - amp]; } // >>> không dấu: >> bị dấu khi h ≥ 2^31 khiến jy tới -54, phá khoảng cách tối thiểu (đo 29,1px 27/11/2026)
+// Chỗ đứng chờ: lưới ô 96×96 trong vùng hậu doanh + jitter ±18; mỗi ô tối đa 1 bot/phe/trận -> cách nhau ≥ 60 theo cấu trúc.
+// Tính 1 lần lúc vào, lưu bot.tkCho (key = giờ|kc: ổn định qua khởi động lại cùng trận); chỉ nhận điểm đi được.
+function tkChoDung(bot, phe, D) {
+  const key = `${D.gio || ""}|${D.kc || 0}`;
+  const cu = bot.tkCho;
+  if (cu && cu.key === key && cu.phe === phe && Array.isArray(cu.at)) return cu.at;
+  const T = (D.td && Array.isArray(D.td.phe) && D.td.phe[phe]) || {};
+  const vg = T.hau && Array.isArray(T.hau.vung) ? T.hau.vung[0] : null;
+  const tam = (D.trai && D.trai[phe]) || [0, 0];
+  const x1 = vg ? +vg[0] : tam[0] - 400, y1 = vg ? +vg[1] : tam[1] - 300, x2 = vg ? +vg[2] : tam[0] + 400, y2 = vg ? +vg[3] : tam[1] + 300;
+  const OM = 96, cols = Math.max(1, Math.floor((x2 - x1) / OM)), rows = Math.max(1, Math.floor((y2 - y1) / OM)), nO = cols * rows;
+  const lay = new Set();
+  for (const b of bots) { const c = b.tkCho; if (c && c.key === key && c.phe === phe && c.o != null && b !== bot) lay.add(c.o); }
+  const h = tkHash(`${key}|${bot.cfg.acct}|${phe}`);
+  let chon = null;
+  for (let i = 0; i < nO && !chon; i++) {
+    const o = (h + i) % nO;
+    if (lay.has(o)) continue;
+    const bx = x1 + (o % cols) * OM + OM / 2, by = y1 + ((o / cols) | 0) * OM + OM / 2;
+    for (let v = 0; v < 5; v++) {
+      const [jx, jy] = tkJit(`${h}:${v}`, 18), px = Math.round(bx + jx), py = Math.round(by + jy);
+      if (px < x1 || py < y1 || px > x2 || py > y2 || !tkDiDuoc(D.bai, px, py) || !tkChoTrongBay(D, phe, px, py)) continue;
+      chon = { o, at: [px, py] }; break;
+    }
+  }
+  if (!chon) { // hết ô trống/đi được: quét lại mọi ô (bỏ ô đã chiếm), jitter rộng, vẫn kiểm đi được + cách ≥ 48 mọi chỗ đã gán
+    const diem = [];
+    for (const b of bots) { const c = b.tkCho; if (c && c.key === key && c.phe === phe && Array.isArray(c.at) && b !== bot) diem.push(c.at); }
+    const xa = (px, py) => diem.every((q) => (px - q[0]) * (px - q[0]) + (py - q[1]) * (py - q[1]) >= 60 * 60);
+    for (let i = 0; i < nO && !chon; i++) {
+      const o = (h + i) % nO;
+      if (lay.has(o)) continue;
+      const bx = x1 + (o % cols) * OM + OM / 2, by = y1 + ((o / cols) | 0) * OM + OM / 2;
+      for (let v = 0; v < 40 && !chon; v++) {
+        const [jx, jy] = tkJit(`${h}:f${v}`, 30), px = Math.round(bx + jx), py = Math.round(by + jy);
+        if (px >= x1 && py >= y1 && px <= x2 && py <= y2 && xa(px, py) && tkDiDuoc(D.bai, px, py) && tkChoTrongBay(D, phe, px, py)) chon = { o, at: [px, py] };
+      }
+    }
+    if (!chon) { // vẫn không có: lấy mẫu 200 điểm trong vùng, chọn điểm xa nhất so với các chỗ đã gán (maximin), vẫn kiểm đi được
+      let tot = null, totD = -1;
+      for (let v = 0; v < 200; v++) {
+        const [jx, jy] = tkJit(`${h}:m${v}`, 100000), px = x1 + ((jx % (x2 - x1)) + (x2 - x1)) % (x2 - x1), py = y1 + ((jy % (y2 - y1)) + (y2 - y1)) % (y2 - y1);
+        if (!tkDiDuoc(D.bai, px, py) || !tkChoTrongBay(D, phe, px, py)) continue;
+        const dmin = diem.length ? Math.min(...diem.map((q) => (px - q[0]) * (px - q[0]) + (py - q[1]) * (py - q[1]))) : 1e12;
+        if (dmin > totD) { totD = dmin; tot = [px, py]; }
+      }
+      chon = tot ? { o: -1, at: tot } : { o: -1, at: [Math.round(tam[0]), Math.round(tam[1])] };
+    }
+  }
+  bot.tkCho = { key, phe, o: chon.o, at: chon.at };
+  return chon.at;
 }
 // dem bot cung phe dang nham moi muc tieu — tinh 1 lan moi nhip 1500ms, chon muc tieu tan ra (toi da 3 bot/muc tieu, het thi lay gan nhat)
 let demMucTick = -1, demMuc = new Map();
@@ -1446,75 +1845,227 @@ function demMucLuc() {
   }
   return demMuc;
 }
+// Dính mục tiêu + vùng chết (sửa chạy loạn 27/11/2026 — giữ nguyên luật 3 bot/mục tiêu + chống chồng đống,
+// giữ nguyên cơ chế sát thương botDanh/botBiDanh không xét khoảng cách):
+// bot giữ mục tiêu tới khi mục tiêu chết/mất/xa quá ngưỡng mới chọn lại; tới trong vùng chết quanh
+// điểm tản đã chốt thì ĐỨNG YÊN đánh, không bước nữa. Điểm tản chỉ tính lúc chọn mục tiêu (hoặc khi
+// mục tiêu dịch đáng kể), không tính lại mỗi nhịp từ vị trí tức thời của hàng xóm (điểm đến rung
+// liên tục làm bot không bao giờ tới nơi nên chạy vòng mãi).
+const TK_GIU_XA = 900;    // giữ mục tiêu đang dính tới khi xa hơn ngưỡng này mới chọn lại
+const TK_VUNG_CHET = 120; // trong vùng này quanh điểm tản đã chốt thì đứng yên, không bước tiếp
+const TK_TAN_DICH = 150;  // mục tiêu dịch quá ngưỡng này (so với lúc chốt điểm tản) thì tính lại điểm tản
+function buocToiTan(bot, sx, sy) {
+  if (sx == null || sy == null) return true; // chưa có điểm tản: đứng yên, khỏi chạy giả
+  const d = Math.hypot(sx - bot.x, (sy - bot.y) * 2);
+  if (d <= TK_VUNG_CHET) return true;
+  const toi = buocToi(bot, sx, sy, 200);
+  return bot.buocKet ? "ket" : toi; // kẹt tường: báo riêng để nhịp gọi đứng lại + chọn lại điểm/mục tiêu
+}
+function datMucTk(bot, phe, tm) {
+  const p = tm.x == null ? null : diemTan(bot, tm.x, tm.y, phe, tm.key);
+  tm.sx = p ? p[0] : null; tm.sy = p ? p[1] : null; tm.ax = tm.x; tm.ay = tm.y;
+  bot.hd.tkMuc = tm; bot.hd.mucTk = tm.key;
+  return tm;
+}
+function mucTkHien(bot, D, phe) {
+  const tm = bot.hd && bot.hd.tkMuc;
+  if (!tm) return null;
+  // Nguyên Soái địch vừa xuất hiện thì dồn vào ngay (giữ luật cũ: soái luôn ưu tiên nhất) —
+  // trừ khi đã đủ người dồn (B1-3) hoặc bot này vừa bị cấm chọn Soái vì kẹt (B2-3): giữ mục tiêu cũ.
+  if (tm.loai !== "soai") {
+    for (const e of D.binh.values()) if (e.phe !== phe && e.bac === 5 && e.mau > 0 && tkSoaiDay(phe) < TK_SOAI_TOI_DA && !tkBiCam(bot, "soai" + e.id)) return null;
+  }
+  let x = null, y = null, ok = false;
+  if (tm.loai === "soai") {
+    const e = D.binh.get(tm.id);
+    if (e && e.phe !== phe && e.bac === 5 && e.mau > 0) { x = e.x; y = e.y; ok = true; }
+  } else if (tm.loai === "nguoi") {
+    const mm = TK().botNguoi(tm.tk);
+    if (mm && mm.hp > 0) { const p = TG.dangChoi(tm.tk); if (p && p.zone === D.bai) { x = p.x; y = p.y; ok = true; } }
+  } else {
+    const b = D.bot.get(tm.id) || D.binh.get(tm.id);
+    if (b && b.phe !== phe && !b.chet && b.mau > 0) {
+      ok = true;
+      const v = D.vt.get(tm.id);
+      if (v) { x = v[0]; y = v[1]; }
+    }
+  }
+  if (!ok) return null;
+  if (x != null) {
+    if (Math.hypot(x - bot.x, (y - bot.y) * 2) > TK_GIU_XA) return null; // mục tiêu chạy quá xa: chọn lại
+    if (tm.sx == null || tm.ax == null || Math.hypot(x - tm.ax, (y - tm.ay) * 2) > TK_TAN_DICH) {
+      const p = diemTan(bot, x, y, phe, tm.key);
+      tm.sx = p[0]; tm.sy = p[1]; tm.ax = x; tm.ay = y;
+    }
+    tm.x = x; tm.y = y;
+  }
+  bot.hd.mucTk = tm.key;
+  return tm;
+}
+function chonMucTk(bot, D, phe, neoL) {
+  // Thứ tự ưu tiên giữ như cũ: Nguyên Soái địch > người địch gần nhất > bot/quân địch,
+  // với 3 nới theo Huy duyệt 06:46 28/11/2026: B1-3 Soái có trần dồn, B1-1 đội CÔNG
+  // được đánh quân khi hết người địch trong tầm giao chiến, B2-3 cấm chọn lại mục tiêu vừa bỏ vì kẹt.
+  const soaiDu = tkSoaiDay(phe) >= TK_SOAI_TOI_DA;
+  for (const e of D.binh.values()) {
+    if (e.phe === phe || e.bac !== 5 || !(e.mau > 0)) continue;
+    if (!soaiDu && !tkBiCam(bot, "soai" + e.id)) return datMucTk(bot, phe, { loai: "soai", key: "soai" + e.id, id: e.id, x: e.x, y: e.y, binh: true });
+    break; // Soái đã đủ người dồn / bị cấm: xuống nhánh dưới, không xét Soái nữa
+  }
+  const ds = [];
+  for (const x of D.nguoi.values()) {
+    if (x.phe === phe || x.tk === bot.cfg.acct) continue;
+    if (!x.bot) continue; // người thật: máu do trình duyệt họ tự trừ, bot không có đường gửi đòn tới — chỉ đánh được bot/người-máy khác
+    const mm = TK().botNguoi(x.tk); if (!mm || !(mm.hp > 0)) continue;
+    const p = TG.dangChoi(x.tk);
+    if (!p || p.zone !== D.bai) continue;
+    ds.push({ d: Math.hypot(p.x - bot.x, (p.y - bot.y) * 2), tk: x.tk, x: p.x, y: p.y });
+  }
+  ds.sort((a, b) => a.d - b.d);
+  const dem = demMucLuc();
+  // B1-1: đội CÔNG chỉ ưu tiên người khi còn người địch trong tầm giao chiến của đội
+  // (quanh neo, bán kính bk); hết thì xuống đánh quân. Đội GIỮ/RÚT giữ thứ tự cũ.
+  // Không có lệnh đội: coi như CÔNG, tầm quanh vị trí bot, bk 600 như đội công.
+  const cheDo = neoL ? neoL.cheDo : "cong";
+  const tam = neoL ? neoL.neo : [bot.x, bot.y];
+  const bk = neoL ? (neoL.bk || 600) : 600;
+  const hetNguoiGan = cheDo === "cong" && !ds.some((c) => Math.hypot(c.x - tam[0], (c.y - tam[1]) * 2) <= bk);
+  if (!hetNguoiGan) {
+    const chon = ds.find((c) => !tkBiCam(bot, c.tk) && (dem.get(phe + "|" + c.tk) || 0) < 3) || ds.find((c) => !tkBiCam(bot, c.tk));
+    if (chon) return datMucTk(bot, phe, { loai: "nguoi", key: chon.tk, tk: chon.tk, x: chon.x, y: chon.y, nguoi: true });
+  }
+  const vt = D.vt, ds2 = [];
+  for (const b of [...D.bot.values(), ...D.binh.values()]) {
+    if (b.phe === phe || b.chet || !(b.mau > 0)) continue;
+    if (b.bac === 5 && (soaiDu || tkBiCam(bot, "soai" + b.id))) continue; // B1-3: Soái không dồn qua nhánh quân
+    const v = vt.get(b.id);
+    let bx = v ? v[0] : null, by = v ? v[1] : null;
+    // B1-2: dự phòng khi vt rỗng (không có trình duyệt chủ trận báo vị trí).
+    // ĐÃ XÁC MINH 28/11/2026: quân KHÔNG di chuyển phía máy chủ (e.x/e.y chỉ đổi
+    // lúc sinh/hồi sinh — đó là điểm nhà, không phải vị trí đang đánh); bot máy
+    // chủ D.bot không có x/y. Dùng điểm nhà cho quân (đánh theo mã, sát thương
+    // botDanh không xét khoảng cách nên đòn vẫn trúng thật), bot máy chủ giữ null
+    // (đánh mù như nhánh x==null cũ). Ghi rõ: tọa độ này TĨNH, không phải vị trí sống.
+    if (bx == null && Number.isFinite(+b.x) && Number.isFinite(+b.y)) { bx = +b.x; by = +b.y; }
+    ds2.push({ d: bx == null ? 1e9 : Math.hypot(bx - bot.x, (by - bot.y) * 2), id: b.id, x: bx, y: by, binh: !!b.bac });
+  }
+  ds2.sort((a, b) => a.d - b.d);
+  const chon2 = ds2.find((c) => !tkBiCam(bot, "b" + c.id) && (dem.get(phe + "|b" + c.id) || 0) < 3) || ds2.find((c) => !tkBiCam(bot, "b" + c.id));
+  if (chon2) return datMucTk(bot, phe, { loai: "bot", key: "b" + chon2.id, id: chon2.id, x: chon2.x, y: chon2.y, binh: chon2.binh });
+  return null;
+}
+function diemDoanh(bot, D, phe) {
+  // Điểm tản ở doanh địch: doanh không di chuyển nên chốt 1 lần cho cả trận, khỏi tính lại mỗi nhịp.
+  const hd = bot.hd;
+  if (!hd.tkDoanh) { const tr = D.trai[1 - phe]; const p = diemTan(bot, tr[0], tr[1], phe, "doanh"); hd.tkDoanh = { sx: p[0], sy: p[1] }; }
+  return hd.tkDoanh;
+}
+// Điểm tản quanh neo của đội (chỉ huy tổ đội): cache theo khoa lệnh, kẹp ô đi được qua diemTan sẵn có (không viết lại kiểm tra tường).
+function neoTam(bot, neoL, phe) {
+  const hd = bot.hd;
+  if (!hd.tkNeo || hd.tkNeo.khoa !== neoL.khoa) {
+    const p = diemTan(bot, neoL.neo[0], neoL.neo[1], phe, "neo" + neoL.khoa);
+    hd.tkNeo = p ? { khoa: neoL.khoa, sx: p[0], sy: p[1] } : { khoa: neoL.khoa, sx: neoL.neo[0], sy: neoL.neo[1] };
+  }
+  return hd.tkNeo;
+}
+function veNeo(bot, D, phe, neoL) { return neoL ? neoTam(bot, neoL, phe) : diemDoanh(bot, D, phe); }
 function hdTkTick(bot) {
   const D = TK()._thu.D;
   if (!D || D.ket) return ketThucHd(bot, "trận xong");
   const m = TK().botNguoi(bot.cfg.acct);
   if (!m) return ketThucHd(bot, "không còn trong phòng");
+  if (D.loai === "tran" && !D.batDau) { // pha chờ (vào sớm — Huy lệnh 22:03 27/11/2026): đứng yên tại chỗ đứng riêng, không đi lại, không chạy sang doanh địch
+    const cd = tkChoDung(bot, m.phe, D);
+    if (Math.hypot(cd[0] - bot.x, cd[1] - bot.y) > 30) dichChuyen(bot, D.bai, cd[0], cd[1]); // lệch chỗ (hồi sinh/lạc) -> về chỗ 1 lần, không đi bộ
+    bot.act = "stand";
+    return;
+  }
   if ((m.hp | 0) <= 0) { // chờ hồi sinh ở hậu doanh
     if (Date.now() >= (m.hoiLuc || 0)) { TK().botHoiSinh(bot.cfg.acct); const tr = D.trai[m.phe]; dichChuyen(bot, D.bai, tr[0], tr[1]); }
+    bot.hd.tkMuc = null; bot.hd.mucTk = null; bot.hd.tkDoanh = null; bot.hd.tkKet = 0; // chết thì bỏ mục tiêu/điểm tản cũ, hồi sinh chọn lại
     bot.act = "stand"; return;
   }
   const phe = m.phe; // dmg tính lười (donHoatDong trừ nội lực): chỉ tính khi sắp ra đòn thật, khỏi đốt nội lực ở nhịp áp sát
-  // mục tiêu: Nguyên Soái địch > người địch gần nhất > bot/quân địch
-  let muc = null, loai = "";
-  for (const e of D.binh.values()) {
-    if (e.phe === phe || e.bac !== 5 || !(e.mau > 0)) continue;
-    muc = { id: e.id, x: e.x, y: e.y, binh: true }; loai = "soai"; bot.hd.mucTk = "soai" + e.id; break;
+  if (D.batDau && tkBayRa(bot, D, phe)) return; // còn ở hậu doanh: ra cổng bẫy trước, chưa đánh (sửa bẫy cổng 28/11/2026)
+  if (D.batDau && tkBayVe(bot, D, phe)) return; // lệnh về giữ hậu doanh: giẫm bẫy về thì về nhà (sửa bẫy về 28/11/2026)
+  // Chỉ huy tổ đội (chi-huy-tk.js): lệnh theo đội — neo + bán kính giao chiến; đội đổi lệnh thì giãn xuất phát 0–2 nhịp, khỏi ùa đi cùng lúc.
+  let neoL = null;
+  try { neoL = CH().lenCho(bot.cfg.acct, D, phe); } catch { neoL = null; }
+  if (neoL) {
+    if (bot.hd.tkKhoa !== neoL.khoa) { bot.hd.tkKhoa = neoL.khoa; bot.hd.tkChoLenh = tickN + (tkHash(bot.cfg.acct) % 3); }
+    if (tickN < (bot.hd.tkChoLenh || 0)) { bot.act = "stand"; return; }
   }
-  if (!muc) {
-    let gan = 1e12;
-    const ds = [];
-    for (const x of D.nguoi.values()) {
-      if (x.phe === phe || x.tk === bot.cfg.acct) continue;
-      if (!x.bot) continue; // người thật: máu do trình duyệt họ tự trừ, bot không có đường gửi đòn tới — chỉ đánh được bot/người-máy khác
-      const mm = TK().botNguoi(x.tk); if (!mm || !(mm.hp > 0)) continue;
-      const p = TG.dangChoi(x.tk);
-      if (!p || p.zone !== D.bai) continue;
-      ds.push({ d: Math.hypot(p.x - bot.x, (p.y - bot.y) * 2), tk: x.tk, x: p.x, y: p.y });
-    }
-    ds.sort((a, b) => a.d - b.d);
-    const dem = demMucLuc();
-    const chon = ds.find((c) => (dem.get(phe + "|" + c.tk) || 0) < 3) || ds[0];
-    if (chon) { muc = { tk: chon.tk, x: chon.x, y: chon.y, nguoi: true }; gan = chon.d; bot.hd.mucTk = chon.tk; }
-    if (muc) {
-      loai = "nguoi";
-      if (gan > 400) {
-        // SỬA 26/11/2026 (bot Tống Kim không đánh nhau): trước đây người địch xa hơn 400 thì
-        // bỏ mục tiêu, rẽ sang đánh mù quân — quân hồi vô hạn nên bot mài quân cả trận, gần như
-        // không chạm mặt nhau. Nay: còn người địch sống thì áp sát đúng người đó, không rẽ sang quân.
-        buocToi(bot, ...diemTan(bot, muc.x, muc.y, phe), 200); bot.act = "run";
-        return;
+  // Mục tiêu dính: giữ tới khi chết/mất/xa quá ngưỡng mới chọn lại (sửa chạy loạn 27/11/2026).
+  let tm = mucTkHien(bot, D, phe) || chonMucTk(bot, D, phe, neoL);
+  if (neoL && neoL.cheDo !== "cong" && neoL.cheDo !== "ungCuu" && tm && tm.x != null && Math.hypot(tm.x - neoL.neo[0], (tm.y - neoL.neo[1]) * 2) > neoL.bk) { // mục tiêu ngoài khu vực đội GIỮ/RÚT: bỏ, về neo; đội CÔNG/ỨNG CỨU được giao chiến ngoài bk (sửa veto 28/11/2026)
+    bot.hd.tkMuc = null; bot.hd.mucTk = null; bot.hd.tkKet = 0; tm = null; // B2-2: bỏ mục tiêu thì reset đếm kẹt
+  }
+  if (!tm) { // không còn mục tiêu: về neo đội (có chỉ huy) hoặc tiến về doanh địch (không chỉ huy), tới điểm tản thì đứng chờ
+    bot.hd.mucTk = null; bot.hd.tkKet = 0; // B2-2: không mục tiêu thì không còn kẹt tồn đọng
+    const c = veNeo(bot, D, phe, neoL);
+    const toi0 = buocToiTan(bot, c.sx, c.sy);
+    if (toi0 === "ket") { // B2-1: kẹt đường về neo thì thử 1 bước BFS, không đứng chết
+      const step = tkBfsBuoc(bot, D, phe, c.sx, c.sy);
+      if (step) { buocToi(bot, step[0], step[1], 200); bot.act = bot.buocKet ? "stand" : "run"; }
+      else bot.act = "stand";
+    } else bot.act = toi0 ? "stand" : "run";
+    return;
+  }
+  if (tm.nguoi) {
+    const d = Math.hypot(tm.x - bot.x, (tm.y - bot.y) * 2);
+    if (d > 400) {
+      // SỬA 26/11/2026 (bot Tống Kim không đánh nhau): còn người địch sống thì áp sát đúng người đó, không rẽ sang quân.
+      // Kẹt tường xử lý như nhánh cuối (sửa 28/11/2026): đếm nhịp, tính lại điểm tản, bỏ mục tiêu — khỏi đứng chết vĩnh viễn.
+      const toi = buocToiTan(bot, tm.sx, tm.sy);
+      if (toi === "ket") {
+        const k = (bot.hd.tkKet | 0) + 1; bot.hd.tkKet = k;
+        let diDuoc = false;
+        if (k >= 3) { // B2-1: kẹt 3 nhịp thì thử 1 bước BFS tới điểm tản; đi được thì hết kẹt
+          const step = tkBfsBuoc(bot, D, phe, tm.sx != null ? tm.sx : tm.x, tm.sy != null ? tm.sy : tm.y);
+          if (step) { buocToi(bot, step[0], step[1], 200); if (!bot.buocKet) { bot.hd.tkKet = 0; bot.act = "run"; diDuoc = true; } }
+        }
+        if (!diDuoc) {
+          bot.act = "stand";
+          if (k % 3 === 0) tm.ax = null;
+          if (k >= 10) { // B2-2 + B2-3: bỏ mục tiêu, reset kẹt, cấm chọn lại mục tiêu này 2 nhịp
+            bot.hd.tkMuc = null; bot.hd.mucTk = null; bot.hd.tkKet = 0;
+            bot.hd.tkCam = { key: tm.key, den: tickN + 2 }; TK_THONG_KE.camBo++;
+          }
+        }
+      } else {
+        bot.hd.tkKet = 0;
+        bot.act = toi ? "stand" : "run";
       }
-    }
-  }
-  if (!muc) {
-    const vt = D.vt, ds = [];
-    for (const b of [...D.bot.values(), ...D.binh.values()]) {
-      if (b.phe === phe || b.chet || !(b.mau > 0)) continue;
-      const v = vt.get(b.id), bx = v ? v[0] : null, by = v ? v[1] : null;
-      ds.push({ d: bx == null ? 1e9 : Math.hypot(bx - bot.x, (by - bot.y) * 2), id: b.id, x: bx, y: by, binh: !!b.bac });
-    }
-    ds.sort((a, b) => a.d - b.d);
-    const dem = demMucLuc();
-    const chon = ds.find((c) => (dem.get(phe + "|b" + c.id) || 0) < 3) || ds[0];
-    if (chon) { muc = { id: chon.id, x: chon.x, y: chon.y, binh: chon.binh }; bot.hd.mucTk = "b" + chon.id; }
-    if (muc && muc.x == null) { // không có vị trí từ chủ trận: tiến về doanh địch, đánh mù trong giới hạn phe/hạn mức
-      const tr = D.trai[1 - phe];
-      buocToi(bot, ...diemTan(bot, tr[0], tr[1], phe), 200); bot.act = "run";
-      const dmg = donHoatDong(bot);
-      if (dmg > 0) TK().botDanh(bot.cfg.acct, [[muc.id, dmg]]);
       return;
     }
-    if (muc) loai = "bot";
   }
-  if (!muc) { bot.hd.mucTk = null; const tr = D.trai[1 - phe]; buocToi(bot, ...diemTan(bot, tr[0], tr[1], phe), 200); bot.act = "run"; return; }
-  const toi = buocToi(bot, ...diemTan(bot, muc.x, muc.y, phe), 200);
-  bot.act = toi ? "attack" : "run";
+  if (tm.x == null) { // không có vị trí từ chủ trận: về neo đội / tiến về doanh địch, đánh mù trong giới hạn phe/hạn mức
+    bot.hd.tkKet = 0; // B2-2: đánh mù ở neo thì không còn kẹt tồn đọng
+    const c = veNeo(bot, D, phe, neoL);
+    buocToiTan(bot, c.sx, c.sy);
+    bot.act = "attack";
+    const dmg = donHoatDong(bot);
+    if (dmg > 0) TK().botDanh(bot.cfg.acct, [[tm.id, dmg]]);
+    return;
+  }
+  const toi = buocToiTan(bot, tm.sx, tm.sy);
+  if (toi === "ket") { // kẹt tường: đứng yên đánh (sát thương không xét khoảng cách), đếm nhịp kẹt để chọn lại điểm/mục tiêu
+    bot.act = "attack";
+    const k = (bot.hd.tkKet | 0) + 1; bot.hd.tkKet = k;
+    if (k % 3 === 0) tm.ax = null; // mỗi 3 nhịp kẹt: tính lại điểm tản ở nhịp sau
+    if (k >= 10) { // B2-2 + B2-3: kẹt 10 nhịp: bỏ mục tiêu, chọn lại, cấm chọn lại mục tiêu này 2 nhịp
+      bot.hd.tkMuc = null; bot.hd.mucTk = null; bot.hd.tkKet = 0;
+      bot.hd.tkCam = { key: tm.key, den: tickN + 2 }; TK_THONG_KE.camBo++;
+    }
+  } else {
+    bot.hd.tkKet = 0;
+    bot.act = toi ? "attack" : "run";
+  }
   const dmg = donHoatDong(bot);
   if (dmg <= 0) return;
-  if (loai === "nguoi") TK().botBiDanh(muc.tk, bot.cfg.acct, dmg);
-  else TK().botDanh(bot.cfg.acct, [[muc.id, dmg]]);
+  if (tm.nguoi) TK().botBiDanh(tm.tk, bot.cfg.acct, dmg);
+  else TK().botDanh(bot.cfg.acct, [[tm.id, dmg]]);
 }
 
 // ----- Phong Hỏa Liên Thành: 40 bot, đánh quân Tống (phe falsy) -----
@@ -2333,6 +2884,13 @@ module.exports = {
     CHIEU: TAB0().skills, LUYEN_BOT: TAB0().luyen, SACH_BOT: TAB0().books, bangChieu: BC.bangChieu,
     // Helper theo chỉ số bot — chỉ phục vụ kiểm chứng, cùng đường code thật, không đổi hành vi.
     botAt: (i) => bots[i] || null,
+    // Chống xuyên tường (chỉ kiểm chứng): lưới đi được + bước thật + đặt vị trí bot.
+    diDuocI: (bai, x, y) => tkDiDuoc(bai, x, y),
+    diemTanI: (i, x, y, phe, key) => { const b = bots[i]; return b ? diemTan(b, x, y, phe, key) : null; },
+    tkKetI: (i) => { const b = bots[i]; return b && b.hd ? (b.hd.tkKet | 0) : 0; },
+    tkThongKeI: () => ({ ...TK_THONG_KE, bfsCache: TK_BFS.size, soaiToiDa: TK_SOAI_TOI_DA }), // B1/B2 (chỉ đo)
+    buocToiI: (i, x, y, buoc) => { const b = bots[i]; if (!b) return null; const ox = b.x, oy = b.y; const toi = buocToi(b, x, y, buoc || 200); return { toi, ket: !!b.buocKet, x: b.x, y: b.y, dx: b.x - ox, dy: b.y - oy }; },
+    datViTriI: (i, zone, x, y) => { const b = bots[i]; if (!b) return false; b.zone = zone; b.x = x; b.y = y; b.buocKet = false; return true; },
     tinhChiSoI: (i) => { const b = bots[i]; if (b) tinhChiSo(b); },
     chonChieuI: (i, muc) => { const b = bots[i]; return b ? chonChieu(b, muc) : 0; },
     danhBotI: (i, muc) => { const b = bots[i]; return b ? danhBot(b, muc) : null; },

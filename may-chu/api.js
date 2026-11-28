@@ -912,6 +912,8 @@ async function xuLyApi(req, res, p) {
     // "soBot" (soBot) | "tri" (tri) | "hs" (hs — hệ số sát thương PK) } -> { ok?, s }; trận theo lịch (thử nhanh — anh 06/11): "moTran" (baoDanh, danh, soai1,
     // soai2 — phút, số lẻ được; vaoMuon?, soBot?, thienTu?) | "ketTran" | "huyTran" -> { ok, l (lịch), s? }
     if (p === "/api/tong-kim-qt" && m === "POST") { if (!tk.admin) return loi(res, 403, "Chỉ tài khoản quản trị mới được vào."); return guiJson(res, 200, TKM.quanTri(body, tk)); }
+    // Bảng chỉ huy tổ đội Tống Kim (chi-huy-tk.js — Huy 22:09/22:21 27/11/2026): chỉ test1/test2 (cổng như camera/ẩn thân, KHÔNG phải tk.admin để test2 điều khiển được)
+    if (p === "/api/chi-huy-tk" && m === "POST") { const CH = require("./chi-huy-tk"); if (!CH.DUOC.has(tk.ten)) return loi(res, 403, "Chỉ test1/test2 mới điều khiển tổ đội Tống Kim được."); return guiJson(res, 200, CH.lam(tk, body)); }
     // bảng quản trị (may-chu/quan-tri.js)
     const qv = QT.VIEC.exec(p);
     if (qv && m === "POST") {

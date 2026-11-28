@@ -234,7 +234,7 @@ export class QuanTri {
       const sua = x.sua ? ` · sửa lần cuối: ${esc(x.sua.ai)} lúc ${hm(x.sua.luc)}${x.sua.mac ? " (về mặc định)" : ""}` : "";
       return `<div class="qt-lich-o${x.bat ? "" : " tat"}" data-id="${x.id}"><div class="r"><b class="qt-vang">${esc(x.ten)}</b><label class="qt-thu"><input type="checkbox" data-lh="bat"${x.bat ? " checked" : ""}>Bật</label><span>${tt(x)}</span></div>` +
         `<div class="r">${gio}</div>${thu}${so}${x.cho ? `<div class="dv-note qt-vang">Chờ áp dụng từ ${x.cho.tu.slice(8, 10)}/${x.cho.tu.slice(5, 7)}: quay ${esc(x.cho.quay)}, nhận tới ${esc(x.cho.hetNhan)}</div>` : ""}` +
-        `<div class="r"><button data-act="lhLuu" data-id="${x.id}">Lưu</button>${x.daSua || x.cho ? `<button data-act="lhMac" data-id="${x.id}">Về mặc định</button>` : ""}<span class="dv-note">Mặc định: ${esc(mac)}${sua}</span></div></div>`;
+        `<div class="r"><button data-act="lhLuu" data-id="${x.id}">Lưu</button>${x.daSua || x.cho ? `<button data-act="lhMac" data-id="${x.id}">Về mặc định</button>` : ""}${x.thuDang ? `<button data-act="lhDongThu" data-id="${x.id}">Đóng thử</button>` : `<button data-act="lhThu" data-id="${x.id}">Mở thử</button>`}<span class="dv-note">Mặc định: ${esc(mac)}${sua}</span>${x.thuDang ? `<span class="dv-note qt-vang">Đang mở thử</span>` : ""}</div></div>`;
     }).join("");
   }
   // thẻ Bot mẫu (anh 09/11): nhân vật mẫu cho bot Tống Kim, gom theo phái
@@ -692,6 +692,21 @@ export class QuanTri {
         if (!(await api.hoi(`Lưu lịch <color=yellow>${esc(x.ten)}<color>: ${b.bat ? "" : "<color=red>TẠM DỪNG<color> · "}${esc(moTa)}?<enter>Áp dụng ngay, không cần khởi động lại máy chủ.`, "Lưu", "Hủy bỏ"))) return;
         const j = await this.goi("lich-hd", { viec: "luu", ...b }); if (!j) return;
         this.lich = j; this.veLich(); this.bao(`Đã lưu lịch ${x.ten}`); return api.msg(`Quản trị: đã lưu lịch ${x.ten}`);
+      }
+      case "lhThu": case "lhDongThu": { // mở thử / đóng thử (Huy 22:18 27/11/2026): phiên thử tách biệt, không thưởng, không tính số lần
+        const id = t.dataset.id, x = this.lich && this.lich.ds.find((d) => d.id === id); if (!x) return;
+        if (a === "lhThu") {
+          if (!(await api.hoi(`Mở thử <color=yellow>${esc(x.ten)}<color> ngay bây giờ?<enter>Phiên thử tách biệt: không đổi lịch thật, không tính số lần/ngày, không có thưởng. Tới giờ thật thì phiên thử tự cắt để mở lượt thật.`, "Mở thử", "Hủy bỏ"))) return;
+          if (id === "pld") { // Phong Lăng Độ: chuyến riêng của nhân vật đang chơi (đường công cụ thử sẵn có, không qua lịch)
+            const j = await this.api.devHd(this.api.slot(), { hd: "pld", viec: "len", ben: 1, phut: 10 }); if (!j) return;
+            return this.bao(j.msg || "Đã lên thuyền thử Phong Lăng Độ (chuyến riêng, không tính cống hiến, không quà sự kiện).");
+          }
+          const j = await this.goi("lich-hd", { viec: "moThu", id }); if (!j) return;
+          this.lich = j; this.veLich(); return this.bao(`Đã mở thử ${x.ten} — không thưởng, không tính số lần.`);
+        }
+        if (!(await api.hoi(`Đóng phiên thử <color=yellow>${esc(x.ten)}<color>?`, "Đóng thử", "Hủy bỏ"))) return;
+        const j = await this.goi("lich-hd", { viec: "dongThu", id }); if (!j) return;
+        this.lich = j; this.veLich(); return this.bao(`Đã đóng phiên thử ${x.ten}`);
       }
       case "btBat": case "btTat": {
         if (a === "btTat") {

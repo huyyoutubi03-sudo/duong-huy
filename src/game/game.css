@@ -1337,6 +1337,17 @@ body.dt #tkls { right: 4px; min-width: 120px; padding: 4px 8px 5px; z-index: 2; 
 body.dt #tkls .so { font-size: 28px; line-height: 30px; }
 body.dt #tkls .ten { font-size: 14px; line-height: 17px; }
 body.dt #tktt { top: 318px; right: 4px; width: 150px; font-size: 11px; line-height: 14px; z-index: 2; } /* dưới lớp điện thoại #dt (z 3): không đè hành trang / cửa hàng (thử 06/11) */
+/* Khung gọn điện thoại (Huy 22:56 27/11/2026): mặc định chỉ điểm + giờ + soái sắp ra, dưới thanh exp (top do tongkim.js ve() đo từ .jx-stbar); bấm thì mở bảng đầy đủ */
+body.dt #tktt.gon { left: 4px; right: auto; width: max-content; max-width: calc(100vw - 12px); padding: 2px 8px 3px; }
+body.dt #tktt .tt-gon { pointer-events: auto; cursor: pointer; white-space: nowrap; }
+body.dt #tktt .tt-gon .g1 { display: flex; gap: 6px; font-size: 12px; line-height: 16px; }
+body.dt #tktt .tt-gon .g2 { color: #c9b27a; font-size: 11px; line-height: 14px; }
+body.dt #tktt .tt[data-ttgon] { pointer-events: auto; cursor: pointer; }
+body.dt.dt-ngang #tktt:not(.gon) { left: auto; right: 128px; transform: none; width: 140px; font-size: 10px; line-height: 12px; padding: 2px 5px 3px; } /* ngang: bảng đầy đủ thu nhỏ, dưới bản đồ nhỏ, sát trái cụm nút phải — vị trí chính xác do tongkim.js ve() đo (Huy 23:56 27/11/2026) */
+body.dt.dt-ngang #tktt:not(.gon) .k { display: none; } /* thu nhỏ: ẩn dòng hạ gục (bảng dọc/máy tính vẫn hiện) */
+body.dt.dt-ngang #tktt:not(.gon) .roi span { line-height: 15px; padding: 0 10px; }
+body.dt.dt-ngang #tktt.gon { left: auto; width: max-content; max-width: 200px; padding: 2px 8px 3px; } /* ngang: dải điểm 1 dòng dưới bản đồ nhỏ, bấm mở đầy đủ (Huy 00:07 28/11/2026) — vị trí do tongkim.js ve() đo */
+body.dt.dt-ngang #tktt.gon .tt-gon .g1 { font-size: 12px; line-height: 16px; }
 /* Chiến báo Tống Kim (src/game/tkchienbao.js — anh 06/11 chọn mẫu: máy tính A đúng client, điện thoại B khung cửa sổ game): nút ngay dưới bảng gọn #tktt.
    A — chiến báo tức thời 即时战报界面.ini (750 × 350 trong suốt bóng 0,30,19, chữ JX ASF 12, màu dòng lẻ / chẵn / tiêu đề / vạch của client — bấm xuyên
    xuống cảnh) + bảng kết thúc 宋金快报.ini (hình client cb_bang.png 250 × 428, ô 框.spr, nút Đóng 3 khung: thường / nhấn / rê chuột).
@@ -1454,8 +1465,9 @@ body.dt #phkq { top: 140px; font-size: 12px; min-width: 0; }
 #tkkq.a .bxh-mo:hover { color: #fff1a8; border-color: #c9a85a; }
 #tkkq.b .bxh-mo { margin: 4px 0 0 4px; display: inline-block; padding: 2px 10px; background: linear-gradient(#3b3a2c, #1c1b14); border: 1px solid #8a7440;
   box-shadow: 0 0 0 1px #000; color: #ffd54a; cursor: pointer; }
-body.dt #tkbxh { left: 4px; right: 4px; top: 120px; width: auto; }
-body.dt.dt-ngang #tkbxh { top: 100px; right: 56px; font: 12px/15px var(--jx); } /* ngang: dưới bản đồ nhỏ (đáy 94), khỏi lòi khỏi màn thấp; chừa mép phải cho avatar khỏi đè nút ✕ */
+body.dt #tkbxh { left: auto; right: 4px; top: 120px; width: min(400px, calc(100vw - 8px)); } /* Huy 22:56 27/11/2026: bảng ngắn lại, không chiếm gần hết bề ngang */
+body.dt #tkbxh .than { max-height: 132px; overflow: hidden; } /* gọn: tiêu đề + 5 hàng + dòng của mình */
+body.dt.dt-ngang #tkbxh { top: 100px; right: 56px; left: auto; width: min(400px, calc(100vw - 64px)); font: 12px/15px var(--jx); } /* ngang: dưới bản đồ nhỏ (đáy 94), khỏi lòi khỏi màn thấp; chừa mép phải cho avatar khỏi đè nút ✕ */
 body.dt.dt-ngang #tkbxh .dau { padding: 3px 6px; }
 body.dt.dt-ngang #tkbxh .dau .x { padding: 2px 6px; }
 body.dt.dt-ngang #tkbxh .than { max-height: 90px; overflow: hidden auto; } /* ngang gon: chi hien tieu de + 5 hang, con lai cuon trong bang cho ngan lai */
@@ -2415,16 +2427,7 @@ body.dt:not(.dt-ngang) #dt .dt-tin { max-height: 34vh; overflow: hidden; }
 #dt .dt-kat { background-size: contain; background-position: center; background-repeat: no-repeat; }
 body.dt:not(.dt-ngang) #dt .dt-kat { background-size: contain, auto; }
 
-/* 2. Màn DỌC: hàng chiêu buff (4 ô vật phẩm, data-slot 0–3) lên cao, ngay dưới thanh tọa độ (top 106px), neo trái, giữ thứ tự 1-2-3-4 */
-body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="0"], body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="1"],
-body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="2"], body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="3"] { top: 106px !important; right: auto !important; }
-body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="0"] { left: 8px !important; }
-body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="1"] { left: calc(16px + var(--dt-s, 44px)) !important; }
-body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="2"] { left: calc(24px + 2 * var(--dt-s, 44px)) !important; }
-body.dt:not(.dt-ngang) #jxhud .jx-bot > .dt-o[data-slot="3"] { left: calc(32px + 3 * var(--dt-s, 44px)) !important; }
-/* Nút khóa ô lên sát phải hàng buff (giữa hàng); màn hẹp ≤360px thì về chỗ cũ dưới cụm chiêu cho khỏi đè bản đồ nhỏ */
-body.dt:not(.dt-ngang) #dt .dt-okhoa { right: auto; left: calc(16px + var(--dt-vat, 208px)); top: 111px; }
-@media (max-width: 360px) { body.dt:not(.dt-ngang) #dt .dt-okhoa { left: auto; right: var(--dt-okr, 224px); top: calc(var(--dt-day) - var(--dt-okt, 54px)); } }
+/* 2. Màn DỌC: 4 ô vật phẩm (data-slot 0–3) XUỐNG SÁT hàng chiêu dưới — Huy lệnh 22:56 27/11/2026, THAY lệnh 26/11 để hàng này lên cao (top 106px). Gỡ ghim trên + nút khóa đi kèm, trả về cụm dưới theo _xepO (luật .dt-o + .dt-okhoa ở trên); màn ngang không đổi. */
 /* 3. Khung tính dame (Mộc nhân) lên sát dưới hàng buff */
 body.dt:not(.dt-ngang) .mn { top: 154px; }
 /* 4. Màn DỌC: nút Chat + dòng tin lên trên cụm chiêu góc phải-dưới (neo phải, không đè vòng chiêu/joystick) */
@@ -2657,6 +2660,7 @@ body.dt.dt-ngang #dt .dt-zalo { top: 156px; right: 38px; }
   body.dt.dt-ngang #dt .dt-bd { top: 66px; right: 130px; }
 }
 
+
 /* ---------- Bố cục màn NGANG đợt 27/11/2026 (Huy lệnh 16:04 + 16:12) ----------
    Chỉ màn ngang (body.dt.dt-ngang); màn dọc + máy tính giữ nguyên. Đặt cuối file để thắng các luật ở trên.
    1. Cụm phải màn thấp (cao <= 420px): xếp DỌC như màn cao (thay hàng ngang của luật 13:03) — cột dời sang
@@ -2696,3 +2700,15 @@ body.dt.dt-ngang #dt .dt-go { left: 50%; right: auto; top: auto; bottom: 8px; tr
 body.dt.dt-ngang.dt-noi-co #dt .dt-go, body.dt.dt-ngang.dt-sap-co #dt .dt-go, body.dt.dt-ngang.dt-nhat-co #dt .dt-go { bottom: 60px; }
 body.dt.dt-ngang.dt-noi-co.dt-sap-co #dt .dt-go, body.dt.dt-ngang.dt-noi-co.dt-nhat-co #dt .dt-go, body.dt.dt-ngang.dt-sap-co.dt-nhat-co #dt .dt-go { bottom: 110px; }
 body.dt.dt-ngang.dt-noi-co.dt-sap-co.dt-nhat-co #dt .dt-go { bottom: 160px; }
+
+/* Bảng chỉ huy tổ đội Tống Kim (Huy 22:09/22:21 27/11/2026) — chỉ test1/test2 */
+.ch-bang { position: fixed; right: 8px; top: 60px; z-index: 40; width: min(560px, 92vw); max-height: 82vh; overflow-y: auto; background: linear-gradient(#2b2413, #171204); border: 1px solid #8a6d2f; border-radius: 6px; color: #ffe9b0; font: 13px/1.5 "VK Sans Serif 13", "IBM Plex Mono", monospace; padding: 8px 10px; box-shadow: 0 4px 18px rgba(0,0,0,.5); }
+.ch-bang .ch-tieu { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-weight: bold; border-bottom: 1px solid #8a6d2f; padding-bottom: 6px; margin-bottom: 6px; }
+.ch-bang button, .ch-bang select { font: inherit; color: #ffe9b0; background: linear-gradient(#3a2f16, #191204); border: 1px solid #8a6d2f; border-radius: 4px; padding: 3px 8px; cursor: pointer; }
+.ch-bang button:active { filter: brightness(1.4); }
+.ch-bang .ch-sk { color: #9fd8a4; font-size: 12px; margin-bottom: 6px; }
+.ch-bang .ch-phe h3 { margin: 8px 0 4px; color: #ffd75e; font-size: 14px; }
+.ch-bang .ch-doi { border: 1px solid #5a4a20; border-radius: 4px; padding: 5px 7px; margin-bottom: 5px; background: rgba(0,0,0,.25); }
+.ch-bang .ch-lenh { display: flex; gap: 5px; flex-wrap: wrap; margin: 4px 0; }
+.ch-bang .ch-tv { color: #c9b98a; font-size: 12px; word-break: break-word; }
+.ch-bang .ch-rong { padding: 10px 4px; color: #c9b98a; }

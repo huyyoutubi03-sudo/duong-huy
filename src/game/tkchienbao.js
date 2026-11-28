@@ -172,11 +172,11 @@ export function bangXepHang(p, ket, ctx) {
   }
   return { rows, meHang, tong: rows.length, diem };
 }
-// HTML bảng: gọn = 10 đầu + dòng của mình (nếu ngoài 10); rộng = tất cả, cuộn. Bấm đầu khung thì đổi cỡ (xem ChienBao.taoBxh).
+// HTML bảng: gọn = 10 đầu (điện thoại 5 đầu) + dòng của mình (nếu ngoài); rộng = tất cả, cuộn. Bấm đầu khung thì đổi cỡ (xem ChienBao.taoBxh).
 function htmlBxh(b, ctx, rong) {
   const ten = String((ctx && ctx.ten) || "");
   const hang = (r, i) => `<div class="r${r.ten === ten ? " toi" : ""}"><span class="h">${r.hang || i + 1}</span><span class="t">${esc(r.ten)}</span><span class="p">${tenP(PHE[r.phe], r.phe)}</span><span class="n">${so(r.diem)}</span><span class="n">${so(r.giet)}</span><span class="n">${so(r.chet)}</span></div>`;
-  const hien = rong ? b.rows : b.rows.slice(0, 10);
+  const gioiHan = ctx && ctx.dt && !rong ? 5 : 10, hien = rong ? b.rows : b.rows.slice(0, gioiHan); // điện thoại gọn 5 hàng (Huy 22:56 27/11/2026) — còn lại xem qua "Mở rộng"
   let than = `<div class="r tieude"><span class="h">Hạng</span><span class="t">Tên</span><span class="p">Phe</span><span class="n">Điểm</span><span class="n">Giết</span><span class="n">Chết</span></div>`
     + hien.map(hang).join("");
   if (!rong && ten) {

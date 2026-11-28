@@ -133,6 +133,7 @@ export const Net = {
   },
   phongHoaQt(b) { return this.call("POST", "phong-hoa-qt", b); }, // Phong Hỏa Liên Thành — quản trị thử: { viec: "mo" (baoDanh?, danh?, chuSoai?) | "huy" | "ket" | "xem" } // Trợ Thủ tự làm nhiệm vụ ngày (may-chu/tu-lam.js): { viec: "mo" (+ loai) | "dt" | "st", … }
   tongKimQt(b) { return this.call("POST", "tong-kim-qt", b); }, // Tống Kim bãi thử (chỉ quản trị — may-chu/tong-kim.js quanTri): { viec: "mo" (bai, trai, soBot, tri, cap, hs, moi) | "huy" | "xem" | "phe" | "soBot" | "tri" | "hs" } + trận thật (đợt 2): "moTran" (baoDanh, danh, soai1, soai2 — phút) | "ketTran" | "huyTran"
+  chiHuy(b) { return this.call("POST", "chi-huy-tk", b); }, // Bảng chỉ huy tổ đội Tống Kim (chỉ test1/test2 — may-chu/chi-huy-tk.js): { viec: "xem" | "lenh" (phe, doi, lenh, neo) | "tuDong" | "chiaLai" }
   // Tống Kim trận thật (anh 06/11 — may-chu/tong-kim.js lam): Mộ binh quan / Quân Nhu quan Biện Kinh: { viec: "mo" | "phe" (x = 0 Tống | 1 Kim) | "vao" | "luat" |
   // "qn" | "shop" | "duc" | "ducOk" } -> { say?: { text, opts: [[nhãn, việc, x?]] }, talk?: { text }, vao?: { zone, at }, shop?: { hang: [[k, giá]], diem }, tin?, nv?, tui? }
   tongKim(o, b) { return this.call("POST", "tong-kim", { o, ...b }); },

@@ -232,13 +232,13 @@ function mo(opt = {}) {
   const bd = so(opt.baoDanh, CF.baoDanh), dn = Math.max(1, so(opt.danh, CF.danh)), tl = dn / DANH_GOC, cs = Math.min(dn, so(opt.chuSoai, CF.chuSoai * (dn / Math.max(1, CF.danh))));
   for (const tk of CHO.keys()) if (!(CHO.get(tk) || []).length) CHO.delete(tk);
   D = {
-    u: t, kc: t + bd * 60000, csLuc: t + (bd + cs) * 60000, het: t + (bd + dn) * 60000, diem: CF.diem, ket: null, lyDo: "", ketLuc: 0, raLuc: 0,
+    u: t, kc: t + bd * 60000, csLuc: t + (bd + cs) * 60000, het: t + (bd + dn) * 60000, diem: CF.diem, ket: null, lyDo: "", ketLuc: 0, raLuc: 0, thu: !!opt.thu,
     nop: new Map(), vao: new Map(), trong: new Map(), song: new Map(), an: new Set(), chu: null,
     q: new Map(), vt: new Map(), seq: 0, sv: 0, nk: [], doi: true, guiLuc: 0, hpLuc: 0, hpDoi: new Set(), daSpec: new Map(), ack: new Map(), han: new Map(),
     dan: new Map(), npcHan: { han: CF.npcGiay * 3, luc: t }, tin: [], tinId: 0, lv: CF.capGoc, batDau: false, soaiRa: false, soaiTong: 0, tqTong: 0,
     dotLuc: 0, gd: -1, xeI: 0, xeDem: 0, tl, bao3: false, bao1: false, dem: { giet: 0, xeToi: 0, xeHa: 0, soaiHa: 0, tqChet: 0, veChet: 0 }, baoLuc: t, ttLuc: t,
   };
-  TG().thongBao(`Vệ quốc Phong Hỏa Liên Thành bắt đầu nhận báo danh! Cấp ${CF.cap} trở lên tới Vệ binh thành môn Biện Kinh tham gia thủ thành phe Kim (lệ phí ${N.tien(CF.phi)}). Còn ${Math.round(bd)} phút nữa khai chiến.`, true);
+  TG().thongBao(`${opt.thu ? "[Thử] " : ""}Vệ quốc Phong Hỏa Liên Thành bắt đầu nhận báo danh! Cấp ${CF.cap} trở lên tới Vệ binh thành môn Biện Kinh tham gia thủ thành phe Kim (${opt.thu ? "phiên thử — miễn phí, không có thưởng" : `lệ phí ${N.tien(CF.phi)}`}). Còn ${Math.round(bd)} phút nữa khai chiến.`, true);
   return lich(); // lịch (gio = giờ mở theo cấu hình) — trạng thái đủ gửi qua kênh tức thời
 }
 // trận kết thúc: thưởng thắng trận cho người còn trong trận (đang ở bản đồ trận), bảng kết quả; raSau giây sau trình duyệt đưa người ra Biện Kinh
@@ -251,18 +251,19 @@ function ketThuc(thang, lyDo) {
     let x = 0, rx = 0;
     // anh 04/11: thắng trận + đạt mức thưởng cao nhất (kinh nghiệm trong trận >= tren) -> thêm thuong.ruongXanh Bảo rương đồ xanh
     if (thang && D.trong.has(tk)) { const s = v.knGoc; x = s >= T.tren ? T.toiDa : s >= T.duoi ? Math.floor(s / 100000) * 1000000 : 0; x *= T.nhan; if (s >= T.tren) rx = T.ruongXanh ?? 3; }
-    v.thuong = x;
+    v.thuong = D.thu ? 0 : x; // phiên thử: không thưởng thắng trận
+    if (D.thu) continue;
     // bang hội đợt 2 (Q7 — không cộng dồn): có đánh (kinh nghiệm trận > 0) + thắng + còn trong trận lúc kết thúc: 100; có đánh mà thua / rời sớm: 50; vào mà không đánh: 0
     { const kieu = v.knGoc > 0 ? (thang && D.trong.has(tk) ? "thang" : "thamGia") : null; if (kieu) try { BHO().cong(tk, null, v.ten, "phongHoa", null, { kieu }); } catch {} }
     if (x > 0) KET.set(tk, { kn: x, goc: Math.round(v.knGoc), rx });
   }
-  ghiKet(thang ? "thắng" : "thua", lyDo);
+  if (!D.thu) ghiKet(thang ? "thắng" : "thua", lyDo);
   // báo cả máy chủ ở khung chat (không hiện giữa màn — người trong trận có bảng kết quả)
-  if (thang) { tin(`Phe Kim bảo vệ thành công thành trì! (${lyDo})`, "#7cff7c"); TG().thongBao(`Phong Hỏa Liên Thành: phe Kim bảo vệ thành công thành trì! ${lyDo}`); }
-  else { tin(`Phe ta chống không lại địch, thủ thành thất bại. (${lyDo})`, "#ff8a80"); TG().thongBao(`Phong Hỏa Liên Thành: thủ thành thất bại — ${lyDo}.`); }
+  if (thang) { tin(`${D.thu ? "[Thử] " : ""}Phe Kim bảo vệ thành công thành trì! (${lyDo})`, "#7cff7c"); TG().thongBao(`${D.thu ? "[Thử] " : ""}Phong Hỏa Liên Thành: phe Kim bảo vệ thành công thành trì! ${lyDo}`); }
+  else { tin(`${D.thu ? "[Thử] " : ""}Phe ta chống không lại địch, thủ thành thất bại. (${lyDo})`, "#ff8a80"); TG().thongBao(`${D.thu ? "[Thử] " : ""}Phong Hỏa Liên Thành: thủ thành thất bại — ${lyDo}.`); }
   return true;
 }
-function huy() { if (!D) return false; const t = Date.now(); if (!D.ket) { D.ket = "huy"; D.lyDo = "Quản trị hủy trận"; D.ketLuc = t; D.raLuc = t + 5000; D.doi = true; ghiKet("bị hủy", D.lyDo); TG().thongBao("Trận Phong Hỏa Liên Thành bị hủy rồi."); } return true; }
+function huy(ly) { if (!D) return false; const t = Date.now(); if (!D.ket) { D.ket = "huy"; D.lyDo = "Quản trị hủy trận"; D.ketLuc = t; D.raLuc = t + 5000; D.doi = true; if (!D.thu) ghiKet("bị hủy", D.lyDo); TG().thongBao(ly === "thu" ? "Phiên thử Phong Hỏa kết thúc — trận thật bắt đầu." : "Trận Phong Hỏa Liên Thành bị hủy rồi."); } return true; }
 // nhật ký "Hoạt động" lúc trận kết thúc (anh 14/11: "phong hỏa khi kết thúc không thấy trong lịch sử hoạt động server") — trước chỉ có dòng báo danh và dòng nhận thưởng
 // khi thắng (nhịp sau), trận thua / thắng mà không đủ mức thưởng thì không có gì. Nay như Tống Kim (tong-kim.js ~804): 1 dòng chung (F10 → Nhật ký → Hoạt động) + 1 dòng mỗi
 // người đã vào trận (sổ hoạt động từng tài khoản — F10 → Người chơi → Xem hoạt động). kq: "thắng" | "thua" | "bị hủy"
@@ -294,7 +295,8 @@ function chet(e) {
   for (const [tk, d] of e.dmg) { tong += d; if (d > max) { max = d; top = tk; } }
   const r = [BAI, e.tpl, e.lv, 0, e.he, Math.round(x), Math.round(y)], knG = goc(e.tpl, e.he, e.lv, "exp") * e.kn;
   const doiTop = top ? (require("./to-doi.js").thanhVien(top) || { tv: [] }).tv : [];
-  for (const [tk, d] of e.dmg) {
+  // phiên thử: vẫn đếm hạ + tiến trình trận, không cho kinh nghiệm/rơi đồ trong trận
+  if (!D.thu) for (const [tk, d] of e.dmg) {
     if (!(d > 0) || (tk !== top && doiTop.includes(tk))) continue;
     const he = tk === top ? 1 : d / tong, L = CHO.get(tk) || [];
     L.push({ u: D.u, r, he, top: tk === top, kn: e.kn, ...(tk === top ? boc(e) : {}) }); if (L.length > 600) L.shift(); CHO.set(tk, L);
@@ -353,7 +355,7 @@ function nhanThuong(h, tk, key, admin) {
 function lich() {
   if (!D) return { pha: "", gio: CF.gio, cap: CF.cap, phi: CF.phi };
   const t = Date.now();
-  return { u: D.u, pha: D.ket ? "xong" : t < D.kc ? "bd" : "danh", kc: D.kc, cs: D.csLuc, het: D.het, gio: CF.gio, cap: CF.cap, phi: CF.phi, mo: !D.ket && t < D.csLuc, ket: D.ket };
+  return { u: D.u, pha: D.ket ? "xong" : t < D.kc ? "bd" : "danh", kc: D.kc, cs: D.csLuc, het: D.het, gio: CF.gio, cap: CF.cap, phi: CF.phi, mo: !D.ket && t < D.csLuc, ket: D.ket, thu: !!D.thu };
 }
 function trangThai(tk, full, dan, hd, qd) {
   if (!D) return null;
@@ -404,7 +406,7 @@ setInterval(() => {
     const s = new Date(t + 7 * 3600000).toISOString(), hm = s.slice(11, 16), ngay = s.slice(0, 10);
     // khóa có giờ (anh 05/11 — GM dời giờ muộn hơn trong ngày vẫn mở trận); ngày tắt trong tuần (CF.thu) thì không báo / không mở
     if (CF.baoTruoc > 0 && hm === lui(CF.gio, CF.baoTruoc) && !daGoi.has(`${ngay} b${CF.gio}`) && GV.thuOk(CF, t + CF.baoTruoc * 60000)) { daGoi.add(`${ngay} b${CF.gio}`); if (!D) TG().thongBao(`${CF.baoTruoc} phút nữa Phong Hỏa Liên Thành mở báo danh ở Vệ binh thành môn Biện Kinh (cấp ${CF.cap} trở lên).`); }
-    if (hm === CF.gio && !daGoi.has(`${ngay} ${CF.gio}`) && GV.thuOk(CF, t)) { daGoi.add(`${ngay} ${CF.gio}`); if (!D || D.ket) try { D = null; mo({}); } catch (e) { console.error("Phong Hỏa:", e.message); } }
+    if (hm === CF.gio && !daGoi.has(`${ngay} ${CF.gio}`) && GV.thuOk(CF, t)) { daGoi.add(`${ngay} ${CF.gio}`); if (D && D.thu && !D.ket) { try { huy("thu"); } catch (e) { console.error("Phong Hỏa:", e.message); } } if (!D || D.ket) try { D = null; mo({}); } catch (e) { console.error("Phong Hỏa:", e.message); } }
   }
   if (!D) return;
   // người trong trận: kênh tức thời ở bản đồ trận, đã báo danh trận này, còn báo sống
@@ -523,16 +525,21 @@ function lam(h, b, tk) {
   if (!D || !l.mo) N.loi(D && D.soaiRa && !D.ket ? "Viện binh bị địch chia cắt rồi. Không tới đây được!" : "Hoạt động thủ thành chưa bắt đầu. Quay lại sau.");
   if ((h.lvl | 0) < CF.cap) N.loi(`Cấp ${CF.cap} trở lên mới tham gia được chiến tranh vệ quốc.`);
   if (!daNop) {
-    if ((h.gold | 0) < CF.phi) N.loi(`Ngươi không mang ${N.tien(CF.phi)}. Chuẩn bị đủ tiền rồi hãy tới tìm ta!`);
-    h.gold -= CF.phi;
+    // phiên thử: miễn phí, không ghi nhật ký
+    if (!D.thu) {
+      if ((h.gold | 0) < CF.phi) N.loi(`Ngươi không mang ${N.tien(CF.phi)}. Chuẩn bị đủ tiền rồi hãy tới tìm ta!`);
+      h.gold -= CF.phi;
+    }
     D.nop.set(tk, { ten: h.name, luc: Date.now() });
     D.vao.set(tk, { ten: h.name, giet: 0, knGoc: 0, thuong: 0, vao: 0 });
-    NK().ghi("hd", tk, h.name, `Phong Hỏa Liên Thành: báo danh, nộp ${CF.phi} lượng`);
+    if (!D.thu) NK().ghi("hd", tk, h.name, `Phong Hỏa Liên Thành: báo danh, nộp ${CF.phi} lượng`);
   } else { const v = D.vao.get(tk); if (v) v.ten = h.name; }
-  return { l: lich(), daNop: true, vao: { zone: BAI, at: chon(PD.hoiSinh) }, msg: daNop ? "Vào trong đó đi!" : `Nộp ${N.tien(CF.phi)} lệ phí báo danh. Vào đại doanh thủ thành phe Kim.` };
+  return { l: lich(), daNop: true, vao: { zone: BAI, at: chon(PD.hoiSinh) }, msg: daNop ? "Vào trong đó đi!" : D.thu ? "Phiên thử — miễn phí. Vào đại doanh thủ thành phe Kim." : `Nộp ${N.tien(CF.phi)} lệ phí báo danh. Vào đại doanh thủ thành phe Kim.` };
 }
-// quản trị thử: { viec: "mo" (baoDanh?, danh?, chuSoai? phút) | "huy" | "ket" (thang) | "xem" }
+// quản trị thử: { viec: "mo" (baoDanh?, danh?, chuSoai? phút) | "huy" | "ket" (thang) | "xem" } — "moThu"/"dongThu": F10 Lịch hoạt động (Huy 22:18 27/11/2026)
 function quanTri(b) {
+  if (b.viec === "moThu") { if (D && D.ket) D = null; return { s: mo({ thu: true, baoDanh: 1, danh: 3 }), thu: 1 }; }
+  if (b.viec === "dongThu") { if (!D || !D.thu) N.loi("Không có phiên thử Phong Hỏa nào."); if (!huy("thu")) N.loi("Không có trận nào."); return { s: lich(), dong: 1 }; }
   if (b.viec === "mo") { if (D && D.ket) D = null; return { s: mo({ baoDanh: b.baoDanh, danh: b.danh, chuSoai: b.chuSoai }) }; }
   if (b.viec === "huy") { if (!huy()) N.loi("Không có trận nào."); return { s: lich() }; }
   if (b.viec === "ket") { if (!D || D.ket) N.loi("Không có trận nào đang đánh."); ketThuc(!!b.thang, "Quản trị kết thúc trận"); return { s: lich() }; }
@@ -542,4 +549,8 @@ function quanTri(b) {
 // đang có trận ở giai đoạn nào (khoi-dong-s1.sh / bảng quản trị: không khởi động lại máy chủ giữa trận)
 const dangTran = () => !!(D && !D.ket);
 
-module.exports = { BAI, CF, mo, ketThuc, danh, nhanThuong, lam, quanTri, lich, dangTran, heSo, botVao, botRa, _thu: { get D() { return D; } } };
+// Mở thử / đóng thử (F10 Lịch hoạt động): điều phối qua quanTri để 1 đường duy nhất.
+function moThu(qt, b) { return quanTri({ viec: "moThu" }); }
+function dongThu(qt, b) { return quanTri({ viec: "dongThu" }); }
+
+module.exports = { BAI, CF, mo, ketThuc, danh, nhanThuong, lam, quanTri, lich, dangTran, heSo, botVao, botRa, moThu, dongThu, _thu: { get D() { return D; } } };

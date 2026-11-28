@@ -819,9 +819,15 @@ export const TongKim = {
     if (!this.el) {
       this.el = document.createElement("div"); this.el.id = "tktt"; document.body.appendChild(this.el);
       // nút Rời trận (anh 13/11 lượt 86 "thêm nút thoát tống kim giữa chừng"): hỏi lại bằng khung của game rồi về Biện Kinh (api.roiTran — main.js)
-      this.el.onclick = (e) => { if (e.target.closest("[data-roi]") && this.api && this.api.roiTran) this.api.roiTran(); };
+      this.el.onclick = (e) => {
+        // bấm khung gọn / tiêu đề (chỉ điện thoại): đổi gọn ↔ đầy đủ (Huy 22:56 27/11/2026)
+        if (e.target.closest("[data-ttgon]") && document.body.classList.contains("dt")) { this.ttGon = this.ttGon === false; this.ve(); return; }
+        if (e.target.closest("[data-roi]") && this.api && this.api.roiTran) this.api.roiTran();
+      };
     }
     const st = this.st, me = p.me || [0, 0, 0, 0], song = [0, 0], tong = [0, 0];
+    const dt = document.body.classList.contains("dt");
+    let gonTxt = ""; // chữ khung gọn điện thoại: giờ + soái sắp ra
     for (const e of st.bots.values()) { tong[e.tkPhe]++; if (e.alive) song[e.tkPhe]++; }
     const dong = (n, v, c = "") => `<div class="d"><span>${n}</span><i class="${c}">${v}</i></div>`;
     const chu = p.chu ? (p.chu === this.api.ten() ? "máy ngươi" : p.chu) : "—";
@@ -837,9 +843,18 @@ export const TongKim = {
       tran = st.pha === "bd" ? dong("Khai chiến sau", mmss((+p.kc || 0) - now))
         : st.pha === "xong" ? dong("Kết quả", th != null ? `${PHE[th]} thắng` : "—", th != null ? (th ? "kim" : "song") : "") + dong("Về Biện Kinh", mmss(this.raLuc - now))
           : dong("Còn lại", mmss((+p.het || 0) - now)) + dong("Nguyên soái", `<span class="song">${ns(0)}</span> · <span class="kim">${ns(1)}</span>`) + (th != null ? dong("Hạ soái trước", PHE[th], th ? "kim" : "song") : "");
+      // khung gọn: giờ còn lại + soái phe nào sắp ra (chỉ phe chưa ra)
+      const gioTxt = st.pha === "bd" ? `khai chiến sau ${mmss((+p.kc || 0) - now)}` : st.pha === "xong" ? "đã xong" : `còn ${mmss((+p.het || 0) - now)}`;
+      const soaiSap = [0, 1].map((ph) => ({ ph, s: ns(ph) })).filter((o) => o.s.startsWith("sau "));
+      gonTxt = gioTxt + (soaiSap.length ? ` · Soái ${soaiSap.map((o) => `${PHE[o.ph]} ${o.s.slice(4)}`).join(" · ")}` : "");
     }
     const qt = !st.tran || this.api.qt();
-    const h = `<div class="tt">${st.tran ? "Chiến trường Tống Kim" : "Tống Kim — bãi thử"}</div>`
+    const ngang = dt && document.body.classList.contains("dt-ngang");
+    const gon = dt && st.tran && this.ttGon !== false; // điện thoại + trận thật: mặc định gọn, bấm thì mở đầy đủ
+    const diem1 = `<div class="g1"><span class="song">Tống ${(p.diem || [0, 0])[0]}</span><span class="kim">${(p.diem || [0, 0])[1]} Kim</span></div>`;
+    const h = gon ? (ngang ? `<div class="tt-gon tt-diem" data-ttgon="1">${diem1}</div>` // màn ngang: dải điểm 1 dòng dưới bản đồ nhỏ, bấm mở đầy đủ (Huy 00:07 28/11/2026)
+      : `<div class="tt-gon" data-ttgon="1">${diem1}<div class="g2">${esc(gonTxt)} ▾</div></div>`)
+      : `<div class="tt"${dt ? ' data-ttgon="1"' : ""}>${st.tran ? "Chiến trường Tống Kim" : "Tống Kim — bãi thử"}${dt ? " ▴" : ""}</div>`
       + `<div class="d"><span class="song">Tống ${(p.diem || [0, 0])[0]}</span><span class="kim">${(p.diem || [0, 0])[1]} Kim</span></div>` + tran
       + dong("Phe bạn", `<b class="${st.phe ? "kim" : "song"}">${PHE[st.phe]}</b>`)
       + dong("Bạn", `${me[0]} điểm · ${CHUC[me[3] | 0] || ""}`) + dong("Hạ / chết", `${me[1]} / ${me[2]}`)
@@ -847,9 +862,38 @@ export const TongKim = {
       + (this.cho.length ? dong("Đang dựng bot — chờ đấy.", String(this.cho.length)) : "") + kk
       + (st.tran && st.pha !== "xong" ? `<div class="roi"><span data-roi="1">Rời trận</span></div>` : ""); // hết trận: tự về Biện Kinh sau raSau giây
     if (this.el.dataset.sig !== h) { this.el.dataset.sig = h; this.el.innerHTML = h; }
+    this.el.classList.toggle("gon", !!gon);
     if (this.el.style.display === "none") this.el.style.display = "";
-    const tl = performance.now(), dt = document.body.classList.contains("dt");
+    const tl = performance.now();
     if (!dt && this.api.duoiMM && tl - this.mmLuc > 300) { this.mmLuc = tl; const y = Math.round(this.api.duoiMM()) + 6; if (y > 6 && this.mmY !== y) { this.mmY = y; this.el.style.top = y + "px"; } }
+    // điện thoại: khung gọn neo dưới khung máu/nội lực/exp (.jx-stbar); bảng đầy đủ neo dưới cột nút phải (Tự đánh/AUTO/Zalo/khóa/bản đồ nhỏ — khỏi bị nút đè mất tiêu đề, khỏi bị vòng chiêu đè)
+    // đo 300 ms/lần, dự phòng 182 khi chưa dựng xong
+    if (dt) {
+      if (tl - this.ttTopLuc > 300 || !this._ttTopGon || this._ttNgang !== ngang) {
+        this.ttTopLuc = tl; this._ttNgang = ngang;
+        const sb = document.querySelector(".jx-stbar"), r = sb && sb.getBoundingClientRect();
+        this._ttTopGon = r && r.height ? Math.round(r.bottom) + 4 : 182;
+        let cot = 0;
+        for (const s of [".dt-tudanh", ".dt-auto", ".dt-zalo", ".dt-kat", ".dt-mm", ".dt-nutt"]) { const e = document.querySelector("#dt " + s); if (!e) continue; const b = e.getBoundingClientRect(); if (b.height) cot = Math.max(cot, b.bottom); }
+        this._ttTopMo = Math.max(this._ttTopGon, cot ? Math.round(cot) + 4 : this._ttTopGon);
+        if (ngang) { // màn NGANG: bảng đầy đủ thu nhỏ, neo ngay dưới bản đồ nhỏ + tên bãi, sát trái cụm nút phải (Huy 23:56 27/11/2026 — không để giữa màn)
+          let duoi = 0, trai = 0;
+          for (const s of [".dt-mm", ".dt-bd"]) { const e = document.querySelector("#dt " + s); if (!e) continue; const b = e.getBoundingClientRect(); if (b.height) duoi = Math.max(duoi, b.bottom); }
+          for (const s of [".dt-tudanh", ".dt-auto", ".dt-zalo", ".dt-kat"]) { const e = document.querySelector("#dt " + s); if (!e) continue; const b = e.getBoundingClientRect(); if (b.height && b.width) trai = trai ? Math.min(trai, b.left) : b.left; }
+          this._ttTopMoNgang = duoi ? Math.round(duoi) + 4 : this._ttTopMo;
+          // mép phải: sát trái cụm nút phải, nhưng không đè ô chiêu trên của vòng chiêu (ô trên có thể lấn trái hơn cụm nút)
+          let traiO = 0;
+          for (const o of document.querySelectorAll("#jxhud .jx-bot > .dt-o")) { const b = o.getBoundingClientRect(); if (b.height && b.width && b.top < 320) traiO = traiO ? Math.min(traiO, b.left) : b.left; }
+          const mePhai = Math.min(trai || Infinity, traiO || Infinity);
+          this._ttRightNgang = mePhai !== Infinity ? Math.max(0, Math.round(window.innerWidth - mePhai) + 4) : 106;
+        }
+      }
+      // màn ngang: cả dải điểm lẫn bảng đầy đủ đều neo dưới bản đồ nhỏ (dọc: gọn neo dưới khung trạng thái, đầy đủ neo dưới cột nút phải)
+      const top = ((gon && !ngang) ? this._ttTopGon : (ngang ? (this._ttTopMoNgang || this._ttTopMo) : this._ttTopMo)) + "px";
+      if (this.el.style.top !== top) this.el.style.top = top;
+      if (ngang) { const rg = this._ttRightNgang + "px"; if (this.el.style.right !== rg) this.el.style.right = rg; }
+      else if (this.el.style.right) this.el.style.right = "";
+    }
   },
   // tóm tắt cho công cụ thử
   tomTat() {

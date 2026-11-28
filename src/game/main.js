@@ -16,7 +16,8 @@ import { UiWins } from "./uiwin.js";
 import { GameWindows } from "./windows.js";
 import { Hotkeys } from "./hotkeys.js";
 import { taoThuongDe, TDH } from "./thuong-de.js"; // camera góc thượng đế + ghi hình — chỉ acc test1 (Huy 26/11)
-import { taoTangHinh } from "./tang-hinh.js"; // tàng hình — chỉ acc test1 (Huy 27/11)
+import { taoTangHinh } from "./tang-hinh.js"; // tàng hình — chỉ acc test1/test2 (Huy 27/11)
+import { taoChiHuy } from "./chi-huy.js"; // bảng chỉ huy tổ đội Tống Kim — chỉ acc test1/test2 (Huy 27/11)
 import { FxPack } from "./fx.js";
 import { RoiPack } from "./roi.js";
 import { ItemDB, looksOf, syncRanged, isPotion, isPhu, benMax, benCua, weaponKind, laVatTk, laHoan } from "./itemdb.js";
@@ -599,9 +600,11 @@ async function vaoGame() {
   if (tiepDanh) { world.auto = true; world.neo = [world.player.x, world.player.y]; }
   mountHud();
   if (!TDE) { TDE = taoThuongDe({ me: () => Net.me, cv, msg: (t) => P.hud.msg(t), getZoom: () => zoom, setZoom: (z) => { zoom = z; snapCam(); }, laDt: () => DienThoai.cheDo() === "dt" }); TDH.cur = TDE; }
-  TDE.capNhat(); // camera thượng đế + ghi hình: web chỉ test1, điện thoại mọi acc (tang-hinh vẫn chỉ test1)
+  TDE.capNhat(); // camera thượng đế + ghi hình: web chỉ test1, điện thoại mọi acc (tang-hinh vẫn chỉ test1/test2)
   if (!TH) TH = taoTangHinh({ me: () => Net.me, msg: (t) => P.hud.msg(t), nguoiChoi: () => (world && world.player) || null });
-  TH.capNhat(); // tàng hình: chỉ acc test1 mới có nút (phím H)
+  TH.capNhat(); // tàng hình: chỉ acc test1/test2 mới có nút (phím H)
+  if (!CH) CH = taoChiHuy({ me: () => Net.me, msg: (t) => P.hud.msg(t), goi: (b) => Net.chiHuy(b) });
+  CH.capNhat(); // chỉ huy tổ đội Tống Kim: chỉ acc test1/test2 mới có nút CHỈ HUY
   if (DT) DT.vaoGame(); // điện thoại: vào game là thu gọn (anh 30/10 — người chơi cần thì mở)
   P.hud.datBoCuc(hero.auto.boCuc); // bố cục màn hình đã lưu của nhân vật này (Trợ Thủ → Khác — boCuc)
   setHudMap();
@@ -659,6 +662,7 @@ function stopGame() {
   zoom = 1; fpsEl.textContent = "";
   if (TDE) TDE.thoat(); // góc thượng đế + ghi hình: tắt, gỡ nút (đang ghi thì tải file)
   if (TH) TH.thoat(); // tàng hình: tắt, gỡ nút
+  if (CH) CH.thoat(); // chỉ huy tổ đội: đóng bảng, gỡ nút
   if (dev) dev.toggle(false);
   qt.toggle(false);
   Net.wsDong(); BossTG.thoat(); SanNhim.thoat(); QuaiCanh.thoat(); VaDoi.thoat(); VdDoi.thoat(); LoiDai.thoat(); DuaNgua.thoat(); // kênh tức thời + bảng boss thế giới + phòng Vượt Ải tổ đội + thanh tỉ số lôi đài + thanh đua ngựa
@@ -1429,7 +1433,7 @@ henGio(async () => {
     // chv: bản danh sách sạp chợ trời của bãi World này đang có (khác bản máy chủ thì máy chủ gửi cho — sapNhan)
     const chv = choV.w === w && choV.z === zn ? choV.v : 0;
     const dct = DoCongCu.layBaoCao(); // dò công cụ (anh 13/11): có dấu hiệu mới thì gửi kèm nhịp — máy chủ ghi cờ "Nghi dùng công cụ" cho F10, không tự xử
-    const j = await Net.pulse(hero.slot | 0, { zone: zn, ...((zoneToi != null ? chungToi : w.chung) ? { c: 1 } : {}), lvl: hero.lvl, look: looksOf(hero), tr, auto: w.auto ? 1 : 0, ...(TH && TH.dangBat() ? { th: 1 } : {}), // tàng hình: chỉ test1 gửi th = 1 (may-chu/the-gioi.js)
+    const j = await Net.pulse(hero.slot | 0, { zone: zn, ...((zoneToi != null ? chungToi : w.chung) ? { c: 1 } : {}), lvl: hero.lvl, look: looksOf(hero), tr, auto: w.auto ? 1 : 0, ...(TH && TH.dangBat() ? { th: 1 } : {}), // tàng hình: chỉ test1/test2 gửi th = 1 (may-chu/the-gioi.js)
       hp: p.hp > 0 ? Math.max(1, Math.round((p.hp * 100) / p.hpMax)) : 0, mp: Math.round((p.mp * 100) / p.mpMax), vs: w.vongPhat(), /* hp: còn sống thì ≥ 1 % — dưới 0,5 % làm tròn 0 thì người khác coi như đã ngã, không đánh được tới khi hồi (soát lôi đài 15/11) */ bl: w.buaPhat(), bc: w.buaHaiPhat(), /* bùa hại đang dính (Tống Kim — anh 12/11) */ kd: w.tkKhangPhat(), /* kháng / né thật đang có (Tống Kim — lượt 86) */
       ...(w.phanThan.length ? { pt: w.phanThan.map((a) => ({ i: a.id, tr: (ptTrail.get(a.id) || []).splice(0), vs: a.vs || [], bl: a.bl || [] })) } : {}) }, { ...extra, dv, chv, tc: Math.round(performance.now()), nd: 1, ...(dct ? { dct } : {}), ...(bst ? { bst } : {}), ...(nst ? { nst } : {}), ...(mcv ? { mcv } : {}), ...(vad ? { vad } : {}), ...(vdd ? { vdd } : {}), ...(qcd ? { qcd } : {}), ...(phd ? { phd } : {}) }); // tc: đồng hồ trang — máy chủ dò tăng tốc (may-chu/chong-hack.js)
     if (dct) DoCongCu.daGui(dct); // nhịp tới máy chủ rồi mới đánh dấu đã báo (soát 13/11)
@@ -4944,6 +4948,7 @@ const qt = new QuanTri({
   khoa: (viec) => (KAT ? KAT.dam(viec) : Promise.resolve(true)), doiMk1: () => KAT && KAT.doiMk1(),
   khoaLai: (ma) => KAT && KAT.capNhat({ co: ma === "can-mk2" ? 1 : 0, mo: 0 }), // bảng gọi ngầm gặp can-mk2 (máy chủ khởi động lại / Khóa lại): trang đã khóa
   hoi: (html, ok, huy) => (GW ? GW.hoi(html, ok, huy) : Promise.resolve(false)),
+  devHd: (o, b) => Net.devHoatDong(o, b), slot: () => (typeof hero !== "undefined" && hero ? hero.slot | 0 : 0), // mở thử Phong Lăng Độ: chuyến riêng của nhân vật đang chơi
   factions: () => P.factions || [], skill: (id) => (P.skillDb || {})[id] || null, // skill: tên chiêu cho thẻ Cấu hình → Kỹ năng phái
   facName: (fac, series) => (fac == null ? `Vô Môn Phái (${["Kim", "Mộc", "Thủy", "Hỏa", "Thổ"][series | 0]})` : (P.factions.find((x) => x.id === fac) || {}).n || String(fac)),
   soiDo: (nv) => GW && GW.soiDo(nv),
@@ -4960,7 +4965,7 @@ const OPEN_VI = { battlereport: "Chiến báo", battlestart: "Chiến trường"
   Skill: "Xem võ công người khác", Talk: "Mật đàm", Attack: "Tấn công người chơi", Follow: "Đi theo", Call: "Gọi", Select: "Chọn người chơi", BossFightReport: "Chiến báo trùm" };
 const SWITCH_BTN = { horse: "Horse", sit: "Sit", trade: "Exchange", pk: "PK" };
 const ZOOMS = [1, 1.25, 1.5, 1.75, 2];
-let keys = null, zoom = 1, lastTodo = {}, TDE = null, TH = null; // TDE: camera thượng đế + ghi hình (chỉ test1); TH: tàng hình (chỉ test1)
+let keys = null, zoom = 1, lastTodo = {}, TDE = null, TH = null, CH = null; // TDE: camera thượng đế + ghi hình (chỉ test1); TH: tàng hình (chỉ test1/test2); CH: chỉ huy tổ đội Tống Kim (chỉ test1/test2)
 const todoMsg = (k, t) => { const now = performance.now(); if (now - (lastTodo[k] || 0) > 3000) { lastTodo[k] = now; P.hud.msg(t); } };
 // F1 / Esc → Giúp đỡ (anh 29/10 "bấm vào khá rối, thiết kế lại cho thân thiện"): khung HỖ TRỢ của client (windows.js openGiupDo, nội dung
 // src/game/giupdo.js) — bản trước in 4 dòng phím tắt vào khung chat
@@ -5056,7 +5061,7 @@ addEventListener("keydown", (e) => {
   if (e.code === "F10" && plain && Net.me && Net.me.admin) { e.preventDefault(); return qt.toggle(); } // bảng quản trị (F9 = PK như client)
   if (e.code === "KeyK" && plain && TT) { e.preventDefault(); return TT.toggle(); } // Trợ Thủ (game thêm — phím K client để trống)
   if ((e.code === "Digit0" || e.code === "Numpad0") && plain && TDE) { e.preventDefault(); return TDE.bamPhim(); } // góc thượng đế — chỉ test1 (TDE tự chặn acc thường)
-  if (e.code === "KeyH" && plain && TH) { e.preventDefault(); return TH.bamPhim(); } // tàng hình — chỉ test1 (TH tự chặn acc thường)
+  if (e.code === "KeyH" && plain && TH) { e.preventDefault(); return TH.bamPhim(); } // tàng hình — chỉ test1/test2 (TH tự chặn acc thường)
   if (e.code === "Escape" && plain && GW) { e.preventDefault(); return GW.esc(); } // client Open([[system]]): đóng cửa sổ trên cùng, không còn thì bảng hệ thống
   if (e.code === "PrintScreen") return; // Windows chỉ gửi keyup cho PrintScreen
   keys.handle(e);

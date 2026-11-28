@@ -33,7 +33,7 @@ const dong = () => ds.map((r) => [r.id, r.bai, r.x, r.y]);
 function phat() { WS.moi((kn) => kn.gui({ t: "rtb", ds: dong() })); }
 
 // ra n rương: bãi ngẫu nhiên (khác nhau khi đủ bãi), chỗ ngẫu nhiên của bãi; tai = [[bãi, x, y]] (quản trị đặt — thử)
-function ra(n = CF.so, tai) {
+function ra(n = CF.so, tai, thu) {
   const t = Date.now(), moi = [];
   if (Array.isArray(tai) && tai.length) for (const [bai, x, y] of tai.slice(0, 10)) moi.push({ bai: +bai, x: Math.round(+x || 0), y: Math.round(+y || 0), X: 0, Y: 0 });
   else {
@@ -45,8 +45,8 @@ function ra(n = CF.so, tai) {
     for (let i = 0; i < n && bais.length; i++) { const b = bais[i % bais.length], L = CHO[b], c = L[Math.floor(Math.random() * L.length)]; moi.push({ bai: +b, x: c[0], y: c[1], X: c[2], Y: c[3] }); }
   }
   if (!moi.length) loi("Chưa có chỗ ra rương (node cong-cu/dung-ruong-tb.mjs)");
-  TG().thongBao(`${moi.length} Rương Thần Bí xuất hiện ở các bãi từ cấp 90 trở lên — xem kênh hệ thống và mau đi tìm!`, true);
-  for (const r of moi) { r.id = ++seq; r.luc = t; r.het = t + CF.song * 60000; ds.push(r); TG().thongBao(`Chú ý: Rương Thần Bí xuất hiện tại bản đồ ${tenBai(r.bai)}. Mau đi tìm!`); }
+  TG().thongBao(`${thu ? "[Thử] " : ""}${moi.length} Rương Thần Bí xuất hiện ở các bãi từ cấp 90 trở lên — xem kênh hệ thống và mau đi tìm!${thu ? " (Rương thử — mở không có thưởng.)" : ""}`, true);
+  for (const r of moi) { r.id = ++seq; r.luc = t; r.het = t + CF.song * 60000; if (thu) r.thu = 1; ds.push(r); TG().thongBao(`Chú ý: Rương Thần Bí${thu ? " (thử)" : ""} xuất hiện tại bản đồ ${tenBai(r.bai)}. Mau đi tìm!`); }
   phat();
   return moi;
 }
@@ -66,6 +66,7 @@ function mo(tk, h, id) {
   if ((h.lvl || 1) < CF.capMo) loi(`Đạt cấp ${CF.capMo} trở lên mới mở được Rương Thần Bí.`);
   // bang hội đợt 2 (cau-hinh.json bangHoi.ruongCanBang — chỉ khi máy đã có ≥ 1 bang qua khảo nghiệm): chỉ thành viên bang mở được; hôm rời bang vẫn mở được
   { let ly = null; try { ly = require("./bang-hoi.js").chanRtb(tk, h); } catch {} if (ly) loi(ly); }
+  if (r.thu) { ds = ds.filter((x) => x !== r); phat(); return { msg: "Rương thử: không có thưởng. Chỉ để test đường đi/tìm rương.", len: 0 }; } // phiên thử: mở ra là hết, không thưởng/không nhật ký
   const [loai, gt] = boc(); let ten;
   if (loai === "kn") { h.exp = (h.exp || 0) + gt; ten = `${so(gt)} điểm kinh nghiệm`; }
   else if (loai === "xu") { h.xu = (h.xu | 0) + gt; ten = `${gt} Xu`; }
@@ -77,8 +78,10 @@ function mo(tk, h, id) {
   return { msg: `Mở Rương Thần Bí: nhận được ${ten}`, len };
 }
 
-// công cụ thử (tài khoản quản trị): { viec: "ra" (so?, tai?: [[bãi, x, y]]) | "huy" | "xem" }
+// công cụ thử (tài khoản quản trị): { viec: "ra" (so?, tai?: [[bãi, x, y]]) | "huy" | "xem" } — "moThu"/"dongThu": F10 Lịch hoạt động (Huy 22:18 27/11/2026)
 function quanTri(b) {
+  if (b.viec === "moThu") return { ra: ra(3, null, true), ds: dong(), thu: 1 };
+  if (b.viec === "dongThu") { const n = ds.filter((r) => r.thu).length; ds = ds.filter((r) => !r.thu); phat(); return { ds: dong(), dong: n }; }
   if (b.viec === "ra") return { ra: ra(Math.max(1, Math.min(10, +b.so || CF.so)), b.tai), ds: dong() };
   if (b.viec === "huy") { ds = []; phat(); }
   return { ds: ds.map((r) => ({ id: r.id, bai: r.bai, tenBai: tenBai(r.bai), X: r.X, Y: r.Y, phut: Math.round((Date.now() - r.luc) / 60000) })), gio: CF.gio, capMo: CF.capMo, bai: Object.keys(CHO).length };
@@ -96,4 +99,8 @@ setInterval(() => {
   if (vn.slice(11, 16) === CF.gio && !daGoi.has(`${ngay} ${CF.gio}`) && GV.thuOk(CF, t)) { daGoi.add(`${ngay} ${CF.gio}`); try { ra(CF.so); } catch (e) { console.error("Rương Thần Bí:", e.message); } }
 }, 5000).unref();
 
-module.exports = { mo, dong, quanTri, CF };
+// Mở thử / đóng thử (F10 Lịch hoạt động): điều phối qua quanTri để 1 đường duy nhất.
+function moThu(qt, b) { return quanTri({ viec: "moThu" }); }
+function dongThu(qt, b) { return quanTri({ viec: "dongThu" }); }
+
+module.exports = { mo, dong, quanTri, CF, moThu, dongThu };

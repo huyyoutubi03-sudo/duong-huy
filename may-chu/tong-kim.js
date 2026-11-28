@@ -111,6 +111,8 @@ const TIN_GIU = 12;             // tin trong trận (D.tin — như Phong Hỏa)
 const BIEN_KINH = 37, BAO_DANH = 325; // Biện Kinh: về sau trận; Điểm báo danh Tống Kim 325: Mộ binh quan, Quân Nhu quan, Xa phu mỗi phe như client (anh 09/11 — Xa phu các thành đưa tới)
 const DANH_GOC = Math.max(1, +CF.danh || 30); // phút đánh của cau-hinh.json — mốc đợt quân (binh.dotTu – dotDen) viết cho trận này; GM đổi ở F10 thì co / giãn theo
 const PHAI = ["shaolin", "tianwang", "tangmen", "wudu", "emei", "cuiyan", "gaibang", "tianren", "wudang", "kunlun"];
+// khóa chữ -> id số (thứ tự PHAI chính là id phái — như mauBotThem dùng PHAI[h.fac | 0]); chỉ dùng ở chỗ gửi cho client (dongB), bên trong máy chủ fac vẫn là khóa chữ
+const FAC_ID = Object.fromEntries(PHAI.map((k, i) => [k, i]));
 const GIOI = { shaolin: "m", emei: "f", cuiyan: "f" }; // phái chỉ 1 giới (client)
 // nhân vật mẫu cho bot (anh 09/11 chọn "Nhân vật mẫu" — F10 nút Làm mẫu bot): mỗi phái tối đa MAU_TOI_DA mẫu; bot phái đó bốc 1 mẫu, mặc đồ + kỹ năng + điểm + chiêu dùng như nhân vật lúc bấm
 // (phái chưa có mẫu: bot tự sinh như cũ — do-toc-do.js heroBot). Lưu du-lieu/mau-bot.json; áp dụng từ trận sau (D.mauBot chụp lúc mở trận; tkbot.js tkTaoBot)
@@ -209,7 +211,7 @@ const tenChu = () => (D.chu && D.nguoi.has(D.chu) ? D.nguoi.get(D.chu).ten : "")
 
 // ---------- trạng thái gửi trình duyệt ----------
 const hpCua = (b) => [b.id, Math.max(0, Math.ceil(b.mau)), b.mauMax, b.chet ? 1 : 0, b.hoi, b.chuc | 0]; // chuc: danh hiệu trên đầu bot (anh 09/11)
-const dongB = (b) => [b.id, b.ten, b.phe, b.fac, b.sex, b.lv, b.seed, b.mauMax, b.mb ?? -1];
+const dongB = (b) => [b.id, b.ten, b.phe, typeof b.fac === "string" ? (FAC_ID[b.fac] ?? -1) : b.fac, b.sex, b.lv, b.seed, b.mauMax, b.mb ?? -1]; // phái gửi dạng id SỐ (client khớp P.factions[].id — gửi khóa chữ thì nhãn hiện "Vô Môn Phái"); b.fac trong máy chủ giữ nguyên khóa chữ
 // quân: [mã, phe, bậc 0–5, mẫu, cấp, máu tối đa, sát thương thấp, cao, chính xác, né tránh, x, y (chỗ ra)]
 const dongBi = (e) => [e.id, e.phe, e.bac, e.tpl, e.lv, e.mauMax, e.dmg[0], e.dmg[1], e.ar, e.def, e.x, e.y];
 // dòng bảng điểm (top 10 trong trận, bảng kết quả — người + bot): [tên, phe, điểm, giết (người / bot), chết, chức, liên trảm cao nhất, giết NPC]
@@ -779,7 +781,7 @@ const phaCua = (t = Date.now()) => (!D ? "" : D.loai !== "tran" ? "danh" : D.ket
 // lịch gửi lich-hd.js / Mộ binh quan: { pha, u (mở báo danh), kc (khai chiến), het, gio (giờ của trận | danh sách giờ khi không có trận), diem, thienTu }
 function lich(now = Date.now()) {
   if (!D || D.loai !== "tran") return { pha: "", gio: CF.gio, cap: CF.cap, phi: CF.phi, thienTu: false };
-  return { pha: phaCua(now), u: D.u, kc: D.kc, het: D.het, gio: D.gio, diem: D.diem.slice(), thienTu: !!D.x2, cap: CF.cap, phi: CF.phi, soNguoi: D.dk.size,
+  return { pha: phaCua(now), u: D.u, kc: D.kc, het: D.het, gio: D.gio, diem: D.diem.slice(), thienTu: !!D.x2, cap: CF.cap, phi: CF.phi, soNguoi: D.dk.size, thu: !!D.thu,
     thang: D.thang == null ? null : D.thang };
 }
 // đang có trận chưa xong (khoi-dong-s1.sh — không khởi động lại máy chủ giữa trận; lịch đến giờ mà trận trước chưa xong thì không mở)
@@ -806,13 +808,15 @@ function moTran(opt = {}) {
   // anh 13/11 (lượt 86 — "k giới hạn thời gian vào tống kim, trận mở rồi vào lúc nào cũng dc"): CF.vaoTuDo -> báo danh / vào suốt trận (tới lúc hết giờ); tắt thì như cũ tới phút vaoMuon
   const vm = CF.vaoTuDo !== false && opt.vaoMuon == null ? dn : Math.min(dn, soP(opt.vaoMuon, (+CF.vaoMuon || 0) * ty));
   const soBot = opt.soBot == null ? Math.max(1, Math.min(CF.soBotMax | 0, CF.soBot | 0)) : soNguyen(opt.soBot, 1, CF.soBotMax | 0, "Số bot mỗi phe");
-  const u = Number.isFinite(opt.u) && opt.u <= t ? opt.u : t, kc = u + Math.round(bd * 60000), het = kc + Math.round(dn * 60000);
+  const u = Number.isFinite(opt.u) && opt.u <= t ? opt.u : t;
+  // MỞ SỚM 27/11/2026 (Huy lệnh "cho qua trước 5p"): kc cho trước thì khai chiến đúng kc đó, u chỉ là lúc mở phòng (bot/người vào trại chờ); không kc thì như cũ (u + baoDanh)
+  const kc = Number.isFinite(opt.kc) && opt.kc > u ? Math.round(opt.kc) : u + Math.round(bd * 60000), het = kc + Math.round(dn * 60000);
   if (D) { D = null; WS.guiHet(moTin()); } // bãi thử / trận cũ đã xong: đóng
   moCuoi = Math.max(t, moCuoi + 1);
-  const gio = typeof opt.gio === "string" && GV.hopLe(opt.gio) ? opt.gio : null, x2 = laThienTu(gio, u) || !!opt.thienTu;
+  const gio = typeof opt.gio === "string" && GV.hopLe(opt.gio) ? opt.gio : null, x2 = !!opt.thu ? false : (laThienTu(gio, kc - Math.round(bd * 60000)) || !!opt.thienTu); // phiên thử không nhân đôi
   const bai = Number.isInteger(+td.bai) && +td.bai > 0 ? +td.bai : 380; // chiến trường 380 Xung phong — anh 06/11 chọn
   const hau = (p) => { const L = ds2((((td.phe[p] || {}).hau) || {}).diem); return L.length ? [Math.round(+L[0][0]), Math.round(+L[0][1])] : [0, 0]; };
-  D = { mauBot: MAU_BOT.slice(), loai: "tran", bai, mo: moCuoi, td, gio, u, kc, het, s1: Math.round(s1 * 60000), s2: Math.round(s2 * 60000), vm: Math.round(vm * 60000), tl: dn / DANH_GOC, x2,
+  D = { mauBot: MAU_BOT.slice(), loai: "tran", bai, mo: moCuoi, td, gio, u, kc, het, s1: Math.round(s1 * 60000), s2: Math.round(s2 * 60000), vm: Math.round(vm * 60000), tl: dn / DANH_GOC, x2, thu: !!opt.thu,
     trai: [hau(0), hau(1)], R: CF.R, tri: Math.max(1, Math.min(3, CF.tri | 0)), hs: Math.max(HS[0], Math.min(HS[1], +CF.heSoSt || 1)), soBot, cap: 0, moi: 1, chung: 0,
     sv: 1, snSv: 1, bsv: 1, hv: 0, nguoi: new Map(), tenNg: new Map(), bot: new Map(), vt: new Map(), binh: new Map(), dk: new Map(), chu: null, diem: [0, 0],
     kk: [], doi: true, guiLuc: 0, han: new Map(), hanHoi: new Map(), hanC: new Map(), seq: 0, bseq: 99999, phai: [tron(PHAI), tron(PHAI)],
@@ -820,7 +824,7 @@ function moTran(opt = {}) {
     soaiSt: [new Map(), new Map()], dot: [], tin: [], tinId: 0, baoLuc: t, bao3: false, bao1: false, doiCho: new Map() };
   WS.guiHet(moTin());
   const con = Math.max(0, Math.round((kc - t) / 60000));
-  TG().thongBao(`Tống Kim đại chiến bắt đầu báo danh! Cấp ${CF.cap} trở lên nhờ Xa phu đưa đến Điểm báo danh Tống Kim (ủng hộ ${N.tien(CF.phi)}). ${con > 0 ? `Còn ${con} phút nữa khai chiến.` : "Sắp khai chiến."}${x2 ? ` Chiến dịch lần này là Đêm Rực Rỡ — ${MT.thuong("phần thưởng gấp đôi")}!` : ""}`, true);
+  TG().thongBao(`${opt.thu ? "[Thử] " : ""}Tống Kim đại chiến bắt đầu báo danh! Cấp ${CF.cap} trở lên nhờ Xa phu đưa đến Điểm báo danh Tống Kim (ủng hộ ${N.tien(CF.phi)}). ${con > 0 ? `Còn ${con} phút nữa khai chiến.` : "Sắp khai chiến."}${opt.thu ? " Phiên thử — không có thưởng, không tính số lần." : ""}${x2 ? ` Chiến dịch lần này là Đêm Rực Rỡ — ${MT.thuong("phần thưởng gấp đôi")}!` : ""}`, true);
   return lich();
 }
 // khai chiến: không ai báo danh thì thôi trận; bot (cấp theo cấp cao nhất máy chủ lúc này) + Tống binh / Kim binh ra trận, lịch đợt quân bậc cao
@@ -854,6 +858,7 @@ function ketThuc(t = Date.now()) {
   const me = {}, thuong = {}, nguoiXep = ds.filter((x) => D.nguoi.get(x.tk) === x); // hạng trong số người thật (htTop — bot không tính)
   for (const m of D.nguoi.values()) {
     me[m.tk] = { ten: m.ten, phe: m.phe, diem: m.diem, giet: m.giet, chet: m.chet, chuc: m.chuc, lienMax: m.lienMax | 0, binh: m.binh | 0, hang: ds.indexOf(m) + 1, thang: m.phe === thang ? 1 : 0 };
+    if (D.thu) continue; // phiên thử: bảng điểm vẫn tính, không trao thưởng / không nguồn sự kiện / không cống hiến
     const coMat = on.has(m.tk) || (m.offLuc > 0 && t - m.offLuc < (+T.roiGiu || 120) * 1000);
     if (!D.dk.has(m.tk + "|" + m.o)) continue;
     // anh 18/11 — nguồn sự kiện: Trung Dược theo thời gian trong trận (nskTk); không đủ điều kiện quà Tống Kim (rời trận / ít điểm) vẫn nhận phần này (traoNsk)
@@ -866,8 +871,8 @@ function ketThuc(t = Date.now()) {
   D.ketLuc = t; D.raLuc = t + Math.max(0, +CF.raSau || 0) * 1000; D.dot = [];
   D.bot.clear(); D.binh.clear(); D.vt.clear(); D.sv++; D.bsv++; // bot + quân rút
   D.ket.lyDo = lyDo;
-  tin(`Trận Tống Kim kết thúc: phe ${TEN_PHE[thang]} giành thắng lợi (${lyDo})! Tống ${vn(a)} điểm — Kim ${vn(b)} điểm.`, "#7cff7c");
-  TG().thongBao(`Tống Kim${D.gio ? ` ${D.gio}` : ""} kết thúc: phe ${TEN_PHE[thang]} thắng — ${lyDo} (Tống ${vn(a)} : Kim ${vn(b)} điểm).`);
+  tin(`${D.thu ? "[Thử] " : ""}Trận Tống Kim kết thúc: phe ${TEN_PHE[thang]} giành thắng lợi (${lyDo})! Tống ${vn(a)} điểm — Kim ${vn(b)} điểm.`, "#7cff7c");
+  TG().thongBao(`${D.thu ? "[Thử] " : ""}Tống Kim${D.gio ? ` ${D.gio}` : ""} kết thúc: phe ${TEN_PHE[thang]} thắng — ${lyDo} (Tống ${vn(a)} : Kim ${vn(b)} điểm).`);
   D.doi = true;
   return D.ket;
 }
@@ -928,11 +933,11 @@ function traoNsk(m, mon, t) {
   h.tkTin = [...(Array.isArray(h.tkTin) ? h.tkTin : []), `Tống Kim${D.gio ? ` ${D.gio}` : ""}: ở trong trận ${Math.floor((m.tg || 0) / 60000)} phút — nhận ${chu}.${cho ? " Hành trang không đủ chỗ — vật phẩm đang chờ, dọn túi là tự nhận." : ""}`].slice(-20);
   D2.ghiTk(acc);
 }
-// quản trị hủy trận: đóng ngay (không thưởng)
-function huyTran() {
+// quản trị hủy trận: đóng ngay (không thưởng); ly = "thu": cắt phiên thử để mở trận thật đúng giờ
+function huyTran(ly) {
   if (!D || D.loai !== "tran") return false;
   const dang = !D.ket; D = null; WS.guiHet(moTin());
-  if (dang) TG().thongBao("Trận Tống Kim bị hủy rồi.");
+  if (dang) TG().thongBao(ly === "thu" ? "Phiên thử Tống Kim kết thúc — trận thật bắt đầu." : "Trận Tống Kim bị hủy rồi.");
   return true;
 }
 // trong trận mỗi 100 ms: khai chiến, quân ra lại / đợt quân / Nguyên Soái, báo còn 3 / 1 phút, chiến báo, hết giờ; đã xong: giữ bảng kết quả giuKq giây
@@ -969,20 +974,24 @@ function lichVong(t) {
   const v = GV.vn(t), L = CF.gio.filter(GV.hopLe);
   if (lanDau) {
     lanDau = false;
-    // máy chủ vừa chạy lại giữa giờ báo danh của 1 trận: mở luôn (báo danh còn lại) — trận đang đánh thì đã mất (phòng chỉ ở bộ nhớ)
+    // máy chủ vừa chạy lại giữa lúc chờ sớm / báo danh của 1 trận: mở lại phòng (khai chiến đúng giờ hẹn) — trận đang đánh thì đã mất (phòng chỉ ở bộ nhớ)
     for (const g of L) {
-      const u = GV.lucCua(v.ngay, g);
-      if (u <= t && t < u + (+CF.baoDanh || 0) * 60000 && GV.thuOk(CF, u) && !dangTran()) { daGoi.add(`${v.ngay} ${g}`); try { moTran({ gio: g, u }); } catch (e) { console.error("Tống Kim:", e.message); } }
+      const u = GV.lucCua(v.ngay, g), som = Math.max(0, +CF.baoTruoc || 0) * 60000;
+      if (u - som <= t && t < u + (+CF.baoDanh || 0) * 60000 && GV.thuOk(CF, u) && !dangTran()) { daGoi.add(`${v.ngay} ${g}`); try { moTran(t < u ? { gio: g, u: u - som, kc: u + (+CF.baoDanh || 0) * 60000 } : { gio: g, u }); } catch (e) { console.error("Tống Kim:", e.message); } }
     }
   }
   for (const g of L) {
     // khóa có giờ (GM dời giờ muộn hơn trong ngày vẫn mở trận); ngày tắt trong tuần (CF.thu) thì không báo / không mở
     if (CF.baoTruoc > 0 && v.hm === lui(g, CF.baoTruoc) && !daGoi.has(`${v.ngay} b${g}`) && GV.thuOk(CF, t + CF.baoTruoc * 60000)) {
       daGoi.add(`${v.ngay} b${g}`);
-      if (!dangTran()) TG().thongBao(`${CF.baoTruoc} phút nữa Tống Kim đại chiến bắt đầu báo danh ở Điểm báo danh Tống Kim (cấp ${CF.cap} trở lên).`);
+      // MỞ SỚM (Huy lệnh 21:57 27/11/2026): mở phòng ngay lúc báo trước, khai chiến đúng giờ hẹn + baoDanh như cũ (không dịch sớm giờ đánh)
+      if (!dangTran()) try { moTran({ gio: g, u: t, kc: GV.lucCua(v.ngay, g) + (+CF.baoDanh || 0) * 60000 }); } catch (e) { console.error("Tống Kim:", e.message); }
+      if (dangTran()) TG().thongBao(`Phòng chờ Tống Kim đã mở! Cấp ${CF.cap} trở lên nhờ Xa phu đưa đến Điểm báo danh Tống Kim để vào trại chờ — còn ${(+CF.baoTruoc || 0) + (+CF.baoDanh || 0)} phút nữa khai chiến.`);
+      else TG().thongBao(`${CF.baoTruoc} phút nữa Tống Kim đại chiến bắt đầu báo danh ở Điểm báo danh Tống Kim (cấp ${CF.cap} trở lên).`);
     }
     if (v.hm === g && !daGoi.has(`${v.ngay} ${g}`) && GV.thuOk(CF, t)) {
       daGoi.add(`${v.ngay} ${g}`);
+      if (D && D.thu && !D.ket) { try { huyTran("thu"); } catch (e) { console.error("Tống Kim:", e.message); } } // phiên thử không được ăn mất lượt thật
       if (!dangTran()) try { moTran({ gio: g }); } catch (e) { console.error("Tống Kim:", e.message); }
     }
   }
@@ -1056,6 +1065,8 @@ function quanTri(b, tk) {
     const l = moTran({ baoDanh: b.baoDanh, danh: b.danh, soai1: b.soai1, soai2: b.soai2, vaoMuon: b.vaoMuon, soBot: b.soBot, thienTu: b.thienTu === 1 || b.thienTu === true || b.thienTu === "1" });
     return { ok: 1, l, s: tomTat() };
   }
+  // Mở thử (F10 Lịch hoạt động — Huy lệnh 22:18 27/11/2026): phiên thử tách biệt, báo danh 1 + đánh 5 phút, không thưởng.
+  if (viec === "moThu") { const l = moTran({ thu: true, baoDanh: 1, danh: 5 }); return { ok: 1, thu: 1, l, s: tomTat() }; }
   if (viec === "ketTran") { if (!D || D.loai !== "tran" || D.ket) loi("Không có trận Tống Kim đang diễn ra"); ketThuc(Date.now()); return { ok: 1, l: lich(), s: tomTat() }; }
   if (viec === "huyTran") { if (!huyTran()) loi("Không có trận Tống Kim"); return { ok: 1, l: lich() }; }
   if (viec === "huy") { if (D && D.loai === "tran") loi("Đang có trận Tống Kim theo lịch — dùng Hủy trận"); if (D) { D = null; WS.guiHet(moTin()); } return { ok: 1 }; }
@@ -1072,6 +1083,10 @@ function quanTri(b, tk) {
   if (viec === "hs") { D.hs = soHs(b.hs); D.doi = true; return { ok: 1, s: tomTat() }; }
   loi("Không có việc Tống Kim này. Đừng bấm nữa.");
 }
+
+// Mở/đóng thử qua F10 Lịch hoạt động (may-chu/lich-hd.js gọi thẳng export này — như phong-hoa.js).
+function moThu(qt, b) { return quanTri({ viec: "moThu" }); }
+function dongThu(qt, b) { if (!D || !D.thu) loi("Không có phiên thử Tống Kim nào."); huyTran("thu"); return { dong: 1, l: lich() }; }
 
 // phe trận của tài khoản tk (đã vào phòng đang mở) -> 0 | 1 | null; zone (nếu đưa): chỉ khi đang ở bãi phòng (the-gioi.js pheNay — màu tên / vòng sáng)
 function pheCua(tk, zone) {
@@ -1184,13 +1199,13 @@ function moBinh(h, R, pha, dk, t, chiPhe) {
   if ((h.lvl | 0) < CF.cap) return say(`Chiến trường chỉ dành cho người từ cấp ${CF.cap} trở lên. Ngươi chưa đủ điều kiện. Luyện thêm đi!`, [["Được!", null], ["Ta muốn tìm hiểu thông tin chiến dịch.", "luat"]]);
   if (pha === "danh" && t >= R.kc + R.vm) return say(`Trống trận rền vang rồi! Trận đánh quá ${vnPhut(R.vm)} phút, Mộ binh quan không nhận thêm người. Lần sau quay lại!${ke}`, L);
   const luc = pha === "bd" ? `còn ${Math.max(1, Math.ceil((R.kc - t) / 60000))} phút nữa khai chiến` : vaoHet(R) ? "đang khai chiến — vẫn nhận thêm người tới khi hết trận" : `đang khai chiến — nhận thêm người tới phút ${vnPhut(R.vm)}`;
-  return say(`Trống trận rền vang rồi! Sao ngươi chưa tham gia chiến?<enter>${qs} (${luc}).<enter>Cấp ${CF.cap} trở lên, ủng hộ ${Y(N.tien(CF.phi))} mỗi trận; quân số hai phe hơn kém nhau tối đa 1 người.${xemThienTu(R)}`,
+  return say(`Trống trận rền vang rồi! Sao ngươi chưa tham gia chiến?<enter>${qs} (${luc}).<enter>Cấp ${CF.cap} trở lên, ${R.thu ? "miễn phí (phiên thử — không có thưởng)" : `ủng hộ ${Y(N.tien(CF.phi))} mỗi trận`}; quân số hai phe hơn kém nhau tối đa 1 người.${xemThienTu(R)}`,
     [...(chiPhe === 1 ? [] : [["Gia nhập phe Tống", "phe", 0]]), ...(chiPhe === 0 ? [] : [["Gia nhập phe Kim", "phe", 1]]), ...L]);
 }
 // vào (lại) hậu doanh phe mình: rời tổ đội, chỗ ra ngẫu nhiên ở hậu doanh
 function vaoTran(R, dk, h, tk, moi) {
   roiDoi(tk, h.name);
-  return { vao: { zone: R.bai, at: diemHau(dk.phe) }, phe: dk.phe, tin: moi ? [LOI_PHE[dk.phe], `Đã ủng hộ ${N.tien(dk.nop)} — vào hậu doanh phe ${TEN_PHE[dk.phe]}.`] : [`Trở lại hậu doanh phe ${TEN_PHE[dk.phe]}.`] };
+  return { vao: { zone: R.bai, at: diemHau(dk.phe) }, phe: dk.phe, tin: moi ? [LOI_PHE[dk.phe], dk.nop ? `Đã ủng hộ ${N.tien(dk.nop)} — vào hậu doanh phe ${TEN_PHE[dk.phe]}.` : `Phiên thử — miễn phí. Vào hậu doanh phe ${TEN_PHE[dk.phe]}.`] : [`Trở lại hậu doanh phe ${TEN_PHE[dk.phe]}.`] };
 }
 // đúc Nhạc Vương Kiếm (song_shop.lua yuewang_sure: đủ duc.can viên thì trừ viên, thêm kiếm; không tốn tiền): viên khóa bảo hiểm trừ trước, có viên khóa thì kiếm
 // khóa; không đủ chỗ thì trả lại như cũ
@@ -1246,11 +1261,14 @@ function lam(h, b, tk) {
       const c = soPhe();
       if (c[x] > c[1 - x]) return say(`Binh lực phe ta là ${Y(`${c[x]} người`)}, địch là ${Y(`${c[1 - x]} người`)}, cách biệt ${Rd(`${c[x] - c[1 - x]} người`)}. Phe ta dư sức tiêu diệt ${x ? "Tống quân" : "Kim binh"} rồi. Sang trợ lực phe ${TEN_PHE[1 - x]} đi!`,
         [[`Gia nhập phe ${TEN_PHE[1 - x]}`, "phe", 1 - x], ["Để ta nghĩ lại đã.", null]]);
-      if ((h.gold || 0) < CF.phi) return talk(`Muốn tham gia chiến trường Tống Kim thì ủng hộ ${N.tien(CF.phi)} trước đã.`);
-      h.gold -= CF.phi;
-      const moi = { tk, o, ten: h.name, phe: x, lv: h.lvl | 0, nop: CF.phi, luc: t };
+      const thu = !!R.thu; // phiên thử: miễn phí, không ghi nhật ký hoạt động
+      if (!thu) {
+        if ((h.gold || 0) < CF.phi) return talk(`Muốn tham gia chiến trường Tống Kim thì ủng hộ ${N.tien(CF.phi)} trước đã.`);
+        h.gold -= CF.phi;
+      }
+      const moi = { tk, o, ten: h.name, phe: x, lv: h.lvl | 0, nop: thu ? 0 : CF.phi, luc: t };
       R.dk.set(key, moi); R.doi = true;
-      NK().ghi("hd", tk, h.name, `Tống Kim${R.gio ? ` ${R.gio}` : ""}: báo danh phe ${TEN_PHE[x]}, ủng hộ ${CF.phi} lượng`);
+      if (!thu) NK().ghi("hd", tk, h.name, `Tống Kim${R.gio ? ` ${R.gio}` : ""}: báo danh phe ${TEN_PHE[x]}, ủng hộ ${CF.phi} lượng`);
       return vaoTran(R, moi, h, tk, true);
     }
     case "qn":
@@ -1274,9 +1292,10 @@ function lam(h, b, tk) {
   }
 }
 
-module.exports = { CF, quanTri, pheCua, lam, lich, dangTran, dangDanh, trongTran, boBuffTk, hoanTran, hoanGiay, giaThuocTk, boThuocTk, vatTk, choDoi, giaTk, BIEN_KINH, BAO_DANH, mauBotDs, mauBotThem, mauBotXoa,
+module.exports = { CF, quanTri, moThu, dongThu, pheCua, lam, lich, dangTran, dangDanh, trongTran, boBuffTk, hoanTran, hoanGiay, giaThuocTk, boThuocTk, vatTk, choDoi, giaTk, BIEN_KINH, BAO_DANH, mauBotDs, mauBotThem, mauBotXoa,
   botVao, botRa, botDanh, botBiDanh, botNguoi, botHoiSinh,
   pvp: { stCua, thung, BUA_GOC, ST_MAX, HS }, // Lôi Đài (anh 15/11 — may-chu/loi-dai.js ldn): dùng chung kiểm đòn PvP, không đổi gì của Tống Kim
   _thu: { get D() { return D; }, vong, trong, chonChu, phat, cong, chetBot, chucCua, diemGiet, LIEN, PHAI, tenBot, themBot, datSoBot, tomTat, stCua, viec: VIEC,
+    viTriSoai, diemDong, diemHau, // bảng chỉ huy tổ đội (chi-huy-tk.js) lấy neo từ dữ liệu chiến trường thật
     moTran, batDau, ketThuc, huyTran, lichVong, vongTran, themBinh, chiSoBinh, chetBinh, raSoai, lichDot, laThienTu, traoThuong, ketCua, phaCua, daGoi,
     datTd(x) { TD_THU = x; }, datLanDau(v) { lanDau = !!v; } } };

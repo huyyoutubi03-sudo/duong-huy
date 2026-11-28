@@ -77,13 +77,13 @@ function mo(opt = {}) {
     }
   }
   if (!ds.length) N.loi("Chưa có chỗ ra nhím (node cong-cu/dung-san-nhim.mjs)");
-  D = { u: t, het: t + Math.max(1, +opt.phut || CF.phut) * 60000, ngay: Math.max(1, +opt.ngay || CF.ngay), ds, ...(Array.isArray(opt.tai) && opt.tai.length ? { thu: 1 } : {}) }; // thu: quản trị đặt tại chỗ để thử — không tính cống hiến bang hội
+  D = { u: t, het: t + Math.max(1, +opt.phut || CF.phut) * 60000, ngay: Math.max(1, +opt.ngay || CF.ngay), ds, thuThu: !!opt.thuThu, ...(Array.isArray(opt.tai) && opt.tai.length ? { thu: 1 } : {}) }; // thu: quản trị đặt tại chỗ để thử — không tính cống hiến bang hội; thuThu: phiên thử F10 — không thưởng/không đếm
   xong = null; doi = true;
   const bais = [...new Set(ds.map((n) => n.bai))].map(tenBai).join(" và ");
   // lượt 86: + thưởng người phát hiện / người tham gia
   const tl = (x) => `${+x || 0}%`;
-  TG().thongBao(`${ds.length} con ${CF.ten} xuất hiện rải rác quanh ${bais}! Ai ra đòn cuối cùng bắt được nhím sẽ nhận ${MT.thuong(`${CF.kn.toLocaleString("vi-VN")} kinh nghiệm`)} và ${MT.thuong("1 phần quà")} (mỗi ngày tối đa ${D.ngay} con)`
-    + `${+CF.phatKn > 0 ? `; người phát hiện đầu tiên ${MT.thuong(`+${(+CF.phatKn).toLocaleString("vi-VN")} kinh nghiệm`)} (${tl(CF.phatXu)} được ${MT.thuong("1 Xu")})` : ""}${+CF.thamKn > 0 ? `; mọi người tham gia ${MT.thuong(`+${(+CF.thamKn).toLocaleString("vi-VN")} kinh nghiệm`)} (${tl(CF.thamXu)} được ${MT.thuong("1 Xu")})` : ""}.`, true);
+  TG().thongBao(`${opt.thuThu ? "[Thử] " : ""}${ds.length} con ${CF.ten} xuất hiện rải rác quanh ${bais}! Ai ra đòn cuối cùng bắt được nhím sẽ nhận ${MT.thuong(`${CF.kn.toLocaleString("vi-VN")} kinh nghiệm`)} và ${MT.thuong("1 phần quà")} (mỗi ngày tối đa ${D.ngay} con)`
+    + `${+CF.phatKn > 0 ? `; người phát hiện đầu tiên ${MT.thuong(`+${(+CF.phatKn).toLocaleString("vi-VN")} kinh nghiệm`)} (${tl(CF.phatXu)} được ${MT.thuong("1 Xu")})` : ""}${+CF.thamKn > 0 ? `; mọi người tham gia ${MT.thuong(`+${(+CF.thamKn).toLocaleString("vi-VN")} kinh nghiệm`)} (${tl(CF.thamXu)} được ${MT.thuong("1 Xu")})` : ""}.${opt.thuThu ? " (Phiên thử — không có thưởng, không tính số con.)" : ""}`, true);
   return trangThai("");
 }
 // hết giờ / quản trị hủy / bắt hết
@@ -91,7 +91,7 @@ function ketThuc(huy) {
   const d = D; if (!d) return null;
   D = null; d.ket = "het"; d.luc = Date.now(); xong = d; doi = true;
   const con = d.ds.filter((n) => !n.ai).length;
-  TG().thongBao(huy ? `Đợt Săn Nhím Béo Phì bị hủy rồi.` : con ? `Đợt Săn Nhím Béo Phì kết thúc — ${con} con ${CF.ten} chạy thoát.` : `Cả ${d.ds.length} con ${CF.ten} đợt này bị bắt hết rồi!`);
+  TG().thongBao(d.thuThu ? `Phiên thử Săn Nhím kết thúc.` : huy ? `Đợt Săn Nhím Béo Phì bị hủy rồi.` : con ? `Đợt Săn Nhím Béo Phì kết thúc — ${con} con ${CF.ten} chạy thoát.` : `Cả ${d.ds.length} con ${CF.ten} đợt này bị bắt hết rồi!`);
   return true;
 }
 // 1 món ngẫu nhiên: CF.hiemTl % trong CF.hiem, còn lại trong CF.mon
@@ -107,6 +107,7 @@ const traoCho = (ten, r) => { if (!cho.has(ten)) cho.set(ten, []); cho.get(ten).
 // người đánh trúng đầu tiên (có sát thương được tính) — phát hiện nhím n (lượt 86): + phatKn kinh nghiệm, phatXu % được 1 Xu (nhịp sau — nhanThuong), tin hệ thống
 function phatHien(n, tk, ten) {
   n.phat = ten;
+  if (D && D.thuThu) { TG().thongBao(`[Thử] ${tenCon(n)} ở ${tenBai(n.bai)} bị ${MT.ten(ten)} phát hiện (phiên thử — không có thưởng).`); return; } // phiên thử: không thưởng phát hiện
   const xu = Math.random() * 100 < (+CF.phatXu || 0) ? 1 : 0, kn = Math.max(0, Math.round(+CF.phatKn || 0));
   if (kn || xu) traoCho(ten, { loai: "phat", kn, xu, so: n.so, bai: n.bai });
   TG().thongBao(`${tenCon(n)} ở ${tenBai(n.bai)} bị ${MT.ten(ten)} phát hiện${kn ? ` (${MT.thuong(`+${vn(kn)} kinh nghiệm`)})` : ""}${xu ? ` — may mắn nhận được ${MT.thuong("1 Xu")}` : ""}!`);
@@ -116,6 +117,12 @@ function phatHien(n, tk, ten) {
 // thamXu % được 1 Xu
 function bat(n, tk, ten) {
   n.mau = 0; n.ai = ten; doi = true;
+  if (D.thuThu) { // phiên thử: không đếm con/ngày, không thưởng, không cống hiến, không nguồn sự kiện
+    const con = D.ds.filter((x) => !x.ai).length;
+    TG().thongBao(`[Thử] ${tenCon(n)} ở ${tenBai(n.bai)} bị ${MT.ten(ten)} kích sát (phiên thử — không có thưởng).${con ? ` Còn ${con} con.` : ""}`);
+    if (!con) ketThuc(false);
+    return;
+  }
   const c = demCua(ten); c.n++;
   if (!D.thu) try { BHO().cong(tk, null, ten, "sanNhim"); } catch {} // bang hội đợt 2: chỉ người kết liễu — 5 / con, ≤ 10 / ngày
   const mon = boc(), luc = Date.now();
@@ -151,7 +158,7 @@ function danh(tk, u, d, k = 1) {
   const an = Math.min(d, x.han, n.mau);
   x.han -= an; n.han.set(tk, x); n.mau -= an;
   if (an > 0) { n.tham.set(tk, p.name); if (!n.phat) phatHien(n, tk, p.name); } // người tham gia / phát hiện (lượt 86)
-  if (an > 0) nskDon(p.name, k, t);
+  if (an > 0 && !D.thuThu) nskDon(p.name, k, t); // phiên thử: không nguồn sự kiện
   if (n.mau <= 0) bat(n, tk, p.name);
   return true;
 }
@@ -203,8 +210,10 @@ function nhanThuong(h) {
   return ra.length ? ra : null;
 }
 
-// công cụ thử (chỉ tài khoản quản trị): { viec: "mo" (tai?, mau?, ngay?, phut?) | "huy" | "xem" }
+// công cụ thử (chỉ tài khoản quản trị): { viec: "mo" (tai?, mau?, ngay?, phut?) | "huy" | "xem" } — "moThu"/"dongThu": F10 Lịch hoạt động (Huy 22:18 27/11/2026)
 function quanTri(b) {
+  if (b.viec === "moThu") return { s: mo({ thuThu: true, phut: 5 }), thu: 1 };
+  if (b.viec === "dongThu") { if (!D || !D.thuThu) N.loi("Không có phiên thử săn nhím nào."); if (!ketThuc(true)) N.loi("Không có đợt săn nhím nào."); return { s: null, dong: 1 }; }
   if (b.viec === "mo") return { s: mo({ tai: b.tai, mau: b.mau, ngay: b.ngay, phut: b.phut }) };
   if (b.viec === "huy") { if (!ketThuc(true)) N.loi("Không có đợt săn nhím nào."); return { s: null }; }
   return { s: trangThai(""), lich: CF.gio, bat: !!CF.bat, phut: CF.phut, cho: Object.fromEntries(Object.entries(CHO).map(([k, L]) => [k, L.length])),
@@ -225,6 +234,7 @@ setInterval(() => {
   if (CF.bat && Array.isArray(CF.gio)) {
     const vn = new Date(t + 7 * 3600000).toISOString(), hm = vn.slice(11, 16), ngay = vn.slice(0, 10);
     for (const g of CF.gio) {
+      if (D && D.thuThu && hm === g) ketThuc(true); // phiên thử không được ăn mất đợt thật
       if (CF.baoTruoc > 0 && hm === lui(g, CF.baoTruoc) && !daGoi.has(`${ngay} b${g}`) && GV.thuOk(CF, t + CF.baoTruoc * 60000)) {
         daGoi.add(`${ngay} b${g}`);
         if (!D) TG().thongBao(`${CF.baoTruoc} phút nữa ${CF.ten} xuất hiện quanh ${Object.keys(CF.so || {}).map(tenBai).join(" và ")} — chuẩn bị đi săn!`);
@@ -235,4 +245,8 @@ setInterval(() => {
   if (doi && t - guiLuc >= 250) { doi = false; guiLuc = t; ver++; phat(); }
 }, 250).unref();
 
-module.exports = { mo, ketThuc, danh, trangThai, nhanThuong, quanTri, CF, dangCo: () => !!D, demNgay: (ten) => demCua(ten).n };
+// Mở thử / đóng thử (F10 Lịch hoạt động): điều phối qua quanTri để 1 đường duy nhất.
+function moThu(qt, b) { return quanTri({ viec: "moThu" }); }
+function dongThu(qt, b) { return quanTri({ viec: "dongThu" }); }
+
+module.exports = { mo, ketThuc, danh, trangThai, nhanThuong, quanTri, CF, dangCo: () => !!D, demNgay: (ten) => demCua(ten).n, moThu, dongThu };
