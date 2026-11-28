@@ -3108,7 +3108,7 @@ export class GameWindows {
   // điểm dọc) làm trình duyệt tô mờ -> mỗi dòng cao đúng B.line, chữ cao đúng cỡ font (khỏi lệch dọc); đo bề ngang từng dòng, lề trái =
   // (rộng ô − rộng dòng) / 2 làm tròn xuống (khỏi lệch ngang). Gọi lại mỗi khi đổi nội dung ô.
   _crisp(t, B) {
-    const b = t.querySelector(".b"), L = [...b.children];
+    const b = t.querySelector(".b"), L = [...b.children].filter((d) => !d.hasAttribute("data-flo")); // ô hình nổi (itemtip.js data-flo): bỏ qua khi đo/canh dòng
     t.style.display = "block"; // đo được bề ngang (ngay sau đó _placeFrame đặt chỗ)
     b.style.width = ""; b.style.textAlign = "left";
     for (const d of L) Object.assign(d.style, { display: "inline-block", verticalAlign: "top", height: B.line + "px", lineHeight: B.font + "px", marginLeft: "0" });

@@ -12,8 +12,9 @@
 // ("Giá cả: %d %s" G_ITEM_2) · gợi ý.
 //   const html = itemTipHtml(T, it, hero, { factions, hint, kich, price, slot, dangMac })   // T = tip.json, it = món, kich = số dòng ẩn
 //   đang được kích, price = giá (cửa hàng), slot = ô đang mặc (không có = món trong túi), dangMac = ô so sánh món đang mặc
-// Hình món ở góc trái trên của ô xem món (Huy 18:30 28/11/2026: "có ảnh đồ vật bên góc trái đâu") — đúng 1 ô túi (28px),
-// như ảnh client; chữ vẫn canh giữa, chừa chỗ hình bên trái.
+// Hình món ở góc trái trên của ô xem món như ảnh gốc Huy gửi 21:35 28/11/2026 (ô hình riêng có viền ở góc trái trên, nền giữ
+// nguyên) — ô vuông ~3 dòng chữ, hình đầy ô; chữ chảy quanh ô (float) như bản gốc, các dòng dưới ô trải hết bề ngang.
+// data-flo: _crisp (windows.js) bỏ qua ô này khi đo/canh giữa từng dòng. Không có ic thì thôi, không vẽ hình vỡ.
 // Dòng gợi ý kích (anh 29/10 gửi ảnh client "Cần hệ Thủy của Dây chuyền và Y phục để kích thuộc tính ẩn"): engine KItem::GetDesc in ở cuối
 // mô tả đồ xanh — cả dòng màu hệ của món, "hệ X" Cyan, tên 2 ô màu hệ X (X = hệ sinh ra hệ của món; 2 ô = KICH, khớp bảng ms_ActivedEquip
 // của engine). Chuỗi G_ITEM_21 của lang\vn ghi "thuộc tính âm" — theo ảnh anh: "ẩn". Chỉ món có dòng ẩn; nhẫn trong túi chưa biết ô -> 2 dòng
@@ -60,9 +61,10 @@ export const gioNguon = (t) => { const d = new Date(+t + 7 * 3600e3), p = (n) =>
 export function itemTipHtml(T, it, hero, opt = {}) {
   const x = ItemDB.item(it.k); if (!x) return "";
   const g = ItemDB.base(it.k), d = it.d || [], out = [];
-  // Hình món ở góc trái trên (Huy 18:30 28/11/2026) — đúng 1 ô túi 28px; không có ic thì thôi, không vẽ hình vỡ.
-  const hinh = x.ic ? `<img src="assets/web/icon/${esc(x.ic)}" alt="" style="position:absolute;left:0;top:0;width:28px;height:28px;image-rendering:pixelated;pointer-events:none">` : "";
-  const boc = (html) => hinh ? `<div style="position:relative;padding-left:34px;min-height:28px">${hinh}${html}</div>` : html;
+  // Hình món ở góc trái trên như ảnh gốc (Huy 21:35 28/11/2026) — ô vuông ~3 dòng chữ, có viền nhạt, hình đầy ô, chữ chảy
+  // quanh ô (float); data-flo để _crisp bỏ qua khi đo/canh dòng. Không có ic thì thôi, không vẽ hình vỡ.
+  const S = 3 * ((T.box && T.box.line) || 13);
+  const hinh = x.ic ? `<div data-flo="1" style="float:left;width:${S}px;height:${S}px;margin:0 6px 2px 0;border:1px solid #8fae96;background:rgba(0,0,0,.3);box-sizing:border-box;pointer-events:none"><img src="assets/web/icon/${esc(x.ic)}" alt="" style="width:100%;height:100%;display:block;image-rendering:pixelated"></div>` : "";
   const col = (n) => `rgb(${(T.colors[n] || T.colors.White).join(",")})`;
   const line = (html) => out.push(`<div>${html || "&nbsp;"}</div>`);
   const span = (t, c) => `<span style="color:${col(c)}">${esc(t)}</span>`;
@@ -91,7 +93,7 @@ export function itemTipHtml(T, it, hero, opt = {}) {
     if (x.mp) line(span(fill("manapotion_v", x.mp[0]), "White"));
     if (opt.price != null) line(span(PRICE.replace("%d", opt.price).replace("%s", "lượng"), "White"));
     hint();
-    return boc(out.join(""));
+    return hinh + out.join("");
   }
   if (x.ktc) { // món Kỳ Trân Các (27/10 — cong-cu/dung-ky-tran-cac.js): tên · câu mô tả client (<enter> xuống dòng) · giá Xu
     line(span(x.n.trim(), "White"));
@@ -102,7 +104,7 @@ export function itemTipHtml(T, it, hero, opt = {}) {
     if (it.het) { const s = Math.max(0, (it.het - Date.now()) / 1000), gi = Math.floor(s / 3600), ph = Math.floor((s % 3600) / 60); line(span(`Hạn sử dụng: còn ${gi ? gi + " giờ " : ""}${ph} phút`, "Red")); }
     if (opt.price != null) line(span(PRICE.replace("%d", opt.price).replace("%s", "Xu"), "White"));
     hint();
-    return boc(out.join(""));
+    return hinh + out.join("");
   }
   const mauTen = g.hk ? "Yellow" : d.length ? "Blue" : x.gr === "xanh" ? "White" : "Yellow";
   line(span(x.n, mauTen) + (opt.dangMac ? span(DA_MAC, "Green") : "") + span(LEVEL.replace("%d", g.cl || 1), mauTen));
@@ -162,5 +164,5 @@ export function itemTipHtml(T, it, hero, opt = {}) {
     if (tenNhat) { line(""); line(span(`Người nhặt đầu tiên: ${tenNhat}`, "Gold")); }
   }
   hint();
-  return boc(out.join(""));
+  return hinh + out.join("");
 }
